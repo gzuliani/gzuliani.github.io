@@ -23,16 +23,16 @@ int main() {
   HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
 
   std::cout &lt;&lt; &quot;this is the cout's default color&quot; &lt;&lt; std::endl;
-  SetConsoleTextAttribute(output, FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  SetConsoleTextAttribute(output, FOREGROUND_RED|FOREGROUND_INTENSITY);
   std::cout &lt;&lt; &quot;cout's foreground color has been set to red&quot; &lt;&lt; std::endl;
 
   HANDLE error = GetStdHandle(STD_ERROR_HANDLE);
 
   std::cerr &lt;&lt; &quot;this is the cerr's default color&quot; &lt;&lt; std::endl;
-  SetConsoleTextAttribute(error, FOREGROUND_RED|FOREGROUND_INTENSITY);
+  SetConsoleTextAttribute(error, FOREGROUND_BLUE|FOREGROUND_INTENSITY);
   std::cerr &lt;&lt; &quot;cerr's foreground color has been set to blue&quot; &lt;&lt; std::endl;
 
-  std::cout &lt;&lt; &quot;is the cout's foreground color still set to red?&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;is the cout's foreground color still set to blue?&quot; &lt;&lt; std::endl;
 
   return 0;
 }
