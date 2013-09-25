@@ -1,0 +1,19 @@
+p.note
+{
+	background-color: lightyellow;
+	border: 1px solid #000;
+	font-size: 90%;
+	padding: 1em;
+}
+
+pre.code
+{
+	font-family: Consolas, Courier New, monospace;
+	font-size: 90%;
+}
+
+span.code
+{
+	font-family: Consolas, Courier New, monospace;
+	font-size: 90%;
+}

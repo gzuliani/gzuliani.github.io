@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>Defensive Programming</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/defensive-programming.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#defensive-programming">risorse</a> | defensive programming</p>
+<h1>Defensive Programming</h1>
+<p class="note">John Lakos @ ACCU 2011</p>
+<h2>Contratti software</h2>
+<p>Notazione di Hoare:
+ <blockquote>{pre-condizioni e invarianti} metodo {post-condizioni e invarianti}</blockquote>
+</p>
+<p>Se le pre-condizioni e le invarianti sono soddisfatte, l'esecuzione del metodo garantisce le post-condizioni e le invarianti.</p>
+<p>Le post-condizioni definiscono quindi l'effetto dell'esecuzione del metodo nell'ipotesi che le pre-condizioni siano verificate; si parla in questo caso di effetto essenziale del metodo (<span class="term">essential behavior</span>). In realt&agrave; l'essential behavior &egrave; qualcosa di pi&ugrave; specifico delle post-condizioni, in quanto tiene conto anche di altri fattori, come ad esempio le garanzie circa il costo computazionale del metodo; per tale ragione, la verifica dell'essential behavior &egrave; in generale pi&ugrave; complicata rispetto alla verifica delle post-condizioni. Se le pre-condizioni di un metodo non sono soddisfatte, l'effetto dell'esecuzione del metodo &egrave; per definizione non definita (<span class="term">undefined behavior</span>).</p>
+<p>Di norma essential e undefined behavior non sono complementari; esiste infatti una zona intermedia, denominata <span class="term">unspecified behavior</span> che separa le due aree:</p>
+<pre>
+            +----------------------------+
+            | +------------------------+ |
+            | | +--------------------+ |<--- defined but
+            | | |                    | | |   not essential behavior
+            | | | essential behavior | | |
+            | | |                    | | |
+            | | +--------------------+ | |
+            | |                        | |
+            | |  unspecified behavior  | |
+            | |                        | |
+            | +------------------------+ |
+            |                            |
+            |     undefined behavior     |
+            |                            |
+            +----------------------------+
+</pre>
+<p>Un esempio di undefined behavior si riscontra nel metodo <span class="code">std::vector::front</span>, che ha come pre-condizione il fatto che il vettore sia non vuoto: chiamare il metodo <span class="code">front</span> su un vettore vuoto &egrave; perci&ograve; undefined behavior. Un esempio di unspecified behavior &egrave; invece il seguente:</p>
+<pre class="code">
+ // if stream is not valid on entry, print does nothing
+ std::ostream& print(std::ostream& stream, const std::vector<int>& values);
+</pre>
+<p><span class="code">print</span> &egrave; un metodo senza pre-condizioni, dunque non contempla undefined behavior. Tuttavia non viene specificato cosa accade se l'oggetto <span class="code">stream</span> diventa invalido durante l'esecuzione del metodo: questo &egrave; un caso di unspecified behavior.</p>
+<h2>Programmazione difensiva</h2>
+<p>Scopo del <span class="term">defensive programming</span> &egrave; assicurare che le pre-condizioni siano soddisfatte; la verifica viene effettuata all'inizio di metodo. Per ovvie ragioni di praticit&agrave;, le invarianti di classe vengono di norma verificate solo nel distruttore.</p>
+<p>La pratica del defensive programming richiede la scrittura di codice ridondante, che introduce anche una penalizzazione in termini di efficienza. Secondo la definizione di defensive programming di Lakos:
+ <blockquote>redundand code that provides runtime checks to detect and report (but not handle or hide) defects in software</blockquote>
+</p>
+<p>Da cosa ci si vuol difendere? Dagli errori nelle librerie di terze parti? No, in questi casi si chiede al fornitore di correggere l'errore. Dagli errori nel codice di nostra propriet&agrave; (post-condizioni)? No, questa attivit&agrave; &egrave; di pertinenza dei test. <strong>Ci si difende dal cattivo uso che terze parti possono fare del nostro codice.</strong></p>
+<p>Una domanda lecita che ci si pu&ograve; porre giunti a questo punto &egrave;: se le pre-condizioni non sono verificate, &egrave; necessario comunque garantire le invarianti? La risposta &egrave; no, non ha senso; il pi&ugrave; delle volte ci si trover&agrave; infatti costretti a compiere scelte del tutto arbitrarie, il cui effetto finale sar&agrave; nascondere un errore di programmazione. Si consideri il caso:</p>
+<pre class="code">
+ std::size_type length = std::strlen(0);
+</pre>
+<p>Cosa ci si dovrebbe aspettare come valore di ritorno? Zero?</p>
+<pre class="code">
+ std::size_type std::strlen(const char* s) {
+   if (!s)
+     return 0;
+   ...
+ }
+</pre>
+<p>Nell'ottica dello sviluppatore, accettare un rilassamento dei vincoli posti dal contratto significa dover scrivere pi&ugrave; codice, ed una conseguente diminuzione dell'efficienza. In questo caso si parla di <span class="term">Wide contracts</span>. Restringere i termini del contratto porta invece a codice meno prolisso e pi&ugrave; efficiente:</p>
+<pre class="code">
+ // behavior is undefined unless s is not 0
+ std::size_type std::strlen(const char* s) {
+   assert(!s);
+   ...
+ }
+</pre>
+<p>Si noti come i termini del contratto &ndash; le pre-condizioni &ndash; siano citate esplicitamente, e di conseguenza il codice di gestione del caso limite &egrave; stato sostituito da una asserzione, che in produzione avr&agrave; effetto nullo. Si parla in questo caso di <span class="term">Narrow contract</span>.</p>
+<p>Un aspetto degno di nota &egrave; la formulazione della pre-condizione, ovvero <em>behavior is undefined unless&hellip;</em>, il cui scopo &egrave; circoscrivere l'effetto della funzione all'interno del defined but not essential behavior; la forma <em>behavior is defined if&hellip;</em> comprende, oltre all'essential behavior, anche l'unspecified behavior, cosa non desiderabile per quanto visto in precedenza. In altre parole, se le pre-condizioni non sono rispettate, l'esito della chiamata non &egrave; definito. L'implicazione ha un risvolto interessante perch&eacute;, secondo la logica proposizionale, se le pre-condizioni sono soddisfatte, l'effetto non &egrave; detto che sia definito.</p>
+<p>Un'importante conseguenza delle considerazioni fin qui fatte &egrave; che una funzione che per qualunque ragione non riesce a soddisfare il suo contratto non deve terminare normalmente. D'altra parte l'uscita forzata del programma non sempre &egrave; accettabile. Le alternative pi&ugrave; utilizzate prevedono il sollevamento di un'eccezione o la sospensione temporanea (sleep) nell'attesa del collegamento di un debugger.</p>
+<p>Un ultimo aspetto da considerare riguarda l'efficienza del codice preposto alla verifica delle precondizioni. Lakos propone la classificazione delle assert in funzione del peso computazionale richiesto per la verifica, per poter calibrare &ndash; per esempio per mezzo di macro &ndash; il livello di inefficienza rispetto alla sistematicit&agrave; delle verifiche. Lui suggerisce le seguenti classi di costo:</p>
+<table cellspacing="0">
+<tr><th>macro</th><th>costo CPU</th><th>note</th></tr>
+<tr><td><span class="code">ASSERT_OPT[IMIZE]</span></td><td class="centered">&lt;5%</td><td>sempre attive</td></tr>
+<tr><td><span class="code">ASSERT[_REGULAR]</span></td><td class="centered">5%&divide;20%</td><td></td></tr>
+<tr><td><span class="code">ASSERT_SAFE</span></td><td class="centered">&gt;20%</td><td>da usare nelle funzioni inline</td></tr>
+<tr><td><span class="code">ASSERT_SAFE2</span></td><td class="centered">&gt;100%</td><td>O(verifica) &gt; O(codice)</td></tr>
+</table>
+<h2>Negative testing</h2>
+<p>&Egrave; il codice di test preposto alla verifica della correttezza delle <span class="code">ASSERT</span>. Deve attivarsi se e solo se le asserzioni sono attivate, e deve accertarsi che le segnalazioni arrivino dal componente sotto test e non da un suo subordinato.</p>
+<h2>Riferimenti</h2>
+<p>Lakos, John. &quot;Defensive programming done right&quot;. <em>Skills Matters: ACCU 2011: John Lakos on Defensive Programming Done Right</em>. &lt;<a href="http://skillsmatter.com/podcast/home/defensive-programming-done-right">http://skillsmatter.com/podcast/home/defensive-programming-done-right</a>&gt;. Visitato il 21 Ottobre 2011.</p>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

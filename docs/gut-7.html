@@ -1,0 +1,309 @@
+<html>
+<head>
+<title>Good Unit Tests /7</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-7">risorse</a> | good unit tests /7</p>
+<h1>Good Unit Tests /7</h1>
+<p>Questa parte (la settima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a> e qui la <a href="gut-6.html">sesta</a>) rimette in discussione il concetto di <span class="code">TEST_SUITE</span>. Con l'occasione &egrave; stata aggiunta l'opzione <em>fail-fast</em>.</p>
+<h2>Nella terra di nessuno</h2>
+<p>Il codice che vive all'esterno dei blocchi <span class="code">TEST</span>, se da una parte risulta comodo in quando condiviso dai <span class="code">TEST</span> che lo seguono, ha l'indubbio svantaggio di essere eseguito anche durante la prima invocazione della funzione <span class="code">runTests_</span>, quella che ha il solo scopo di ricavare l'elenco dei test da eseguire nelle passate successive. Questo aspetto, le cui ricadute sulle prestazioni possono essere anche significative &ndash; per quanto, trattandosi di <em>unit-test</em> ci si attende che le procedure di <span class="code">setUp</span>/<span class="code">tearDown</span> siano piuttosto rapide &ndash; non &egrave; l'unico a mettere in discussione l'attuale struttura del codice di test.</p>
+<pre class="code">
+TEST_SUITE("suite") {
+
+  f(); // called n + 1 times
+
+  TEST("test") {
+    g(); // called once
+  }
+
+  //...
+}
+</pre>
+<h3>Eccezioni al di fuori di TEST</h3>
+<p>Pu&ograve; accadere che eccezioni vengano sollevate al di fuori di un <span class="code">TEST</span>; ad esempio:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+TEST_SUITE(&quot;suite&quot;) {
+
+  setUp(); // may throw
+
+  TEST(&quot;test&quot;) {
+    //...
+  }
+}
+</pre>
+<p>Un'eccezione sollevata in questo contesto causa la terminazione immediata del programma, perch&eacute; non viene catturata; in particolare, non vengono catturate tutte le eccezioni sollevate durante la prima invocazione della funzione <span class="code">runTests_</span>, quella utilizzata per ricavare l'elenco dei test:</p>
+<pre class="code">
+int main() {
+  gut::Schedule schedule_;
+  runTests_(schedule_); // may throw!
+  auto report_ = std::make_shared&lt;gut::DefaultReport&gt;();
+  // ...
+</pre>
+<h3>CHECK/REQUIRE al di fuori di TEST</h3>	
+<p>Sebbene l'uso di <span class="code">CHECK</span> e <span class="code">REQUIRE</span> all'esterno di un <span class="code">TEST</span> sia legittima &ndash; il codice prodotto dall'espansione delle macro &egrave; sintatticamente corretto &ndash; la loro presenza dovrebbe essere limitata al loro interno, in parte perch&eacute; potenziali sorgenti di eccezioni, in secondo luogo per favorire una maggiore struttrazione del codice di test. Non &egrave; per&ograve; banale adattare l'attuale infrastruttura di test in modo tale da causare un errore di compilazione in seguito all'uso delle macro in un contesto inappropriato. &Egrave; relativamente facile desumere la posizione interna/esterna di un fallimento (<span class="code">gut::Report::failure</span> invocata senza una precedente chiamata a <span class="code">gut::Report::startTest</span>), pi&ugrave; difficile &egrave; farlo per i controlli che si concludono con esito positivo.</p>
+<p>Conviene allora modificare radicalmente il modello attuale, e passare ad uno alternativo; in particolare, si separano le due fasi di registrazione ed esecuzione dei test; la prima &egrave; a carico dell'oggetto <span class="code">Suite</span>, mentre della seconda se ne occupa ancora la funzione <span class="code">runTests_</span>, ma con una modalit&agrave; diversa:</p>
+<pre class="code">
+<del>struct TestSelection {
+  virtual bool shouldRun(const std::string&amp; testName) = 0;
+};
+
+struct Schedule : public TestSelection {
+  std::vector&lt;std::string&gt; testNames;
+  size_t size() const {
+    return testNames.size();
+  }
+  virtual bool shouldRun(const std::string&amp; testName) {
+    testNames.push_back(testName);
+    return false;
+  }
+};
+
+struct SingleTestSelection : public TestSelection {
+  std::string testName_;
+  SingleTestSelection(const std::string&amp; testName) : testName_(testName) { }
+  virtual bool shouldRun(const std::string&amp; testName) {
+    return testName == testName_;
+  }
+};</del>
+
+// ...
+
+class Report {
+  // ...
+public:
+  static void start(<del>const std::string&amp; label</del>) {
+    if (report_)
+      report_->onStart(<del>label</del>);
+  }
+  // ...
+protected:
+  virtual void onStart(<del>const std::string&amp; /*label*/</del>) { }
+  // ...
+};
+
+class DefaultReport : public gut::Report {
+  // ...
+protected:
+  virtual void onStart(<del>const std::string&amp; label</del>) {
+    <del>std::cout &lt;&lt; &quot;Testing &quot; &lt;&lt; label &lt;&lt; &quot;...&quot; &lt;&lt; std::endl;</del>
+    std::cout &lt;&lt; &quot;Test suite started...&quot; &lt;&lt; std::endl;
+  }
+  // ...
+};
+
+<ins>typedef void (*TestFn)();
+
+class Test {
+  std::string name_;
+  TestFn test_;
+public:
+  Test(const std::string&amp; name, TestFn test) : name_(name), test_(test) {
+  }
+  const std::string&amp; name() const {
+    return name_;
+  }
+  void run() {
+    test_();
+  }
+};
+
+class Suite {
+  static std::vector&lt;Test&gt; tests_;
+public:
+  struct add {
+    add(const std::string&amp; name, TestFn test) {
+      tests_.push_back(Test(name, test));
+    }
+  };
+  static const std::vector&lt;Test&gt;&amp; tests() {
+    return tests_;
+  }
+};
+
+std::vector&lt;Test&gt; Suite::tests_;</ins>
+
+<ins>#define MAKE_UNIQUE(name_) CONCAT_(name_, __LINE__)</ins>
+
+#define TEST(name_) \
+  <del>if (selection_.shouldRun(name_))</del>
+  <ins>static void MAKE_UNIQUE(test_)(); \
+  gut::Suite::add MAKE_UNIQUE(testAddition_)(name_, &amp;CONCAT_(test_, __LINE__)); \
+  static void MAKE_UNIQUE(test_)()</ins>
+
+// replace the old TEST_SUITE macro with this fragment:
+<ins>int runTests_() {
+  auto report_ = std::make_shared&lt;gut::DefaultReport&gt;();
+  gut::Report::set(report_);
+  gut::Report::start();
+  for (auto test : gut::Suite::tests()) {
+    gut::Report::startTest(test.name());
+    try {
+      test.run();
+    } catch(const gut::AbortTest&amp;) {
+    } catch(const std::exception&amp; e_) {
+      gut::Report::failure(gut::UnexpectedExceptionFailure(e_, __FILE__, __LINE__));
+    } catch(...) {
+      gut::Report::failure(gut::UnknownExceptionFailure(__FILE__, __LINE__));
+    }
+    gut::Report::endTest();
+  }
+  gut::Report::end();
+  return report_-&gt;failedTestCount();
+}
+
+#ifndef GUT_CUSTOM_MAIN
+int main() {
+  return runTests_();
+}
+#endif</ins>
+</pre>
+<p>Ogni <span class="code">TEST</span> origina una funzione, il cui nome &egrave; reso univoco appendendo al prefisso <span class="code">test_</span> il numero di linea corrente; il test viene quindi registrato tramite l'istanziazione dell'oggetto di comodo <span class="code">Suite::add</span> il quale provvede ad inserire la funzione di test in un vettore statico che verr&agrave; successivamente scansito dalla procedura <span class="code">runTests_</span>.</p>
+<p>Venendo meno la macro <span class="code">TEST_SUITE</span>, il codice di test assume una forma pi&ugrave; essenziale:</p>
+<pre class="code">
+<del>TEST_SUITE(&quot;RecentlyUsedList&quot;) {</del>
+
+  TEST(&quot;Initial list is empty&quot;) {
+    RecentlyUsedList anEmptyList;
+
+    CHECK(anEmptyList.empty());
+    CHECK(anEmptyList.size() == 0);
+  }
+
+// ...
+
+<del>}</del>
+</pre>
+<p><span class="code">main</span> non &egrave; pi&ugrave; definita nella macro <span class="code">TEST_SUITE</span>, ma &egrave; direttamente disponibile una volta incluso l'<em>header</em> <span class="code">gut.h</span>. Poich&eacute; questo pu&ograve; a volte essere indesiderabile, la macro <span class="code">GUT_CUSTOM_MAIN</span> funge da guardia. Un esempio del suo utilizzo &egrave; disponibile nel test-case dell'infrastruttura, ove &egrave; gi&agrave; presente una versione locale della funzione <span class="code">main</span>:</p>
+<pre class="code">
+<ins>#define GUT_CUSTOM_MAIN</ins>
+#include "gut.h"
+// ...
+int main() {
+
+  std::string lastFailure;
+  gut::Report::set(std::make_shared&lt;LastFailure&gt;(lastFailure));
+  // ...
+  return 0;
+}
+</pre>
+<h2>Fail-Fast</h2>
+<p>La macro <span class="code">REQUIRE</span> causa l'interruzione del <span class="code">TEST</span> corrente; manca tuttavia la possibilit&agrave; di interrompere l'esecuzione dell'intera suite in corrispondenza del primo fallimento. L'opzione <em>fail-fast</em> ha proprio questo scopo:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+TEST(&quot;fail-fast /1&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+TEST(&quot;fail-fast /2&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * fail-fast /1: FAILED
+ *  failfast.cpp(4) : [error] 1 == 2 evaluates to 1 == 2
+ *  failfast.cpp(5) : [error] 2 == 3 evaluates to 2 == 3
+ * fail-fast /2: FAILED
+ *  failfast.cpp(9) : [error] 1 == 2 evaluates to 1 == 2
+ *  failfast.cpp(10) : [error] 2 == 3 evaluates to 2 == 3
+ * Ran 2 test(s) in 0s.
+ * FAILED - 4 failure(s) in 2 test(s)
+ */
+</pre>
+<p>La richiesta di un'uscita anticipata &egrave; gestita dall'oggetto <span class="code">FailFast</span>:</p>
+<pre class="code">
+// ...
+<ins>
+struct AbortSuite { };
+
+class FailFast {
+  static bool enabled_;
+public:
+  FailFast() {
+    enabled_ = true;
+  }
+  static bool enabled() {
+    return enabled_;
+  }
+};
+
+bool FailFast::enabled_ = false;
+
+#ifdef GUT_FAILFAST
+FailFast failFast_;
+#endif
+</ins>
+// ...
+
+class Report {
+  // ...
+  static void failure(const Failure&amp; failure) {
+    if (report_)
+      report_-&gt;onFailure(failure);
+    <ins>if (FailFast::enabled())</ins>
+      <ins>throw AbortSuite();</ins>
+  }
+  <ins>static void quit() {
+    if (report_)
+      report_-&gt;onQuit();
+  }</ins>
+  // ...
+  virtual void onFailure(const Failure&amp; /*failure*/) { }
+  <ins>virtual void onQuit() { }</ins>
+};
+
+class DefaultReport : public Report {
+  // ...
+  <ins>virtual void onQuit() {
+    ++failedTests_;
+  }</ins>
+}
+
+// ...
+
+int runTests_() {
+    // ...
+    try {
+      test.run();
+    <ins>} catch(const gut::AbortSuite&amp;) {
+      gut::Report::quit();
+      break;</ins>
+    } catch(const gut::AbortTest&amp;) {
+    // ...
+
+</pre>
+<p>L'opzione fail-fast si attiva definendo la macro <span class="code">GUT_FAILFAST</span> prima dell'inclusione dell'infrastruttura di test:</p>
+<pre class="code">
+#define GUT_FAILFAST
+#include &quot;gut.h&quot;
+
+TEST(&quot;fail-fast /1&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+TEST(&quot;fail-fast /2&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * fail-fast /1: FAILED
+ *  failfast.cpp(5) : [error] 1 == 2 evaluates to 1 == 2
+ * Ran 1 test(s) in 0.015s.
+ * FAILED - 1 failure(s) in 1 test(s)
+ */
+</pre>
+<p class="modification-notice">Pagina modificata il 15/01/2013</p>
+</body>
+</html>

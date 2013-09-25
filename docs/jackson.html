@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>Software Specifications &amp; Requirements</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#jackson">risorse</a> | jackson</p>
+<h1>Software Specifications &amp; Requirements</h1>
+<p>Ho da poco riletto questo splendido libro<a href="#ref-1"><sup>[1]</sup></a>. Essendo strutturato come un'ipertesto, ho tracciato una sorta di mappa per orientarmi meglio tra le varie tematiche presentate:</p>
+<img src="img/jackson/map.png" alt="rappresentazione dei principali argomenti e delle loro relazioni"/>
+<h2>Descrizioni</h2>
+<p>Esistono diversi tipi di descrizioni, in particolare:</p>
+<dl>
+	<dt>designations</dt><dd>rappresentano i <em>phenomena</em> di interesse; li descrivono con linguaggio informale e ne attribuiscono un nome univoco con il quale denotarli. Ad esempio: &laquo;m &egrave; la madre genetica di x &asymp; Madre(m,x)&raquo; &egrave; la descrizione (designazione) della relazione <code>essere-madre-di</code>.</dd>
+	<dt>definitions</dt><dd>introducono una definizione formale che pu&ograve; essere utilizzata in altre descrizioni. Ad esempio: &laquo;Figlio(x,y) &equiv; Madre(y,x) &or; Padre(y,x)&raquo;;</dd>
+	<dt>refutable descriptions</dt><dd>sono affermazioni riguardanti uno o pi&ugrave; <em>phenomena</em> di un dominio, che potrebbero in linea di principio essere sia vere, sia false; assumono la forma di predicati (<em>predicate logic</em>). Ad esempio: &laquo;&forall; x, y | Madre(x,y) &rArr; &not;Madre(y,x)&raquo;.</dd>
+	<dt>rough sketches</dt><dd>sono descrizioni informali, il cui scopo &egrave; fissare un concetto, riservandosi di formalizzarlo successivamente; ad esempio: &laquo;ogni individuo appartiene ad almeno una famiglia&raquo;.</dd>
+</dl>
+<p>Le <em>designations</em> costituiscono una sorta di mappa dell'<em>application domain</em>; &egrave; dunque fondamentale che esse catturino gli aspetti caratteristici in modo chiaro e univoco, per consentire la costruzione di descrizioni chiare e incontrovertibili. &Egrave; altrettanto importante che l'insieme dei <em>phenomena</em> designati sia il pi&ugrave; piccolo possibile: le <em>designations</em> devono stabilire un <em>narrow bridge</em> tra il <em>problem context</em> e la sua descrizione. &Egrave; inutile introdurre una <em>designation</em> per il concetto di Fratello se gi&agrave; sono disponibili quelle per Maschio, Padre e Madre: &laquo;Fratello(x,y) &equiv; Maschio(x) &and; (&exist;p | Padre(p,x) &and; Padre(p,y)) &and; (&exist;m | Madre(m,x) &and; Madre(m,y))&raquo;.</p>
+<p>Le descrizioni sono caratterizzate da:</p>
+<ul>
+<li>un'intenzione o <em>mood</em>, che pu&ograve; essere &ldquo;indicativa&rdquo;, quando si asserisce una verit&agrave;, oppure &ldquo;ottativa&rdquo; (il modo della speranza e della potenzialit&agrave;), quando si esprime un desiderata. Le descrizioni indicative si riferiscono al <em>application domain</em>, le seconde a <em>machine</em>. &Egrave; importante, quando si produce una nuova descrizione, riflettere sulla sua intenzionalit&agrave;, evitando di mescolare i due <em>mood</em> in una stessa descrizione;</li>
+<li>un'estensione o <em>span</em>: rappresenta l'insieme di <em>phenomena</em> cui la descrizione si riferisce; per esempio, la <em>designation</em> &laquo;x &egrave; cittadino di y &asymp; Cittadino(x,y)&raquo; &egrave; applicabile ai cittadini di qualunque paese, mentre la <em>definition</em> &laquo;Italiano(x) &equiv; Cittadino(x,Italia)&raquo; si estende ai soli cittadini italiani;</li>
+<li>uno ambito o <em>scope</em>: &egrave; la parte di dominio cui la descrizione di riferisce, che dipende dall'insieme delle <em>designation</em> citate nella descrizione.</li>
+</ul>
+<h2>Requisiti e specifiche</h2>
+<p>I requisiti (<em>requirements</em>) definiscono il problema, asserendo fatti relativi a <em>phenomena</em> dell'<em>application domain</em>; l'implementazione (o <em>program</em>) definisce le modalit&agrave; operative della macchina, ed &egrave; per tale motivo di pertinenza del dominio <em>machine</em>; le specifiche (<em>specifications</em>) definiscono l'interfaccia tra il dominio applicativo e la macchina, e riguardano gli <em>shared phenomena</em> condivisi tra <em>application domain</em> e <em>machine</em>.</p>
+<p>In modo più formale:</p>
+<p>C, P &rarr; S (l'esecuzione del programma P sul computer C soddisfano la specifica S);</p>
+<p>D, S &rarr; R (le propriet&agrave; di dominio D, congiunte con le specifiche S  &ndash; effetto dell'esecuzione di P su C &ndash;, soddisfano i requisiti R).</p>
+<p>&Egrave; interessante soffermarsi sull'esempio citato dall'autore, riguardante un incidente aereo avvenuto a causa del mancato azionamento del sistema di retro-spinta durante un atterraggio in acquaplaning (l'areoplano fin&igrave; fuori pista); i requisiti erano:</p>
+<ol>
+<li>WHEEL-PULSES-ON iff WHEEL-TURNING;</li>
+<li>WHEEL-TURNING iff MOVING-ON-RUNWAY.</li>
+</ol>
+<p>WHEEL-TURNING e MOVING-ON-RUNWAY sono <em>phenomena</em> di <em>application domain</em>, mentre WHEEL-PULSES-ON è uno <em>shared phenomena</em> di <em>application domain</em> e <em>machine</em>.</p>
+<p>Le specifiche per l'azionamento della retro-spinta erano:</p>
+<ul>
+<li>REVERSE-ENABLED iff WHEEL-PULSES-ON</li>
+</ul>
+<p>REVERSE-ENABLED è lo <em>shared phenomena</em> che il sistema utilizza per comunicare al <em>application domain</em> per attivare il sistema di retro-spinta.</p>
+<p>L'incidente &egrave; stato causato dall'errata interpretazione del dominio del problema, in particolare del secondo requisito, che non cattura la reale condizione di rullaggio: cos&igrave; come specificato infatti, in caso di acquaplaning si deve giungere alla conclusione che dato che le ruote non girano, l'areoplano non si trova sulla pista.</p>
+<p>L'analisi va quindi corretta, in primis modificando la specifica in:</p>
+<ul>
+<li>REVERSE-ENABLED iff MOVING-ON-RUNWAY,</li>
+</ul>
+<p>quindi individuare un nuovo <em>shared phenomena</em> che possa indicare a <em>machine</em> la condizione di MOVING-ON-RUNWAY, e modificare il programma P in modo da rispettare la nuova specifica.</p>
+<h2>Analisi</h2>
+<p>Le principali fasi dell'analisi comprendono:</p>
+<h3><em>problem</em> &rarr; <em>application domain</em> + <em>machine</em></h3>
+<p>Il primo passo che il buon analista deve compiere &egrave; quello di scindere il <em>problem context</em> nelle due componenti che lo caratterizzano, ovvero l'<em>application domain</em>, che rappresenta l'ambiente nel quale il sistema in fase di definizione andr&agrave; ad operare, e la <em>machine</em>, che rappresenta il sistema vero e proprio. Deve sussistere una netta distinzione tra ci&ograve; che &egrave; di pertinenza del problema, ovvero cosa il sistema deve fare per risolvere il problema &ndash; <em>what</em> &ndash; e ci&ograve; che invece compete alla macchina, ovvero come il sistema opera per risolvere il problema &ndash; <em>how</em>.</p>
+<!--
+1. problem > problem context = application domain + machine
+rifarsi al "principle of domain relevance": qualunque cosa rilevante relativamente ai requisiti *deve* apparire da qualche parte nell'application domain
+-->
+<h3><em>application domain</em> &rarr; <em>domains</em></h3>
+<p>In funzione della complessit&agrave; del dominio applicativo, pu&ograve; essere conveniente procedere ad un partizionamento in sotto-domini, badando di ottenere sotto-domini coesi, cio&egrave; relativi a <em>phenomena</em> di natura simile, e fortemente disaccoppiati, cio&egrave; con pochi <em>shared phenomena</em> in comune con i sotto-domini connessi.</p>
+<p>Organizzare i sotto-domini in strutture gerarchiche &egrave; spesso sintomo di eccessiva semplificazione: pi&ugrave; aderenti alla realt&agrave; sono strutture a grafo, mono- &ndash; o pi&ugrave; spesso &ndash; multi-strato.</p>
+<p>Questa fase culmina con la realizzazione del <em>context diagram</em>, un diagramma che rappresenta il <em>problem context</em> come insieme di domini interdipendenti.</p>
+<!--
+2. application domain > domains
+gerarchie: più spesso nascondono reti stratificate (es. sistema di trasporti: non rami indipendenti strade/ferrovie/areoporti, ma grafi interconnessi: parcheggi per le stazioni/areoporti, intersezioni; i sistemi inoltre si vincolano reciprocamente)
+-->
+<!--
+shared phenomena:
+problema dell'ascensore:
+ application domain's phenomena: premuto il pulsante SU
+ machine's phenomena: linea 72 passa da 0 a +5V
+ due fenomeni distinti nei due domini, ma tra loro correlati
+-->
+<h3><em>domains</em> &rarr; <em>domain characteristics</em> + <em>domain interactions</em></h3>
+<p>Una volta individuati i sotto-domini applicativi, si procede ad un'analisi di massima della loro natura, prendendo in considerazione aspetti quali:
+<ul>
+<li><strong>dinamicit&agrave;</strong>: il dominio &egrave; statico o dinamico? Nel secondo caso, &egrave; inerte, reattivo o attivo?</li>
+<li><strong>dimensionalit&agrave;</strong>: il dominio &egrave; mono- o multi-dimensionale?</li>
+<li><strong>concretezza</strong>: il dominio &egrave; tangibile? Se s&igrave;, potrebbe essere soggetto a qualche vincolo di natura fisica;</li>
+<li><strong>formalit&agrave;</strong>: se il dominio &egrave; informale, &egrave; da considerarsi illimitato, in quanto non &egrave; possibile descriverlo in maniera esaustiva.</li>
+</ul>
+<p>Un importante aspetto da considerare sono le tipologie di interazioni tra domini, in particolare in presenza di latenze o altre inconsistenze che non permettono di individuare uno <em>shared phenomena</em> comune attraverso il quale modellare l'interazione. In questo caso si ricorre a un dominio ausiliario di disaccoppiamento, il <em>connection-domain</em>. Un esempio in tal senso &egrave; costituito dall'invio e dalla successiva ricezione di una missiva: i due eventi sono sufficientemente distanti nel tempo da non essere vissuti dal mittente e dal destinatario come due aspetti di un unico evento; in secondo luogo non &egrave; nemmeno certo che ad un invio segua una ricezione, per esempio perch&eacute; la lettera potrebbe venir smarrita. Si introduce allora un <em>connection domain</em> che rappresenta un ufficio postale: l'invio diventa uno <em>shared phenomena</em> tra il dominio del mittente ed il <em>connection domain</em>, mentre la ricezione diventa uno <em>shared phenomena</em> tra il <em>connection domain</em> e il dominio del destinatario</p>
+</p>
+<h3><em>domain characteristics</em> + <em>domain interactions</em> &rarr; <em>problem frame</em></h3>
+<p>Note le caratteristiche e le dipendenze tra i sotto-domini del problema, si cerca di stabilire una corrispondenza con uno dei <em>problem frame</em> noti, nella speranza di poter mettere in atto le strategie risolutive pi&ugrave; adeguate per il tipo di problema. &Egrave; utile a questo punto tracciare il <em>frame diagram</em>, che &egrave; un <em>context diagram</em> arricchito delle relazioni esistenti tra i domini, oltre all'evidenziazione del dominio <em>machine</em>: questo permette di identificare la struttura del problema e consente di valutarne la somiglianza con gli schemi noti.</p>
+<p>Per valutare il grado di compatibilit&agrave; del <em>frame diagram</em> con un <em>problem frame</em>, bisogna tener conto di:</p>
+<ul>
+<li><strong>completezza</strong>: ogni sotto-dominio del <em>frame diagram</em> dev'essere associato ad una componente del <em>problem frame</em>;</li>
+<li><strong>separabilit&agrave;</strong>: ogni sotto-dominio del <em>frame diagram</em> deve essere associato ad una sola componente del <em>problem frame</em>;</li>
+<li><strong>compatibilit&agrave;</strong>: i sotto-domini del <em>frame diagram</em> devono avere caratteristiche simili alle componenti del <em>problem frame</em> alle quali sono stati associati;</li>
+<li><strong>uniformit&agrave;</strong>: i sotto-domini del <em>frame diagram</em> devono essere equamente distribuiti tra quelli del <em>problem frame</em>.</li>
+</ul>
+<!--
+problem frame citati nel libro:
+jsp frame, simple control frame, simple is frame, workpieces frame
+-->
+<h3><em>problem frame</em> &rarr; <em>method</em></h3>
+<p>Se &egrave; stato individuato un <em>problem frame</em> compatibile, si pu&ograve; procedere alla risoluzione del problema originale applicando il metodo risolutivo &ndash; <em>method</em> &ndash; associato.</p>
+<p>Alcune tra le caratteristiche di un &laquo;buon&raquo; metodo sono:</p>
+<ul>
+<li><strong>dispassionate methodology</strong>: quanto &egrave; disinteressato colui che lo promuove?</li>
+<li><strong>close fitting frame</strong>: pi&ugrave; specifico &egrave; il <em>problem frame</em>, pi&ugrave; &egrave; probabile che il metodo sia efficace;</li>
+<li><strong>frame exploitation</strong>: il metodo sfrutta a fondo le caratteristiche intrinseche del <em>problem frame</em>?</li>
+<li><strong>deferred invention</strong>: pi&ugrave; &egrave; procrastinato il ricorso alla creativit&agrave;, meglio &egrave;;</li>
+<li><strong>beneficient difficulty</strong>: sono esplicitate le difficoltà e i punti deboli del metodo?</li>
+</ul>
+<h2>Altro</h2>
+<h3>Modellazione del tempo</h3>
+<p>Il fluire del tempo &egrave; scandito da eventi, separati tra loro da intervalli, ovvero periodi di tempo durante i quali nulla accade (cfr. <em>events and intervals</em>).</p>
+<h3>Influsso dell'implementazione (<em>implementation bias</em>)</h3>
+<p>L'implementazione non deve inquinare la descrizione del problema, ovvero ci dev'essere una netta distinzione tra ci&ograve; che &egrave; <em>specification</em> e ci&ograve; che &egrave; implementazione. La descrizione del problema dovrebbe essere fatta nell'ipotesi di poter disporre di qualunque tecnologia necessaria, reale o immaginaria, cos&igrave; da procrastinare alla fase di implementazione le scelte tecniche.</p>
+<!--
+<p>Da questo punto di vista, il TDD, senza un'adeguata fase di analisi preliminare, inquina il progetto fin dalle sue fasi iniziali, imponendo da subito la scelta di una piattaforma, di un linguaggio di programmazione, &hellip;</p>
+-->
+<!--
+<h3>Identit&agrave;</h3>
+identit&agrave;: esempio dei due appassionati di meccanica, ognuno con la propria auto equipaggiata del suo motore. Cominciano a scambiarsi alcuni componenti (es. carburatore, spinterogeno, ...). Che ne è dei due motori originali? Sono ancora riconoscibili? La Motorizzazione Civile risolve il problema eleggendo un componente a rappresentante (il blocco motore). Non risolve completamente il problema, ma a un livello sufficiente per gli scopi della motorizzazione.
+identit&agrave; non è equivalenza (qualche proprietà in comune), ma uguaglianza.
+-->
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Jackson, M. <em>Software Specifications &amp; Requirements</em>. Addison-Wesley Professional, 1995.</li>
+<a name="ref-2"></a>
+<li>&quot;Problem frames approach&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Problem_Frames_Approach">http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern</a>&gt;. Visitato il 16 Dicembre 2011.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 03/01/2012</p>
+</body>
+</html>

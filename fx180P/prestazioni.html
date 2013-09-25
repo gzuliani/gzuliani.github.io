@@ -1,0 +1,63 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Prestazioni</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#prestazioni">casio fx-180p</a> | prestazioni</p>
+<h1>Prestazioni</h1>
+<p>Il programma effettua un conteggio alla rovescia a partire dal numero visualizzato sul display, terminando quando il contatore si azzera.</p>
+<h2>Note implementative</h2>
+<ul>
+	<li>la sequenza <span class="key">x&gt;0</span> effettua un salto condizionato all'inizio del programma se il valore sul display &egrave; non nullo.</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Sequenza di inizializzazione del programma</h3>
+<ul>
+	<li><span class="key">P2</span> &rarr; <span class="display">0</span></li>
+</ul>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>Per effettuare un conteggio da 1000 cicli:</p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">0</span> <span class="key">P1</span> &rarr; <span class="display">0</span></p>
+		<p>La calcolatrice impiega circa 130 secondi per completare il conto alla rovescia.</p>
+	</li>
+</ul>
+<h2>Programma P1</h2>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">-</span></td><td class="note">decrementa il numero visualizzato sul display</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">x&gt;0</span></td><td class="note">continua finch&eacute; il contatore non &egrave; giunto a zero</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

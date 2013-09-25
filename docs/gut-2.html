@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>Good Unit Tests /2</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-2">risorse</a> | good unit tests /2</p>
+<h1>Good Unit Tests /2</h1>
+<p>La <a href="gut-1.html">prima parte</a> di <em>Good Unit Tests</em> &egrave; incentrata sulla valutazione e la corretta rappresentazione dei valori citati nella macro <span class="code">CHECK</span>; questa seconda parte affronta il problema della cattura delle eccezioni.</p>
+<h2>Cattura delle eccezioni</h2>
+<p>La verifica del sollevamento di un'eccezione &egrave; demandato ad una macro apposita, che si cura anche di controllare il tipo di eccezione sollevata:</p>
+<pre class="code">
+int main() {
+  // ...
+  THROWS(f(), std::runtime_error); // fails if `f()` does not throw a std::runtime_error exception
+
+  return 0;
+}
+</pre>
+<p class="todo">Rinunciare al controllo del tipo di eccezione lanciata è molto limitante; come spiegarlo?</p>
+<p>Il mancato lancio di una qualunque eccezione dev'essere trattata alla stessa stregua di un fallimento di <span class="code">CHECK</span>:</p>
+<pre class="code">
+#define THROWS(expr_, exception_) \
+  do { \
+    try { \
+      (void)(expr_); \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; did not throw&quot; &lt;&lt; std::endl; \
+    } catch(const exception_&amp;) { \
+    } \
+  } while (0)
+</pre>
+<p>Analogamente, anche il lancio di un'eccezione di tipo diverso di quello atteso &egrave; un errore: conviene catturarle in <span class="code">THROW</span> oppure lasciarle salire fino al <span class="code">main</span> &ndash; dove dovr&agrave; comunque essere predisposto un blocco <span class="code">try</span>/<span class="code">catch</span> esterno per catturare le eccezioni non previste?</p>
+<h3>Cattura in THROWS</h3>
+<p>Il <span class="code">catch</span> delle eccezioni inattese in <span class="code">THROWS</span> consente di associare alle eccezioni stesse l'espressione che le ha prodotte, facilitando il debug. Risulta invece difficoltoso fornire qualunque informazione circa il tipo di eccezione catturata:</p>
+<pre class="code">
+#define THROWS(expr_, exception_) \
+  do { \
+    try { \
+      (void)(expr_); \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; did not throw&quot; &lt;&lt; std::endl; \
+    } catch(const exception_&amp;) { \
+    } catch(...) { \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; threw an unexpected exception&quot; &lt;&lt; std::endl; \
+    } \
+  } while (0)
+</pre>
+<p>Fornire indicazioni seppur minimali circa l'eccezione catturata richiede la specializzazione della sezione di <span class="code">catch</span> con qualcosa di simile a:</p>
+<pre class="code">
+    ...
+    } catch(const exception_&amp;) { \
+    } catch(const std::exception&amp; e_) { \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; threw the unexpected exception \&quot;&quot; &lt;&lt; e_.what() &lt;&lt; &quot;\&quot;&quot; &lt;&lt; std::endl; \
+    } catch(...) { \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; threw an unexpected unknown exception&quot; &lt;&lt; std::endl; \
+    } \
+    ...
+</pre>
+<p>L'esplicita cattura dell'eccezione <span class="code">std::exception</span> rende inutilizzabile <span class="code">THROWS</span> sullo stesso tipo di eccezione, poich&eacute; la sua espansione origina due clausole <span class="code">catch</span> identiche:</p>
+<pre class="code">
+int main() {
+  // ...
+  THROWS(f(), std::exception); // compiler error/warning!
+  return 0;
+}
+</pre>
+<p>Questa soluzione presenta l'interessante caratteristica di consentire la prosecuzione del test anche nel caso del sollevamento di un'eccezione non prevista. Ci&ograve; ovviamente al netto delle eccezioni sollevate all'esterno della macro <span class="code">THROWS</span>, che causano invece l'interruzione del test.</p>
+<h3>Cattura in main</h3>
+<p>Posto che la presenza di un blocco <span class="code">try</span>/<span class="code">catch</span> globale per evitare la terminazione del programma in caso di eccezione imprevista &egrave; indispensabile, &egrave; appropriato affidarsi ad esso per la cattura delle eccezioni inattese sollevate all'interno di <span class="code">THROWS</span>? Un vantaggio &egrave; che &egrave; perfettamente lecito predisporre il <span class="code">catch</span> dell'eccezione generica <span class="code">std::exception</span> e ricavarne il <span class="code">what()</span>; certo, il contesto nel quale l'eccezione ha avuto origine &egrave; irrimediabilmente perso:</p>
+<pre class="code">
+int main() {
+  try {
+    // ...
+  } catch(const std::exception&amp; e) {
+    std::cout &lt;&lt; &quot;unexpected exception \&quot;&quot; &lt;&lt; e.what() &lt;&lt; &quot;\&quot; caught&quot; &lt;&lt; std::endl;
+  } catch(...) {
+    std::cout &lt;&lt; &quot;unexpected unknown exception caught&quot; &lt;&lt; std::endl;
+  }
+  return 0;
+}
+</pre>
+<h2>Implementazione</h2>
+<p>Relativamente all'implementazione di <span class="code">THROWS</span>, ho scelto di adottare la seconda soluzione &ndash; con il <span class="code">catch</span> esplicito di <span class="code">std::exception</span> &ndash;, per la ragione che, trattandosi di <em>unit-test</em>, conviene specificare esattamente il tipo di eccezione attesa. Essendo <span class="code">std::exception</span> astratta (o meglio, tale dev'essere considerata), va da s&eacute; che una tale eccezione non dovrebbe mai essere sollevata; per contro, &egrave; nota l'espressione che ha lanciato l'eccezione di tipo non atteso:</p>
+<pre class="code">
+#include &lt;stdexcept&gt;
+
+void fnThatNotThrows() {
+}
+
+int fnThatThrowsARuntimeError() {
+  throw std::runtime_error("a runtime error");
+}
+
+int fnThatThrowsAnInt() {
+  throw 42;
+}
+
+int main() {
+  // ...
+  THROWS(fnThatNotThrows(), std::runtime_error);
+  THROWS(fnThatThrowsARuntimeError(), std::logic_error);
+  THROWS(fnThatThrowsAnInt(), std::runtime_error);
+
+  return 0;
+}
+
+// output:
+// .../check.cpp(189): fnThatNotThrows() did not throw
+// .../check.cpp(190): fnThatThrowsARuntimeError() threw an unexpected exception "a runtime error"
+// .../check.cpp(191): fnThatThrowsAnInt() threw an unknown exception
+</pre>
+<p>Le eccezioni sollevate nel codice al di fuori di <span class="code">THROW</span> &ndash; comprese le espressioni all'interno di <span class="code">CHECK</span> &ndash; verranno invece catturate dal blocco <span class="code">try</span>/<span class="code">catch</span> pi&ugrave; esterno, causando l'interruzione del test:</p>
+<pre class="code">
+// ...
+int main() {
+  // ...
+  CHECK(fnThatThrowsARuntimeError() == 1);
+  CHECK(2 == 1); // won't execute
+
+  return 0;
+}
+
+// output:
+// unexpected exception "a runtime error" caught
+</pre>
+<p class="modification-notice">Pagina modificata il 02/08/2012</p>
+</body>
+</html>

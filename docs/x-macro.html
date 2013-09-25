@@ -1,0 +1,298 @@
+<html>
+<head>
+<title>X Macro</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#x-macro">risorse</a> | x macro</p>
+<h1>X Macro</h1>
+<h2>Introduzione</h2>
+<p><em>X Macro</em> &egrave; una tecnica per generare sequenze ripetitive di codice a <em>compile-time</em><sup><a href="#ref-3">[3]</a></sup>. &Egrave; piuttosto datata: risale infatti agli anni '60<sup><a href="#ref-2">[2]</a></sup>, epoca dei primi macro-assemblatori.</p>
+<h2>Esempio (C++)</h2>
+<p>Un tipico esempio d'uso &egrave; l'attribuzione di un'etichetta agli elementi di un enumerato:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+enum Color { e_blue, e_red, e_green };
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 0
+ * 1
+ * 2
+ */
+</pre>
+<p>Supponendo di voler associare ad ogni elemento dell'enumerato un'etichetta cui sia facile risalire a partire dall'elemento stesso, si pu&ograve; sfruttare un <em>array</em> di stringhe:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+enum Color { e_blue, e_red, e_green };
+
+static std::string color_names[] = {
+  &quot;Blue&quot;,
+  &quot;Red&quot;,
+  &quot;Green&quot;,
+};
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_blue ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_red  ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_green] &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 0: Blue
+ * 1: Red
+ * 2: Green
+ */
+</pre>
+<p>Volendo rendere pi&ugrave; esplicita la relazione tra gli elementi dell'enumerato e le relative etichette, si pu&ograve; pensare di sintetizzare la relazione in un unica dichiarazione, in una forma tale che sia facile ottenere in un secondo tempo i due elenchi. A tal fine si ricorre al pre-processore, introducendo una direttiva <span class="code">#define</span> d'appoggio:</p>
+<pre class="code">
+#define COLORS \
+  X(e_blue,  &quot;Blue&quot; ) \
+  X(e_red,   &quot;Red&quot;  ) \
+  X(e_green, &quot;Green&quot;)
+</pre>
+<p>L'espansione di <span class="code">COLORS</span> dipende ovviamente dalla definizione di <span class="code">X</span>; l'idea alla base della tecnica consiste nel fornire di volta in volta una versione di <span class="code">X</span> differente, in funzione delle specifiche necessit&agrave;. Ad esempio, una formulazione di <span class="code">X</span> adatta alla dichiarazione dell'enumerato &egrave; la seguente:</p>
+<pre class="code">
+#define X(name_, label_) name_,
+enum Color { COLORS };
+#undef X
+
+/* expands to:
+ *
+ * enum Color { e_blue, e_red, e_green, };
+ */
+</pre>
+<p>Fornendo un'altra formulazione di <span class="code">X</span> si ottiene la dichiarazione del vettore delle etichette:</p>
+<pre class="code">
+#define X(name_, label_) label_,
+static std::string color_names[] = { COLORS };
+#undef X
+
+/* expands to:
+ *
+ * static std::string color_names[] = { "Blue", "Red", "Green", };
+ */
+</pre>
+<p>La macro <span class="code">X</span> viene dunque ridefinita in funzione dell'esigenza locale: estrazione del nome nel contesto nell'enumerazione <span class="code">Colors</span>, estrazione dell'etichetta nella dichiarazione dell'array <span class="code">color_names</span>. Diventa cos&igrave; molto pi&ugrave; semplice e sicura la gestione dei colori, essendoci un unico punto di intervento, ovvero la dichiarazione <span class="code">COLORS</span>. La versione completa dell'esempio diventa:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+#define COLORS \
+  X(e_blue,  &quot;Blue&quot; ) \
+  X(e_red,   &quot;Red&quot;  ) \
+  X(e_green, &quot;Green&quot;)
+
+#define X(name_, label_) name_,
+enum Color { COLORS };
+#undef X
+
+#define X(name_, label_) label_,
+static std::string color_names[] = { COLORS };
+#undef X
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_blue ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_red  ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_green] &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 0: Blue
+ * 1: Red
+ * 2: Green
+ */
+</pre>
+<h3>Generalizzazione</h3>
+<p>Se per qualche ragione non &egrave; possibile usare il simbolo <span class="code">X</span> (per esempio perch&eacute; gi&agrave; definito), si introduce un livello di indirezione:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+#define PICK_NAME(name_, label_) e_ ## name_,
+#define PICK_LABEL(name_, label_) label_,
+
+#define COLORS(lambda_) \
+  lambda_(blue,  &quot;Blue&quot; ) \
+  lambda_(red,   &quot;Red&quot;  ) \
+  lambda_(green, &quot;Green&quot;)
+
+enum Color { COLORS(PICK_NAME) };
+static std::string color_names[] = { COLORS(PICK_LABEL) };
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_blue ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_red  ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_green] &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 0: Blue
+ * 1: Red
+ * 2: Green
+ */
+</pre>
+<h3>Ricavare l'etichetta dall'identificatore</h3>
+<p>Se l'etichetta coincide con l'identificatore dell'enumerato, la si pu&ograve; omettere:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+#define PICK_NAME(name_) e_ ## name_,
+#define PICK_LABEL(name_) #name_,
+
+#define COLORS(lambda_) \
+  lambda_(blue ) \
+  lambda_(red  ) \
+  lambda_(green)
+
+enum Color { COLORS(PICK_NAME) };
+static std::string color_names[] = { COLORS(PICK_LABEL) };
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_blue ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_red  ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_green] &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 0: blue
+ * 1: red
+ * 2: green
+ */
+</pre>
+<h3>Identificatori con valori arbitrari</h3>
+<p>Se il compilatore in uso supporta le <em>initializer list</em> introdotte nel C++11 (es. MinGW 8.0), &egrave; facile attribuire agli elementi dell'enumerato un valore numerico arbitrario, sostituendo il vettore con una mappa (non essendo progressivi, i valori numerici dell'enumerato non possono pi&ugrave; essere utilizzati come indici):</p>
+</p>
+<pre class="code">
+// does not compile on VC11
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+#include &lt;string&gt;
+
+#define PICK_NAME_AND_ID(name_, id_, label_) e_ ## name_ = id_,
+#define PICK_NAME_AND_LABEL(name_, id_, label_) { e_ ## name_, label_ },
+
+#define COLORS(lambda_) \
+  lambda_(blue,  1, "Blue" ) \
+  lambda_(red,   2, "Red"  ) \
+  lambda_(green, 4, "Green")
+
+enum Color { COLORS(PICK_NAME_AND_ID) };
+static std::map&lt;Color, std::string&gt; color_names = { COLORS(PICK_NAME_AND_LABEL) };
+
+int main() {
+  std::cout &lt;&lt; e_blue  &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_blue ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_red   &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_red  ] &lt;&lt; std::endl;
+  std::cout &lt;&lt; e_green &lt;&lt; &quot;: &quot; &lt;&lt; color_names[e_green] &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 1: Blue
+ * 2: Red
+ * 4: Green
+ */
+</pre>
+<h2>Esempio (C)</h2>
+<p>L'esempio C++ basato su array &egrave; facilmente convertibile in C:</p>
+<pre class="code">
+#include &lt;stdio.h&gt;
+
+#define PICK_NAME(name_, label_) e_ ## name_,
+#define PICK_LABEL(name_, label_) label_,
+
+#define COLORS(lambda_) \
+  lambda_(blue,  "Blue" ) \
+  lambda_(red,   "Red"  ) \
+  lambda_(green, "Green")
+
+enum Color { COLORS(PICK_NAME) };
+static const char* const color_names[] = { COLORS(PICK_LABEL) };
+
+int main() {
+  printf(&quot;%d: %s\n&quot;, e_blue,  color_names[e_blue ]);
+  printf(&quot;%d: %s\n&quot;, e_red,   color_names[e_red  ]);
+  printf(&quot;%d: %s\n&quot;, e_green, color_names[e_green]);
+  return 0;
+}
+
+/* output:
+ *
+ * 0: Blue
+ * 1: Red
+ * 2: Green
+ */
+</pre>
+<p>Meno banale &egrave; la conversione dell'esempio basato sulla mappa, a meno di non possedere un compilatore <em>C99-compliant</em> (es. MinGW 8.0). Questo standard contempla infatti i <em>designated initializers</em>, che cosentono, tra altre cose, di inizializzare un sotto-insieme arbitrario di un array:</p>
+<pre class="code">
+int a[6] = { [4] = 29, [2] = 15 };
+
+/* same as:
+ *
+ * int a[6] = { 0, 0, 15, 0, 29, 0 };
+ */
+</pre>
+<p>Il codice d'esempio diventa in questo caso:</p>
+<pre class="code">
+// does not compile on VC11
+#include &lt;stdio.h&gt;
+
+#define PICK_NAME(name_, id_, label_) e_ ## name_ = id_,
+#define PICK_LABEL(name_, id_, label_) [e_ ## name_] = label_,
+
+#define COLORS(lambda_) \
+  lambda_(blue,  1, "Blue" ) \
+  lambda_(red,   2, "Red"  ) \
+  lambda_(green, 4, "Green")
+
+enum Color { COLORS(PICK_NAME) };
+static const char* color_names[] = { COLORS(PICK_LABEL) };
+
+int main() {
+  printf(&quot;%d: %s\n&quot;, e_blue,  color_names[e_blue ]);
+  printf(&quot;%d: %s\n&quot;, e_red,   color_names[e_red  ]);
+  printf(&quot;%d: %s\n&quot;, e_green, color_names[e_green]);
+  return 0;
+}
+
+/* output:
+ *
+ * 1: Blue
+ * 2: Red
+ * 4: Green
+ */
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Bright, W. &quot;The X Macro&quot;. <em>Dr.Dobb's</em>. &lt;<a href="http://www.drdobbs.com/cpp/the-x-macro/228700289">http://www.drdobbs.com/cpp/the-x-macro/228700289</a>&gt;. Visitato il 15 maggio 2013.</li>
+<a name="ref-2"></a>
+<li>Meyers, R. &quot;The New C: X Macros&quot;. <em>Dr.Dobb's</em>. &lt;<a href="http://www.drdobbs.com/the-new-c-x-macros/184401387">http://www.drdobbs.com/the-new-c-x-macros/184401387</a>&gt;. Visitato il 15 maggio 2013.</li>
+<a name="ref-3"></a>
+<li>&quot;X Macro&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/X_Macro">http://en.wikipedia.org/wiki/X_Macro</a>&gt;. Visitato il 15 maggio 2013.</li>
+<a name="ref-4"></a>
+<li>&quot;X-Macros&quot;. <em>C Programming</em>. &lt;<a href="http://en.wikibooks.org/wiki/C_Programming/Preprocessor#X-Macros">http://en.wikibooks.org/wiki/C_Programming/Preprocessor#X-Macros</a>&gt;. Visitato il 15 maggio 2013.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 16/05/2013</p>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<html>
+<head>
+<title>Studio di funzioni</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/sinclair.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#sinclair">risorse</a> | <a href="index.html#funzioni">zx spectrum</a> | funzioni</p>
+<h1>Studio di funzioni (1987)</h1>
+<p>Classico programma per lo studio di funzioni.</p>
+<p>Il programma, originariamente nato su un 48K, &egrave; stato successivamente adattato per il 128K (modello +2A) che nel frattempo aveva sostituito il mio Spectrum originale. Sfruttando il RAM Disk, la nuova versione permette di disegnare pi&ugrave; tracce sullo stesso grafico.</p>
+<h2>Istantanea</h2>
+<p class="snapshot">
+	<img class="snapshot" width="320" height="240" src="img/funzioni1.png"/>
+	<img class="snapshot" width="320" height="240" src="img/funzioni2.png"/>
+</p>
+<h2>Nastro</h2>
+<p>Scarica il nastro virtuale <a href="tzx/funzioni.tzx">funzioni.tzx</a> (24KB).</p>
+<h2>Listato</h2>
+<pre class="code">
+  10 REM ** FUNZIONI PIANE **
+  20 FOR f=USR &quot;A&quot; TO USR &quot;A&quot;+15: READ A: POKE F,A: NEXT F: DATA 0,54,73,73,73,73,54,0,0,0,8,4,126,4,8,0
+  30 DIM H$(8,20): DIM M$(8,20): LET FUN=0: LET GRAF=0: LET F$=&quot;&quot;
+  40 PAPER 0: BORDER 0: INK 7: BRIGHT 1: FLASH 0: OVER 0: INVERSE 0: CLS : POKE 23624,71: POKE 23658,8: POKE 23692,255
+  50 GO SUB 3460
+  60 LET A=1
+  70 PRINT AT A+4+(10 AND A=0),2; OVER 1; INVERSE 1;&quot;                             &quot;
+  80 PAUSE 0: LET A$=INKEY$: IF CODE A$=13 THEN GO TO 120
+  90 IF (CODE A$=11 AND A&gt;1) OR (CODE A$=10 AND A&lt;10) THEN PRINT AT A+4+(10 AND A=0),2; OVER 1; ; INVERSE 1;&quot;                             &quot;: LET A=A+(CODE A$=10)-(CODE A$=11): GO TO 70
+ 100 IF CODE A$&lt;58 AND CODE A$&gt;47 THEN PRINT AT A+4+(10 AND A=0),2; OVER 1; INVERSE 1;&quot;                             &quot;: LET A=CODE A$-48: GO TO 70
+ 110 GO TO 80
+ 120 IF (A=2 OR A=3 OR A=4 OR A=5 OR A=6 OR A=7) AND FUN THEN GO TO 170
+ 130 IF A=8 OR (A=9 AND GRAF) THEN GO TO 170
+ 140 IF A=1 THEN GO TO 170
+ 150 IF A=0 THEN STOP 
+ 160 PRINT #0;AT 0,0;&quot;*ERRORE* -&quot;+(&quot;FILE&quot; AND (A=9))+(&quot;FUNZIONE&quot; AND A&lt;&gt;8 AND A&lt;&gt;9)+&quot; INESISTENTE-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 80
+ 170 CLS : IF A=1 THEN GO SUB 280: GO TO 40
+ 180 IF A=2 THEN GO SUB 1280: GO TO 40
+ 190 IF A=3 THEN GO SUB 620: GO TO 40
+ 200 IF A=4 THEN GO SUB 2360: GO TO 40
+ 210 IF A=5 THEN GO SUB 1440: GO TO 40
+ 220 IF A=6 THEN GO SUB 2830: GO TO 40
+ 230 IF A=7 THEN GO SUB 2660: GO TO 40
+ 240 IF A=8 THEN GO SUB 1660: GO TO 40
+ 250 IF A=9 THEN GO SUB 3680: GO TO 40
+ 260  :
+ 270  :
+ 280 REM ** NUOVA FUNZIONE **
+ 290  :
+ 300  :
+ 310 CLS : PRINT AT 0,0; INVERSE 1;&quot;NUOVA FUNZIONE&quot;
+ 320 PRINT ''&quot;IMMISSIONE DATI:&quot;: PRINT &quot;----------------&quot;''
+ 330 LET X$=F$: GO SUB 3180: IF F$=&quot;&quot; THEN LET F$=X$: RETURN 
+ 340 LET FUN=1: PRINT AT 10,0,,,,,,AT 9,0;
+ 350 INPUT &quot;ESTREMO INFERIORE:&quot;;XINF
+ 360 INPUT &quot;ESTREMO SUPERIORE:&quot;;XSUP
+ 370 IF XSUP&lt;=XINF THEN PRINT #0;AT 0,0;&quot;*ERRORE* -ESTREMI ILLECITI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 350
+ 380 PRINT &quot;ESTREMO INFERIORE:&quot;;XINF''
+ 390 PRINT &quot;ESTREMO SUPERIORE:&quot;;XSUP: LET SX=(XSUP-XINF)/255
+ 400 INPUT &quot;IL MASSIMO E IL MINIMO          ASSOLUTI SONO NOTI [S/N]:&quot;;LINE A$: IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN GO TO 450
+ 410 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 400
+ 420 INPUT &quot;MINIMO:&quot;;MIN: INPUT &quot;MASSIMO:&quot;;MAX: IF MAX&lt;=MIN THEN PRINT #0;AT 0,0;&quot;*ERRORE* -ESTREMI ILLECITI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 420
+ 430 PRINT ''&quot;MASSIMO DELLA F(X):&quot;;MAX''&quot;MINIMO  DELLA F(X):&quot;;MIN: PRINT #0;AT 1,0;&quot;PREMERE UN TASTO..&quot;: PAUSE 0
+ 440 LET Z$=&quot;NESSUNO&quot;: LET I$=&quot;NON NOTA&quot;: LET S$=I$: GO TO 570
+ 450 INPUT &quot;PRECISIONE [1..4]:&quot;;PR: LET Z=2^(PR+7): LET Z$=STR$ Z: IF Z&lt;256 OR Z&gt;2048 THEN PRINT #0;AT 0,0;&quot;*ERRORE* -&quot;+(&quot;TROPPE&quot; AND Z&gt;2048)+(&quot;POCHE&quot; AND Z&lt;256)+&quot; SCANSIONI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 450
+ 460 PRINT AT 15,10; FLASH 1;&quot;ELABORAZIONE&quot;
+ 470 LET MIN=1E38: LET MAX=-MIN: LET SPX=SX*255/Z: LET N=0
+ 480 PRINT AT 18,0;&quot;NUMERO DI SCANSIONI  :&quot;;Z
+ 490 FOR X=XINF TO XSUP STEP SPX
+ 500 LET Y=VAL F$
+ 510 IF Y&gt;MAX THEN LET MAX=Y: LET XMAX=X
+ 520 IF Y&lt;MIN THEN LET MIN=Y: LET XMIN=X
+ 530 IF Y&gt;1E3 OR Y&lt;-1E3 THEN PRINT FLASH 1;AT 15,10;&quot; LA  FUNZIONE &quot;;AT 16,10;&quot;E' DISCONTINUA&quot;: PRINT AT 18,0,,,,;AT 19,3;&quot;Lim  F(X)=&quot;;(&quot;+&quot; AND Y&gt;1E3);(&quot;-&quot; AND Y&lt;-1E3);CHR$ 144;AT 20,4;&quot;x&quot;;CHR$ 145;INT (X+0.5): PAUSE 0: RETURN 
+ 540 PRINT AT 19,0;&quot;SCANSIONI DA ESEGUIRE:&quot;;Z-N,: LET N=N+1
+ 550 NEXT X: PRINT AT 19,22;0,: IF MAX=MIN THEN PRINT #0;&quot;*ERRORE* -SCALA INDETERMINABILE-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: LET FUN=0: CLS : RETURN 
+ 560 PRINT AT 15,10; INVERSE 1;&quot;ELABORAZIONE&quot;;AT 16,10;&quot;  ESEGUITA  &quot;: LET I$=STR$ XMIN: LET S$=STR$ XMAX
+ 570 LET XINFA=INT XINF: LET XSUPA=INT XSUP+(INT XSUP&lt;&gt;XSUP): LET MINA=INT MIN: LET MAXA=INT MAX+(INT MAX&lt;&gt;MAX)
+ 580 PRINT #0;AT 1,0;&quot;VISIONE DEL GRAFICO [S/N]:&quot;: PAUSE 0: LET W$=INKEY$: IF W$=&quot;N&quot; OR W$=&quot;n&quot; THEN CLS : RETURN 
+ 590 IF W$&lt;&gt;&quot;S&quot; AND W$&lt;&gt;&quot;s&quot; THEN GO TO 570
+ 600  :
+ 610  :
+ 620 REM ** GRAFICO **
+ 630  :
+ 640  :
+ 650 CLS : PRINT INVERSE 1;&quot;VISIONE GRAFICO&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$: LET PASSOX=1E3: LET PASSOY=1E3
+ 660 PRINT #0;AT 0,0;&quot;TRACCIATURA ASSI [S/N]:&quot;: PAUSE 0: LET W$=INKEY$: IF W$=&quot;N&quot; OR W$=&quot;n&quot; THEN LET ASSI=0: GO TO 820
+ 670 IF CODE W$=13 THEN RETURN 
+ 680 IF W$&lt;&gt;&quot;S&quot; AND W$&lt;&gt;&quot;s&quot; THEN GO TO 660
+ 690 LET ASSI=1: FOR F=0 TO 10: NEXT F
+ 700 PRINT #0;AT 0,0;&quot;TACCHE SULL'ASSE X  [S/N]&quot;
+ 710 LET A$=INKEY$: IF A$=&quot;&quot; THEN GO TO 710
+ 720 IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN GO TO 760
+ 730 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 710
+ 740 LET BANDAX=XSUPA-XINFA: LET PASSOX=0.01+0.09*(BANDAX&gt;0.3)+0.9*(BANDAX&gt;3)+9*(BANDAX&gt;30)+90*(BANDAX&gt;300)
+ 750 PRINT '&quot;ASSE X: UNA TACCA OGNI &quot;;PASSOX
+ 760 PAUSE 20: PRINT #0;AT 0,0;&quot;TACCHE SULL'ASSE Y  [S/N]&quot;
+ 770 LET A$=INKEY$: IF A$=&quot;&quot; THEN GO TO 770
+ 780 IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN GO TO 820
+ 790 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 770
+ 800 LET BANDAY=MAXA-MINA: LET PASSOY=0.01+0.09*(BANDAY&gt;0.3)+0.9*(BANDAY&gt;3)+9*(BANDAY&gt;30)+90*(BANDAY&gt;300)
+ 810 PRINT '&quot;ASSE Y: UNA TACCA OGNI &quot;;PASSOY
+ 820 PRINT ''&quot;TRACCIATURA ASSI:&quot;; INVERSE 1;(&quot; SI &quot; AND ASSI)+(&quot; NO &quot; AND NOT ASSI)
+ 830 INPUT &quot;DEFINIZIONE GRAFICA [1..10]:&quot;;DEF: IF DEF&lt;1 OR DEF &gt;10 THEN PRINT #0;AT 0,0;&quot;*ERRORE* -DEFINIZIONE ILLECITA-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 830
+ 840 PRINT '&quot;DEFINIZIONE GRAFICA:&quot;;DEF
+ 850 INPUT &quot;PUNTI O LINEA CONTINUA [P/L]:&quot;;LINE R$: IF R$&lt;&gt;&quot;L&quot; AND R$&lt;&gt;&quot;P&quot; THEN GO TO 850
+ 860 PRINT '&quot;DISEGNO:&quot;;: IF R$=&quot;P&quot; THEN PRINT INVERSE 1;&quot;PER PUNTI&quot;: GO TO 880
+ 870 PRINT INVERSE 1;&quot;LINEA CONTINUA&quot;
+ 880 PRINT #0;AT 0,0;&quot;TUTTO A POSTO [S/N]&quot;
+ 890 LET A$=INKEY$: IF A$=&quot;&quot; OR (A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;N&quot;) THEN GO TO 890
+ 900 IF A$=&quot;N&quot; THEN GO TO 610
+ 910 LET LINEA=0
+ 920 IF R$=&quot;L&quot; THEN LET LINEA=1
+ 930 CLS : IF NOT ASSI THEN GO TO 1100
+ 940 LET B=(-XINFA)/(XSUPA-XINFA)*255: IF XINFA*XSUPA&lt;=0 THEN PLOT B,8: DRAW 0,167: IF B&gt;10 AND B&lt;173 THEN DRAW 3,-5: DRAW -6,0,PI/2 : DRAW 3,5: REM ASSE Y
+ 950 LET V=(-MINA)/(MAXA-MINA)*167: IF MAXA*MINA&lt;=0 THEN PLOT 0,V+8: DRAW 255,0: IF V&gt;13 AND V&lt;170 THEN DRAW -5,3: DRAW 0,-6, -PI/2 : DRAW 5,3: REM ASSE X
+ 960 IF V&lt;0 OR V&gt;167 THEN GO TO 1030
+ 970 FOR F=0 TO XSUPA STEP PASSOX
+ 980 LET UNITAX=(F-XINFA)/(XSUPA-XINFA)*255: IF UNITAX&gt;255 OR UNITAX&lt;0 THEN NEXT F
+ 990 PLOT UNITAX,V+8-(1 AND V&gt;0)-(2 AND V&gt;165): DRAW 0,2: NEXT F
+1000 FOR F=0 TO XINFA STEP -PASSOX
+1010 LET UNITAX=(F-XINFA)/(XSUPA-XINFA)*255: IF UNITAX&gt;255 OR UNITAX&lt;0 THEN NEXT F
+1020 PLOT UNITAX,V+8-(1 AND V&gt;0)-(2 AND V&gt;165): DRAW 0,2: NEXT F
+1030 IF B&lt;0 OR B&gt;255 THEN GO TO 1100
+1040 FOR F=0 TO MAXA STEP PASSOY
+1050 LET UNITAY=(F-MINA)/(MAXA-MINA)*167+8: IF UNITAY&gt;175 OR UNITAY&lt;0 THEN NEXT F
+1060 PLOT B-(1 AND B&gt;0)-(2 AND B&gt;254),UNITAY: DRAW 2,0: NEXT F
+1070 FOR F=0 TO MINA STEP -PASSOY
+1080 LET UNITAY=(F-MINA)/(MAXA-MINA)*167+8: IF UNITAY&gt;175 OR UNITAY&lt;0 THEN NEXT F
+1090 PLOT B-(1 AND B&gt;0)-(2 AND B&gt;254),UNITAY: DRAW 2,0: NEXT F
+1100 FOR X=XINF TO XSUP STEP SX*(11-DEF)
+1110 LET AX=(X-XINFA)/(XSUPA-XINFA)*255: LET Y=VAL F$: LET Y$=STR$ Y: LET AY=(Y-MINA)/(MAXA-MINA)*167+8: IF X=XINF THEN LET OX=AX: LET OY=AY
+1120 IF AY&gt;175 OR AY&lt;8 THEN PRINT FLASH 1;AT 10,12;&quot; FUORI &quot;;AT 11,12;&quot; SCALA &quot;: PRINT #0;AT 0,0,,&quot;PREMERE UN TASTO&quot;: PAUSE 0: CLS : GO TO 50
+1130 PLOT AX,AY: IF LINEA THEN DRAW OX-AX,OY-AY: LET OX=AX: LET OY=AY
+1140 PRINT #0;AT 0,0;&quot;X=&quot;;X,&quot;Y=&quot;;Y$,
+1150 NEXT X
+1160 PRINT #0;AT 0,0;&quot;DISEGNO TERMINATO&quot;,'&quot;PREMERE UN TASTO..&quot;,: PAUSE 0: PRINT #0;AT 0,0;,,,,
+1170 INPUT &quot;NOME DEL FILE [MAX.8]:&quot;;LINE N$: IF N$=&quot;&quot; THEN CLS : RETURN 
+1180 IF LEN N$&lt;1 OR LEN N$&gt;8 THEN GO TO 1170
+1190 PRINT AT 21,0;&quot;F(x)=&quot;;F$: PRINT #0;AT 0,0;XINFA;&quot;&lt;x&lt;&quot;;XSUPA;&quot; PX=&quot;;PASSOX,MINA;&quot;&lt;y&lt;&quot;;MAXA;&quot; PY=&quot;;PASSOY;AT 1,0; INVERSE 1;&quot;PUNTI&quot;; INVERSE 0;&quot;   DEF. GRAFICA:&quot;;DEF: LET P$=N$+&quot;.G&quot;: LET GRAF=1: IF LINEA THEN PRINT #0;AT 1,0; INVERSE 1;&quot;LINEA&quot;
+1200 SAVE !P$CODE 16384,6144
+1210 PRINT AT 21,0,,: PRINT #0;AT 0,0;&quot;LA TABELLA ESISTE GIA' ? [S/N]&quot;,,,
+1220 PAUSE 0: LET A$=INKEY$: IF A$=&quot;S&quot; OR A$=&quot;s&quot; THEN CLS : RETURN 
+1230 IF A$&lt;&gt;&quot;N&quot; AND A$&lt;&gt;&quot;n&quot; THEN GO TO 1220
+1240 LET M$(1)=F$: LET M$(2)=STR$ XSUP: LET M$(3)=STR$ XINF: LET M$(4)=STR$ MAX: LET M$(5)=S$: LET M$(6)=STR$ MIN: LET M$(7)=I$: LET M$(8)=Z$: SAVE !(N$+&quot;.T&quot;) DATA M$()
+1250 CLS : RETURN 
+1260  :
+1270  :
+1280 REM ** TABELLA FUNZIONE **
+1290  :
+1300  :
+1310 PRINT AT 0,0; INVERSE 1;&quot;TABELLA FUNZIONE&quot;''
+1320 PRINT &quot;F(X)=&quot;;F$
+1330 PRINT AT 4,0;&quot;ESTREMO SUPERIORE:&quot;;XSUP
+1340 PRINT AT 6,0;&quot;ESTREMO INFERIORE:&quot;;XINF
+1350 PRINT AT 8,0;&quot;MASSIMO......&quot;;MAX
+1360 PRINT AT 9,0;&quot;CON ASCISSA..&quot;;S$'
+1370 PRINT AT 11,0;&quot;MINIMO.......&quot;;MIN
+1380 PRINT AT 12,0;&quot;CON ASCISSA..&quot;;I$;AT 14,0;&quot;TEST EFFETTUATI:&quot;;Z$
+1390 IF MAX*MIN&lt;0 THEN PRINT ''&quot;LA FUNZIONE VARIA NEL SEMIPIANO  POSITIVO E IN QUELLO NEGATIVO&quot;
+1400 IF MAX*MIN&gt;=0 THEN PRINT ''&quot;LA FUNZIONE MANTIENE            SEMPRE IL SEGNO &quot;+(&quot;POSITIVO&quot; AND (MAX&gt;0 OR MIN&gt;0))+(&quot;NEGATIVO&quot; AND (MAX&lt;0 OR MIN&lt;0))
+1410 PRINT #0;AT 0,0;&quot;PREMERE UN TASTO..&quot;: PAUSE 0: PRINT #0;AT 0,0,,: CLS : RETURN 
+1420  :
+1430  :
+1440 REM ** ORDINATA/DERIVATA **
+1450  :
+1460  :
+1470 PRINT AT 0,0; INVERSE 1;&quot;CALCOLO ORDINATA&quot;'&quot;E DERIVATA PRIMA&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$'': PRINT &quot;SE ESISTE IL FILE GRAFICO DELLA&quot;'&quot;F(x) CORRENTE, E' POSSIBILE&quot;'&quot;DIAGRAMMARE L'ANDAMENTO DI F'(x)&quot;'&quot;NELLO STESSO INTERVALLO IN CUI&quot;'&quot;E' DEFINITA L'ORIGINALE,&quot;'&quot;PURCHE' LA DERIVATA PRIMA ESISTA&quot;
+1480 PRINT #0;AT 1,0; INVERSE 1;&quot;D&quot;; INVERSE 0;&quot;IAGRAMMA O &quot;; INVERSE 1;&quot;C&quot;; INVERSE 0;&quot;ALCOLO IN Xo&quot;
+1490 PAUSE 0: LET A$=INKEY$: IF A$=&quot;C&quot; OR A$=&quot;c&quot; THEN GO TO 1540
+1500 IF CODE A$=13 THEN RETURN 
+1510 IF A$&lt;&gt;&quot;D&quot; AND A$&lt;&gt;&quot;d&quot; THEN GO TO 1490
+1520 LET X$=F$: FOR F=1 TO 8: LET H$(F)=M$(F): NEXT F: LET DERIV=1: GO SUB 3120: IF N$(LEN N$-1)=&quot;.&quot; THEN LET N$=N$( TO LEN N$-2)
+1530 GO TO 3820
+1540 CLS : PRINT AT 0,0; INVERSE 1;&quot;CALCOLO ORDINATA&quot;'&quot;E DERIVATA PRIMA&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$''
+1550 INPUT &quot;ASCISSA:&quot;;X
+1560 LET Y=VAL F$
+1570 PRINT &quot;ASCISSA =&quot;;X'&quot;ORDINATA=&quot;;Y''
+1580 LET H=1E-4: LET Y=VAL F$: LET X=X+H: LET YH=VAL F$: LET D=(YH-Y)/H
+1590 PRINT &quot;F'(X) =&quot;;D
+1600 PRINT &quot;ANGOLO=&quot;;180/PI*ATN D
+1610 PRINT #0;AT 0,0;&quot;ALTRO ESAME [S/N]:&quot;: PAUSE 0: LET A$=INKEY$: IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN CLS : RETURN 
+1620 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 1540
+1630 CLS : GO TO 1440
+1640  :
+1650  :
+1660 REM ** FILE **
+1670  :
+1680  :
+1690 PRINT AT 0,0; INVERSE 1;&quot;OPERAZIONI SU FILE&quot;''
+1700 PRINT '''''&quot;   1) VISIONE FILE GRAFICO&quot;''
+1710 PRINT &quot;   2) CARICAMENTO FUNZIONE&quot;''
+1720 PRINT &quot;   3) TRASFERIMENTO SU NASTRO&quot;''
+1730 PRINT &quot;   4) CANCELLAZIONE FILE&quot;''
+1740 PRINT &quot;   5) RITORNO AL MENU&quot;
+1750 PLOT 22,122: DRAW 211,0: DRAW 0,-76: DRAW -211,0: DRAW 0,76: PLOT 20,124: DRAW 215,0: DRAW 0,-80: DRAW -215,0: DRAW 0,80
+1760 LET A=1
+1770 PRINT AT A*2+5,3; OVER 1; INVERSE 1;&quot;                          &quot;
+1780 PAUSE 0: LET A$=INKEY$: IF CODE A$=13 THEN GO TO 1820
+1790 IF (CODE A$=11 AND A&gt;1) OR (CODE A$=10 AND A&lt;5) THEN PRINT AT A*2+5,3; OVER 1; ; INVERSE 1;&quot;                          &quot;: LET A=A+(CODE A$=10)-(CODE A$=11): GO TO 1770
+1800 IF CODE A$&gt;48 AND CODE A$&lt;54 THEN PRINT AT A*2+5,3; OVER 1; INVERSE 1;&quot;                          &quot;: LET A=CODE A$-48: GO TO 1770
+1810 GO TO 1780
+1820 IF A=5 THEN CLS : RETURN 
+1830 IF A&lt;&gt;2 AND NOT GRAF THEN PRINT #0;AT 0,0;&quot;*ERRORE* -FILE INESISTENTE-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: CLS : GO TO 1660
+1840 CLS : PRINT &quot;FILE-GRAFICI: SUFFISSO [&quot;; INVERSE 1;&quot;.G&quot;; INVERSE 0;&quot;]&quot;'&quot;FILE-TABELLE: SUFFISSO [&quot;; INVERSE 1;&quot;.T&quot;; INVERSE 0;&quot;]&quot;''
+1850 PRINT &quot;ELENCO FILE PRESENTI:&quot;'': CAT !
+1860 IF A&gt;1 THEN GO TO 1950
+1870 GO SUB 3090
+1880 IF N$=&quot;&quot; THEN GO TO 2230
+1890 IF N$(LEN N$-1 TO )&lt;&gt;&quot;.G&quot; THEN LET N$=N$+&quot;.G&quot;
+1900 LOAD !N$CODE 16384,6144
+1910 PRINT #0;AT 1,24;&quot;PREMERE &quot;: PAUSE 25: IF INKEY$&lt;&gt;&quot;&quot; THEN GO TO 1940
+1920 PRINT #0;AT 1,24;&quot;UN TASTO&quot;: PAUSE 25: IF INKEY$&lt;&gt;&quot;&quot; THEN GO TO 1940
+1930 GO TO 1910
+1940 CLS : GO TO 1660
+1950 IF A&gt;2 THEN GO TO 2090
+1960 PRINT '' INVERSE 1;&quot;NOTA:&quot;; INVERSE 0;&quot;IL PROGRAMMA NON CARICA&quot;'&quot;     I FILE GRAFICI DA NASTRO.&quot;'&quot;     LI SI PUO' RICHIAMARE&quot;'&quot;DAL &lt;BASIC&gt; CON LA SPECIFICA:&quot;''&quot;LOAD &quot;&quot;..&quot;&quot; CODE 16384,6144&quot;
+1970 IF NOT GRAF THEN LET R$=&quot;N&quot;: PRINT '&quot;CARICAMENTO TABELLA DA NASTRO..&quot;: GO TO 2000
+1980 PRINT #0;AT 0,0;&quot;DALLA &quot;; INVERSE 1;&quot;M&quot;; INVERSE 0;&quot;EMORIA O DA &quot;; INVERSE 1;&quot;N&quot;; INVERSE 0;&quot;ASTRO ?&quot;
+1990 LET R$=INKEY$: IF R$=&quot;&quot; THEN GO TO 1990
+2000 GO SUB 3090: IF N$=&quot;&quot; THEN GO TO 2230
+2010 IF N$(LEN N$-1)&lt;&gt;&quot;.&quot; THEN LET N$=N$+&quot;.T&quot;
+2020 IF R$=&quot;N&quot; THEN PRINT #0; INVERSE 1;AT 1,0;&quot;CARICAMENTO:&quot;; INVERSE 0;N$,: PRINT '': LOAD N$ DATA M$(): INK 7: PRINT #0;AT 1,0,,: LET FUN=1: SAVE !N$ DATA M$(): GO TO 2050
+2030 IF N$(LEN N$-1 TO )&lt;&gt;&quot;.T&quot; THEN LET N$=N$+&quot;.T&quot;
+2040 LOAD !N$ DATA M$()
+2050 LET F$=M$(1): LET XSUP=VAL M$(2): LET XINF=VAL M$(3)
+2060 LET MAX=VAL M$(4): LET S$=M$(5): LET MIN=VAL M$(6): LET I$=M$(7): LET Z$=M$(8)
+2070 LET XINFA=INT XINF: LET XSUPA=INT XSUP+(INT XSUP&lt;&gt;XSUP): LET MINA=INT MIN: LET MAXA=INT MAX+(INT MAX&lt;&gt;MAX): LET FUN=1
+2080 RETURN 
+2090 IF A=4 THEN GO TO 2240
+2100 PRINT '' INVERSE 1;&quot;NOTA:&quot;; INVERSE 0;&quot;IL PROGRAMMA NON CARICA&quot;'&quot;     I FILE GRAFICI DA NASTRO.&quot;'&quot;     LI SI PUO' RICHIAMARE&quot;'&quot;DAL &lt;BASIC&gt; CON LA SPECIFICA:&quot;''&quot;LOAD &quot;&quot;..&quot;&quot; CODE 16384,6144&quot;
+2110 GO SUB 3090
+2120 IF N$=&quot;&quot; THEN GO TO 2230
+2130 IF N$(LEN N$-1)&lt;&gt;&quot;.&quot; THEN GO TO 2160
+2140 IF N$(LEN N$)=&quot;G&quot; THEN LET N$=N$( TO LEN N$-2): LET R$=&quot;G&quot;: GO TO 2210
+2150 IF N$(LEN N$)=&quot;T&quot; THEN LET N$=N$( TO LEN N$-2): GO TO 2220
+2160 PRINT #0;&quot;SALVO IL &quot;; INVERSE 1;&quot;G&quot;; INVERSE 0;&quot;RAFICO O LA &quot;; INVERSE 1;&quot;T&quot;; INVERSE 0;&quot;ABELLA ?&quot;
+2170 LET R$=INKEY$: IF R$=&quot;&quot; THEN GO TO 2170
+2180 IF R$&lt;&gt;&quot;G&quot; AND R$&lt;&gt;&quot;T&quot; AND R$&lt;&gt;&quot;N&quot; THEN GO TO 2170
+2190 INPUT &quot;&quot;
+2200 IF R$=&quot;N&quot; THEN GO TO 2230
+2210 IF R$=&quot;G&quot; THEN LOAD ! N$+&quot;.G&quot;CODE 16384,6144: SAVE N$+&quot;.G&quot;CODE 16384,6144: GO TO 2230
+2220 LOAD !N$+&quot;.T&quot; DATA Q$(): SAVE N$+&quot;.T&quot; DATA Q$()
+2230 CLS : GO TO 1660
+2240 GO SUB 3090
+2250 IF N$=&quot;&quot; THEN GO TO 2230
+2260 IF N$(LEN N$-1 TO ) = &quot;.G&quot; OR N$(LEN N$-1 TO ) = &quot;.T&quot; THEN GO TO 2320
+2270 PRINT #0;&quot;AZZERO IL &quot;; INVERSE 1;&quot;G&quot;; INVERSE 0;&quot;RAFICO, LA &quot;; INVERSE 1;&quot;T&quot;; INVERSE 0;&quot;ABELLA O &quot;; INVERSE 1;&quot;E&quot;; INVERSE 0;&quot;NTRAMBI ?&quot;
+2280 LET R$=INKEY$: IF R$=&quot;&quot; THEN GO TO 2280
+2290 IF R$&lt;&gt;&quot;G&quot; AND R$&lt;&gt;&quot;T&quot; AND R$&lt;&gt;&quot;E&quot; THEN GO TO 2280
+2300 IF R$&lt;&gt;&quot;E&quot; THEN LET N$=N$+&quot;.&quot;+R$: GO TO 2320
+2310 ERASE !N$+&quot;.G&quot;: LET N$=N$+&quot;.T&quot;
+2320 ERASE !N$
+2330 CLS : GO TO 1660
+2340  :
+2350  :
+2360 REM ** LIMITI **
+2370  :
+2380  :
+2390 PRINT AT 0,0; INVERSE 1;&quot;CALCOLO LIMITI&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$'': PRINT &quot;INSERIRE :&quot;''&quot;D -&gt; LIMITE A DESTRA&quot;'&quot;S -&gt; LIMITE A SINISTRA&quot;'&quot;&lt;ENTER&gt; PER ENTRAMBI...&quot;: INPUT LINE Z$: IF Z$=&quot;&quot; THEN LET DX=1: GO TO 2420
+2400 IF Z$=&quot;S&quot; THEN LET DX=0
+2410 IF Z$=&quot;D&quot; THEN LET DX=1
+2420 PRINT '&quot;SCRIVERE:&quot;'&quot;-= PER MENO INFINITO&quot;'&quot;+= PER PIU' INFINITO&quot;''
+2430 INPUT &quot;ASCISSA:&quot;;LINE X$: IF X$=&quot;&quot; THEN GO TO 2430
+2440 PRINT &quot;ASCISSA=&quot;;
+2450 FOR F=1 TO LEN X$: LET C=CODE X$(F): IF (C&lt;43 AND (C=44 OR C=45 OR C=47)) OR (C&gt;57 AND C &lt;178 AND C&lt;&gt;167) OR C&gt;189 THEN PRINT #0;AT 0,0;&quot;*ERRORE* -NUMERO ILLECITO-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: CLS : GO TO 2360
+2460 PRINT (X$ AND X$&lt;&gt;&quot;-=&quot; AND X$&lt;&gt;&quot;+=&quot;)+(&quot;+&quot;+CHR$ 144 AND X$=&quot;+=&quot;)+(&quot;-&quot;+CHR$ 144 AND X$=&quot;-=&quot;)''
+2470 IF X$=&quot;-=&quot; THEN LET X =-1E10: LET U$=&quot;-&quot;+CHR$ 144: LET DX=0: GO TO 2510
+2480 IF X$=&quot;+=&quot; THEN LET X=1E10: LET U$=&quot;+&quot;+CHR$ 144: LET DX=0: GO TO 2510
+2490 LET X=VAL X$: LET U$=X$
+2500 LET X=X+1E-3
+2510 IF Z$=&quot;S&quot; THEN LET X=X-2E-5
+2520 LET L=VAL F$: LET L$=STR$ L
+2530 IF L&gt;999 THEN LET L$=&quot;+&quot;+CHR$ 144
+2540 IF L&lt;-999 THEN LET L$=&quot;-&quot;+CHR$ 144
+2550 IF L&gt;0 AND L&lt;1E-3 THEN LET L$=&quot;0+&quot;
+2560 IF L&lt;0 AND L&gt;-1E-3 THEN LET L$=&quot;0-&quot;
+2570 PRINT &quot;Lim  F(X)=&quot;;L$'
+2580 PRINT &quot; x&quot;+CHR$ 145;U$;(&quot;+&quot; AND DX AND NOT ABS X=1E10)+(&quot;-&quot; AND NOT DX AND NOT ABS X=1E10)''
+2590 IF Z$=&quot;D&quot; OR NOT DX THEN GO TO 2610
+2600 LET DX=0: LET X=X-2E-3: LET L=VAL F$: LET L$=STR$ L: GO TO 2530
+2610 PRINT #0;AT 0,0;&quot;ALTRO ESAME [S/N]:&quot;: PAUSE 0: LET A$=INKEY$: IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN CLS : RETURN 
+2620 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 2610
+2630 CLS : GO TO 2360
+2640  :
+2650  :
+2660 REM ** CAMBIO ESTREMI **
+2670  :
+2680  :
+2690 PRINT AT 0,0; INVERSE 1;&quot;CAMBIO ESTREMI DEL CAMPO&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$''
+2700 PRINT &quot;ESTREMO INFERIORE:&quot;''&quot;VECCHIO =&quot;;XINF'
+2710 INPUT &quot;NUOVO ESTREMO INFERIORE:&quot;;NXINF
+2720 PRINT &quot;NUOVO   =&quot;;NXINF''&quot;ESTREMO SUPERIORE:&quot;''&quot;VECCHIO =&quot;;XSUP'
+2730 INPUT &quot;NUOVO ESTREMO SUPERIORE:&quot;;NXSUP: IF NXSUP&lt;NXINF THEN PRINT #0;AT 0,0;&quot;*ERRORE* -ESTREMI ILLECITI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: CLS : GO TO 2660
+2740 PRINT &quot;NUOVO   =&quot;;NXSUP
+2750 PRINT #0;&quot;EFFETTUARE LO SCAMBIO [S/N]:&quot;: PAUSE 0: LET A$=INKEY$: IF A$=&quot;N&quot; OR A$=&quot;n&quot; THEN CLS : RETURN 
+2760 IF A$&lt;&gt;&quot;S&quot; AND A$&lt;&gt;&quot;s&quot; THEN GO TO 2750
+2770 CLS : PRINT AT 0,0; INVERSE 1;&quot;CAMBIO ESTREMI DEL CAMPO&quot;'': LET XINF=NXINF: LET XSUP=NXSUP
+2780 PRINT &quot;F(X)=&quot;;F$''
+2790 PRINT &quot;ESTREMO INFERIORE:&quot;;XINF''
+2800 PRINT &quot;ESTREMO SUPERIORE:&quot;;XSUP: GO TO 400
+2810  :
+2820  :
+2830 REM ** INTEGRALE **
+2840  :
+2850  :
+2860 PRINT INVERSE 1;&quot;CALCOLO INTEGRALE DEFINITO&quot;'' INVERSE 0;&quot;F(X)=&quot;;F$''
+2870 INPUT &quot;ESTREMO INFERIORE:&quot;;A
+2880 INPUT &quot;ESTREMO SUPERIORE:&quot;;B
+2890 IF A&gt;=B THEN PRINT #0;AT 0,0;&quot;*ERRORE* -ESTREMI ILLECITI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 2870
+2900 INPUT &quot;NUMERO DI SCANSIONI (PARI):&quot;;J: IF J&lt;10 THEN PRINT #0;AT 0,0;&quot;*ERRORE* -POCHE SCANSIONI-&quot;: PAUSE 50: PRINT #0;AT 0,0;,,: GO TO 2900
+2910 IF J/2&lt;&gt;INT (J/2) THEN PRINT #0;AT 0,0;&quot;*ERRORE* -NUMERO DISPARI-&quot;: PAUSE 50: PRINT #0;AT 0,0,,: GO TO 2900
+2920 PRINT &quot;ESTREMI:&quot;''&quot;A=&quot;;A'&quot;B=&quot;;B''&quot;NUMERO DI SCANSIONI:&quot;;J''
+2930 PRINT AT 16,10; FLASH 1;&quot; CALCOLI &quot;;AT 17,10;&quot;IN  CORSO&quot;;AT 19,0; FLASH 0;&quot;SCANSIONI DA ESEGUIRE:&quot;
+2940 LET H=(B-A)/J
+2950 LET P1=0: LET P2=0: LET U=0
+2960 FOR T=A+H TO B-H STEP 2*H
+2970 PRINT AT 19,22;J-U,
+2980 LET X=T: LET P1=P1+ABS VAL F$
+2990 LET X=X+H: LET P2=P2+ABS VAL F$: LET U=U+2
+3000 NEXT T
+3010 PRINT AT 19,22;0,
+3020 LET X=A: LET YA=VAL F$: LET X=B: LET YB=VAL F$
+3030 LET INTE= H/3*(YA+YB+2*P2+4*P1)
+3040 PRINT AT 16,10,,,,
+3050   PLOT 15,80: DRAW -4,0,PI/2 : DRAW 0,-24: DRAW -4,0, -PI/2 : PRINT AT 11,2;&quot;b&quot;;AT 15,0;&quot;a&quot;;AT 13,2;&quot;(&quot;;F$;&quot;)dx=&quot;;INTE
+3060 PRINT #0;AT 0,0;&quot;PREMERE UN TASTO..&quot;: PAUSE 0: CLS : RETURN 
+3070  :
+3080  :
+3090 REM ** INPUT NOME FILE **
+3100  :
+3110  :
+3120 INPUT &quot;NOME DEL FILE:&quot;;LINE N$
+3130 IF N$=&quot;&quot; THEN RETURN 
+3140 IF LEN N$&lt;3 OR LEN N$&gt;10 THEN PRINT #0;AT 0,0;&quot;*ERRORE* -NOME ILLECITO-&quot;: PAUSE 50: PRINT #0;AT 0,0;,,: GO TO 3090
+3150 RETURN 
+3160  :
+3170  :
+3180 REM ** INPUT FUNZIONE **
+3190  :
+3200  :
+3210 LET VARIABILE=0: LET F$=&quot;&quot;: PRINT AT 6,0;&quot;F(x)=&quot;;F$,AT 10,0,,,,: INPUT &quot;F(x)=&quot;;LINE Y$: LET Y$=Y$+&quot;  &quot;: IF Y$=&quot;  &quot; THEN RETURN 
+3220 PRINT AT 10,11; FLASH 1;&quot;* TEST *&quot;;AT 11,11;&quot;SINTASSI&quot;
+3230 PRINT AT 6,5;F$: IF (LEN Y$=2 AND NOT VARIABILE) THEN PRINT AT 12,9; INVERSE 1; FLASH 1;&quot;MANCA LA &lt;X&gt;&quot;: PAUSE 100: FOR F=4 TO 13: PRINT AT F,0,,: NEXT F: GO TO 3180
+3240 PRINT AT 6,5;F$: IF (LEN Y$=2 AND  VARIABILE) THEN PRINT INVERSE 1;AT 10,11;&quot;* TEST *&quot;;AT 11,11;&quot;SINTASSI&quot;;AT 12,11;&quot;  O.K.  &quot;: PAUSE 100: RETURN 
+3250 IF Y$(1)=&quot; &quot; THEN LET Y$=Y$(2 TO ): GO TO 3250
+3260 IF Y$(1)=&quot;0&quot; OR Y$(1)=&quot;1&quot; OR Y$(1)=&quot;2&quot; OR Y$(1)=&quot;3&quot; OR Y$(1)=&quot;4&quot; OR Y$(1)=&quot;5&quot; OR Y$(1)=&quot;6&quot; OR Y$(1)=&quot;7&quot; OR Y$(1)=&quot;8&quot; OR Y$(1)=&quot;9&quot; THEN LET F$=F$+CHR$ (CODE Y$(1)): LET Y$=Y$(2 TO ): GO TO 3230
+3270 IF Y$(1)=&quot;(&quot; OR Y$(1)=&quot;)&quot; OR Y$(1)=&quot;*&quot; OR Y$(1)=&quot;+&quot; THEN LET F$=F$+CHR$ (CODE Y$(1)): LET Y$=Y$(2 TO ): GO TO 3230
+3280 IF (Y$(1)=&quot;E&quot; AND Y$(2)&lt;&gt;&quot;X&quot;) OR Y$(1)=&quot;-&quot; OR Y$(1)=&quot;.&quot; OR Y$(1)=&quot;/&quot; THEN LET F$=F$+CHR$ (CODE Y$(1)): LET Y$=Y$(2 TO ): GO TO 3230
+3290 IF Y$(1)=&quot;^&quot; THEN LET F$=F$+CHR$ 94: LET Y$=Y$(2 TO ): GO TO 3230
+3300 IF Y$(1)=&quot;X&quot; THEN LET F$=F$+&quot;X&quot;: LET Y$=Y$(2 TO ): LET VARIABILE=1: GO TO 3230
+3310 IF Y$( TO 2)=&quot;PI&quot; THEN LET F$=F$+CHR$ 167: LET Y$=Y$(3 TO ): GO TO 3230
+3320 IF Y$( TO 2)=&quot;LN&quot; THEN LET F$=F$+CHR$ 184: LET Y$=Y$(3 TO ): GO TO 3230
+3330 LET A$=Y$( TO 3): LET B$=Y$(4 TO )
+3340 IF A$=&quot;SIN&quot; THEN LET F$=F$+CHR$ 178: LET Y$=B$: GO TO 3230
+3350 IF A$=&quot;COS&quot; THEN LET F$=F$+CHR$ 179: LET Y$=B$: GO TO 3230
+3360 IF A$=&quot;TAN&quot; THEN LET F$=F$+CHR$ 180: LET Y$=B$: GO TO 3230
+3370 IF A$=&quot;ASN&quot; THEN LET F$=F$+CHR$ 181: LET Y$=B$: GO TO 3230
+3380 IF A$=&quot;ACS&quot; THEN LET F$=F$+CHR$ 182: LET Y$=B$: GO TO 3230
+3390 IF A$=&quot;ATN&quot; THEN LET F$=F$+CHR$ 183: LET Y$=B$: GO TO 3230
+3400 IF A$=&quot;EXP&quot; THEN LET F$=F$+CHR$ 185: LET Y$=B$: GO TO 3230
+3410 IF A$=&quot;SQR&quot; THEN LET F$=F$+CHR$ 187: LET Y$=B$: GO TO 3230
+3420 IF A$=&quot;ABS&quot; THEN LET F$=F$+CHR$ 189: LET Y$=B$: GO TO 3230
+3430 PRINT #0;AT 0,0;&quot;*ERRORE* -SINTASSI SCORRETTA-&quot;'&quot;~&quot;;A$;&quot;~ NON DECODIFICABILE..&quot;: PAUSE 0: PRINT #0;AT 0,0,,,,: LET F$=&quot;&quot;: GO TO 3180
+3440  :
+3450  :
+3460 REM ** MENU **
+3470  :
+3480  :
+3490 PRINT AT 0,2;&quot;{+4}{-3}{-5} {+5}{+5}{-5}{-1}{-3}{+5}{+5}{+6}{-6}{-5} {+5}{+5} {+4}{-6}{-5}{-4}{-3}{+7}{+5}{-5}{-5}{-3}{-2}&quot;;AT 1,2;&quot;{+4}{-2}{-5} {+5}{+4}{+2} {+6} {+5}{+5}{-5}{-5}{-6}{+5}{+5} {+1}{+6}{-5}{-5}{+3}{+5}{+4}{+2}{-5}{-3}&quot;;AT 2,2;&quot;{+5} {-1}{+3}{-2}{+5}{-5}{-5}{+3}{+7}{+5}{-6}{+6}{-5} {+5}{+5} {+5} {-5}{-5} {+5}{+5}{-5}{-5}{+3}{+7}&quot;
+3500 PRINT AT 5,2;&quot;1..STUDIO NUOVA FUNZIONE&quot;
+3510 PRINT AT 6,2;&quot;2..VISIONE TABELLA&quot;
+3520 PRINT AT 7,2;&quot;3..VISIONE GRAFICO&quot;
+3530 PRINT AT 8,2;&quot;4..CALCOLO LIMITI&quot;
+3540 PRINT AT 9,2;&quot;5..CALCOLO DERIVATA PRIMA&quot;
+3550 PRINT AT 10,2;&quot;6..CALCOLO INTEGRALE DEFINITO&quot;
+3560 PRINT AT 11,2;&quot;7..CAMBIO ESTREMI DEL CAMPO&quot;
+3570 PRINT AT 12,2;&quot;8..OPERAZIONI SU FILE&quot;
+3580 PRINT AT 13,2;&quot;9..STUDIO DOPPIA FUNZIONE&quot;
+3590 PRINT AT 14,2;&quot;0..FINE STUDIO&quot;
+3600 PRINT AT 18,20; INVERSE 1; BRIGHT 0;&quot; {(C)} 1987 by &quot;;AT 19,20;&quot;ZULIANI  G.&quot;
+3610 PLOT 12,140: DRAW 239,0: DRAW 0,-88: DRAW -239,0: DRAW 0,88: PLOT 14,138: DRAW 235,0: DRAW 0,-84: DRAW -235,0: DRAW 0,84
+3620 PLOT 0,23: DRAW 158,0: PLOT 0,24: DRAW 158,0: PLOT 0,21: DRAW 158,0: PLOT 249,23: DRAW 6,0: PLOT 249,24: DRAW 6,0: PLOT 249,21: DRAW 6,0: PLOT 158,14: DRAW 91,0: DRAW 0,19: DRAW -91,0: DRAW 0,-19
+3630 PRINT #0;AT 0,0;&quot;F(x)=&quot;;F$
+3640 RETURN 
+3650 REM 
+3660 REM *******************
+3670 REM * DOPPIA FUNZIONE *
+3680 REM *******************
+3690 REM 
+3700 LET X$=F$: FOR F=1 TO 8: LET H$(F)=M$(F): NEXT F: LET DERIV=0
+3710 CLS : PRINT INVERSE 1;&quot;DOPPIA FUNZIONE&quot;
+3720 PRINT '&quot;INSERIRE IL NOME DELLA TABELLA&quot;'&quot;DELLA FUNZIONE SU CUI SI VUOLE&quot;'&quot;DISEGNARE LA NUOVA FUNZIONE..&quot;''&quot;N.B.: DEVE ESISTERE ANCHE IL SUO&quot;'&quot;      GRAFICO  &gt;&gt; NOME_TAB&quot;; INVERSE 1;&quot;.G&quot;; INVERSE 0;&quot; &lt;&lt;&quot;
+3730 PRINT '&quot;FILE IN MEMORIA:&quot;'': CAT !
+3740 GO SUB 3090
+3750 IF N$=&quot;&quot; THEN CLS : RETURN 
+3760 IF N$(LEN N$-1)=&quot;.&quot; THEN LET N$=N$( TO LEN N$-2)
+3770 CLS : PRINT INVERSE 1;&quot;DOPPIA FUNZIONE&quot;
+3780 LOAD !N$+&quot;.T&quot; DATA M$()
+3790 PRINT ''&quot;G(x)=&quot;;M$(1)
+3800 GO SUB 3180: IF F$=&quot;&quot; THEN RETURN 
+3810 PRINT AT 10,11;&quot;        &quot;;AT 11,11;&quot;        &quot;;AT 12,11;&quot;        &quot;
+3820 PRINT AT 21,0;&quot;DISEGNO: PUNTI O LINEA [P/L]:&quot;: LET A$=INKEY$: IF A$=&quot;&quot; THEN GO TO 3820
+3830 IF A$=&quot;P&quot; THEN LET LINEA=0: GO TO 3860
+3840 IF A$&lt;&gt;&quot;L&quot; THEN GO TO 3820
+3850 LET LINEA=1
+3860 PRINT AT 21,0,,AT 18,0;&quot;DISEGNO: &quot;; INVERSE 1;(&quot;PER PUNTI&quot; AND NOT LINEA)+(&quot;LINEA CONTINUA&quot; AND LINEA)
+3870 INPUT &quot;DEFINIZIONE GRAFICA [1..10]:&quot;;DEF1: IF DEF1&lt;1 OR DEF1&gt;10 THEN GO TO 3870
+3880 PRINT #0;AT 1,0;&quot;** PREMERE UN TASTO **&quot;: PAUSE 0
+3890 LOAD !N$+&quot;.G&quot;CODE 16384,6144
+3900 LET XMAXI=VAL M$(2)
+3910 LET XMINI=VAL M$(3)
+3920 LET YSUP=VAL M$(4)
+3930 LET YINF=VAL M$(6)
+3940 LET XMINIA=INT XMINI: LET XMAXIA=INT XMAXI+(INT XMAXI&lt;&gt;XMAXI): LET YINFA=INT YINF: LET YSUPA=INT YSUP+(INT YSUP&lt;&gt;YSUP)
+3950 PRINT AT 21,0;(&quot;G(x)=&quot; AND NOT DERIV)+(&quot;F(x)=&quot; AND DERIV)+M$(1): PRINT #0;AT 1,0,,AT 1,0;((&quot;F(x)=&quot;+F$) AND NOT DERIV)+(&quot;F'(x)..&quot; AND DERIV): PRINT #0;AT 1,31; FLASH 1;&quot;{-6}&quot;
+3960 FOR X=XMINI TO XMAXI STEP ((XMAXI-XMINI)/255*(11-DEF1))
+3970 LET AX=(X-XMINIA)/(XMAXIA-XMINIA)*255: LET Y=VAL F$
+3980 IF DERIV THEN LET X=X+1E-3: LET YINC=VAL F$: LET Y=(YINC-Y)/1E-3: LET X=X-1E-3
+3990 LET Y$=STR$ Y: LET AY=(Y-YINFA)/(YSUPA-YINFA)*167+8: IF X=XMINI THEN LET OX=AX: LET OY=AY
+4000 IF AY&gt;175 OR AY&lt;8 THEN NEXT X: GO TO 4040
+4010 PLOT AX,AY: IF LINEA AND OX&gt;=0 AND OX&lt;254 AND OY&gt;=8 AND OY&lt;174 THEN DRAW OX-AX,OY-AY
+4020 LET OX=AX: LET OY=AY
+4030 NEXT X
+4040 PRINT #0;AT 1,24;&quot;PREMERE &quot;: PAUSE 25: IF INKEY$&lt;&gt;&quot;&quot; THEN GO TO 4070
+4050 PRINT #0;AT 1,24;&quot;UN TASTO&quot;: PAUSE 25: IF INKEY$&lt;&gt;&quot;&quot; THEN GO TO 4070
+4060 GO TO 4040
+4070 INPUT &quot;NOME DEL FILE [MAX.8]:&quot;;LINE N$: IF LEN N$=0 THEN CLS : LET F$=X$: FOR F=1 TO 8: LET M$(F)=H$(F): NEXT F: RETURN 
+4080 IF LEN N$&lt;1 OR LEN N$&gt;8 THEN GO TO 4070
+4090 LET N$=N$+&quot;.G&quot;
+4100 PRINT #0;AT 0,0;XMINIA;&quot;&lt;x&lt;&quot;;XMAXIA,YINFA;&quot;&lt;y&lt;&quot;;YSUPA
+4110 PRINT #0;AT 1,0;((&quot;F(x)=&quot;+F$) AND NOT DERIV)+(&quot;F'(x)..&quot; AND DERIV)
+4120 SAVE !N$CODE 16384,6144
+4130 LET F$=X$: FOR F=1 TO 8: LET M$(F)=H$(F): NEXT F: RETURN
+</pre>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

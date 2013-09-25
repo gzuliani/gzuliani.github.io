@@ -1,0 +1,147 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Morra cinese</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#morra">casio fx-180p</a> | morra cinese</p>
+<h1>Morra cinese</h1>
+<p>Il programma realizza il classico gioco della morra cinese, utilizzando la codifica sasso=1, carta=2, forbice=3.</p>
+<p>La mappa seguente ricorda lo schema di gioco, riportando, per ogni giocata, il vincitore della partita:</p>
+<table cellspacing="0">
+	<tr><td class="heading">&nbsp;</td><td>&nbsp;</td><td class="heading" colspan="3">Giocatore B</td></tr>
+	<tr><td class="heading">&nbsp;</td><td>&nbsp;</td><td class="label">sasso</td><td class="label">carta</td><td class="label">forbice</td></tr>
+	<tr><td class="heading">&nbsp;</td><td class="label">forbice</td><td class="data">B</td><td class="data">A</td><td class="data">-</td></tr>
+	<tr><td class="heading">Giocatore A</td><td class="label">carta</td><td class="data">A</td><td class="data">-</td><td class="data">B</td></tr>
+	<tr><td class="heading">&nbsp;</td><td class="label">sasso</td><td class="data">-</td><td class="data">B</td><td class="data">A</td></tr>
+</table>
+<p>Supponendo di assegnare 1 punto per la vittoria, 0 per il pareggio e -1 in caso di sconfitta, la situazione di gioco dal punto di vista del giocatore B diventa la seguente:</p>
+<table cellspacing="0">
+	<tr><td class="heading">&nbsp;</td><td>&nbsp;</td><td class="heading" colspan="3">Giocatore</td></tr>
+	<tr><td class="heading">&nbsp;</td><td>&nbsp;</td><td class="label">1</td><td class="label">2</td><td class="label">3</td></tr>
+	<tr><td class="heading">&nbsp;</td><td class="label">3</td><td class="data">+1</td><td class="data">-1</td><td class="data">0</td></tr>
+	<tr><td class="heading">Calcolatrice</td><td class="label">2</td><td class="data">-1</td><td class="data">0</td><td class="data">+1</td></tr>
+	<tr><td class="heading">&nbsp;</td><td class="label">1</td><td class="data">0</td><td class="data">+1</td><td class="data">-1</td></tr>
+</table>
+<p>Osservando che le diagonali della matrice ospitano valori uguali, si desume che il punteggio dell'utente dipende esclusivamente dalla differenza delle due giocate. Pi&ugrave; precisamente, detta y la giocata della calcolatrice e x quella dell'utente, posto d=x-y, si ottiene che il punteggio p ottenuto dall'utente in una generica partita &egrave; dato da:</p>
+<ul>
+	<li>0, se d=0</li>
+	<li>+1, se d=-2 oppure d=1</li>
+	<li>-1, se d=-1 oppure d=2</li>
+</ul>
+<p>Il punteggio pu&ograve; dunque essere determinato utilizzando un polinomio di 5 grado in d, che si rivela tuttavia intrattabile per un programma che pu&ograve; contare al pi&ugrave; 38 passi. Si opta per una soluzione alternativa, ma equivalente, ovvero una sinusoide:</p>
+<ul>
+	<li>p=round[sin(<sup>2</sup>/<sub>3</sub>&pi;d)]</li>
+</ul>
+<p class="note">Nota: impostare l'uso dei gradi sessagesimali (DEG) e disattivare l'uso dei decimali (FIX 0) prima di iniziare il gioco. Prima di ogni ciclo di partite, inoltre, assicurarsi di azzerare le memorie (KAC).</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>M contiene l'esito dell'ultima partita disputata;</li>
+	<li>K1 contiene il numero di partite giocate;</li>
+	<li>K2 contiene il numero di partite vinte.</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>L'utente avvia il programma:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">0</span></p>
+	</li>
+	<li>
+		<p>L'utente gioca sasso:</p>
+		<p><span class="key">1</span> <span class="key">RUN</span> &rarr; <span class="display">2</span> <span class="key">RUN</span> &rarr; <span class="display">-1</span></p>
+		<p>la calcolatrice ha giocato carta (2), e vince; l'utente infatti totalizza un parziale di -1.</p>
+	</li>
+	<li>
+		<p>L'utente gioca forbice:</p>
+		<p><span class="key">3</span> <span class="key">RUN</span> &rarr; <span class="display">3</span> <span class="key">RUN</span> &rarr; <span class="display">0</span></p>
+		<p>anche la calcolatrice ha giocato forbice (3), pareggiando; l'utente totalizza un parziale di 0.</p>
+	</li>
+	<li>
+		<p>L'utente gioca carta:</p>
+		<p><span class="key">2</span> <span class="key">RUN</span> &rarr; <span class="display">3</span> <span class="key">RUN</span> &rarr; <span class="display">-1</span></p>
+		<p>la calcolatrice ha rigiocato forbice (3), e vince; l'utente totalizza un parziale di -1.</p>
+	</li>
+	<li>
+		<p>L'utente gioca nuovamente carta:</p>
+		<p><span class="key">2</span> <span class="key">RUN</span> &rarr; <span class="display">1</span> <span class="key">RUN</span> &rarr; <span class="display">1</span></p>
+		<p>la calcolatrice, avendo giocato sasso (1), perde; l'utente totalizza un parziale di 1.</p>
+	</li>
+	<li>
+		<p>Per verificare lo stato delle partite giocate e vinte, si esaminano i contenuti delle memorie K1 e K2:</p>
+		<p><span class="key">Kout 1</span> &rarr; <span class="display">4</span></p>
+		<p><span class="key">Kout 2</span> &rarr; <span class="display">1</span></p>
+		<p>Sono state giocate 4 partite (K1), di cui una sola vinta dall'utente (K2).</p>
+	</li>
+</ul>
+<h2>Programma P1</h2>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">ENT</span></td><td class="note">attende la mossa dell'utente</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">(</span></td><td class="note">determina la mossa della calcolatrice</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">RAN#</span></td><td class="note">genera un numero casuale nel campo [0.000, 0.999]</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">3</span></td><td class="note">moltiplica il numero per 3, a coprire il campo [0.000, 2.997]</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">.</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">5</span></td><td class="note">somma 0.5, a coprire il campo [0.500, 3.497]</td></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">)</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">RND</span></td><td class="note">arrotonda, a coprire il campo [1, 3]</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">HLT</span></td><td class="note">visualizza la mossa della calcolatrice</td></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">=</span></td><td class="note">determina la differenza d tra le due giocate</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">&times;</span></td><td class="note">determina il punteggio per l'utente:</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">1</span></td><td class="note">p=RND(SIN(d&times;120)), in sessagesimali</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">SIN</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">RND</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">Min</span></td><td class="note">memorizza temporaneamente il risultato in M</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">determina l'incremento del numero di partite vinte dall'utente:</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">+</span></td><td class="note">1 se p=+1; 0 altrimenti</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">MR</span></td><td class="note">la formula implementata &egrave; (p + p&sup2;)/2</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">26</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">27</td><td class="key"><span class="key">2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">28</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">29</td><td class="key"><span class="key">Kout 2</span></td><td class="note">incrementa il contatore delle partite vinte dall'utente</td></tr>
+	<tr><td class="step">30</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">31</td><td class="key"><span class="key">Kin 2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">32</td><td class="key"><span class="key">X&harr;K 1</span></td><td class="note">incrementa il contatore delle partite giocate</td></tr>
+	<tr><td class="step">33</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">34</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">35</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">36</td><td class="key"><span class="key">X&harr;K 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">37</td><td class="key"><span class="key">MR</span></td><td class="note">visualizza il punteggio dell'ultima partita</td></tr>
+	<tr><td class="step">38</td><td class="key"><span class="key">RTN</span></td><td class="note">predisponiti per una nuova partita</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata il 9/11/2011</p>
+</body>
+</html>

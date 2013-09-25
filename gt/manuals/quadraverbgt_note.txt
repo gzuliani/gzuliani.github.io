@@ -1,0 +1,162 @@
+                        
+                         ALESIS QUADRAVERB GT
+                         ====================
+
+
+           -*- aggiunte e correzioni alla documentazione -*-
+
+
+
+    1. Il REVERB GATE non e' disponibile se il riverbero e REVERSE
+
+    
+    2. EQUALIZZATORE in modo QUAD - EQ>PCH>DLY>REV
+       Sono presenti alcuni preset e la possibilita' di introdurre
+       dei risuonatori; piu' precisamente, premendo il tasto EQ si
+       attiva la pagina EQ PRESET, che propone sette scelte: USER,
+       piu' sei configurazioni standard, numerate da 1 a 6.
+       La pagina seguente, EQ MODE, permette di scegliere se usare
+       l'equalizzatore parametrico a 3 bande o uno parametrico sin-
+       golo con 2 risuonatori (3 BAND EQ/RESONATORS+EQ).
+       A seconda della scelta effettuata, si hanno a disposizione i
+       seguenti parametri (frequenze espresse i Hz, Bande in Ottave,
+       Ampiezze in dB):
+       
+       "3 BAND EQ"                       "RESONATORS+EQ"
+
+       LOW EQ FREQUENCY                  RESONATOR 1 TUNE
+       LOW EQ AMPLITUDE                  RESONATOR 1 DCY:
+       MID EQ FREQUENCY                  RESONATOR 1 AMP:
+       MID EQ BANDWIDTH                  RESONATOR 2 TUNE
+       MID EQ AMPLITUDE                  RESONATOR 2 DCY:
+       HI EQ FREQUENCY:                  RESONATOR 2 AMP:
+       HI EQ AMPLITUDE:                  MID EQ FREQUENCY
+                                         MID EQ BANDWIDTH
+                                         MID EQ AMPLITUDE
+
+       Le tonalita' dei risuonatori sono espresse in semitoni, mentre 
+       i tempi di decadimento e le ampiezze in centesimi.
+    
+    
+    3. EQUALIZZATORE in modo 5BAND EQ>PCH>DLY
+       Simile al precedente, con le sequenti differenze riguardo ai 
+       parametri seguenti la pagina EQ MODE
+       
+       "5 BAND EQ"                       "5 RESONATOR/3 EQ"
+       LOW EQ FREQUENCY                  RESONATOR NUMB:
+       LOW EQ AMPLITUDE                  RESONATOR # TUNE
+       LOW MID EQ FREQ:                  RESONATOR # DCY:
+       LOW MID EQ WIDTH                  RESONATOR # AMP:
+       LOW MID EQ AMP:                   LOW EQ FREQUENCY
+       MID EQ FREQUENCY                  LOW EQ AMPLITUDE
+       MID EQ BANDWIDTH                  MID EQ FREQUENCY
+       MID EQ AMPLITUDE                  MID EQ BANDWIDTH
+       HIGH MID EQ FREQ                  MID EQ AMPLITUDE
+       HIGH MID EQ WDTH                  HI EQ FREQUENCY:
+       HIGH MID EQ AMP:                  HI EQ AMPLITUDE:
+       HI EQ FREQUENCY:                  
+       HI EQ AMPLITUDE:                  
+       
+       Per modificare i parametri di un risuonatore, e' necessario    
+       innanzitutto specificare il suo numero di identificazione al
+       parametro RESONATOR NUMB; cio' implica che si puo' modificare
+       un risuonatore alla volta, essendo gli altri invisibili.
+
+    
+    4. EQUALIZZATORE in modo 3 BAND EQ>REVERB
+       Come nel modo QUAD, senza la pagina EQ MODE, che e' 3 BAND EQ.
+
+
+    5. MIXER in modo QUAD e 5BAND EQ>PCH>DLY
+       E' stata aggiunta una pagina tra la seconda e la terza riportate
+       nel manuale; essa permette di decidere se il segnale in ingresso
+       al preamplificatore debba essere preso a monte o a valle dell'EQ.
+       Sempre per quanto riguarda le configurazioni sopra riportate, il
+       mixer offre la possibilita' di modulare il segnale finale, grazie
+       a tre nuove pagine, che sono state inserite  in coda  alle  altre
+       spiegate nel manuale:
+
+       pagina                 parametri
+       
+       MODULATION:            OFF/TREMOLO/PANNING
+       MODULATION DEPTH       0-99
+       MODULATION SPEED       0-99
+
+
+    6. CONFIGURAZIONI NON DOCUMENTATE
+    
+    6a. Configurazione "RING>DL>REVERB"
+        Il Delay ed il Riverbero sono quelli della configurazione QUAD, 
+        per cui si rimanda al manuale per ogni spiegazione. Per quanto
+        riguarda il RING, mi pare di aver capito che e' un  traslatore
+        di spettro; in pratica, esso prende lo spettro  del segnale in
+        ingresso, e lo trasla della stessa quantita' sia verso le fre-
+        quenze alte, sia verso quelle basse, rimiscelando infine i due 
+        spettri cosi' ottenuti con quello del segnale originario.
+        Si accede ai parametri del RING per mezzo del PITCH CHANGE.
+        La prima pagina e' detta SPECTRUM SHIFT, e deteremina l'entita' 
+        dello spostamento degli spettri; puo' variare da 1 a 300Hz.
+        La seconda pagina, RING MOD. OUTPUT MIX, fissa il livello di 
+        miscelazione dei due spettri alterati, mentre la terza, detta
+        DELAY/REVERB INPUT MIX decide del segnale che andra' in ingresso 
+        alla sezione successiva (DELAY/REVERB appunto).
+        In questa configurazione l'equalizzatore non e' disponibile.
+
+    6b. Configurazione "RESONATOR>DL>REV"    
+        Riverbero e Delay come per la configurazione QUAD. Si accede alla 
+        sezione dei risuonatori premendo il tasto EQ. La prima pagina vi-
+        sualizzata e' la RESONATOR GATE MODE, i cui parametri sono: 
+        CONTINUOUS/MIDI GATED. Con la successiva si determina il tempo di 
+        decadimento dei risuonatori stessi (RESONATOR DECAY),  impostando 
+        un numero compreso tra 0 e 99. Attraverso le cinque pagine succes-
+        sive si fissano infine le frequenze dei risuonatori disponibili.
+
+    6c. Configurazione "SAMPLING"
+        Il sampler permette di campionare fino a circa 2s di segnale, per
+        poi riprodurlo sotto certe condizioni. Il sampler e'  accessibile
+        dal tasto DELAY, che apre la pagina SAMPLE PLAYBACK, grazie  alla
+        quale si stabilisce come eseguire il playback del campionamento; 
+        i suoi parametri sono: LOOPING/ONE SHOT/AUDIO TRIGGER.
+        Con le due pagine successive si determina invece quale parte del
+        campionamento riprodurre (SAMPLE START, SAMPLE LENGTH). La durata
+        massima del campionamento e' pari a 1.55 secondi.
+        Le pagine successive sottintendono al triggering del sampler; esse
+        sono:
+
+        pagina                      parametri
+        
+        AUDIO TRIGGER SAMPLING      ON/OFF
+        MIDI TRIGGER                OFF/GATED/ONE SHOT
+        MIDI TRIGGER LOW LIMIT      0-127
+        MIDI TRIGGER BASE           0-127
+        MIDI TRIGGER HIGH LIMIT     0-127
+
+        Il processo di campionamento puo' partire in due modi, dipenden-
+        temente dal valore di MIDI TRIGGER. Tralasciando l'eventualita' 
+        di un comando via MIDI (perche' non so niente), esaminiamo invece
+        il caso piu' semplice, in cui MIDI TRIGGER = OFF. In questo caso
+        il sampler viene attivato dalla pressione del tasto BY PASS.  Se
+        l' AUDIO TRIGGER e' disattivato, il campionamento  parte  subito, 
+        altrimenti aspetta di sentire un suono di minima ampiezza prima di 
+        cominciare a registrare. 
+        Anche la riproduzione puo' avvenire con modalita' diversa. Se il 
+        valore di SAMPLE PLAYBACK e' LOOPING o ONE SHOT, la riproduzione
+        (ciclica nel primo caso) parte dopo la pressione del tasto EQ.
+        Nel caso in cui SAMPLE PLAYBACK e' AUDIO TRIGGER, la riproduzione
+        (non ciclica) viene eseguita al sopraggiungere di un suono di am-
+        piezza maggiore alla soglia di rumore fissata.
+
+    
+    7. Il PREAMPLIFICATORE
+       I parametri del preamplificatore sono i seguenti:
+
+       COMPRESSOR           OFF/1..7
+       OVERDRIVE            OFF/1..7 
+       DISTORTION           OFF/1..8
+       PREAMP TONE          FLAT/PRESENCE/BRIGHT
+       BASS BOOST           ON/OFF
+       CAB SIMULATOR        OFF/CABINET1/CABINET2
+       EFFECT LOOP          IN/OUT
+       NOISE GATE           AUTO/OFF/1..16
+
+

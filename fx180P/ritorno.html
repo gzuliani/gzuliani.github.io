@@ -1,0 +1,126 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Ritorno al futuro</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#ritorno">casio fx-180p</a> | ritorno al futuro</p>
+<h1>Ritorno al futuro</h1>
+<p>Scopo del gioco &egrave; simulare un viaggio interstellare svolto ad una velocit&agrave; prossima a quella della luce. Accade cos&igrave; che il tempo sulla navicella scorre pi&ugrave; lentamente rispetto a quello terrestre.</p>
+<p>Il gioco &egrave; realizzato mediante un programma che richiede il tempo terrestre che deve trascorrere tra il decollo e l'atterraggio della navicella spaziale (i valori tipici sono compresi tra 100 e 200 anni). Successivamente richiede la lunghezza del viaggio che si intende intraprendere, espresso in anni-luce, quindi la velocit&agrave; di crociera, espressa come frazione della velocit&agrave; della luce (i valori tipici sono compresi tra 0,75 e 0,99).</p>
+<p>Il programma determina la durata del viaggio cos&igrave; come misurato dall'orologio della navicella, producendo una condizione d'errore nel caso questi superi i 70 anni; successivamente visualizza il tempo trascorso sulla terra, emettendo infine uno 0 se questi differisce al pi&ugrave; 5 anni dal tempo inizialmente programmato, con condizione d'errore in caso contrario.</p>
+<p class="note">Nota: per comodit&agrave; conviene limitare il numero di cifre decimali in uso (FIX 2/FIX 3) durante il gioco.</p>
+<h2>Fisica (approssimata) del gioco</h2>
+<p>Poich&eacute; la navicella percorre la distanza d a velocit&agrave; costante v=kc, il tempo impiegato è t<sub>nav</sub>=d/k; poich&eacute; la navicella procede ad una velocit&agrave; prossima a quella della luce, il tempo trascorso sulla terra risulta invece essere t<sub>terra</sub>=t<sub>nav</sub>/&radic;(1-k&sup2;)</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>K1 contiene la durata programmata del viaggio, espressa in anni terrestri;</li>
+	<li>K2 contiene la distanza da percorrere durante il viaggio, espressa in anni-luce;</li>
+	<li>K3 contiene la velocit&agrave; di crociera, espressa come frazione della velocit&agrave; della luce;</li>
+	<li>K4 contiene la durata del viaggio, espressa in anni navicella.</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>Si vuole effettuare un viaggio della durata di 100 anni:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">0</span> <span class="key">1</span> <span class="key">0</span> <span class="key">0</span></p>
+	</li>
+	<li>
+		<p>Il tragitto da compiere &egrave; di 30 anni luce, percorsi ad una velocit&agrave; pari a 0,90 c:</p>
+		<p><span class="key">RUN</span> &rarr; <span class="display">100.00</span> <span class="key">3</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">30.00</span> <span class="key">.</span> <span class="key">9</span></p>
+	</li>
+	<li>
+		<p>Il tempo trascorso all'interno della navicella &egrave; pari a (tutt i tempi sono espressi in anni):</p>
+		<p><span class="key">RUN</span> &rarr; <span class="display">33.33</span></p>
+	</li>
+	<li>
+		<p>Il tempo trascorso sulla terra &egrave;:</p>
+		<p><span class="key">RUN</span> &rarr; <span class="display">76.47</span></p>
+	</li>
+	<li>
+		<p>Il viaggio si &egrave; concluso in anticipo rispetto ai 100 anni programmati:</p>
+		<p><span class="key">RUN</span> &rarr; <span class="display">E</span></p>
+	</li>
+	<li>
+		<p>L'utente prova ad aumentare la distanza da percorrere:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">0</span> <span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">100.00</span> <span class="key">7</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">70.00</span> <span class="key">.</span> <span class="key">9</span> <span class="key">RUN</span> &rarr; <span class="display">77.78</span> <span class="key">RUN</span> &rarr; <span class="display">E</span></p>
+		<p>Il viaggio &egrave; durato più di 77 anni, troppi anche per un giovane astronauta!</p>
+	</li>
+	<li>
+		<p>L'utente prova ad aumentare la velocit&agrave; di crociera:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">0</span> <span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">100.00</span> <span class="key">3</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">30.00</span> <span class="key">.</span> <span class="key">9</span> <span class="key">5</span> <span class="key">RUN</span> &rarr; <span class="display">31.58</span> <span class="key">RUN</span> &rarr; <span class="display">101.13</span> <span class="key">RUN</span> &rarr; <span class="display">0</span></p>
+		<p>L'atterraggio &egrave; avvenuto con un solo anno di ritardo: missione compiuta!</p>
+	</li>
+</ul>
+<h2>Programma P1</h2>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">ENT</span></td><td class="note">attende l'immissione della durata programmata del viaggio</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">Kin 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">ENT</span></td><td class="note">attende l'immissione della distanza da percorrere</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">Kin 2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">ENT .5</span></td><td class="note">attende l'immissione della velocit&agrave; di crociera</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">Kin 3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">Kin 4</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">HLT</span></td><td class="note">visualizza il tempo trascorso sulla navicella</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">+/-</span></td><td class="note">verifica che il tempo trascorso sulla navicella sia inferiore a 70 anni</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">7</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">Kout 4</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">(</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">Kout 3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">)</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">26</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">27</td><td class="key"><span class="key">HLT</span></td><td class="note">visualizza il tempo trascorso sulla terra</td></tr>
+	<tr><td class="step">28</td><td class="key"><span class="key">-</span></td><td class="note">valuta la differenza tra la durata effettiva del viaggio e quella programmata</td></tr>
+	<tr><td class="step">29</td><td class="key"><span class="key">Kout 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">30</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">31</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">verifica che la discrepanza sia inferiore a 5 anni</td></tr>
+	<tr><td class="step">32</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">33</td><td class="key"><span class="key">+/-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">34</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">35</td><td class="key"><span class="key">5</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">36</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">37</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">38</td><td class="key"><span class="key">0</span></td><td class="note">visualizza uno zero per indicare il successo della missione</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

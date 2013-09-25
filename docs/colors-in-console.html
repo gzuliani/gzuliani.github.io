@@ -1,0 +1,294 @@
+<html>
+<head>
+<title>Colori in console</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="breadcrumbs"><a href="../index.html#colors-in-console">risorse</a> | colori in console</p>
+<h1>Colori in console</h1>
+<h2>Introduzione</h2>
+<p>L'esigenza di emettere del testo colorato deriva dalla volont&agrave; di rendere pi&ugrave; evidente l'esito dei test in <a href="../index.html#gut">GUT</a>.</p>
+<h2>API Windows</h2>
+<p>Poich&eacute; le <em>console</em> Windows non supportano le sequenze ANSI<a href="#ref-1"><sup>[1]</sup></a>, la modifica dei colori dei caratteri dev'essere gestita attraverso l'API Win32<a href="#ref-1"><sup>[2]</sup></a>. L'obiettivo &egrave; modificare il colore del testo per mezzo di appositi <em>token</em>:</p>
+<pre class="code">
+	std::cout &lt;&lt; &quot;default text color&quot; &lt;&lt; red &lt;&lt; &quot;red-colored text&quot; &lt;&lt; std::endl;
+</pre>
+<p>L'API Win32 definisce due <em>device</em> di output per ogni console, <span class="code">STD_OUTPUT_HANDLE</span> e <span class="code">STD_ERROR_HANDLE</span> rispettivamente. Entrambe corrispondono normalmente allo <em>screen-buffer</em> attivo della console. &Egrave; facile verificare che &ndash; almeno su Windows XP &ndash; insistendo sullo stesso screen-buffer, le modifiche fatte su un dispositivo si riflettono sull'altro:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;windows.h&gt;
+
+int main() {
+
+  HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  std::cout &lt;&lt; &quot;this is the cout's default color&quot; &lt;&lt; std::endl;
+  SetConsoleTextAttribute(output, FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  std::cout &lt;&lt; &quot;cout's foreground color has been set to red&quot; &lt;&lt; std::endl;
+
+  HANDLE error = GetStdHandle(STD_ERROR_HANDLE);
+
+  std::cerr &lt;&lt; &quot;this is the cerr's default color&quot; &lt;&lt; std::endl;
+  SetConsoleTextAttribute(error, FOREGROUND_RED|FOREGROUND_INTENSITY);
+  std::cerr &lt;&lt; &quot;cerr's foreground color has been set to blue&quot; &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; &quot;is the cout's foreground color still set to red?&quot; &lt;&lt; std::endl;
+
+  return 0;
+}
+
+// output:
+</pre>
+<img src="img/colors-in-console/cout-vs-cerr.png"/>
+<h2>Implementazione</h2>
+<p>L'idea iniziale prevedeva la definizione di due oggetti &ndash; <span class="code">OutputConsole</span> e <span class="code">ErrorConsole</span> &ndash; indistinguibili <span class="code">cout</span> e <span class="code">cerr</span> rispettivamente. Alcuni esperimenti hanno dimostrato che la soluzione pi&ugrave; semplice consiste invece nell'<em>overloading</em> dell'operatore <span class="code">std::ostream::operator&lt;&lt;</span> (cfr. <a href="#ref-3">[3]</a> per le peculiarit&agrave; dell'API <span class="code">WriteConsole</span> rispetto alla ridirezione su file).</p>
+<p>Considerato l'obiettivo prefissato, i cambiamenti di colore comandati sui due flussi <span class="code">cout</span> e <span class="code">cerr</span> sono stati gestiti attraverso il solo dispositivo <span class="code">STD_OUTPUT_HANDLE</span>:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;windows.h&gt;
+
+namespace color
+{
+
+std::ostream&amp; black(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    0);
+  return os;
+}
+
+std::ostream&amp; navy(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_BLUE);
+  return os;
+}
+
+std::ostream&amp; green(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_GREEN);
+  return os;
+}
+
+std::ostream&amp; teal(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_GREEN|FOREGROUND_BLUE);
+  return os;
+}
+
+std::ostream&amp; maroon(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED);
+  return os;
+}
+
+std::ostream&amp; purple(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_BLUE);
+  return os;
+}
+
+std::ostream&amp; olive(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_GREEN);
+  return os;
+}
+
+std::ostream&amp; silver(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
+  return os;
+}
+
+std::ostream&amp; gray(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; blue(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; lime(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_GREEN|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; aqua(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; red(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; fuchsia(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; yellow(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
+  return os;
+}
+
+std::ostream&amp; white(std::ostream&amp; os) {
+  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_INTENSITY);
+  return os;
+}
+
+} // namespace color
+
+int main() {
+
+  std::cout &lt;&lt; color::black   &lt;&lt; &quot;black&quot;   &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::navy    &lt;&lt; &quot;navy&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::green   &lt;&lt; &quot;green&quot;   &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::teal    &lt;&lt; &quot;teal&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::maroon  &lt;&lt; &quot;maroon&quot;  &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::purple  &lt;&lt; &quot;purple&quot;  &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::olive   &lt;&lt; &quot;olive&quot;   &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::silver  &lt;&lt; &quot;silver&quot;  &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::gray    &lt;&lt; &quot;gray&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::blue    &lt;&lt; &quot;blue&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::lime    &lt;&lt; &quot;lime&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::aqua    &lt;&lt; &quot;aqua&quot;    &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::red     &lt;&lt; &quot;red&quot;     &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::fuchsia &lt;&lt; &quot;fuchsia&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::yellow  &lt;&lt; &quot;yellow&quot;  &lt;&lt; std::endl;
+  std::cout &lt;&lt; color::white   &lt;&lt; &quot;white&quot;   &lt;&lt; std::endl;
+
+  return 0;
+}
+
+// output:
+</pre>
+<img src="img/colors-in-console/test.png"/>
+<p>Quel che manca &egrave; la possibilità di ripristinare il colore originale del testo; a ci&ograve; si rimedia ricordandosi gli attributi originali della console e predisponendo un nuovo <em>manipulator</em> che li ripristini all'occorrenza:</p>
+<pre class="code">
+namespace color
+{
+
+<ins>class Console_ {
+  HANDLE handle_;
+  WORD defaultAttrs_;
+  static const WORD mask_ = FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_INTENSITY;
+public:
+  Console_()
+   : handle_(GetStdHandle(STD_OUTPUT_HANDLE))
+   , defaultAttrs_(getAttrs()) {
+  }
+  void setColor(WORD color) {
+    SetConsoleTextAttribute(handle_, (getAttrs() &amp; ~mask_) | color);
+  }
+  void resetColors() {
+    SetConsoleTextAttribute(handle_, defaultAttrs_);
+  }
+protected:
+  WORD getAttrs() {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(handle_, &amp;info);
+    return info.wAttributes;
+  }
+};
+
+Console_&amp; theConsole() {
+  static Console_ console;
+  return console;
+}
+
+void setColor_(WORD color) {
+  theConsole().setColor(color);
+}
+
+void resetColors_() {
+  theConsole().resetColors();
+}</ins>
+
+std::ostream&amp; black(std::ostream&amp; os) {
+<del>  SetConsoleTextAttribute(
+    GetStdHandle(STD_OUTPUT_HANDLE),
+    0);</del>
+  <ins>setColor_(0);</ins>
+  return os;
+}
+
+// ...
+
+<ins>std::ostream&amp; reset(std::ostream&amp; os) {
+  resetColors_();
+  return os;
+}</ins>
+
+} // namespace color
+
+int main() {
+
+  std::cout &lt;&lt; color::black   &lt;&lt; &quot;black&quot;   &lt;&lt; std::endl;
+  // ...
+  std::cout &lt;&lt; color::white   &lt;&lt; &quot;white&quot;   &lt;&lt; std::endl;
+  <ins>std::cout &lt;&lt; color::reset   &lt;&lt; &quot;default&quot; &lt;&lt; std::endl;</ins>
+
+  return 0;
+}
+
+// output:
+</pre>
+<img src="img/colors-in-console/reset.png"/>
+<h2>Note</h2>
+<ol>
+<li>Sarebbe probabilmente opportuno forzare il <span class="code">flush</span> dello stream prima di modificare i colori della console; ad oggi non ne ho ancora sperimentato la necessit&agrave;.</li>
+<li>Per assicurare il ripristino dei colori iniziali della console al termine del programma basta una chiamata a <span class="code">resetColors</span> nel distruttore di <span class="code">Console_</span>:
+<pre class="code">
+class Console_ {
+  // ...
+public:
+  Console_()
+   : handle_(GetStdHandle(STD_OUTPUT_HANDLE))
+   , defaultAttrs_(getAttrs()) {
+  }
+  <ins>~Console_() {
+    resetColors();
+  }</ins>
+  // ...
+};
+</pre></li>
+<li>L'API <span class="code">SetConsoleTextAttribute</span> consente anche la modifica del colore dello sfondo, qui non sfruttata.</li>
+</ol>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>&quot;ANSI escape code&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/ANSI_escape_code">http://en.wikipedia.org/wiki/ANSI_escape_code</a>&gt;. Visitato il 29 Novembre 2012.</li>
+<a name="ref-2"></a>
+<li>&quot;Console Reference&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/ms682087.aspx">http://msdn.microsoft.com/en-us/library/ms682087.aspx</a>&gt;. Visitato il 29 Novembre 2012.</li>
+<a name="ref-3"></a>
+<li>&quot;WriteConsole fails if it is used with a standard handle that is redirected to a file&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms687401%28v=vs.85%29.aspx">http://msdn.microsoft.com/en-us/library/windows/desktop/ms687401%28v=vs.85%29.aspx</a>&gt;. Visitato il 29 Novembre 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 05/12/2012</p>
+</body>
+</html>

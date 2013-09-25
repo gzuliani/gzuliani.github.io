@@ -1,0 +1,2165 @@
+Primi passi
+Modalità immediata
+premessa: maiuscole/minuscole non fa differenza
+comando PRINT
+prova PRINT "Ciao"
+intro stringa
+il basic per calcolare
+PRINT 2 + 2
+le quattro operazioni matematiche;
+elevamento a potenza ^;
+negazione (-23);
+ordine di valutazione degli operatori: ^ - (* /) (+ -) quelli tra parentesi da sx a dx (gli ^ sono invece valutati da dx a sx)
+esempi
+PRINT 12 - 2 + 4
+PRINT 10 * 2 / 4
+PRINT 1 + 2 * 3
+PRINT 2 * 4 + 3 - 8 / 4
+PRINT 8 + 3 - 8 / 2
+PRINT -12 + 2 + 4
+PRINT 10 * 3 ^ 2 - 5
+si possono usare le parentesi: 
+PRINT (10 + 2) / (3 + 3)
+ma non le quadre!
+PRINT (4 * (10 - 7)) / 6
+le parentesi devono avere corrispondenza (tante ne apro, tante ne chiudo)
+PRINT  (7 * 3 + 5) * 25 / 100
+PRINT ( 2 * 3 + 2 ) / 4
+print (1 + 2) * 3
+print (1 + 2) * 3 ^ 2     SBAGLIATO!
+print ((1 + 2) * 3) ^ 2   CORRETTO!
+sono eseguite prima sempre le più interne
+print -1 + 2 esegue prima la negazione, ottenendo -1, quindi ci somma 2
+si possono usare anche numeri "con la virgola", ma si deve usare il .
+PRINT 12.3 * 2
+? = PRINT
+separatori: ; ,
+PRINT "Pippo" ; "Pluto" -> vicini (il ; lascia uno spazio tra i numeri -> USING)
+PRINT "Pippo" , "Pluto" -> tabulatore/colonna (16 caratteri) successivo
+PRINT va a capo alla fine; per non andare a capo, specificare un terminatore
+PRINT "Ciao, ";
+PRINT "Mondo!"
+"Ciao, Mondo!", tutto sulla stessa riga
+mischiamo stringhe e numeri
+PRINT "2 + 2 = "; 2 + 2
+PRINT "Il quadrato di 12 è "; 12 * 12
+cosa succede se sbaglio?
+PRONT "Ciao" -> errore di sintassi
+PRINT "Ciao  -> capisce che mancano le " e le aggiunge, stampando correttamente "Ciao"
+PRINT "Ciak" -> stampa Ciak - quello che gli abbiamo chiesto - per il BASIC non e' un errore!
+PRINT 2 +    -> capisce che manca qualcosa
+PRINT 2 + 3  -> stampa 5 (non può sapere che volevamo in realtà sommare 2 e 2!)
+morale: se puo', corregge automaticamente, altrimenti segnala l'errore
+introduzione del concetto di variabile
+(LET) a = 1
+print a
+nomi di variabili: lettera (lettera | cifra | .)*, fino a 40 caratteri; non devono coincidere con una parola chiave del linguaggio (es. PRINT)
+print a + 2
+cosa succede se comando a = 2?
+variabili definite in termini di altre b = a + 1
+matematicamente impossibile, ma normale in BASIC a = a + 1
+tipi di variabili: numeriche, stringa
+numeri interi
+% -> intero (16bit) (-32768..32767)
+& -> intero long (32bit) (-2147483648..2147483647)
+numeri in virgola mobile
+! -> precisione semplice (32bit) -3.402823E+38..-2.802597E-45 ; 2.802597E-45..3.402823E+38 (es. 1e-40 per il BASIC è zero; 1e40 è troppo grande)
+# -> precisione doppia (64bit) -1.79769313486231D+308..-4.940656458412465D-324 ; 4.940656458412465D-324..1.79769313486231D+308
+NOTA la variabili numeriche sono single per default
+stringhe
+$ (max. lunghezza 32767)
+operazioni sulle variabili stringa (+)
+a$="Pippo"
+a, a$ possono coesistere, non sono sovrapposte
+b$="Pluto"
+PRINT a$ + b$ -> equivale a PRINT a$; b$
+PRINT a$ + " e " + b$
+c$ = a$ + ", " + b$
+PRINT c$
+esercizio: come scambiare il valore tra due variabili? -> esiste anche SWAP!
+immissione di dati
+INPUT: immissione di dati, -> vanno nelle variabili
+INPUT variabile -> appare un ? 
+INPUT "Domanda"; variabile -> appare "Domanda?"
+INPUT "Domanda", variabile -> appare "Domanda"
+input "Quanti anni hai? ", anni
+verifica: print anni
+BASIC sa che ci deve andare un numero; provare a immettere caratteri alfanumerici: il basic richiede il dato
+input "Come ti chiami? ", a$
+qui i numeri vengono accettati, ma "1" non e' 1!!!
+
+
+
+
+
+
+programmi
+una volta servivano i numeri di riga, con QBasic sono opzionali, vale l'ordine di scrittura
+primo programma:
+PRINT "Ciao, Mondo!"
+END
+programma di calcolo del doppio:
+PRINT "Inserire un numero"
+INPUT n
+PRINT "Il doppio di";n;"vale";n*2
+END
+programma di saluto: 
+INPUT "Come ti chiami "; n$
+PRINT "Ciao,";n$;"!"
+END
+piu' comandi per riga, con il :
+INPUT "Come ti chiami";n$ : PRINT "Ciao, ";n$;"!"
+END
+cicli determinati
+[PRINT "x", "x*x"]
+[PRINT "-------------------"]
+FOR n = 1 TO 10
+PRINT n, n*n
+NEXT n
+END
+ricordarsi del NEXT!
+esercizio: stampa della tavola pitagorica
+INPUT "Inserire un numero ", a
+FOR n = 1 TO 10
+PRINT a;"x";n;"=";a*n
+NEXT n
+comando CLS
+FOR/NEXT basati su variabili
+INPUT "Inserire un numero ", a
+INPUT "Inserire un altro numero ", b
+LET prodotto = 0
+FOR n = 1 TO b
+LET prodotto = prodotto + a
+NEXT n
+PRINT a;"x";b;"=";prodotto
+END
+cicli mai eseguiti
+FOR n = 0 TO -4 : NEXT n
+cicli con passo diverso da 1
+CLS
+PRINT "Alcuni numeri pari..."
+FOR n = 0 TO 20 STEP 2
+PRINT n;
+NEXT n
+END
+cicli con passo reale
+CLS
+FOR n = 0 TO 10 STEP 0.5
+PRINT n
+NEXT n
+END
+rischio!!!
+FOR n% = 0 TO 10 STEP 0.1
+PRINT n%
+NEXT n%
+serve un Ctrl+Break, ma perche' si blocca?
+cicli all'indietro
+CLS
+FOR n = 9 TO 1 STEP -1
+PRINT "Meno";n;"..."
+SLEEP 1 (aspetta TOT secondi o un tasto SLEEP senza argomento si ferma indefinitamente)
+NEXT n
+PRINT "Booom!"
+END
+FOR/NEXT nidificati (ogni NEXT deve corrispondere al primo FOR non chiuso)
+esempio: stampa delle configurazioni di due bit
+CLS
+FOR b1 = 0 to 1
+FOR b0 = 0 to 1
+PRINT b1;b0
+NEXT b0
+NEXT b1
+[NEXT b0, b1]  [NEXT : NEXT]
+aggiungere il bit b2 all'esterno
+esercizio: disegnare un rettangolo di asterischi di dimensioni variabili
+CLS
+INPUT "Base: ", b
+INPUT "Altezza: ", a
+PRINT
+FOR y = 1 TO a
+FOR x = 1 TO b
+PRINT "*";
+NEXT x
+PRINT
+NEXT y
+PRINT
+END
+
+esercizio: disegnare solo il perimetro del rettangolo
+CLS
+INPUT "Base: ", b
+INPUT "Altezza: ", a
+REM disegna la base superiore
+FOR x = 1 TO b: PRINT "*"; : NEXT x
+PRINT
+REM disegna l'interno del rettangolo
+FOR y = 1 TO a - 2
+PRINT "*";
+FOR x = 1 TO b - 2: PRINT " "; : NEXT x
+PRINT "*"
+NEXT y
+REM disegna la base inferiore
+FOR x = 1 TO b: PRINT "*"; : NEXT x
+PRINT
+END
+esercizio: elenco delle tessere del domino
+CLS
+PRINT "Le tessere del domino"
+FOR m = 0 TO 6
+FOR n = 0 TO m
+PRINT m;":";n;" ";
+NEXT n
+PRINT
+NEXT m
+
+formattazione della stampa
+PRINT USING "ss"; espressione
+ss per i numeri
+    # -> indica il numero di cifre da usare (se troppe, spazi, se poche, arrotonda e stampa un %)
+    . -> posizione del punto decimale
+    , -> (in mezzo, se c'e' il . va alla sua sinistra) inserisce i separatori delle migliaia
+    + -> (all'inizio) forza la stampa del + per i numeri positivi
+ ^^^^ -> posizione dell'esponente
+    - -> (in fondo) se il numero e' negativo, forza la stampa del - dietro al numero anziche' davanti
+   $$ -> (tra il + e il primo #) stampa un $ davanti al numero
+   ** -> (tra il + e il primo #) riempie eventuali spazi di *
+  **$ -> combinazione di $$ e **
+ss per le stringhe
+ &   -> tutta la stringa
+ !   -> solo il primo carattere
+ \ \ -> tanti caratteri quanti gli spazi tra le barre
+per fare uscire un carattere di controllo, preporre _; es. se voglio un punto davanti al numero ss = "_.####.##"
+esempio: tabella dei caratteri ASCII stampabili (intro a CHR$)
+PRINT
+FOR r% = 32 TO 47
+FOR c% = 0 TO 5
+LET n% = r% + c% * 16
+PRINT USING "### - &      "; n%; CHR$(n%);
+NEXT c%
+PRINT
+NEXT r%
+esercizio: stampa della tavola pitagorica (formattata!)
+CLS
+PRINT "La Tavola Pitagorica"
+PRINT : PRINT : PRINT "      ";
+FOR c = 1 TO 10: PRINT USING "####"; c; : NEXT c
+PRINT : PRINT
+FOR r = 1 TO 10
+PRINT USING "####  "; r;
+FOR c = 1 TO 10
+PRINT USING "####"; c * r;
+NEXT c
+PRINT
+NEXT r
+PRINT
+END
+
+esercizio: stampare i primi numeri di fibonacci
+CLS
+INPUT "Lunghezza della sequenza: ", s
+LET f1 = 2
+LET f2 = 3
+PRINT f1;
+FOR n = 1 TO s
+PRINT f2;
+LET aux = f2
+LET f2 = f1 + f2
+LET f1 = aux
+NEXT [n]
+PRINT
+END
+
+prendere decisioni
+
+PRINT "Inserire un numero", a
+INPUT n
+IF n >= 0 THEN
+  PRINT "Il numero inserito e' positivo"
+ELSE
+  PRINT "Il numero inserito e' negativo"
+END IF
+indentazione = chiarezza
+QBASIC only: il THEN deve stare sulla riga dell'IF, l'ELSE da solo, l'ENDIF da solo; un solo comando per riga
+nei blocchi THEN/ELSE ci possono stare piu' istruzioni
+esercizio: sono maggiorenne o minorenne?
+INPUT "Quanti anni hai"; eta
+IF eta < 18 THEN
+  PRINT "Non sei maggiorenne"
+ELSE
+  PRINT "Sei maggiorenne"
+END IF
+esempio: calcolo della paga
+LET tariffabase = 10
+LET tassostraordinari = 0.5
+INPUT "Inserire la tariffa oraria:", tariffabase
+INPUT "Quante ore hai lavorato oggi"; orelavorate
+IF orelavorate > 8 THEN
+    PRINT "Hai guadagnato:"; orelavorate * tariffabase ;"EUR"
+ELSE
+    LET oreextra = orelavorate - 8
+    PRINT "Hai guadagnato:"; orelavorate * tariffabase + oreextra * tassostraordinari;"EUR"
+ENDIF
+piu' lineare (nel ciclo if si impostano solo i parametri di calcolo: se volessi cambiare il messaggio, dovrei farlo in due posti! - limitare al minimo le istruzioni nel THEN/ELSE):
+LET tariffabase = 10
+LET tassostraordinari = 0.5
+INPUT "Inserire la tariffa oraria:", tariffabase
+INPUT "Quante ore hai lavorato oggi"; orelavorate
+IF orelavorate > 8 THEN
+    LET oreextra = orelavorate - 8 'attenzione a non invertire queste due righe!
+    LET orelavorate = 8
+ELSE
+    LET oreextra = 0
+ENDIF
+PRINT "Hai guadagnato:"; orelavorate * tariffabase + oreextra * tassostraordinari ;"EUR"
+se non serve, si puo' eliminare l'ELSE
+INPUT "Inserire un numero", n
+LET a = n
+IF a < 0 THEN
+  a = -a
+ENDIF
+PRINT "Il valore assoluto di";n;"vale";a
+
+se non c'e' l'ELSE e nel blocco THEN c'e' solo un'istruzione, si puo' mettere tutto su una riga, e si evita l'endif
+INPUT "Inserire un numero", n
+LET a = n
+IF a < 0 THEN a = -a
+PRINT "Il valore assoluto di";n;"vale";a
+esempio: massimo tra due numeri
+esercizio: determinazione del massimo
+INPUT "Primo valore: ", a
+INPUT "Secondo valore: ", b
+IF a > b THEN
+  PRINT "Il massimo e'";a
+ELSE
+  PRINT "Il massimo e'";b
+END IF
+END
+cenni: come faccio a verificare che il programma funziona? test di tutti i rami
+IF nidificati - esercizio: massimo di tre numeri
+INPUT "Primo valore: ", a
+INPUT "Secondo valore: ", b
+INPUT "Terzo valore: ", c
+IF a > b THEN
+  IF a > c THEN
+    PRINT "Il massimo e'"; a
+  ELSE
+    PRINT "Il massimo e'"; c
+  END IF
+ELSE
+  IF b > c THEN
+    PRINT "Il massimo e'"; b
+  ELSE
+    PRINT "Il massimo e'"; c
+  END IF
+END IF
+END
+predicati, valori di verita' VERO (-1), FALSO (0)
+operatori relazionali =, <, >, <>, <=, >= applicati dopo gli operatori aritmetici
+operatori logici AND OR NOT EQV, tabelle di verita'. applicati dopo gli operatori relazionali
+AND: congiunzione
+esempio: determinare se un pugile e' un peso massimo (82/91Kg)
+CLS
+INPUT "Peso del pugile in Kg: ", peso
+IF peso > 81 AND peso < 92 THEN
+  PRINT "Il pugile rientra tra i pesi piuma"
+ELSE
+  PRINT "Il pugile non rientra tra i pesi piuma"
+END IF
+END
+OR: disgiunzione
+esempio: in un negozio che pratica sconti a minorenni o ai maggiori di 65 anni, determinare se un cliente ha diritto ad uno sconto
+CLS
+INPUT "Immettere l'eta' del cliente: ", eta
+IF eta < 18 OR eta >= 65 THEN
+  PRINT "Il cliente ha diritto allo sconto"
+ELSE
+  PRINT "Il cliente non ha diritto allo sconto"
+END IF
+END
+NOT: negazione
+INPUT "Quanti anni hai"; anni
+LET maggiorenne = (anni > 18) ' variabile booleana
+IF (NOT maggiorenne) THEN
+  PRINT "Sei un ragazzino!"
+ELSE
+  PRINT "Sei vecchio!"
+ENDIF
+END
+ELSEIF: per eseguire controlli in cascata
+INPUT "Quanti anni hai";anni
+IF (anni = 0) THEN
+  PRINT "Sei un neonato"
+ELSEIF (anni < 10) THEN
+  PRINT "Sei un bambino"
+ELSEIF (anni < 20) THEN
+  PRINT "Sei un ragazzino"
+ELSEIF (anni < 30) THEN
+  PRINT "Sei un giovanotto"
+ELSE
+  PRINT "Sei un uomo fatto!"
+ENDIF
+END
+quando le opzioni sono molte, conviene usare SELECT CASE - CASE [TO/IS] - CASE ELSE - END SELECT
+INPUT "Quanti anni hai"; anni
+SELECT CASE anni
+CASE 0
+  PRINT "Sei un neonato"
+CASE 1 TO 9
+  PRINT "Sei un bambino"
+CASE IS < 20
+  PRINT "Sei un ragazzino"
+CASE IS < 30
+  PRINT "Sei un giovanotto"
+CASE ELSE
+  PRINT "Sei un uomo fatto!"
+END SELECT
+nota: viene eseguito SOLO il primo case; il programma seguente e' sbagliato
+CLS
+INPUT "Immettere un numero: ", n
+SELECT CASE n
+CASE IS < 20
+  PRINT "Il numero immesso e' minore di venti"
+CASE IS < 10
+  PRINT "Il numero immesso e' minore di dieci"
+CASE ELSE
+  PRINT "Il numero immesso e' maggiore o uguale a 20"
+END SELECT
+END
+esercizio: implementare la tabella dei pesi dei pugili
+Categoria Limite di peso 
+< 46 non puo' fare il pugile
+Mini Mosca fino a 48 kg 
+Mosca fino a 51 Kg 
+Gallo fino a 54 Kg 
+Piuma fino a 57 Kg 
+Leggeri fino a 60 Kg 
+Super Leggeri fino a 63,5 Kg 
+Welter fino a  67 Kg 
+Super Welter fino a 71 Kg 
+Medi fino a  75 Kg 
+Medio Massimi fino a  81 Kg 
+Massimi fino a  91 Kg 
+Super Massimi oltre 91 Kg 
+
+CLS
+PRINT "Determinazione della categoria pugilistica"
+PRINT "=========================================="
+PRINT
+INPUT "Immettere il peso dell'atleta: ", peso
+IF peso < 46 THEN
+  PRINT "L'atleta non puo' fare il pugile"
+ELSE
+  PRINT "L'atleta va tesserato nei pesi ";
+
+  SELECT CASE peso
+  CASE IS <= 48
+    PRINT "Mini Mosca"
+  CASE IS <= 51
+    PRINT "Mosca"
+  CASE IS <= 54
+    PRINT "Gallo"
+  CASE IS <= 57
+    PRINT "Piuma"
+  CASE IS <= 60
+    PRINT "Leggeri"
+  CASE IS <= 63.5
+    PRINT "Super Leggeri"
+  CASE IS <= 67
+    PRINT "Welter"
+  CASE IS <= 71
+    PRINT "Super Welter"
+  CASE IS <= 75
+    PRINT "Medi"
+  CASE IS <= 81
+    PRINT "Medio Massimi"
+  CASE IS <= 91
+    PRINT "Massimi"
+  CASE ELSE
+    PRINT "Super Massimi"
+  END SELECT
+END IF
+END
+
+
+mix tra espressioni booleane e numeriche/stringa: in QBASIC non si puo'
+
+intro programmazione strutturata
+sequenza,
+selezione,
+iterazione
+ . a condizione iniziale (si esce alla condizione falsa)
+ . a condizione finale   (si esce a condizione vera)
+alcuni problemi sono "naturalmente" a c.i., altri a c.f., altri possono essere trattati eq.
+esempio somma di 3 numeri (algoritmo dell'accumulatore)
+a condizione iniziale
+LET somma = 0
+LET letture = 0
+DO WHILE letture < 3                WHILE letture < 3      UNTIL letture = 3 -> BRUTTO!
+  INPUT valore
+  LET somma = somma + valore
+  LET letture = letture + 1
+LOOP                                WEND
+PRINT somma  
+END
+a condizione finale
+LET somma = 0
+LET letture = 0
+DO
+  INPUT valore
+  LET somma = somma + valore
+  LET letture = letture + 1
+LOOP UNTIL letture = 3           WHILE letture < 3 -> BRUTTO
+PRINT somma  
+END
+esercizio: leggere una sequenza di numeri di lunghezza data
+"naturalmente" a c.i.: altre letture? se si, leggiamo
+INPUT "Numeri da leggere: ", letture
+DO WHILE letture > 0
+  INPUT "Valore: ", valore
+  LET letture = letture - 1
+LOOP
+END
+possiamo trasformarlo a c.f., con un artificio
+(per trattare il caso speciale di sequenze nulle)
+INPUT "Numeri da leggere: ", letture
+IF letture > 0 THEN
+  DO 
+    INPUT "Valore: ", valore
+    LET letture = letture - 1
+  LOOP UNTIL letture = 0
+END IF
+END
+
+
+esempio: leggere dei numeri fermandosi allo zero
+"naturalmente" a c.f.: prima leggo, poi decido se continuare
+DO
+  INPUT "Valore: ", valore
+LOOP UNTIL valore = 0
+END
+possiamo portarlo artificialmente a c.i.
+LET valore = 1 'serve per entrare nel ciclo -> "sporca"!
+DO WHILE valore <> 0 
+  INPUT "Valore: ", valore
+LOOP
+
+esercizio: resto con il minor numero di monete da 200, 100, 50 lire (troppe monete con l'EURO!)
+CLS
+INPUT "Resto: ", resto
+LET cinquecento = 0
+LET duecento = 0
+LET cento = 0
+LET cinquanta = 0
+DO WHILE resto > 500
+  LET cinquecento = cinquecento + 1
+  LET resto = resto - 500
+LOOP
+DO WHILE resto > 200
+  LET duecento = duecento + 1
+  LET resto = resto - 200
+LOOP
+DO WHILE resto > 100
+  LET cento = cento + 1
+  LET resto = resto - 100
+LOOP
+DO WHILE resto > 0
+  LET cinquanta = cinquanta + 1
+  LET resto = resto - 50
+LOOP
+PRINT "Il resto deve essere composto da:"
+IF cinquecento > 0 THEN
+  PRINT cinquecento;
+  IF cinquecento > 1 THEN
+    PRINT "monete ";
+  ELSE
+    PRINT "moneta ";
+  END IF
+  PRINT "da 500"
+END IF
+IF duecento > 0 THEN
+  PRINT duecento;
+  IF duecento > 1 THEN
+    PRINT "monete ";
+  ELSE
+    PRINT "moneta ";
+  END IF
+  PRINT "da 200"
+END IF
+IF cento > 0 THEN
+  PRINT cento;
+  IF cento > 1 THEN
+    PRINT "monete ";
+  ELSE
+    PRINT "moneta ";
+  END IF
+  PRINT "da 100"
+END IF
+IF cinquanta > 0 THEN
+  PRINT cinquanta;
+  IF cinquanta > 1 THEN
+    PRINT "monete ";
+  ELSE
+    PRINT "moneta ";
+  END IF
+  PRINT "da 50"
+END IF
+END
+
+esercizio: massimo di alcuni numeri, nelle due varianti
+sequenza di lunghezza fissata
+sequenza terminata dallo zero
+LET massimo = 0
+DO
+  INPUT "Valore: ", valore
+  IF valore <> 0 THEN
+    IF valore > massimo THEN LET massimo = valore
+LOOP UNTIL valore = 0
+PRINT "Il massimo valore immesso e' "; massimo
+END
+esercizio: aggiungere il calcolo del minimo
+LET massimo = 0
+LET minimo = 1000
+DO
+  INPUT "Valore: ", valore
+  IF valore <> 0 THEN
+    IF valore > massimo THEN LET massimo = valore
+    IF valore < minimo THEN LET minimo = valore
+  END IF
+LOOP UNTIL valore = 0
+PRINT "Il massimo valore immesso e' "; massimo
+PRINT "Il minimo valore immesso e' "; minimo
+END
+esercizio: aggiungere la somma di alcuni numeri (sequenza di numeri terminata da uno 0)
+LET massimo = 0
+LET minimo = 1000
+LET somma = 0
+DO
+  INPUT "Valore: ", valore
+  IF valore <> 0 THEN
+    IF valore > massimo THEN LET massimo = valore
+    IF valore < minimo THEN LET minimo = valore
+    LET somma = somma + valore
+  END IF
+LOOP UNTIL valore = 0
+PRINT "Il massimo valore immesso e'"; massimo
+PRINT "Il minimo valore immesso e'"; minimo
+PRINT "La somma dei valori immessi e'"; somma
+END
+esercizio: aggiungere media di alcuni numeri (sequenza di numeri terminata da uno 0)
+LET massimo = 0
+LET minimo = 1000
+LET somma = 0
+LET numeri = 0
+DO
+  INPUT "Valore: ", valore
+  IF valore <> 0 THEN
+    IF valore > massimo THEN LET massimo = valore
+    IF valore < minimo THEN LET minimo = valore
+    LET somma = somma + valore
+    LET numeri = numeri + 1
+  END IF
+LOOP UNTIL valore = 0
+PRINT "Il massimo valore immesso e'"; massimo
+PRINT "Il minimo valore immesso e'"; minimo
+PRINT "La somma dei valori immessi e'"; somma
+PRINT "La media dei valori immessi e'"; somma / numeri
+END
+e se non si immette nemmeno un numero?
+LET massimo = 0
+LET minimo = 1000
+LET somma = 0
+LET numeri = 0
+PRINT "Programma di statistica"
+DO
+  INPUT "Valore: ", valore
+  IF valore <> 0 THEN
+    IF valore > massimo THEN LET massimo = valore
+    IF valore < minimo THEN LET minimo = valore
+    LET somma = somma + valore
+    LET numeri = numeri + 1
+  END IF
+LOOP UNTIL valore = 0
+IF numeri > 0 THEN
+  PRINT "Il massimo valore immesso e'"; massimo
+  PRINT "Il minimo valore immesso e'"; minimo
+  PRINT "La somma dei valori immessi e'"; somma
+  PRINT "La media dei valori immessi e'"; somma / numeri
+ELSE
+  PRINT "Dati non disponibili"
+END IF
+END
+numeri casuali RND -> [0, 1)
+per ottenere numeri casuali in [0, K) -> RND * K
+per ottenere numeri casuali interi in [0, N), INT (RND * N)
+per ottenere numeri casuali interi in [0, N], INT (RND * (N + 1))
+per ottenere numeri casuali interi in [1, N], INT (RND * N) + 1
+INT (intero precedente), FIX (troncamento)
+esempio: lancio di un dado
+PRINT "Lancio di un dado: "; INT(RND * 6) + 1
+se lancio il programma piu' volte, ottengo sempre lo stesso valore; che casualita' e'?
+PRINT "Lancio di un dado: "; INT(RND * 6) + 1
+PRINT "Lancio di un secondo dado: "; INT(RND * 6) + 1
+stessa funzione, valori diversi, ok!
+la sequenza viene resettata all'inizio del programma -> RANDOMIZE [TIMER]
+RANDOMIZE TIMER
+DO
+  PRINT "Lancio il dado ed ottengo: "; INT(RND * 6) + 1
+  SLEEP
+LOOP
+esercizio: scrivere il programma indovina un n. tra 1 e 100
+CLS
+RANDOMIZE TIMER
+PRINT "Penso a un numero...";
+SLEEP 2
+LET valore = INT(RND * 100) + 1
+PRINT "l'ho pensato!"
+PRINT "Vediamo se lo indovini..."
+PRINT
+LET tentativi = 0
+DO
+  INPUT "Che numero ho pensato"; tentativo
+  IF tentativo > valore THEN
+    PRINT "No, troppo grande."
+  ELSEIF tentativo < valore THEN
+    PRINT "No, troppo piccolo."
+  END IF
+  LET tentativi = tentativi + 1
+LOOP UNTIL tentativo = valore
+PRINT "Bravo, era proprio"; valore
+IF tentativi = 1 THEN
+  PRINT "Che fortuna!"
+ELSE
+  PRINT "Hai indovinato in"; tentativi; "tentativi"
+END IF
+END
+esercizio: margherita elettronica (n. di petali tra 5 e 20)
+prima pensata, sbagliata:
+DO WHILE petali > 0
+  LET petali = petali - 1
+  PRINT "M'ama..."
+  LET petali = petali - 1
+  PRINT "Non m'ama..."
+LOOP
+correggiamo il tiro:
+DO WHILE petali > 0
+  LET petali = petali - 1
+  PRINT "M'ama..."
+  IF petali > 0 THEN
+    LET petali = petali - 1
+    PRINT "Non m'ama..."
+  END IF
+LOOP
+piu' compatto
+DO WHILE petali > 1
+  PRINT "M'ama..."
+  PRINT "Non m'ama..."
+  LET petali = petali - 2
+LOOP
+IF petali = 1 THEN PRINT "M'ama!!!"
+
+esempio: morra cineseCLS
+PRINT "Morra Cinese"
+PRINT "============"
+PRINT
+PRINT "C - Carta"
+PRINT "F - Forbici"
+PRINT "S - Sasso"
+PRINT "X - Fine partita"
+PRINT
+LET punticomputer = 0
+LET puntiutente = 0
+DO
+
+  INPUT "Gioca: ", mossautente$
+  LET mossacomputer = INT(RND * 3)
+
+  REM carta
+  IF mossacomputer = 0 THEN
+    IF mossautente$ = "c" OR mossautente$ = "C" THEN
+      PRINT "Carta contro Carta: pari..."
+    ELSEIF mossautente$ = "f" OR mossautente$ = "F" THEN
+      PRINT "Forbici contro Carta: vinci tu..."
+      LET puntiutente = puntiutente + 1
+    ELSEIF mossautente$ = "s" OR mossautente$ = "S" THEN
+      PRINT "Sasso contro Carta: vinco io..."
+      LET punticomputer = punticomputer + 1
+    END IF
+
+  REM forbici
+  ELSEIF mossacomputer = 1 THEN
+    IF mossautente$ = "c" OR mossautente$ = "C" THEN
+      PRINT "Carta contro Forbici: vinco io..."
+      LET punticomputer = punticomputer + 1
+    ELSEIF mossautente$ = "f" OR mossautente$ = "F" THEN
+      PRINT "Forbici contro Forbici: pari..."
+    ELSEIF mossautente$ = "s" OR mossautente$ = "S" THEN
+      PRINT "Sasso contro Forbici: vinci tu..."
+      LET puntiutente = puntiutente + 1
+    END IF
+
+  REM sasso
+  ELSE
+    IF mossautente$ = "c" OR mossautente$ = "C" THEN
+      PRINT "Carta contro Sasso: vinci tu..."
+      LET puntiutente = puntiutente + 1
+    ELSEIF mossautente$ = "f" OR mossautente$ = "F" THEN
+      PRINT "Forbici contro Sasso: vinco io..."
+      LET punticomputer = punticomputer + 1
+    ELSEIF mossautente$ = "s" OR mossautente$ = "S" THEN
+      PRINT "Sasso contro Sasso: pari..."
+    END IF
+  END IF
+
+LOOP WHILE mossautente$ <> "x" AND mossautente$ <> "X"
+PRINT
+PRINT "Punteggio finale: "; puntiutente; "-"; punticomputer
+IF punticomputer > puntiutente THEN
+  PRINT "Ho vinto io!"
+ELSEIF punticomputer < puntiutente THEN
+  PRINT "Hai vinto tu."
+ELSE
+  PRINT "Pari."
+END IF
+
+
+vettori
+DIM v (inf TO sup) AS t
+esempio: nomi della settimana, dei mesi
+inserire i dati in un vettore di lunghezza nota
+esercizio: ricerca in un vettore
+CONST N = 10
+DIM A(N - 1)
+
+FOR I = 0 TO N - 1
+  REM Lettura da tastiera
+  REM PRINT "A ("; I; ") =";
+  REM INPUT "", A(I)
+
+  REM Inizializzazione casuale
+  LET A(I) = INT(RND * 100) + 1
+  PRINT "A ("; I; ") ="; A(I)
+NEXT I
+
+INPUT "Valore da cercare: ", V
+LET I = 0
+LET TROVATO = 0
+DO WHILE (I < N) AND NOT TROVATO
+  LET TROVATO = (A(I) = V)
+  LET I = I + 1
+LOOP
+IF TROVATO THEN
+  PRINT "Elemento trovato in posizione"; I - 1
+ELSE
+  PRINT "Elemento non trovato"
+END IF
+
+cercare in un vettore ordinato: ricerca binaria
+CONST N = 10
+DIM A(N - 1)
+
+FOR I = 0 TO N - 1
+  LET A(I) = I * 10 + INT(RND * 10)
+  PRINT "A ("; I; ") ="; A(I)
+NEXT I
+
+INPUT "Valore da cercare: ", V
+LET INF = 0
+LET SUP = N - 1
+LET TROVATO = 0
+DO WHILE (INF <= SUP) AND NOT TROVATO
+  LET M = INT((INF + SUP) / 2)
+  IF (A(M) > V) THEN
+    LET SUP = M - 1
+  ELSEIF (A(M) < V) THEN
+    LET INF = M + 1
+  ELSE
+    LET TROVATO = -1
+  END IF
+LOOP
+IF TROVATO THEN
+  PRINT "Elemento trovato in posizione"; M
+ELSE
+  PRINT "Elemento non trovato"
+END IF
+END
+
+esercizio: confronto tra vettori
+CONST N = 10
+DIM A(N - 1)
+DIM B(N - 1)
+
+FOR I = 0 TO N - 1
+  REM Lettura da tastiera
+  REM PRINT "A ("; I; ") =";
+  REM INPUT "", A(I)
+
+  REM Inizializzazione casuale
+  LET A(I) = INT(RND * 100) + 1
+  PRINT "A ("; I; ") ="; A(I)
+NEXT I
+
+FOR I = 0 TO N - 1
+  REM Lettura da tastiera
+  REM PRINT "B ("; I; ") =";
+  REM INPUT "", B(I)
+
+  REM Inizializzazione automatica
+  LET B(I) = A(I)
+  PRINT "B ("; I; ") ="; A(I)
+NEXT I
+
+LET I = 0
+LET UGUALI = -1
+DO WHILE (I < N) AND UGUALI
+  LET UGUALI = (A(I) = B(I))
+  LET I = I + 1
+LOOP
+
+IF UGUALI THEN
+  PRINT "I vettori sono uguali"
+ELSE
+  PRINT "I vettori sono diversi a partire dalla posizione"; I - 1
+END IF
+END
+
+inserimento in un vettore ordinato (due casi: inizializzato e non)
+
+LET N = 10
+DIM V (N) AS INTEGER
+LET C = 0
+DO WHILE C < N
+  INPUT X
+  LET I = 0
+  LET INSERITO = 0
+  
+  DO WHILE I < N AND NOT INSERITO
+
+    REM **********************************
+    REM SERVE SOLO SE IL VETTORE E' VUOTO
+    REM **********************************
+
+    IF V [I] = 0 THEN
+      LET INSERITO = -1
+      LET V [I] = X
+
+    REM **********************************
+
+    ELSEIF V [I] <= X THEN
+      LET INSERITO = -1
+      FOR J = N - 1 TO I + 1 STEP -1
+        LET V [J] = V [J - 1]
+      NEXT J
+      LET V [I] = X
+    ELSE
+      LET I = I + 1
+    END IF
+  LOOP
+
+  FOR I = 0 TO N - 1
+    PRINT USING " ##"; V[I];
+  NEXT I
+  PRINT
+
+  LET C = C + 1
+LOOP
+END
+
+
+l'idea e' usata anche per l'ordinamento:
+ordino i primi due elementi; il terzo elemento va inserito tra i primi due -> ho ordinato i tre numeri; inserisco il quarto tra i primi tre, etc.
+
+ordinare un vettore - scambio elemento i-esimo col minimo dei successivi trovato fino a quel momento
+CONST N% = 7
+DIM v(N%)
+FOR i% = 1 TO N
+  PRINT "V("; i%; ") = ";
+  INPUT "", v(i%)
+NEXT i%
+FOR i% = 1 TO N - 1
+  FOR j% = i% + 1 TO N
+    IF v(j%) < v(i%) THEN
+      LET aux% = v(i%)
+      LET v(i%) = v(j%)
+      LET v(j%) = aux%
+    END IF
+  NEXT j%
+NEXT i%
+END
+ordinare un vettore - estrazione del minimo (ritardare lo scambio col vero minimo)
+CLS
+CONST N% = 7
+DIM v(N%)
+FOR i% = 1 TO N
+  PRINT "V("; i%; ") = ";
+  INPUT "", v(i%)
+NEXT i%
+FOR i% = 1 TO N
+  LET minimo% = i%
+  FOR j% = i% + 1 TO N
+    IF v(j%) < v(minimo%) THEN
+      LET minimo% = j%
+    END IF
+  NEXT j%
+  IF (minimo <> i%) THEN
+    LET aux% = v(i%)
+    LET v(i%) = v(minimo%)
+    LET v(minimo%) = aux%
+  END IF
+NEXT i%
+END
+ordinare un vettore - bubble sort
+CLS
+CONST N% = 7
+DIM v(N%)
+FOR i% = 1 TO N
+  PRINT "V("; i%; ") = ";
+  INPUT "", v(i%)
+NEXT i%
+LET i% = N
+LET scambio = TRUE
+DO WHILE ((scambio EQV TRUE) AND (i% > 1))
+  LET scambio = FALSE
+  FOR j% = 1 TO i% - 1
+    IF v(j%) > v(j% + 1) THEN
+      LET aux% = v(j%)
+      LET v(j%) = v(j% + 1)
+      LET v(j% + 1) = aux%
+      LET scambio = TRUE
+    END IF
+  NEXT j%
+  LET i% = i% - 1
+LOOP
+END
+
+ordinamento Shell
+
+L'ordinamento Shell, a differenza dei metodi visti in precedenza, prevede che i confronti siano eseguiti tra elementi distanti tra loro. La distanza tra gli elementi da confrontare è inizialmente pari alla metà della dimensione del vettore, per poi dimezzarsi ad ogni ciclo in cui non vi sono più scambi. In questo modo per ordinare un vettore di 100 elementi si confrontano gli elementi distanti 50 posizioni l'uno dall'altra e si fanno i dovuti scambi, quando non vi sono più scambi si riduce la distanza a 25 e si riconfrontano tutti gli elementi distanti 15 posizioni tra loro finchè non ci sono più scambi, e così via. Il metodo è efficace perché riduce drasticamente il numero di confronti necessari.
+
+LET N = 10
+DIM V (N) AS INTEGER
+LET D = N / 2
+LET SCAMBIO = 0
+DO WHILE D > 0
+  FOR I = 0 TO N - D - 1
+    LET J = I + D
+    IF V (I) > V (J) THEN
+      LET AUX = V(I)
+      LET V(I) = V(J)
+      LET V(J) = AUX
+      LET SCAMBIO = -1
+    END IF
+  NEXT I
+  IF SCAMBIO THEN
+    LET SCAMBIO = 0
+  ELSE
+    LET D = INT (D / 2)
+  END IF
+LOOP
+END
+
+programma indovino un numero
+(algoritmo di ricerca binaria)
+PRINT "Pensa un numero tra 1 e 100, ed io cerchero' di indovinarlo."
+PRINT "Mi raccomando:"
+PRINT "rispondi <g> se il numero che ti propongo e' troppo grande,"
+PRINT "rispondi <p> se il numero che ti propongo e' troppo piccolo,"
+PRINT "rispondi <e> se il numero che ti propongo e' quello esatto."
+PRINT
+DIM tentativi, minimo, massimo, numero AS INTEGER
+LET tentativi = 0
+LET minimo = 1
+LET massimo = 100
+DO
+  LET numero = (massimo + minimo) / 2
+  PRINT "Hai pensato"; numero;
+  INPUT risposta$
+  IF risposta$ = "p" THEN
+    LET minimo = numero + 1
+  ELSEIF risposta$ = "g" THEN
+    LET massimo = numero - 1
+  END IF
+  LET tentativi = tentativi + 1
+LOOP UNTIL risposta$ = "e"
+IF tentativi = 1 THEN
+  PRINT "Che fortuna, ho indovinato al primo colpo!"
+ELSE
+  PRINT "Ho indovinato in"; tentativi; "tentativi: non male!"
+END IF
+END
+
+esercizio: automa cellulare con regola 90 (nuova cella = XOR dei vicini precedenti)
+CLS
+REM Inizializza l'automa
+DO
+  INPUT "Dimensione dell'automa (1-100): ", N
+LOOP UNTIL N > 0 AND N < 101
+DO
+  INPUT "Numero di generazioni da calcolare (1-1000): ", G
+LOOP UNTIL G > 0 AND G < 1001
+DIM A(N) AS INTEGER
+DIM B(N) AS INTEGER
+LET A(N / 2) = -1
+REM Visualizza la prima generazione
+FOR J = 0 TO N - 1
+  IF A(J) THEN
+    PRINT "*";
+  ELSE
+    PRINT " ";
+  END IF
+NEXT J
+PRINT
+FOR I = 1 TO G
+  REM Calcola la prossima generazione
+  FOR J = 0 TO N - 1
+    LET V = 0
+    REM Determina il numero di vicini
+    IF J > 0 THEN
+      IF A(J - 1) THEN
+        LET V = V + 1
+      END IF
+    END IF
+    IF J < N - 1 THEN
+      IF A(J + 1) THEN
+        LET V = V + 1
+      END IF
+    END IF
+    LET B(J) = (V = 1)
+  NEXT J
+  REM Visualizza la nuova generazione
+  FOR J = 0 TO N - 1
+    LET A(J) = B(J)
+    IF A(J) THEN
+      PRINT "*";
+    ELSE
+      PRINT " ";
+    END IF
+  NEXT J
+  PRINT
+NEXT I
+END
+
+
+prime operazioni sulle variabili stringa
+primitive sui caratteri: CHR$, ASC
+LEN
+sottostringhe: LEFT$, RIGHT$, MID$
+
+esercizio: mostrare i valori ASCII dei caratteri di una stringa
+CLS
+INPUT "Immettere una stringa ", A$
+LET L = LEN(A$)
+PRINT "La stringa immessa e' lunga"; L; "caratteri"
+LET I = 1
+DO WHILE I <= L
+  LET C$ = MID$(A$, I, 1)
+  PRINT C$; " - "; ASC(C$)
+  LET I = I + 1
+LOOP
+END
+
+INPUT "Immettere una stringa ", A$
+FOR I = 1 TO LEN(A$)
+  LET C$ = MID$(A$, I, 1)
+  PRINT C$; " - "; ASC(C$)
+NEXT I
+END
+
+esercizio: rovesciare una stringa
+CLS
+INPUT "Immettere una stringa ", A$
+LET R$ = ""
+LET L = LEN(A$)
+LET I = L
+DO WHILE I > 0
+  LET R$ = R$ + MID$(A$, I, 1)
+  LET I = I - 1
+LOOP
+PRINT "Stringa rovesciata: "; R$
+END
+variante:
+CLS
+INPUT "Immettere una stringa ", A$
+LET R$ = ""
+FOR I = LEN(A$) TO 1 STEP -1
+  LET R$ = R$ + MID$(A$, I, 1)
+NEXT I
+PRINT "Stringa rovesciata: "; R$
+END
+
+operatori relazionali e stringhe
+
+esercizio: codifica/decodifica ROT13 (introdurre operatore MOD)
+ . rendere tutto maiuscolo
+ . operare la trasformazione solo sulle lettere
+ . per tornare indietro, sottrarre 13 equivale a sommare 13! (lo stesso programma puo' essere usato per decodificare)
+CLS
+INPUT "Immettere una stringa: ", A$
+LET A$ = UCASE$(A$)
+LET R$ = ""
+FOR I = 1 TO LEN(A$)
+  LET C$ = MID$(A$, I, 1)
+  IF C$ >= "A" AND C$ <= "Z" THEN
+    LET C = ASC(C$) - ASC("A")
+    LET C = (C + 13) MOD 26
+    LET C$ = CHR$(C + ASC("A"))
+  END IF
+  LET R$ = R$ + C$
+NEXT I
+PRINT "Cifratura: "; R$
+END
+eliminare gli spazi iniziali e finali: LTRIM$, RTRIM$
+
+esercizio: estrazione parole
+INPUT TESTO$
+LET I = 1
+LET PAROLA$ = ""
+DO WHILE I <= LEN(TESTO$)
+  LET C$ = MID$(TESTO$, I, 1)
+  IF C$ = " " THEN
+    IF LEN(PAROLA$) > 0 THEN PRINT PAROLA$
+    PAROLA$ = ""
+  ELSE
+    LET PAROLA$ = PAROLA$ + C$
+  END IF
+  LET I = I + 1
+LOOP
+IF LEN(PAROLA$) > 0 THEN PRINT PAROLA$
+END
+
+esercizio: eliminazione spazi superflui
+INPUT TESTO$
+LET PURO$ = ""
+LET I = 1
+LET SPAZIO = 0
+DO WHILE I <= LEN(TESTO$)
+  LET C$ = MID$(TESTO$, I, 1)
+  IF C$ = " " THEN
+    IF NOT SPAZIO THEN
+      LET PURO$ = PURO$ + C$
+      LET SPAZIO = -1
+    END IF
+  ELSE
+    LET SPAZIO = 0
+    LET PURO$ = PURO$ + C$
+  END IF
+  LET I = I + 1
+LOOP
+PRINT PURO$
+END
+
+INSTR$
+esercizio: immessi una parola ed una stringa, conta quante volte la parola compare nella stringa (anche all'interno di altre parole)
+variante: la parola deve essere intera (controllare la presenza degli spazi a sx e dx)
+
+esercizio: leggere N nomi da tastiera; leggere una stringa e stampare tutti i nomi che iniziano con quei caratteri
+CLS
+INPUT "Numero di nominativi da leggere: ", N
+DIM A(N) AS STRING
+FOR I = 0 TO N - 1
+  DO
+    PRINT "Immettere il nominativo n."; I + 1; ":";
+    INPUT "", A(I)
+  LOOP UNTIL LEN(A(I)) > 0
+NEXT I
+DO
+  DO
+    INPUT "Inserire l'iniziale (INVIO per terminare): ", R$
+  LOOP UNTIL LEN(R$) < 2
+
+  IF (LEN(R$) = 1) THEN
+    LET NOMI = 0
+    FOR I = 0 TO N - 1
+      IF LEFT$(A(I), 1) = R$ THEN
+        PRINT " - "; A(I)
+        LET NOMI = NOMI + 1
+      END IF
+    NEXT I
+
+    IF NOMI = 0 THEN
+      PRINT "Nessun nominativo trovato."
+    END IF
+  END IF
+LOOP UNTIL LEN(R$) = 0
+END
+
+esempio di riconduzione di un problema ad un altro:
+programma dell'anagramma = ordinare e verificare che i due vettori sono uguali
+
+matrici (vettori a due dimensioni)
+DIM M(inf1 TO sup1, inf2 TO sup2) AS tipo
+
+esercizio: inizializzare una matrice con la tavola pitagorica
+CLS
+DIM M(10, 10) AS INTEGER
+FOR I = 1 TO 10
+  FOR J = 1 TO 10
+    LET M(I, J) = I * J
+  NEXT J
+NEXT I
+PRINT "Tavola pitagorica"
+PRINT
+FOR I = 1 TO 10
+  FOR J = 1 TO 10
+    PRINT USING "####"; M(I, J);
+  NEXT J
+  PRINT
+NEXT I
+
+esercizio: verificare se una matrice quadrata e' un quadrato magico
+esempi di quadrati:
+
+2 7 6      1 15 14  4
+9 5 1     12  6  7  9
+4 3 8      8 10 11  5
+          13  3  2 16
+CLS
+INPUT "Ordine del quadrato: ", N
+DIM M(N, N) AS INTEGER
+LET I = 1
+DO
+  DO
+    PRINT "Inserire la posizione del numero"; I; "(riga, colonna): ";
+    INPUT "", R, C
+    IF M(R, C) <> 0 THEN
+      PRINT "La posizione specificata è già occupata"
+    END IF
+  LOOP UNTIL M(R, C) = 0
+  LET M(R, C) = I
+  LET I = I + 1
+LOOP UNTIL I > N * N
+REM Visualizza la matrice
+FOR R = 0 TO N - 1
+  FOR C = 0 TO N - 1
+    PRINT USING "###"; M(R, C);
+  NEXT C
+  PRINT
+NEXT R
+REM Determina la somma dei valori della prima colonna
+LET SOMMA = 0
+FOR R = 0 TO N - 1
+  LET SOMMA = SOMMA + M(R, 0)
+NEXT R
+REM Verifica le somme sulle colonne successive alla prima
+LET MAGICO = -1
+LET R = 1
+DO WHILE R < N AND MAGICO
+  LET S = 0
+  FOR C = 0 TO N - 1
+    LET S = S + M(R, C)
+  NEXT C
+  LET R = R + 1
+  LET MAGICO = (SOMMA = S)
+LOOP
+REM Verifica le somme sulle righe
+LET C = 0
+DO WHILE C < N AND MAGICO
+  LET S = 0
+  FOR R = 0 TO N - 1
+    LET S = S + M(R, C)
+  NEXT R
+  LET C = C + 1
+  LET MAGICO = (SOMMA = S)
+LOOP
+REM Verifica la somma sulla diagonale principale
+IF MAGICO THEN
+  LET S = 0
+  FOR I = 0 TO N - 1
+    LET S = S + M(I, I)
+  NEXT I
+  LET MAGICO = (SOMMA = S)
+END IF
+REM Verifica la somma sulla diagonale secondaria
+IF MAGICO THEN
+  LET S = 0
+  FOR I = 0 TO N - 1
+    LET S = S + M(N - 1 - I, I)
+  NEXT I
+  LET MAGICO = (SOMMA = S)
+END IF
+IF MAGICO THEN
+  PRINT "La matrice è un quadrato magico di caratteristica"; SOMMA
+ELSE
+  PRINT "La matrice non è un quadrato magico"
+END IF
+END
+
+esercizio: gioco del 15
+CLS
+REM Inizializzazione matrice
+LET N = 4
+DIM M(N, N) AS INTEGER
+FOR I = 0 TO N * N - 1
+  LET M(INT(I / N), I MOD N) = I + 1
+NEXT I
+REM Posizionamento casella libera
+LET X = N - 1
+LET Y = N - 1
+LET M(Y, X) = 0
+REM Ciclo di gioco
+DO
+  REM Visualizza matrice
+  FOR R = 0 TO N - 1
+    FOR C = 0 TO N - 1
+      IF M(R, C) <> 0 THEN
+        PRINT USING "###"; M(R, C);
+      ELSE
+        PRINT "   ";
+      END IF
+    NEXT C
+    PRINT
+  NEXT R
+  REM Mossa dell'utente
+  PRINT
+  INPUT "Mossa: ", D$
+  PRINT
+  SELECT CASE D$
+  CASE "S", "s"
+    IF X > 0 THEN
+      SWAP M(Y, X), M(Y, X - 1)
+      LET X = X - 1
+    END IF
+  CASE "D", "d"
+    IF X < N - 1 THEN
+      SWAP M(Y, X), M(Y, X + 1)
+      LET X = X + 1
+    END IF
+  CASE "A", "a"
+    IF Y > 0 THEN
+      SWAP M(Y, X), M(Y - 1, X)
+      LET Y = Y - 1
+    END IF
+  CASE "B", "b"
+    IF Y < N - 1 THEN
+      SWAP M(Y, X), M(Y + 1, X)
+      LET Y = Y + 1
+    END IF
+  END SELECT
+
+  REM Verifica l'ordinamento
+  LET ORDINE = -1
+  LET I = 0
+  DO WHILE (I < N * N - 1) AND ORDINE
+    ORDINE = (M(INT(I / N), I MOD N) = I + 1)
+    LET I = I + 1
+  LOOP
+LOOP UNTIL (D$ = "X") OR (D$ = "x") OR ORDINE
+IF ORDINE THEN
+  REM Visualizza matrice
+  FOR R = 0 TO N - 1
+    FOR C = 0 TO N - 1
+      IF M(R, C) <> 0 THEN
+        PRINT USING "###"; M(R, C);
+      ELSE
+        PRINT "   ";
+      END IF
+    NEXT C
+    PRINT
+  NEXT R
+  PRINT "Complimenti!"
+ELSE
+  PRINT "Codardo!"
+END IF
+END
+
+record: tipi aggregati
+TYPE nome
+  campo AS tipo
+END TYPE
+i campi stringa devono essere a lunghezza fissa (STRING * n)
+
+TYPE carta
+  seme AS STRING * 6
+  valore AS INTEGER
+END TYPE
+DIM pescata AS carta
+DIM scartata AS carta
+pescata.seme = "CUORI"
+pescata.valore = 1
+scartata.seme = "PICCHE"
+scartata.valore = 2
+
+esercizio: raccolta
+
+TYPE CD
+  AUTORE AS STRING * 20
+  TITOLO AS STRING * 20
+  ANNO AS INTEGER
+END TYPE
+
+CLS
+DIM N AS INTEGER
+INPUT "Numero di dischi da archiviare: ", N
+DIM RACCOLTA(N)  AS CD
+DIM RISULTATI AS INTEGER
+DIM CHIAVE AS STRING
+
+PRINT
+FOR I = 0 TO N - 1
+  PRINT "Disco n."; I + 1
+  INPUT "Autore: ", RACCOLTA(I).AUTORE
+  INPUT "Titolo: ", RACCOLTA(I).TITOLO
+  INPUT "Anno di pubblicazione: ", RACCOLTA(I).ANNO
+  PRINT
+NEXT I
+
+FOR I = 0 TO N - 2
+  LET MIN = I
+  FOR J = I + 1 TO N - 1
+    IF RACCOLTA(J).AUTORE < RACCOLTA(MIN).AUTORE THEN
+      LET MIN = J
+    END IF
+    IF MIN <> I THEN
+      SWAP RACCOLTA(I).AUTORE, RACCOLTA(MIN).AUTORE
+      SWAP RACCOLTA(I).TITOLO, RACCOLTA(MIN).TITOLO
+      SWAP RACCOLTA(I).ANNO, RACCOLTA(MIN).ANNO
+    END IF
+  NEXT J
+NEXT I
+
+PRINT : PRINT "Elenco dischi"
+FOR I = 0 TO N - 1
+  PRINT I + 1; "- "; RTRIM$(RACCOLTA(I).AUTORE); " '"; RTRIM$(RACCOLTA(I).TITOLO); "' - "; RACCOLTA(I).ANNO; ""
+NEXT I
+END
+
+
+esercizio: agenda
+
+TYPE CONTATTO
+  NOME AS STRING * 20
+  COGNOME AS STRING * 20
+  TELEFONO AS STRING * 20
+END TYPE
+
+CLS
+DIM N AS INTEGER
+INPUT "Numero di contatti: ", N
+DIM AGENDA(N)  AS CONTATTO
+DIM RISULTATI AS INTEGER
+DIM CHIAVE AS STRING
+
+PRINT
+FOR I = 0 TO N - 1
+  PRINT "Contatto n."; I + 1
+  INPUT "Nome: ", AGENDA(I).NOME
+  INPUT "Cognome: ", AGENDA(I).COGNOME
+  INPUT "Telefono: ", AGENDA(I).TELEFONO
+  PRINT
+NEXT I
+
+FOR I = 0 TO N - 2
+  LET MIN = I
+  FOR J = I + 1 TO N - 1
+    IF (AGENDA(J).COGNOME < AGENDA(MIN).COGNOME) OR (AGENDA(J).COGNOME = AGENDA(MIN).COGNOME AND AGENDA(J).NOME < AGENDA(MIN).NOME) THEN
+      LET MIN = J
+    END IF
+    IF MIN <> I THEN
+      SWAP AGENDA(I).NOME, AGENDA(MIN).NOME
+      SWAP AGENDA(I).COGNOME, AGENDA(MIN).COGNOME
+      SWAP AGENDA(I).TELEFONO, AGENDA(MIN).TELEFONO
+    END IF
+  NEXT J
+NEXT I
+
+PRINT : PRINT "Elenco contatti"
+FOR I = 0 TO N - 1
+  PRINT I + 1; "- "; RTRIM$(AGENDA(I).COGNOME); " "; RTRIM$(AGENDA(I).NOME); ": "; RTRIM$(AGENDA(I).TELEFONO)
+NEXT I
+
+DO
+  PRINT
+  INPUT "Chiave di ricerca: ", CHIAVE
+  LET CHIAVE = UCASE$(CHIAVE)
+  PRINT
+  LET RISULTATI = 0
+  IF LEN(CHIAVE) > 0 THEN
+    FOR I = 0 TO N - 1
+      IF UCASE$(LEFT$(AGENDA(I).COGNOME, LEN(CHIAVE))) = CHIAVE THEN
+        LET RISULTATI = RISULTATI + 1
+        PRINT I + 1; "- "; RTRIM$(AGENDA(I).COGNOME); " "; RTRIM$(AGENDA(I).NOME); ": "; RTRIM$(AGENDA(I).TELEFONO)
+      END IF
+    NEXT I
+    IF RISULTATI = 0 THEN
+      PRINT "Nessun contatto trovato."
+    END IF
+  END IF
+LOOP UNTIL LEN(CHIAVE) = 0
+END
+
+
+esercizio: simulare il pescaggio da un mazzo mescolato
+CLS
+TYPE carta
+  seme AS STRING * 6
+  valore AS INTEGER
+END TYPE
+REM Crea il mazzo
+DIM mazzo(52) AS carta
+FOR s = 0 TO 3
+  FOR v = 0 TO 12
+    SELECT CASE s
+      CASE 0
+        LET mazzo(s * 13 + v).seme = "cuori"
+      CASE 1
+        LET mazzo(s * 13 + v).seme = "quadri"
+      CASE 2
+        LET mazzo(s * 13 + v).seme = "fiori"
+      CASE 3
+        LET mazzo(s * 13 + v).seme = "picche"
+    END SELECT
+    LET mazzo(s * 13 + v).valore = v + 1
+  NEXT v
+NEXT s
+REM Mescola il mazzo
+FOR i = 0 TO INT(RND * 50) + 50
+  LET a = INT(RND * 52)
+  LET b = INT(RND * 52)
+  LET aux = mazzo(a).valore
+  LET aux$ = mazzo(a).seme
+  LET mazzo(a).valore = mazzo(b).valore
+  LET mazzo(a).seme = mazzo(b).seme
+  LET mazzo(b).valore = aux
+  LET mazzo(b).seme = aux$
+NEXT i
+LET c = 0
+PRINT "Premere INVIO per pescare una carta, X per terminare..."
+DO
+  INPUT "", R$
+  IF LEN(R$) = 0 THEN
+    PRINT "Hai pescato";
+    SELECT CASE mazzo(c).valore
+       CASE 1
+         PRINT " l'asso ";
+       CASE 11
+         PRINT " il jack ";
+       CASE 12
+         PRINT " la donna ";
+       CASE 13
+         PRINT " il kappa ";
+       CASE ELSE
+         IF mazzo(c).valore = 8 THEN
+           PRINT " l'";
+         ELSE
+           PRINT " il";
+         END IF
+         PRINT mazzo(c).valore;
+       END SELECT
+    PRINT "di "; mazzo(c).seme;
+  END IF
+  LET c = c + 1
+LOOP UNTIL c = 52 OR LEN(R$) > 0
+END
+
+procedure e funzioni
+due scopi: astrazione, riduzione del codice
+procedure: sortiscono un effetto (es. CLS "pulisce lo schermo", PRINT "visualizza una stringa")
+SUB nome (parametri)
+END SUB
+funzioni: ritornano un valore (es. INT "ritorna la parte intera", LEFT$ "ritorna i primi caratteri di una stringa")
+FUNCTION nome[T] (parametri) (T determina il valore ritornato dalla funzione)
+END FUNCTION
+
+
+visibilità: procedure e funzioni vedono solo le variabili locali e quelle globali, purché SHARED
+
+DIM N AS INTEGER
+LET N = 10
+CALL TEST
+PRINT N
+END
+
+SUB TEST
+  LET N = N * 2 : REM CREA UNA VARIABILE N LOCALE
+END SUB
+
+stampa 10
+
+DIM SHARED N AS INTEGER
+LET N = 10
+CALL TEST
+PRINT N
+END
+
+SUB TEST
+  LET N = N * 2 : REM USA LA VARIABILE N GLOBALE
+END SUB
+
+stampa 20
+
+parametri: variabili locali inizializzate con i valori dei parametri
+
+SUB CICLOSTILE (MESSAGGIO AS STRING, COPIE AS INTEGER)
+  MESSAGGIO = UCASE$(MESSAGGIO)
+  DO WHILE COPIE > 0
+    PRINT MESSAGGIO
+    LET COPIE = COPIE - 1
+  LOOP
+END SUB
+
+CALL CICLOSTILE("Ciao", 3) : REM parametri valore -> le variabili sono create al volo
+
+LET MSG$ = "Ciao"
+LET USCITE = 3
+CALL CICLOSTILE(MSG$, USCITE) : REM parametri variabile -> le variabili diventano degli alias; vengono quindi passati i riferimenti! se la procedura li modifica, li verda' modificati anche il programma principale!!!
+
+esempio
+CLS
+DIM USCITE AS INTEGER
+LET MSG$ = "Ciao"
+LET USCITE = 3
+CALL CICLOSTILE(MSG$, USCITE)
+PRINT
+PRINT MSG$, USCITE
+END
+
+stampa "CIAO" 0 -> MSG$ e USCITE sono stati modificati dalla procedura (effetto collaterale)
+per forzare la procedura a farsi una copia locale dei valori, racchiudere i valori da preservare tra parentesi:
+
+CALL CICLOSTILE((MSG$), (USCITE))
+
+stampa: "Ciao" 3
+nota: in QBASIC si decide al momento della chiamata, in VB si decide nella dichiarazione della procedura (ByRef, ByVal)
+
+le procedure di norma hanno effetti collaterali, le funzioni no.
+
+FUNCTION MEDIA (A AS DOUBLE, B AS DOUBLE)
+  M = (A + B) / 2
+END
+
+LET M = MEDIA(5, 8)
+PRINT M
+END
+
+
+libreria: insieme di procedure e funzioni applicate in un contesto
+esempio applicato ai vettori
+ P: leggi vettore
+ P: ordina vettore
+ F: cerca vettore
+ P: stampa vettore
+
+DECLARE SUB LEGGIVETTORE (V() AS INTEGER, N AS INTEGER)
+DECLARE SUB STAMPAVETTORE (V() AS INTEGER, N AS INTEGER)
+DECLARE SUB ORDINAVETTORE (V() AS INTEGER, N AS INTEGER)
+
+CLS
+DIM N AS INTEGER
+INPUT "Dimensione del vettore: ", N
+DIM V(N) AS INTEGER
+LEGGIVETTORE V(), N
+PRINT
+PRINT "Vettore originale:"
+STAMPAVETTORE V(), N
+ORDINAVETTORE V(), N
+PRINT
+PRINT "Vettore ordinato:"
+STAMPAVETTORE V(), N
+END
+
+SUB LEGGIVETTORE (V() AS INTEGER, N AS INTEGER)
+  FOR I = 0 TO N - 1
+    PRINT "Valore n."; I + 1; ": ";
+    INPUT "", V(I)
+  NEXT I
+END SUB
+
+SUB ORDINAVETTORE (V() AS INTEGER, N AS INTEGER)
+  FOR I = 0 TO N - 2
+    FOR J = I TO N - 1
+      IF V(J) < V(I) THEN
+        SWAP V(J), V(I)
+      END IF
+    NEXT J
+  NEXT I
+END SUB
+
+SUB STAMPAVETTORE (V() AS INTEGER, N AS INTEGER)
+  FOR I = 0 TO N - 1
+    PRINT V(I);
+  NEXT I
+  PRINT
+END SUB
+
+esempio applicato ai razionali
+DECLARE SUB LEGGIFRAZIONE (F AS ANY)
+DECLARE SUB STAMPAFRAZIONE (F AS ANY)
+DECLARE SUB SOMMAFRAZIONI (A AS ANY, B AS ANY, C AS ANY)
+DECLARE SUB MOLTIPLICAFRAZIONI (A AS ANY, B AS ANY, C AS ANY)
+DECLARE SUB SEMPLIFICAFRAZIONE (F AS ANY)
+DECLARE FUNCTION MCD% (A AS INTEGER, B AS INTEGER)
+CLS
+
+TYPE FRAZIONE
+  NUM AS INTEGER
+  DEN AS INTEGER
+END TYPE
+
+DIM A AS FRAZIONE
+DIM B AS FRAZIONE
+DIM R AS FRAZIONE
+
+PRINT "Prima frazione"
+PRINT
+LEGGIFRAZIONE A
+PRINT
+PRINT "Seconda frazione"
+PRINT
+LEGGIFRAZIONE B
+PRINT
+PRINT "Somma = ";
+SOMMAFRAZIONI A, B, R
+STAMPAFRAZIONE R
+PRINT
+PRINT "Prodotto = ";
+MOLTIPLICAFRAZIONI A, B, R
+STAMPAFRAZIONE R
+END
+
+SUB LEGGIFRAZIONE (F AS FRAZIONE)
+  INPUT "Numeratore: ", F.NUM
+  DO
+    INPUT "Denominatore: ", F.DEN
+    IF F.DEN = 0 THEN
+      PRINT "Denominatore non valido."
+    END IF
+  LOOP UNTIL F.DEN <> 0
+END SUB
+
+FUNCTION MCD% (A AS INTEGER, B AS INTEGER)
+  IF A = 0 AND B = 0 THEN
+    LET MCD% = 1
+  ELSE
+    LET X = A
+    LET Y = B
+  
+    DO WHILE Y > 0
+      LET R = X MOD Y
+      LET X = Y
+      LET Y = R
+    LOOP
+
+    LET MCD% = X
+  END IF
+
+END FUNCTION
+
+SUB MOLTIPLICAFRAZIONI (A AS FRAZIONE, B AS FRAZIONE, C AS FRAZIONE)
+  LET C.NUM = A.NUM * B.NUM
+  LET C.DEN = A.DEN * B.DEN
+  SEMPLIFICAFRAZIONE C
+END SUB
+
+SUB SEMPLIFICAFRAZIONE (F AS FRAZIONE)
+  LET D = MCD(ABS(F.NUM), ABS(F.DEN))
+  LET F.NUM = F.NUM / D
+  LET F.DEN = F.DEN / D
+END SUB
+
+SUB SOMMAFRAZIONI (A AS FRAZIONE, B AS FRAZIONE, C AS FRAZIONE)
+  LET C.NUM = A.NUM * B.DEN + B.NUM * A.DEN
+  LET C.DEN = A.DEN * B.DEN
+  SEMPLIFICAFRAZIONE C
+END SUB
+
+
+SUB STAMPAFRAZIONE (F AS FRAZIONE)
+  PRINT F.NUM; "/"; F.DEN
+END SUB
+
+
+Funzioni ricorsive
+DECLARE FUNCTION FATTORIALE& (N AS LONG)
+DECLARE FUNCTION SOMMA% (A AS INTEGER, B AS INTEGER)
+DECLARE FUNCTION ROVESCIA$ (S AS STRING)
+CLS
+DIM N AS LONG
+INPUT "Numero di cui calcolare il fattoriale ricorsivamente: ", N
+PRINT N; "! ="; FATTORIALE(N)
+
+PRINT
+
+DIM A AS INTEGER
+DIM B AS INTEGER
+INPUT "Addendi da sommare ricorsivamente (A,B): ", A, B
+PRINT A; "+"; B; "="; SOMMA(A, B)
+
+PRINT
+
+DIM S AS STRING
+INPUT "Stringa da rovesciare ricorsivamente: ", S
+PRINT S; " <-> "; ROVESCIA(S)
+END
+
+FUNCTION FATTORIALE& (N AS LONG) STATIC
+  IF N = 0 OR N = 1 THEN
+    FATTORIALE = 1
+  ELSE
+    FATTORIALE = N * FATTORIALE(N - 1)
+  END IF
+END FUNCTION
+
+FUNCTION ROVESCIA$ (S AS STRING) STATIC
+  IF LEN(S) > 0 THEN
+    ROVESCIA = RIGHT$(S, 1) + ROVESCIA(LEFT$(S, LEN(S) - 1))
+  ELSE
+    ROVESCIA = ""
+  END IF
+END FUNCTION
+
+FUNCTION SOMMA% (A AS INTEGER, B AS INTEGER) STATIC
+  IF B = 0 THEN
+    SOMMA = A
+  ELSE
+    SOMMA = SOMMA(A + 1, B - 1)
+  END IF
+END FUNCTION
+
+
+hanoi
+DECLARE SUB SPOSTATORRE (DISCHI AS INTEGER, PARTENZA AS INTEGER, DESTINAZIONE AS INTEGER, LIBERO AS INTEGER)
+
+DIM N AS INTEGER
+INPUT "Numero di dischi della torre: ", N
+SPOSTATORRE N, 1, 3, 2
+END
+
+SUB SPOSTATORRE (DISCHI AS INTEGER, PARTENZA AS INTEGER, DESTINAZIONE AS INTEGER, LIBERO AS INTEGER) STATIC
+  IF DISCHI = 1 THEN
+    PRINT PARTENZA; "->"; DESTINAZIONE
+  ELSE
+SPOSTATORRE (DISCHI - 1), (PARTENZA), (LIBERO), (DESTINAZIONE)
+    PRINT PARTENZA; "->"; DESTINAZIONE
+    SPOSTATORRE (DISCHI - 1), (LIBERO), (DESTINAZIONE), (PARTENZA)
+  END IF
+END SUB
+
+
+
+file
+sequenza di byte.
+OPEN nome [FOR APPEND|BINARY|INPUT|OUTPUT|RANDOM] [ACCESS READ|WRITE|READ WRITE] [SHARED|LOCK READ|LOCK WRITE|LOCK READ WRITE] AS [#]numero [LEN=dim.record]
+CLOSE [#]numero
+
+INPUT/OUTPUT -> modalità testo
+
+PRINT #numero, dati -> salva tutto come stringa, anche i numeri.
+WRITE #numero, dati -> li salva conservandone il tipo.
+INPUT #numero, variabile -> legge da file (stringhe se salvate con PRINT)
+EOF (numero) -> TRUE se e' stata raggiunta la fine del file
+
+OPEN "print.txt" FOR OUTPUT AS #1
+PRINT #1, "Pippo", 7
+CLOSE #1
+OPEN "write.txt" FOR OUTPUT AS #2
+WRITE #2, "Pippo", 7
+CLOSE #2
+
+OPEN "print.txt" FOR INPUT AS #1
+INPUT #1, A$: REM INPUT #1, A$, B DA' ERRORE DI LETTURA (B E' INFATTI COMPRESO IN A$)
+PRINT "PRINT:"
+PRINT "Stringa: "; A$
+PRINT "Numero:"; B
+CLOSE #1
+OPEN "write.txt" FOR INPUT AS #2
+INPUT #2, A$, B
+PRINT "WRITE:"
+PRINT "Stringa: "; A$
+PRINT "Numero:"; B
+CLOSE #2
+END
+
+visualizza il contenuto di un file di testo
+CLS
+INPUT "Nome del file di testo: ", FILE$
+OPEN FILE$ FOR INPUT AS #1
+  DO WHILE NOT EOF(1)
+    INPUT #1, RIGA$
+    PRINT RIGA$
+  LOOP
+CLOSE #1
+
+conta il numero di righe di un file di testo
+CLS
+INPUT "Nome del file di testo: ", FILE$
+OPEN FILE$ FOR INPUT AS #1
+LET RIGHE = 0
+DO WHILE NOT EOF(1)
+  INPUT #1, RIGA$
+  LET RIGHE = RIGHE + 1
+LOOP
+CLOSE #1
+IF RIGHE = 0 THEN
+  PRINT "Il file non contiene nessuna riga."
+ELSEIF RIGHE = 1 THEN
+  PRINT "Il file contiene 1 riga."
+ELSE
+  PRINT "Il file contiene"; RIGHE; "righe."
+END IF
+
+salva e legge un vettore
+LET N = 10
+DIM V(N) AS INTEGER
+FOR I = 0 TO N - 1
+  LET V(I) = INT(RND * 100) + 1
+NEXT I
+
+OPEN "Vettore.txt" FOR OUTPUT AS #1
+WRITE #1, N
+FOR I = 0 TO N - 1
+  WRITE #1, V(I)
+NEXT I
+CLOSE #1
+
+OPEN "Vettore.txt" FOR INPUT AS #1
+INPUT #1, M
+DIM W(M) AS INTEGER
+FOR I = 0 TO M - 1
+  INPUT #1, W(I)
+NEXT I
+CLOSE #1
+
+PRINT "V =";
+FOR I = 0 TO N - 1
+  PRINT V(I);
+NEXT I
+PRINT
+PRINT "W =";
+FOR I = 0 TO M - 1
+  PRINT W(I);
+NEXT I
+PRINT
+LET UGUALI = (N=M)
+LET I = 0
+DO WHILE I < N AND UGUALI
+  LET UGUALI = (V(I) = W(I))
+  LET I = I + 1
+LOOP
+IF UGUALI THEN
+  PRINT "I due vettori sono uguali."
+ELSE
+  PRINT "I due vettori sono diversi."
+END IF
+END
+
+BINARY
+si usano GET/PUT, in cui il secondo parametro indicano la posizione in byte
+PUT #numero, posizione, variabile
+GET #numero, posizione, variabile
+piuttosto difficile da utilizzare.
+
+esempio: ricavare le caratteristiche principali di un file BMP: dimensioni del file, larghezza, altezza, n. di colori.
+
+----------------------------------------------------------
+BITMAPFILEHEADER
+----------------------------------------------------------
+Type          2     tipo del file: "BM"
+Size          4     dimensioni del file
+Reserved1     2     riservato: 0
+Reserved2     2     riservato:0
+OffBits       4     posizione della sezione BITMAP
+----------------------------------------------------------
+BITMAPINFOHEADER
+----------------------------------------------------------
+Size          4     dimensione sezione BITMAPINFOHEADER
+Width         4     larghezza dell'immagine in pixel
+Height        4     altezza dell'immagine in pixel
+Planes        2     numero di piani: 1
+BitCount      2     numero di bit per pixel
+Compression   4     tipo di compressione utilizzata
+SizeImage     4     dimensione sezione BITMAP
+XPelsPerMeter 4     risoluzione orizzontale in pixel/metro
+YPelsPerMeter 4     risoluzione verticale in pixel/metro
+ClrUsed       4     numero di colori utilizzati
+ClrImportant  4     numero di colori importanti
+----------------------------------------------------------
+BITMAP
+----------------------------------------------------------
+
+DIM BMPFILE AS STRING
+
+CONST POSTIPOFILE = 1
+CONST POSDIMFILE = 3
+CONST POSLARGHEZZA = 19
+CONST POSALTEZZA = 23
+CONST POSNUMEROCOLORI = 29
+
+DIM PAROLA AS INTEGER
+DIM DOPPIAPAROLA AS LONG
+
+CLS
+LET TIPOBM = ASC("B") + 256 * ASC("M")
+INPUT "Nome del file BITMAP da analizzare: ", BMPFILE
+OPEN BMPFILE FOR BINARY AS #1
+
+  GET #1, POSTIPOFILE, PAROLA
+  IF PAROLA <> TIPOBM THEN
+    PRINT "Tipo file non valido."
+  ELSE
+    PRINT
+    PRINT "Tipo file..........: BM"
+    GET #1, POSDIMFILE, DOPPIAPAROLA
+    PRINT "Dimensione file....:"; DOPPIAPAROLA
+
+    GET #1, POSLARGHEZZA, DOPPIAPAROLA
+    PRINT "Larghezza bitmap...:"; DOPPIAPAROLA
+    GET #1, POSALTEZZA, DOPPIAPAROLA
+    PRINT "Altezza bitmap.....:"; DOPPIAPAROLA
+    GET #1, POSNUMEROCOLORI, PAROLA
+    LET DOPPIAPAROLA = 2 ^ PAROLA
+    PRINT "Numero di colori...:"; DOPPIAPAROLA
+  END IF
+CLOSE #1
+END
+
+esempio di accesso RANDOM -> comodo perche', se salviamo sempre e solo variabili di un certo tipo, noi indichiamo l'indice della variabile anziche' la posizione in byte.
+
+PUT #numero, indice, variabile
+GET #numero, indice, variabile
+
+REM salva e legge un vettore di lunghezza prefissata
+CONST N = 10
+DIM V(N) AS INTEGER
+FOR I = 0 TO N - 1
+  LET V(I) = INT(RND * 100) + 1
+NEXT I
+
+OPEN "Vettore.txt" FOR RANDOM AS #1
+WRITE #1, N
+FOR I = 0 TO N - 1
+  PUT #1, I + 1, V(I)
+NEXT I
+CLOSE #1
+
+OPEN "Vettore.txt" FOR RANDOM AS #1
+DIM W(N) AS INTEGER
+FOR I = 0 TO N - 1
+  GET #1, I + 1, W(I)
+NEXT I
+CLOSE #1
+
+PRINT "V =";
+FOR I = 0 TO N - 1
+  PRINT V(I);
+NEXT I
+PRINT
+PRINT "W =";
+FOR I = 0 TO N - 1
+  PRINT W(I);
+NEXT I
+PRINT
+LET UGUALI = -1
+LET I = 0
+DO WHILE I < N AND UGUALI
+  LET UGUALI = (V(I) = W(I))
+  LET I = I + 1
+LOOP
+IF UGUALI THEN
+  PRINT "I due vettori sono uguali."
+ELSE
+  PRINT "I due vettori sono diversi."
+END IF
+END
+
+PUT e GET sono comodi perche' funzionano anche con i tipi definiti dall'utente (TYPE)
+
+esercizio: creare un programma che, dato un file di testo, ne crei un'altro contenente l'indice analitico (parole lunghe al max 40 caratteri, max 1000 voci). una voce dell'indice e' da considerarsi una qualunque sequenza di caratteri alfanumerici

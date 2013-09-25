@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>heap</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+<link href="css/heap.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#heap">risorse</a> | heap</p>
+<h1>heap</h1>
+<h2>Introduzione</h2>
+<p>La libreria <span class="library">heap</span> tiene traccia delle allocazioni di memoria effettuate segnalando, al termine del programma, se qualcuna di esse non &egrave; stata correttamente liberata.</p>
+<p>La libreria nasce da un esercizio relativo all'overloading degli operatori globali <span class="function">new</span>/<span class="function">delete</span>. Le limitazioni dell'implementazione sono molteplici; in particolare:</p>
+<ul>
+ <li>non gestisce le funzioni <span class="function">malloc</span>/<span class="function">free</span>;</li>
+ <li>non gestisce gli <span class="function">operator new</span> locali;</li>
+ <li>non gestisce gli operatori <em>no-throw</em>;</li>
+ <li>non gestisce il <em>placement new</em>;</li>
+ <li><strong>non</strong> &egrave; multi-threading.</li>
+</ul>
+<p>La registrazione delle allocazioni di memoria viene effettuata dall'oggetto <span class="object">HeapTracer</span>. Un'istanza di tale oggetto deve essere definita quanto prima, per assicurare il tracciamento di tutte le operazioni che coinvolgono la memoria dinamica. La dichiarazione di un'istanza globale dell'oggetto spesso &egrave; la soluzione migliore.</p>
+<p>Le versioni overloaded degli operatori <span class="function">new</span>/<span class="function">delete</span> provvedono a notificare all'oggetto <span class="object">HeapTracer</span> le avvenute (de)allocazioni di memoria. &Egrave; responsabilit&agrave; dell'oggetto <span class="object">HeapTracer</span> mantenere traccia della sequenza di allocazioni e deallocazioni per poter, al termine del programma, verificare se esistono delle zone di memoria non deallocate.</p>
+<p>Grazie all'uso di alcune macro (che d'altra parte costituiscono la ragione della mancata gestione dei <em>placement new</em>), di ogni allocazione viene registrata dimensione, provenienza (nome del file e linea sorgente) e tipologia (scalare/vettoriale):</p>
+<pre class="code">
+
+#define new new(__FILE__, __LINE__)
+
+// operatore new "standard" (librerie esterne)
+void* operator new(size_t size);
+
+// operatore new "custom" (librerie utente)
+void* operator new (size_t size, const char* file, int line);
+
+</pre>
+<p>In corrispondenza di ogni deallocazione, l'oggetto <span class="object">HeapTracer</span> verifica che la zona di memoria da liberare corrisponda ad una precedente allocazione, notificando in caso contrario un evento <span class="event">DoubleFree</span>; verifica quindi la corrispondenza di tipo, emettendo eventualmente una notifica di tipo <span class="event">TypeMismatch</span>. Se tutti i controlli hanno avuto esito positivo, procede con la deallocazione dell'area richiesta.</p>
+<h2>Uso della libreria</h2>
+<p>Per sottoporre una porzione di codice al controllo delle allocazioni &egrave; sufficiente includere il file <span class="file-name">Heap.h</span>. Come regola generale si pu&ograve; assumere che la direttiva di inclusione va inserita nei soli file di implementazione (.cpp), a seguire tutti gli altri:</p>
+<pre class="code">
+
+// file *.cpp
+#include &lt;...
+#include &lt;...
+
+#ifdef DEBUG
+#include &lt;Heap.h&gt;
+#endif
+
+</pre>
+<p class="warning">La mancata gestione del <em>placement new</em> rende nella pratica obbligatoria, nei programmi che fanno uso della libreria STL (che ricorre spesso a questo tipo di allocazione), l'inclusione del file <span class="file-name">Heap.h</span> <strong>dopo</strong> quelle relative ai file di STL.</p>
+<p>L'allocazione dell'istanza dell'oggetto <span class="object">HeapTracer</span> di norma avviene nel file di implementazione principale:</p>
+<pre class="code">
+
+#ifdef DEBUG
+Heap::HeapTracer theHeapTracer_;
+#endif
+
+int main ()
+{
+
+  // code
+
+#ifdef DEBUG
+  if (theHeapTracer_.GetQualifiedRequestCount () &gt; 0)
+  {
+    theHeapTracer_.Dump (std::cerr, Heap::HeapRequest::e_qualified);
+    std::cerr &lt;&lt; &quot;Memory leaks detected...&quot; &lt;&lt; std::endl;
+  }
+  else if (theHeapTracer_.GetUnqualifiedRequestCount () &gt; 0)
+    std::cerr &lt;&lt; &quot;Unqualified memory leaks detected...&quot; &lt;&lt; std::endl;
+#endif
+
+}
+
+</pre>
+<p>I file che costituiscono la libreria sono:</p>
+<ul>
+ <li><a href="src/heap/Heap.h"><span class="file-name">Heap.h</span></a>: file di intestazione di riferimento;</li>
+ <li><a href="src/heap/Operators.h"><span class="file-name">Operators.h</span></a> e <a href="src/heap/Operators.cpp"><span class="file-name">Operators.cpp</span></a>: ridefinizione degli operatori di allocazione;</li>
+ <li><a href="src/heap/HeapRequest.h"><span class="file-name">HeapRequest.h</span></a> e <a href="src/heap/HeapRequest.cpp"><span class="file-name">HeapRequest.cpp</span></a>: rappresenta una richiesta di allocazione;</li>
+ <li><a href="src/heap/HeapRequests.h"><span class="file-name">HeapRequests.h</span></a> e <a href="src/heap/HeapRequests.cpp"><span class="file-name">HeapRequests.cpp</span></a>: rappresenta una sequenza di richieste di allocazione;</li>
+ <li><a href="src/heap/HeapTracer.h"><span class="file-name">HeapTracer.h</span></a> e <a href="src/heap/HeapTracer.cpp"><span class="file-name">HeapTracer.cpp</span></a>: l'oggetto che registra le allocazioni.</li>
+</ul>
+<h2>Note</h2>
+<p>Le allocazioni effettuate nei file non sottoposti al controllo di allocazione, cos&igrave; come quelle effettuate dalle liberie esterne - ed in genere ovunque la ridefinizione degli operatori non sia visibile - vengono registrate con provenienza &quot;sconosciuta&quot; e classificate come <span class="request-type">UnqualifiedRequest</span>.</p>
+<p>Poich&eacute; STL fa largo uso di oggetti statici le cui deallocazioni avvengono dopo la conclusione del programma), la presenza di richieste di allocazione non qualificate non viene segnalata come errore.</p>
+<p class="modification-notice">Pagina modificata il 15/11/2011</p>
+</body>
+</html>

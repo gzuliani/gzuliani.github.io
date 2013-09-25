@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>Black Box e Dependency Injection</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#abstractions">risorse</a> | black box e dependency injection</p>
+<h1>Black Box e Dependency Injection</h1>
+<p>L'astrazione &egrave; uno strumento fondamentale per gestire la progettazione di sistemi complessi: nascondendo i dettagli, si presuppone di poter dominare la complessit&agrave;.</p>
+<pre>
+           ???
+            v        
+   +-----------------+
+   |                 |
+   |                 |
+   | implementazione |
+   |                 |
+   |                 |
+   +-----------------+
+
+   per interagire con un sistema complesso,
+   &egrave; necessario prima di tutto comprenderlo
+</pre>
+<p>Un'astrazione nasconde i dettagli implementativi con un'interfaccia che definisce la modalit&agrave; di attivazione delle funzionalit&agrave;, a prescindere dall'implementazione.</p>
+<pre>
+   +-----------------+
+   |   interfaccia   |
+   +-----------------+
+           v
+   +-----------------+
+   |                 |
+   |                 |
+   | implementazione |
+   |                 |
+   |                 |
+   +-----------------+
+
+   per interagire con un'astrazione,
+   &egrave; sufficiente comprenderne l'interfaccia
+</pre>
+<p>A volte tuttavia non si pu&ograve; prescindere da tutti i dettagli implementativi. A fronte di differenti opzioni implementative, quale dovrebbe scegliere un buon progettista? In linea di principio, quella in grado di soddisfare ogni possibile utilizzatore del sistema. E se &ndash; come spesso accade &ndash; una tale implementazione non esiste? Un caso del genere si definisce <em>mapping dilemma</em>, e pu&ograve; essere risolto tramite una scelta arbitraria del progettista (si parla in questo caso di <em>mapping decision</em>). L'utilizzatore non ha modo di intervenire su questa scelta; nel caso non infrequente che la scelta del progettista non sia quella ottimale per l'utilizzatore, si realizza un <em>mapping conflict</em>.</p>
+<pre>
+     ^             ^
+   +-^-------------^-+
+   | ^ interfaccia ^ |
+   +-^-------------^-+
+     ^      v      ^
+   +-^-------------^-+
+   | ^             ^ |
+   | ^             ^ |
+   | implementazione |
+   |                 |
+   |                 |
+   +-----------------+
+
+   un'astrazione mal progettata
+   costringe gli utilizzatori a comprenderne
+   comunque i dettagli implementativi
+</pre>
+<p>All'utilizzatore restano due possibilit&agrave;:</p>
+<ol>
+ <li>reimplementare la funzionalit&agrave; secondo le proprie esigenze;</li>
+ <li>dedurre l'implementazione per forzare, se possibile, la libreria ad operare in modo accettabile.</li>
+</ol>
+<p>La prima opzione ha come conseguenza la duplicazione di funzionalit&agrave;, mentre la seconda, oltre a costituire un evidente controsenso, risulta essere poco resiliente (si pensi al caso in cui una nuova versione del componente cambia implementazione). La conclusione &egrave; quindi che l'utilizzatore deve poter intervenire sulle scelte implementative, partecipando alle decisioni. Non potendo farlo in fase di progettazione, deve poterlo fare in fase di esecuzione. Si delineano perci&ograve; due tipi di interfacce: una interfaccia base, che rappresenta il punto d'accesso alle funzionalit&agrave; di libreria, ed una meta-interfaccia, utilizzabile per specificare le modalit&agrave; operative con cui si desidera la libreria funzioni. Occupandosi di aspetti ortogonali (la prima del cosa, la seconda del come), le due interfacce devono essere indipendenti e separate.</p>
+<pre>
+   +-----------------+
+   |   interfaccia   |
+   |      base       |
+   +-----------------+
+            v
+   +-----------------+
+   |                 |
+   |                 |     +------------------+     +-------------------+
+   | implementazione |  >  | meta-interfaccia |  >  | personalizzazioni |
+   |                 |     +------------------+     +-------------------+
+   |                 |
+   +-----------------+
+</pre>
+<p>Tramite l'interfaccia base l'utilizzatore attiva le funzionalit&agrave; di libreria; per mezzo della meta-interfaccia, l'implementazione attiva le personalizzazioni.</p>
+<p>La meta-interfaccia definisce un protocollo, che nel caso dell'OOP viene detto <em>meta-object protocol</em>.</p>
+<h2>Come vanno progettate le meta-interfacce?</h2>
+<p>Innanzitutto va tenuto conto che essendo esse stesse astrazioni, si applicano loro le stesse considerazioni oggetto di questa analisi. In secondo luogo, i mapping dilemma vengono risolti isolando le mapping decision e rendendole sostituibili: gli utilizzatori che sperimentano un mapping conflict possono realizzare una mapping decision differente e chiedere al sistema di farne uso.</p>
+<p>I principi ispiratori alla base della buona progettazione delle meta-interfacce sono:</p>
+<ul>
+ <li>incrementalit&agrave;: deve essere possibile personalizzare solo gli aspetti ritenuti necessari;</li>
+ <li>contestualit&agrave;: ogni utilizzatore deve poter definire le proprie personalizzazioni;</li>
+ <li>interoperabilit&agrave;: moduli che usano personalizzazioni differenti devono poter interagire correttamente.</li>
+</ul>
+<h2>Nota</h2>
+<p>A proposito di astrazioni di sistemi complessi, Anders Hejlsberg (Turbo Pascal, Delphi, C#) introduce il concetto di <em>simplessit&agrave;</em>:</p>
+<blockquote>
+When you take something incredibly complex and try to wrap it in something simpler, you often just shroud the complexity. You don't actually design a truly simple system. And in some ways you make it even more complex, because now the user has to understand what was omitted that they might sometimes need. That's simplexity.
+</blockquote>
+<p>La presenza di un'interfaccia astratta non deve quindi giustificare eventuali deficienze strutturali dell'implementazione sottostante.</p>
+<h2>Riferimenti</h2>
+<p>Martelli, Alex. &quot;Lo Zen e l'Arte della Manutenzione delle Astrazioni&quot;. <em>PyCon Tre</em>. &lt;<a href="http://www.pycon.it/conference/talks/lo-zen-e-larte-della-manutenzione-delle-astrazioni">http://www.pycon.it/conference/talks/lo-zen-e-larte-della-manutenzione-delle-astrazioni</a>&gt;. Visitato il 20 Maggio 2011.</p>
+<p>Hejlsberg, Anders. &quot;Delegates, Components, and Simplexity&quot;. <em>Aritma developer</em>. &lt;<a href="http://www.artima.com/intv/simplexity.html">http://www.artima.com/intv/simplexity.html</a>&gt;. Visitato il 5 Ottobre 2011.</p>
+<p>Kiczales, Gregor. &quot;Why are Black Boxes so Hard to Reuse?&quot; <em>Palo Alto Research Center</em>. &lt;<a href="http://www2.parc.com/csl/groups/sda/projects/oi/towards-talk/transcript.html">http://www2.parc.com/csl/groups/sda/projects/oi/towards-talk/transcript.html</a>&gt;. Visitato il 5 Ottobre 2011.</p>
+<p>Spolsky, Joel. &quot;The Law of Leaky Abstractions&quot;. <em>Joel on Software</em>. &lt;<a href="http://www.joelonsoftware.com/articles/LeakyAbstractions.html">http://www.joelonsoftware.com/articles/LeakyAbstractions.html</a>&gt;. Visitato il 5 Ottobre 2011.</p>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

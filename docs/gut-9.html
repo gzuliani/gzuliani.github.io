@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>Good Unit Tests /9</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-9">risorse</a> | good unit tests /9</p>
+<h1>Good Unit Tests /9</h1>
+<p>Questa breve parte (la nona; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a> e qui l'<a href="gut-8.html">ottava</a>) &egrave; dedicata al supporto dell'oggetto <span class="code">nullptr</span>.</p>
+<h2>Supporto di <span class="code">nullptr</span></h2>
+<p>L'infrastruttura non consente ancora il confronto tra puntatori e <span class="code">nullptr</span>:</p>
+<pre class="code">
+  ...
+
+  CHECK(&amp;obj == nullptr); // does not compile!
+  ...
+</pre>
+<p>Per abilitare questo tipo di comparazioni &egrave; sufficiente specializzare l'espressione binaria, nelle due varianti &ndash; <span class="code">nullptr</span> a destra e a sinitra:</p>
+<pre class="code">
+<ins>template&lt;Operator op, typename T&gt;
+bool compare(T* lhs, std::nullptr_t rhs) {
+  return ExprFactory&lt;T*, std::nullptr_t, op&gt;::logAndEvaluate(lhs, rhs);
+}
+
+template&lt;Operator op, typename T&gt;
+bool compare(std::nullptr_t lhs, T* rhs) {
+  return ExprFactory&lt;std::nullptr_t, T*, op&gt;::logAndEvaluate(lhs, rhs);
+}</ins>
+</pre>
+<p>Poich&eacute; non &egrave; possibile serializzare l'oggetto <span class="code">nullptr</span> in uno <em>stream</em>, &egrave; necessario prevedere un operatore di conversione a stringa:</p>
+<pre class="code">
+<ins>std::string toString(std::nullptr_t) {
+  return &quot;&lt;nullptr&gt;&quot;;
+}</ins>
+</pre>
+<p>Il programma di test diventa:</p>
+<pre class="code">
+  ...
+  CHECK(NULL == cpi1);
+  //~ assert(lastFailure == &quot;[error] NULL == cpi1 evaluates to 0 == 0012FF24&quot;);
+  
+  <ins>// nullptr
+  CHECK(pi1 == nullptr);
+  //~ assert(lastFailure == &quot;[error] pi1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
+  
+  CHECK(&amp;i1 == nullptr);
+  //~ assert(lastFailure == &quot;[error] &amp;i1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
+  
+  int* pnullptr = nullptr;
+  
+  CHECK(pnullptr != NULL);
+  //~ assert(lastFailure == &quot;[error] pnullptr != NULL evaluates to 00000000 != 00000000&quot;);
+  
+  CHECK(pnullptr != 0);
+  //~ assert(lastFailure == &quot;[error] pnullptr != 0 evaluates to 00000000 != 00000000&quot;);
+  
+  CHECK(cpi1 == nullptr);
+  //~ assert(lastFailure == &quot;[error] cpi1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
+  
+  CHECK(nullptr == &amp;i1);
+  //~ assert(lastFailure == &quot;[error] nullptr == &amp;i1 evaluates to &lt;nullptr&gt; == 0012FF24&quot;);
+  
+  CHECK(0 != pnullptr);
+  //~ assert(lastFailure == &quot;[error] 0 != pnullptr evaluates to 00000000 != 00000000&quot;);
+  
+  CHECK(NULL != pnullptr);
+  //~ assert(lastFailure == &quot;[error] NULL != pnullptr evaluates to 00000000 != 00000000&quot;);
+  
+  CHECK(nullptr == cpi1);
+  //~ assert(lastFailure == &quot;[error] nullptr == cpi1 evaluates to &lt;nullptr&gt; == 0012FF24&quot;);</ins>
+  
+  // objects
+  Object o1(1);
+  Object o2(2);
+  ...
+</pre>
+<p>Al solito, trattandosi di puntatori, le <span class="code">assert</span> sono commentate, perch&eacute; i valori da essi assunti non sono stabili e la loro rappresentazione dipende dal compilatore.</p>
+<p class="modification-notice">Pagina modificata il 13/06/2013</p>
+</body>
+</html>

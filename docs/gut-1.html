@@ -1,0 +1,974 @@
+<html>
+<head>
+<title>Good Unit Tests /1</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<!--
+testing inteso non come mezzo per trovare i bachi, ma per confermare l'aspettativa che qualcosa fa quel che dovrebbe
+(tests are not for finding bugs; tests are the confirmation of a belief that something works the way it should)
+un modo insomma per misurare l'aderenza alle specifiche
+ma allora, perché non esplicitare queste aspettative nel test?
+il codice di test esplicita i requisiti; la sua esecuzione li verifica
+perseguire il black box testing: se entro nel dettaglio del come, anziché del cosa, i test diventano dipendenti dall'implementazione, quindi sensibili al refactoring: sbagliato!
+qui si parla comunque solo di unit test (classes/funcions), in particolare di interfacce e contratti
+integration e system tests vanno gestiti con altri strumenti più idonei
+
+tipi di unit test: passivo (POUT), attivo (TDD) e reattivo (DDT, defect-driven test)
+-->
+<p class="page-path"><a href="../index.html#gut-1">risorse</a> | good unit tests /1</p>
+<h1>Good Unit Tests /1</h1>
+<h2>Introduzione</h2>
+<p>Kevlin Henney ha presentato un interessante framework di unit-testing C++ alla conferenza ACCU di Londra del 2010<a href="#ref-1"><sup>[1]</sup></a>. L'idea alla base &egrave; semplice quanto &ldquo;rivoluzionaria&rdquo;: C++ non &egrave; Java, e dunque perch&eacute; cercare di emulare il funzionamento di jUnit? Perch&eacute; non tentare una strada alternativa, pi&ugrave; adatta alle caratteristiche del linguaggio? Di pi&ugrave;, perch&eacute; non sfruttare l'occasione per introdurre una concezione diversa dello unit-test?</p>
+<p>Lo unit-testing, nella sua incarnazione pi&ugrave; classica, considera corretto il funzionamento di un oggetto sulla base del funzionamento dei suoi metodi; un esempio di unit-test <em>monolitico</em> di un'ipotetico oggetto <span class="code">Stack</span> &egrave; il seguente:</p>
+<pre class="code">
+int main() {
+  Stack aStack;
+  assert(aStack.empty());
+  aStack.push(1);
+  assert(!aStack.empty());
+  aStack.push(2);
+  assert(aStack.pop() == 2);
+  assert(!aStack.empty());
+  assert(aStack.pop() == 1);
+  assert(aStack.empty());
+  try {
+    aStack.pop();
+    assert(false);
+  } catch (...
+  // ...
+</pre>
+<p>Se l'esecuzione dello unit-test non solleva alcun errore, l'oggetto <span class="code">Stack</span> &egrave; considerato essere funzionanate. Di norma i test dei singoli metodi sono effettuati in funzioni dedicate; in questo caso lo unit-test si eleva al rango di <em>procedurale</em>:</p>
+<pre class="code">
+void testEmpty() {
+  Stack aStack;
+  assert(aStack.empty());
+  aStack.push(1);
+  assert(!aStack.empty());
+}
+
+// ...
+
+int main() {
+  testEmpty();
+  testPush();
+  testPop();
+  // ...
+</pre>
+<p>I limiti di questi unit-test &ldquo;vecchia maniera&rdquo; (detti anche POUT, per <em>plain old unit testing</em>) stanno nel fatto che il test di un singolo metodo non dice nulla circa l'uso tipico che si fa dell'oggetto in esame; in secondo luogo, raramente il test di un metodo pu&ograve; essere effettuato in perfetto isolamento: <span class="code">testEmpty</span> ad esempio chiama <span class="code">Stack::push</span>, ma anche la sola istanziazione dell'oggetto <span class="code">aStack</span> causa una chiamata implicita al costruttore.</p>
+<p>Kevlin sostiene che &egrave; possibile trasformare uno unit-test in una specifica d'uso dell'oggetto, conseguendo il duplice obiettivo di verificare il funzionamento dell'oggetto, esplicitando al contempo l'uso che se ne dovrebbe fare. Secondo questa nuova ottica, uno unit-test diventa una <em>specifica</em> costituita da <em>proposizioni</em> che asseriscono certe propriet&agrave; dell'oggetto. Questa forma di unit-testing prende il nome di verifica comportamentale (<em>behavioural test</em>); il nome del test &egrave; ispirato ad un requisito, mentre lo stile si rif&agrave; al concetto di use-case o user-story:</p>
+<pre class="code">
+SPECIFICATION("Stack")
+{
+  PROPOSITION("stack is initially empty")
+  {
+     Stack aStack;
+     IS_TRUE(aStack.empty());
+  }
+
+  PROPOSITION("objects are retrieved in reverse order")
+  {
+     Stack aStack;
+     aStack.push(1);
+     aStack.push(2);
+     int a = aStack.top();
+     aStack.pop();
+     int b = aStack.top();
+
+     IS_TRUE(a == 2);
+     IS_TRUE(b == 1);
+  }
+
+  // ...
+}
+</pre>
+<p>La prima parte della proposizione evidenzia l'uso che si deve fare dell'oggetto per attivare la funzionalit&agrave; desiderata &ndash; richiamando tutti i metodi necessari, allontanandosi quindi definitivamente dallo unit-testing basato sul singolo metodo &ndash;, la seconda parte ne verifica l'effetto.</p>
+<h2>Implementazione</h2>
+<p>Ad oggi Kevlin non ha ancora reso disponibile il codice sorgente, giudicandolo in uno stato ancora prototipale. Ho tentato perci&ograve; di sperimentare autonomamente alcune delle tecniche da lui discusse. Per alcune delle implementazioni ho tratto ispirazione dalla libreria <em>Catch</em><a href="#ref-2"><sup>[2]</sup></a> di Phil Nash, che &egrave; liberamente scaricabile da <em>github</em>.</p>
+<p>Questa prima parte &egrave; dedicata alla cattura dei valori assunti dai termini dell'espressione che ha causato il fallimento del test.</p>
+<h3>Valutazione dei termini dell'espressione di test</h3>
+<p>Tutti i framework di unit-test dispongono di una macro per verificare se un'espressione booleana &egrave; soddisfatta o meno, causando il fallimento del test nel secondo caso:</p>
+<pre class="code">
+CHECK(a == b); // test fails if a != b
+</pre>
+<p>L'eventuale fallimento del test viene di norma segnalato da un messaggio d'errore corredato dal nome del file e dal numero della riga contenente la condizione non soddisfatta, oltre all'espressione stessa; un risultato del genere pu&ograve; essere ottenuto dalla seguente definizione:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+#define CHECK(expr_) \
+  do { \
+    if (!(expr_)) \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; failed&quot; &lt;&lt; std::endl; \
+  } while (0)
+
+int main() {
+  int i1 = 1;
+  int i2 = 2;
+  CHECK(i1 == i2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(12): i1 == i2 failed</pre>
+<p>Il messaggio d'errore prodotto dalla macro <span class="code">CHECK</span> riporta l'espressione originale <span class="code">i1 == i2</span>, ma non i valori assunti dalle due variabili in causa, che risulterebbero sicuramente di maggior interesse. Alcuni framework risolvono il problema predisponendo delle macro apposite, come nell'esempio sottostante:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+#define CHECK_EQUAL(expr1_, expr2_) \
+  do { \
+    if (!(expr1_ == expr2_)) \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; \
+                &lt;&lt; expr1_ &lt;&lt; &quot; != &quot; &lt;&lt; expr2_ &lt;&lt; std::endl; \
+  } while (0)
+
+int main() {
+  int i1 = 1;
+  int i2 = 2;
+  CHECK_EQUAL(i1, i2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(13): 1 != 2</pre>
+</pre>
+<p>Ci&ograve; tuttavia richiede la definizione di una macro per ogni operatore relazionale:</p>
+<pre class="code">
+  CHECK_EQUAL(i1, i2);                 // CHECK(i1 == i2);
+  CHECK_NOT_EQUAL(i1, i2);             // CHECK(i1 != i2);
+  CHECK_LESS_THAN_OR_EQUAL_TO(i1, i2); // CHECK(i1 &lt;= i2);
+  // ...
+</pre>
+<p>Kevlin, nel suo intervento, riferisce di come sia possibile &laquo;catturare&raquo; i valori dei termini di un'espressione binaria per mezzo dell'operatore puntatore-a-membro. L'idea &egrave; di introdurre artificialmente una chiamata di questo tipo immediatamente prima dell'espressione binaria:</p>
+<pre class="code">
+class Capture {
+  // ...
+};
+
+// ...
+Capture capture;
+capture->*i1 == i2;
+</pre>
+<p>La maggiore priorit&agrave; dell'operatore puntatore-a-membro rispetto all'operatore di uguaglianza fa s&igrave; che l'espressione valutata sia:</p>
+<pre class="code">
+  (capture.operator-&gt;*(i1)) == i2;
+</pre>
+<p>per cui, se l'operatore puntatore-a-membro di <span class="code">Capture</span> restituisce un oggetto di tipo <span class="code">Term</span>, si ha:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+public:
+  Term(const T&amp; lhs) {
+    // ...
+  }
+};
+
+class Capture {
+  // ...
+public:
+  template&lt;typename T&gt;
+  Term&lt;T&gt; operator-&gt;*(const T&amp; term) {
+    return Term&lt;T&gt;(term);
+  }
+  // ...
+};
+
+// ...
+Capture capture;
+capture-&gt;*i1 == i2; // Term&lt;int&gt;(i1) == i2;
+</pre>
+<p>Continuando nella valutazione dell'espressione, ora viene chiamato in causa l'operatore di uguaglianza dell'oggetto di classe <span class="code">Term</span> sul parametro <span class="code">i2</span>:</p>
+<pre class="code">
+  Term&lt;int&gt;(i1).operator==(i2);
+</pre>
+<p>L'espressione pu&ograve; dunque essere valutata in <span class="code">Term::operator==</span>:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+public:
+  Term(const T&amp; lhs) {
+    // ...
+  }
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    // ...
+  }
+  // ...
+};
+
+// ...
+</pre>
+<p>Se nel costruttore si ha l'accortezza di tener traccia del parametro <span class="code">lhs</span>, l'operatore di uguaglianza ha accesso ad entrambi i termini dell'espressione binaria iniziale:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+
+std::string last_expr;
+
+template&lt;typename T&gt;
+class Term {
+  const T&amp; lhs_;
+public:
+  Term(const T&amp; lhs) : lhs_(lhs) { }
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    std::stringstream ss;
+    ss &lt;&lt; lhs_ &lt;&lt; &quot; == &quot; &lt;&lt; rhs;
+    last_expr = ss.str();
+    return lhs_ == rhs;
+  }
+};
+
+class Capture {
+public:
+  template&lt;typename T&gt;
+  Term&lt;T&gt; operator-&gt;*(const T&amp; term) {
+    return Term&lt;T&gt;(term);
+  }
+};
+
+#define CHECK(expr_) \
+  do { \
+    if (!(Capture()-&gt;*expr_)) \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; evaluates to &quot; &lt;&lt; last_expr &lt;&lt; std::endl; \
+  } while (0)
+
+int main() {
+  int i1 = 1;
+  int i2 = 2;
+  CHECK(i1 == i2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(38): i1 == i2 evaluates to 1 == 2
+</pre>
+<p>Ricapitolando:
+<ol>
+<li>la macro <span class="code">CHECK</span> istanzia un temporaneo di tipo <span class="code">Capture</span> al quale passa l'espressione binaria, e si preoccupa gestire il fallimento nel caso il valore di ritorno sia <span class="code">false</span>;</li>
+<li>l'oggetto <span class="code">Capture</span> istanzia un oggetto di tipo <span class="code">Term&lt;T&gt;</span> dove <span class="code">T</span> rappresenta il tipo del valore <span class="code">i1</span>;</li>
+<li>l'oggetto <span class="code">Term</span> appena istanziato riceve il termine di destra dell'espressione in <span class="code">operator==</span>, dove <span class="code">U</span> rappresenta il tipo del valore <span class="code">i2</span>;</li>
+<li>in <span class="code">operator==</span>, l'oggetto <span class="code">Term&lt;T&gt;</span> ha l'occasione per registrare il valore dei termini in gioco, prima di procedere alla valutazione dell'espressione di uguaglianza.</li>
+</ol>
+</p>
+<h3>Estensioni</h3>
+<h4>Espressioni unarie</h4>
+<p>Un framework di test che si possa definire tale deve consentire anche la verifica di espressioni del tipo:</p>
+<pre class="code">
+  CHECK(b);      // b is bool
+  CHECK(!o);     // o is an object convertible to bool
+  CHECK(f(...)); // f returns a bool
+  // ...
+</pre>
+<p>A tal fine, &egrave; necessario che l'espressione <span class="code">Capture()->*expr_</span> ritorni un booleano; ricordando le cosiderazioni fatte in precedenza, essa equivale a <span class="code">Term&lt;int&gt;(expr_)</span>, ed &egrave; perci&ograve; sufficiente arricchire la classe <span class="code">Term</span> dell'operatore di conversione a bool:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+  //...
+  operator bool() const {
+    last_expr = lhs_ ? &quot;true&quot; : &quot;false&quot;;
+    return lhs_;
+  }
+}
+// ...
+
+bool f() {
+  return false;
+}
+
+int main() {
+  // ...
+  CHECK(f());
+  return 0;
+}
+// output:
+// ...\check.cpp(48): f() evaluates to false
+</pre>
+<h4>Altri operatori relazionali</h4>
+<p>L'uso degli altri operatori relazionali all'interno della macro <span class="code">CHECK</span> &egrave; condizionato dalla presenza del relativo metodo <span class="code">Term::operator</span>; ad esempio, per l'operatore di disuguaglianza:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+  //...
+  template&lt;typename U&gt;
+  bool operator!=(const U&amp; rhs) const {
+    std::stringstream ss;
+    ss &lt;&lt; lhs_ &lt;&lt; &quot; != &quot; &lt;&lt; rhs;
+    last_expr = ss.str();
+    return lhs_ != rhs;
+  }
+}
+// ...
+
+int main() {
+  int i1 = 1;
+  int i2 = 2;
+  CHECK(i1 == i2);
+  CHECK(i1 != 1);
+  CHECK(f());
+  return 0;
+}
+
+// output:
+// ../check.cpp(59): i1 == i2 evaluates to 1 == 2
+// ../check.cpp(60): i1 != 1 evaluates to 1 != 1
+</pre>
+<p>L'attivazione degli altri operatori relazionali avviene analogamente.</p>
+<p>Vale ora la pena di rifattorizzare in una classe apposita la registrazione dell'espansione dell'espressione, lasciando alla classe <span class="code">Term</span> il solo compito di catturare il valore dei due operandi:</p>
+<pre class="code">
+class Term {
+  //...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    return Expression::logAndEvaluate(Equal&lt;T, U&gt;(lhs_, rhs));
+  }
+  template&lt;typename U&gt;
+  bool operator!=(const U&amp; rhs) const {
+    return Expression::logAndEvaluate(NotEqual&lt;T, U&gt;(lhs_, rhs));
+  }
+  operator bool() const {
+    return Expression::logAndEvaluate(lhs_);
+  }
+  // ...
+</pre>
+<p>Segue la definizione della classe ausiliaria <span class="code">Expression</span>:</p>
+<pre class="code">
+struct Expression {
+  virtual bool evaluate() const = 0;
+  virtual std::string toString() const = 0;
+
+  static std::string last;
+
+  // unary expressions support
+  static bool logAndEvaluate(bool value) {
+    Expression::last = value ? &quot;true&quot; : &quot;false&quot;;
+    return value;
+  }
+  // n-ary expressions support
+  static bool logAndEvaluate(const Expression&amp; expression) {
+    Expression::last = expression.toString();
+    return expression.evaluate();
+  }
+};
+
+std::string Expression::last;
+</pre>
+<p><span class="code">Expression</span> costituisce la classe base delle espressioni relezionali che si intendono valutare, le cui derivate, a fronte dei termini in gioco, devono provvedere a salvare l'espansione in <span class="code">Expression::last</span> e ritornare il valore booleano corretto. Di seguito le strutture associate agli operatori di uguaglianza e disugaglianza:</p>
+<pre class="code">
+template&lt;typename T, typename U&gt;
+struct BinaryExpression : public Expression {
+  const T&amp; lhs_;
+  const U&amp; rhs_;
+  BinaryExpression(const T&amp; lhs, const U&amp; rhs) : lhs_(lhs), rhs_(rhs) { }
+  virtual std::string toString() const {
+    std::stringstream ss;
+    ss &lt;&lt; lhs_ &lt;&lt; &quot; &quot; &lt;&lt; getOpName() &lt;&lt; &quot; &quot; &lt;&lt; rhs_;
+    return ss.str();
+  }
+  virtual std::string getOpName() const = 0;
+};
+
+template&lt;typename T, typename U&gt;
+struct Equal : public BinaryExpression&lt;T, U&gt; {
+  Equal(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ == this-&gt;rhs_; }
+  virtual std::string getOpName() const { return &quot;==&quot;; }
+};
+
+template&lt;typename T, typename U&gt;
+struct NotEqual : public BinaryExpression&lt;T, U&gt; {
+  NotEqual(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ != this-&gt;rhs_; }
+  virtual std::string getOpName() const { return &quot;!=&quot;; }
+};
+</pre>
+<p>Va infine modificata la macro <span class="code">CHECK</span>, che trova ora l'espansione dell'espressione in <span class="code">Expression::last</span>:</p>
+<pre class="code">
+#define CHECK(expr_) \
+  do { \
+    if (!(Capture()-&gt;*expr_)) \
+      std::cout &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;): &quot; &lt;&lt; #expr_ &lt;&lt; &quot; evaluates to &quot; &lt;&lt; Expression::last &lt;&lt; std::endl; \
+  } while (0)
+</pre>
+<h3>Tipi di dato</h3>
+<h4>Stringhe</h4>
+<p>Sebbene finora si siano usati &ndash; a titolo d'esempio &ndash; esclusivamente dati numerici e booleani, tutti i tipi di dato serializzabili in un oggetto <span class="code">std::stringstream</span> sono supportati, in particolare le stringhe e gli array di caratteri, come dimostra il seguente frammento di codice:</p>
+<pre class="code">
+// ...
+int main() {
+  // ...
+  std::string s1 = &quot;1&quot;;
+  std::string s2 = &quot;2&quot;;
+  CHECK(s1 == s2);
+  CHECK(s1 == &quot;2&quot;);
+  CHECK(&quot;1&quot; == s2);
+  CHECK(&quot;1&quot; == &quot;2&quot;);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(59): s1 == s2 evaluates to 1 == 2
+// ...\check.cpp(60): s1 == &quot;2&quot; evaluates to 1 == 2
+// ...\check.cpp(61): &quot;1&quot; == s2 evaluates to 1 == 2
+// ...\check.cpp(62): &quot;1&quot; == &quot;2&quot; evaluates to 1 == 2
+</pre>
+<p>L'assenza dell'indicazione del tipo di dato pu&ograve; generare situazioni ambigue: nel primo caso, ad esempio, il programmatore potrebbe essere indotto a pensare che le variabili <span class="code">s1</span> ed <span class="code">s2</span> siano di tipo intero. Conviene allora esplicitare il tipo delle variabili in gioco in qualche forma, per esempio:</p>
+<pre class="code">
+// output:
+// ...\check.cpp(59): s1 == s2 evaluates to {1} == {2}
+// ...\check.cpp(60): s1 == &quot;2&quot; evaluates to {1} == &quot;2&quot;
+// ...\check.cpp(61): &quot;1&quot; == s2 evaluates to &quot;1&quot; == {2}
+// ...\check.cpp(62): &quot;1&quot; == &quot;2&quot; evaluates to &quot;1&quot; == &quot;2&quot;
+</pre>
+<p>dove si &egrave; usata la convenzione di racchiudere gli array di caratteri tra doppi apici e gli oggetti stringa tra parentesi graffe.</p>
+<p>Si introduce allora un ulteriore livello di indirezione nella conversione dei valori assunti dai termini in stringa, modificando il metodo <span class="code">BinaryExpression::toString</span> come di seguito indicato:</p>
+<pre class="code">
+template&lt;typename T&gt;
+std::string toString(const T&amp; value) {
+  std::ostringstream os;
+  os &lt;&lt; value;
+  return os.str();
+}
+
+// ...
+
+template&lt;typename T, typename U&gt;
+struct BinaryExpression : public Expression {
+  // ...
+  virtual std::string toString() const {
+    return ::toString(lhs_) + &quot; &quot; + getOpName() + &quot; &quot; + ::toString(rhs_);
+  }
+</pre>
+<p>A questo punto si pu&ograve; procedere alla specializzazione della funzione globale <span class="code">toString</span> per gli array di caratteri e le stringhe:</p>
+<pre class="code">
+std::string toString(const char* value) {
+  std::ostringstream os;
+  os &lt;&lt; &quot;\&quot;&quot; &lt;&lt; value &lt;&lt; &quot;\&quot;&quot;;
+  return os.str();
+}
+
+std::string toString(const std::string&amp; value) {
+  std::ostringstream stream;
+  stream &lt;&lt; &quot;{&quot; &lt;&lt; value &lt;&lt; &quot;}&quot;;
+  return stream.str();
+}
+</pre>
+<h4>Booleani</h4>
+<p>Una volta introdotta la funzione <span class="code">toString</span>, &egrave; banale specializzarla per i valori booleani:</p>
+<pre class="code">
+std::string toString(bool value) {
+  std::ostringstream stream;
+  stream &lt;&lt; std::boolalpha &lt;&lt; value;
+  return stream.str();
+}
+
+int main() {
+  // ...
+  bool b1 = true;
+  bool b2 = false;
+  CHECK(b1 == b2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(132): b1 == b2 evaluates to true == false
+</pre>
+<p>Senza la specializzazione, la risposta del programma sarebbe stata:</p>
+<pre class="code">
+// ...\check.cpp(132): b1 == b2 evaluates to 1 == 0
+</pre>
+<h4>Interi</h4>
+<p>A volte &egrave; utile disporre del tipo <span class="code">signed</span>/<span class="code">unsigned</span> di un valore intero, o la sua dimensione effettiva; altre volte è conveniente rappresentarlo in una base specifica. Il codice sottostante consente di definire la base di rappresentazione dei valori interi (macro <span class="code">INT_BASE</span>) e dei caratteri (<span class="code">CHAR_BASE</span>), avendo come opzioni quella decimale (<span class="code">Dex</span>) o esadecimale (<span class="code">Hex</span>):</p>
+<pre class="code">
+#include &lt;iomanip&gt;
+
+// ...
+
+#define INT_BASE Dec
+#define CHAR_BASE Hex
+
+#define CONCAT(a, b) a ## b
+#define CONCAT_(a, b) CONCAT(a, b)
+#define INT_TO_STRING CONCAT_(as, INT_BASE)
+#define CHAR_TO_STRING CONCAT_(as, CHAR_BASE)
+
+// ...
+
+std::string asDec(long long value, const char* suffix) {
+  std::ostringstream os;
+  os &lt;&lt; value &lt;&lt; suffix;
+  return os.str();
+}
+
+template&lt;typename T&gt;
+std::string asDec(const T&amp; value) {
+  return asDec(value, &quot;&quot;);
+}
+
+std::string asDec(unsigned value) {
+  return asDec(value, &quot;u&quot;);
+}
+
+std::string asDec(long value) {
+  return asDec(value, &quot;l&quot;);
+}
+
+std::string asDec(unsigned long value) {
+  return asDec(value, &quot;ul&quot;);
+}
+
+std::string asDec(long long value) {
+  return asDec(value, &quot;ll&quot;);
+}
+
+std::string asDec(unsigned long long value) {
+  return asDec(value, &quot;ull&quot;);
+}
+
+std::string asHex(long long value, size_t width) {
+  std::ostringstream os;
+  os &lt;&lt; &quot;0x&quot; &lt;&lt; std::hex &lt;&lt; std::setw(width) &lt;&lt; std::setfill(&apos;0&apos;) &lt;&lt; value;
+  return os.str();
+}
+
+template&lt;typename T&gt;
+std::string asHex(const T&amp; value) {
+  return asHex(value, sizeof(T) * 2);
+}
+
+std::string asHex(char value) {
+  return asHex(static_cast&lt;int&gt;(value), 2);
+}
+
+template&lt;typename T&gt;
+std::string intToString(const T&amp; value) {
+  return INT_TO_STRING(value);
+}
+
+std::string toString(short value) {
+  return intToString(value);
+}
+
+std::string toString(int value) {
+  return intToString(value);
+}
+
+std::string toString(long value) {
+  return intToString(value);
+}
+
+std::string toString(long long value) {
+  return intToString(value);
+}
+
+std::string toString(unsigned short value) {
+  return intToString(value);
+}
+
+std::string toString(unsigned int value) {
+  return intToString(value);
+}
+
+std::string toString(unsigned long value) {
+  return intToString(value);
+}
+
+std::string toString(unsigned long long value) {
+  return intToString(value);
+}
+
+std::string toString(char value) {
+  std::ostringstream os;
+  os &lt;&lt; &quot;&apos;&quot; &lt;&lt; value &lt;&lt; &quot;&apos; &quot; &lt;&lt; CHAR_TO_STRING(value);
+  return os.str();
+}
+
+std::string toString(unsigned char value) {
+  std::ostringstream os;
+  os &lt;&lt; CHAR_TO_STRING(value);
+  return os.str();
+}
+
+// ...
+
+int main() {
+  // ...
+  unsigned short us = 7;
+  unsigned long ul = 8;
+  CHECK(us == ul);
+  long long ll1 = 23612343;
+  long long ll2 = 876543445676;
+  CHECK(ll1 == ll2);
+
+  char c1 = &apos;o&apos;;
+  unsigned char uc2 = 0x05;
+  CHECK(c1 == uc2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(220): us == ul evaluates to 7 == 8ul
+// ...\check.cpp(223): ll1 == ll2 evaluates to 23612343ll == 876543445676ll
+// ...\check.cpp(227): c1 == uc2 evaluates to &apos;o&apos; 0x6f == 0x05
+</pre>
+<p>Senza la specializzazione, la risposta del programma sarebbe stata:</p>
+<pre class="code">
+// ...\check.cpp(139): us == ul evaluates to 7 == 8
+// ...\check.cpp(142): ll1 == ll2 evaluates to 23612343 == 876543445676
+// ...\check.cpp(146): c1 == uc2 evaluates to o == ?
+</pre>
+<h4>Puntatori</h4>
+<p>Il confronto da puntatori &egrave; in parte gi&agrave; supportato, come dimostra il seguente frammento di codice (i valori riportati in <em>output</em> sono puramente indicativi!):</p>
+<pre class="code">
+// ...
+
+int main() {
+  // ...
+  int* pi1 = &amp;i1;
+  int* pi2 = &amp;i2;
+  CHECK(pi1 == pi2);
+  CHECK(pi1 == &amp;i2);
+  CHECK(&amp;i1 == pi2);
+  CHECK(&amp;i1 == &amp;i2);
+  const int* cpi1 = &amp;i1;
+  const int* cpi2 = &amp;i2;
+  CHECK(cpi1 == cpi2);
+  CHECK(cpi1 == &amp;i2);
+  CHECK(&amp;i1 == cpi2);
+  CHECK(&amp;i1 == &amp;i2);
+  CHECK(cpi1 == pi2);
+  CHECK(pi1 == cpi2);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(231): pi1 == pi2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(232): pi1 == &amp;i2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(233): &amp;i1 == pi2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(234): &amp;i1 == &amp;i2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(237): cpi1 == cpi2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(238): cpi1 == &amp;i2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(239): &amp;i1 == cpi2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(240): &amp;i1 == &amp;i2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(241): cpi1 == pi2 evaluates to 0012FF50 == 0012FF44
+// ...\check.cpp(242): pi1 == cpi2 evaluates to 0012FF50 == 0012FF44
+</pre>
+<p>Quel che non &egrave; supportato &egrave; il confronto tra un puntatore e una delle costanti <span class="code">NULL</span>/<span class="code">0</span>:</p>
+<pre class="code">
+// ...
+
+int main() {
+  // ...
+  // does not compile!
+  CHECK(pi1 == 0);
+  CHECK(pi1 == NULL);
+  CHECK(&amp;i1 == 0);
+  CHECK(&amp;i1 == NULL);
+
+  int* pnull = NULL;
+  CHECK(pnull != NULL);
+  CHECK(pnull != 0);
+
+  const int* cpnull = NULL;
+  CHECK(pnull != cpnull);
+  CHECK(cpnull != pnull);
+  CHECK(cpi1 == 0);
+  CHECK(cpi1 == NULL);
+</pre>
+<p>Questo tipo di confronti sono gestiti da una specializzazione di <span class="code">Equal</span>/<span class="code">NotEqual</span> per i tipi <span class="code">&lt;T*, int&gt;</span>:</p>
+<pre class="code">
+// ...
+
+template&lt;typename T, typename U&gt;
+struct Equal_ : public BinaryExpression&lt;T, U&gt; {
+  Equal_(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  virtual std::string getOpName() const { return "=="; }
+};
+
+template&lt;typename T, typename U&gt;
+struct Equal : public Equal_&lt;T, U&gt; {
+  Equal(const T&amp; lhs, const U&amp; rhs) : Equal_&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ == this-&gt;rhs_; }
+};
+
+template&lt;typename T&gt;
+struct Equal&lt;T*, int&gt; : public Equal_&lt;T*, int&gt; {
+  Equal(T* const&amp; lhs, int rhs) : Equal_&lt;T*, int&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ == reinterpret_cast&lt;T*&gt;(this-&gt;rhs_); }
+};
+
+template&lt;typename T, typename U&gt;
+struct NotEqual_ : public BinaryExpression&lt;T, U&gt; {
+  NotEqual_(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  virtual std::string getOpName() const { return &quot;!=&quot;; }
+};
+
+template&lt;typename T, typename U&gt;
+struct NotEqual : public NotEqual_&lt;T, U&gt; {
+  NotEqual(const T&amp; lhs, const U&amp; rhs) : NotEqual_&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ != this-&gt;rhs_; }
+};
+
+template&lt;typename T&gt;
+struct NotEqual&lt;T*, int&gt; : public NotEqual_&lt;T*, int&gt; {
+  NotEqual(T* const&amp; lhs, int rhs) : NotEqual_&lt;T*, int&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ != reinterpret_cast&lt;T*&gt;(this-&gt;rhs_); }
+};
+
+// ...
+
+int main() {
+  // ...
+  CHECK(pi1 == 0);
+  CHECK(pi1 == NULL);
+  CHECK(&amp;i1 == 0);
+  CHECK(&amp;i1 == NULL);
+
+  int* pnull = NULL;
+  CHECK(pnull != NULL);
+  CHECK(pnull != 0);
+
+  const int* cpnull = NULL;
+  CHECK(pnull != cpnull);
+  CHECK(cpnull != pnull);
+  CHECK(cpi1 == 0);
+  CHECK(cpi1 == NULL);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(279): pi1 == 0 evaluates to 0012FF50 == 0
+// ...\check.cpp(280): pi1 == NULL evaluates to 0012FF50 == 0
+// ...\check.cpp(281): &amp;i1 == 0 evaluates to 0012FF50 == 0
+// ...\check.cpp(282): &amp;i1 == NULL evaluates to 0012FF50 == 0
+// ...\check.cpp(285): pnull != NULL evaluates to 00000000 != 0
+// ...\check.cpp(286): pnull != 0 evaluates to 00000000 != 0
+// ...\check.cpp(289): pnull != cpnull evaluates to 00000000 != 00000000
+// ...\check.cpp(290): cpnull != pnull evaluates to 00000000 != 00000000
+// ...\check.cpp(291): cpi1 == 0 evaluates to 0012FF50 == 0
+// ...\check.cpp(292): cpi1 == NULL evaluates to 0012FF50 == 0
+</pre>
+<p>Il metodo <span class="code">getOpName</span> &egrave; stato fattorizzato in <span class="code">Equal_</span>; alla struttura <span class="code">Equal&lt;T, U&gt;</span> ora &egrave; affiancata <span class="code">Equal&lt;T*, int&gt;</span>, dedicata al confronto puntatore/costante.</p>
+<p>Il confronto costante/puntatore &egrave; garantito dalle seguenti definizioni simmetriche in <span class="code">&lt;int, T*&gt;</span>:</p>
+<pre class="code">
+// ...
+
+template&lt;typename T&gt;
+struct Equal&lt;int, T*&gt; : public Equal_&lt;int, T*&gt; {
+  Equal(int lhs, T* const&amp; rhs) : Equal_&lt;int, T*&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return reinterpret_cast&lt;T*&gt;(this-&gt;lhs_) == this-&gt;rhs_; }
+};
+
+template&lt;typename T&gt;
+struct NotEqual&lt;int, T*&gt; : public NotEqual_&lt;int, T*&gt; {
+  NotEqual(int lhs, T* const&amp; rhs) : NotEqual_&lt;int, T*&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return reinterpret_cast&lt;T*&gt;(this-&gt;lhs_) != this-&gt;rhs_; }
+};
+
+// ...
+
+int main() {
+  // ...
+  CHECK(0 == pi1);
+  CHECK(NULL == &amp;i1);
+  CHECK(0 != pnull);
+  CHECK(NULL != pnull);
+  CHECK(0 == cpi1);
+  CHECK(NULL == cpi1);
+}
+
+// output:
+// ...\check.cpp(294): 0 == pi1 evaluates to 0 == 0012FF50
+// ...\check.cpp(295): NULL == &amp;i1 evaluates to 0 == 0012FF50
+// ...\check.cpp(296): 0 != pnull evaluates to 0 != 00000000
+// ...\check.cpp(297): NULL != pnull evaluates to 0 != 00000000
+// ...\check.cpp(298): 0 == cpi1 evaluates to 0 == 0012FF50
+// ...\check.cpp(299): NULL == cpi1 evaluates to 0 == 0012FF50
+</pre>
+<h4>Oggetti</h4>
+<p>Anche le istanze di classi definite dall'utente possono essere oggetto della macro <span class="code">CHECK</span>, purch&eacute; corredate dall'operatore <span class="code">operator&lt;&lt;</span>, oltre ovviamente all'operatore utilizzato nella macro:</p>
+<pre class="code">
+// ...
+class Object {
+  int m_id;
+public:
+  Object(int id) : m_id(id) { }
+  Object(const Object&amp; co) : m_id(co.m_id) { }
+  Object&amp; operator=(const Object&amp; co) {
+    m_id = co.m_id;
+    return *this;
+  }
+  bool operator==(const Object&amp; co) const { return m_id == co.m_id; }
+  int GetId() const { return m_id; }
+};
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Object&amp; co) {
+  return os &lt;&lt; &quot;Object#&quot; &lt;&lt; co.GetId(); }
+
+// ...
+
+int main() {
+  // ...
+  Object o1(1);
+  Object o2(2);
+  CHECK(o1 == o2);
+  CHECK(o1 == Object(2));
+  CHECK(Object(1) == o2);
+  CHECK(Object(1) == Object(2));
+  return 0;
+}
+
+// output:
+// ...\check.cpp(312): o1 == o2 evaluates to Object#1 == Object#2
+// ...\check.cpp(313): o1 == Object(2) evaluates to Object#1 == Object#2
+// ...\check.cpp(314): Object(1) == o2 evaluates to Object#1 == Object#2
+// ...\check.cpp(315): Object(1) == Object(2) evaluates to Object#1 == Object#2
+</pre>
+<p>&Egrave; possibile rilassare il vincolo riguardante l'operatore di ridirezione introducendo una forma di serializzazione di default per tutti quegli oggetti che ne sono privi:</p>
+<pre class="code">
+// ...
+
+struct NonStreamableTerm {
+  template&lt;typename T&gt;
+  NonStreamableTerm(const T&amp;) { }
+};
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const NonStreamableTerm&amp;) {
+  return os &lt;&lt; &quot;{?}&quot;;
+}
+
+// ...
+
+class NonSerializableObject {
+  int m_id;
+public:
+  NonSerializableObject(int id) : m_id(id) { }
+  bool operator==(const NonSerializableObject&amp; co) const { return m_id == co.m_id; }
+};
+
+// ...
+
+int main() {
+  // ...
+  NonSerializableObject nso1(1);
+  NonSerializableObject nso2(2);
+  CHECK(nso1 == nso2);
+  CHECK(nso1 == NonSerializableObject(2));
+  CHECK(NonSerializableObject(1) == nso2);
+  CHECK(NonSerializableObject(1) == NonSerializableObject(2));
+  return 0;
+}
+
+// output:
+// ...\check.cpp(356): nso1 == nso2 evaluates to {?} == {?}
+// ...\check.cpp(357): nso1 == NonSerializableObject(2) evaluates to {?} == {?}
+// ...\check.cpp(358): NonSerializableObject(1) == nso2 evaluates to {?} == {?}
+// ...\check.cpp(359): NonSerializableObject(1) == NonSerializableObject(2) evaluates to {?} == {?}
+</pre>
+<h4>Segnalazione dell'errato uso dell'operatore di assegnamento</h4>
+<p>Sfruttando l'overloading degli operatori, &egrave; facile produrre un errore di compilazione &laquo;custom&raquo; nel caso in cui l'argomento della macro <span class="code">CHECK</span> sia un'assegnamento anzich&eacute; un'uguaglianza:</p>
+<pre class="code">
+int main() {
+  // ...
+  CHECK(i1 = i2); // should have been i1 == i2
+</pre>
+<p>Il compilatore produce in questo caso un errore piuttosto difficile da decifrare circa l'impossibilit&agrave; di determinare il corretto <span class="code">Term&lt;T&gt;::operator=</span> da chiamare; &egrave; possibile tuttavia intervenire sul messaggio d'errore introducendo una struttura dal nome evocativo, sperando che il compilatore ne riporti il nome all'interno del messaggio d'errore:</p>
+<pre class="code">
+// ...
+struct UNEXPECTED_ASSIGNMENT;
+
+template&lt;typename T&gt;
+class Term {
+  // ...
+public:
+  template&lt;typename U&gt;
+  UNEXPECTED_ASSIGNMENT operator=(const U&amp; value) const;
+};
+</pre>
+<h3>Limiti</h3>
+<h4>Espressioni &laquo;complesse&raquo;</h4>
+<p>L'infrastruttura non consente il test di espressioni arbitrariamente complesse:</p>
+<pre class="code">
+int main() {
+  // ...
+  int i1 = 1;
+  int i2 = 2;
+  CHECK(i1 + 1 == 1);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(299): i1 + 1 == 1 evaluates to true
+</pre>
+<p>Il test precedente fallisce &ndash; correttamente &ndash;, ma l'espansione prodotta per l'espressione &egrave; evidentemente sbagliata. Per ovviare a questo inconveniente, si modifica la classe <span class="code">Term</span> per produrre un errore di compilazione in casi come questo:</p>
+<pre class="code">
+// ...
+struct OPERATION_NOT_SUPPORTED;
+
+template&lt;typename T&gt;
+class Term {
+public:
+  // ...
+  OPERATION_NOT_SUPPORTED operator&amp;&amp;(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator||(const Term&lt;T&gt;&amp; term) const;
+
+  OPERATION_NOT_SUPPORTED operator+(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator-(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator/(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator*(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator%(const Term&lt;T&gt;&amp; term) const;
+
+  OPERATION_NOT_SUPPORTED operator&amp;(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator|(const Term&lt;T&gt;&amp; term) const;
+  OPERATION_NOT_SUPPORTED operator^(const Term&lt;T&gt;&amp; term) const;
+
+  OPERATION_NOT_SUPPORTED operator&gt;&gt;(int term) const;
+  OPERATION_NOT_SUPPORTED operator&lt;&lt;(int term) const;
+};
+</pre>
+<p>Il codice precedente ora genera un errore di compilazione; per ottenere il risultato desiderato &egrave; sufficiente racchiudere tra parentesi il primo termine:</p>
+<pre class="code">
+int main() {
+  // ...
+  int i1 = 1;
+  int i2 = 2;
+  CHECK((i1 + 1) == 1);
+  return 0;
+}
+
+// output:
+// ...\check.cpp(299): (i1 + 1) == 1 evaluates to 2 == 1
+</pre>
+<p>La modifica proposta non copre tuttavia tutte le casistiche:</p>
+<pre class="code">
+  CHECK((i1 == 1) &amp;&amp; (i1 == i2)); // ok, does not compile!
+  CHECK(i1 == 2 &amp;&amp; i1 == i2);     // fails as expected, but expands to &quot;1 == 2&quot;
+</pre>
+<h4>Mancata espansione degli argomenti delle chiamate a funzione</h4>
+<p>L'espansione non avviene per gli argomenti delle chiamate a funzione, come dimostra il frammento che segue:</p>
+<pre class="code">
+// ...
+bool isOdd(int i) {
+  return i % 2;
+}
+
+int main() {
+  int even = 2;
+  CHECK(isOdd(even));
+  return 0;
+}
+
+// output:
+// ...\check..cpp(302): isOdd(even) evaluates to false
+</pre>
+<p>Risulta evidente che l'espansione non si propaga alla variabile <span class="code">even</span>, ma si arresta al livello del valore ritornato dalla funzione <span class="code">isOdd</span>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
+<a name="ref-2"></a>
+<li>Nash, N. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 20 Marzo 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 20/03/2012</p>
+</body>
+</html>

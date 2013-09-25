@@ -1,0 +1,428 @@
+<html>
+<head>
+<title>Good Unit Tests /4</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-4">risorse</a> | good unit tests /4</p>
+<h1>Good Unit Tests /4</h1>
+<p>Questa parte (la quarta; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a> e qui la <a href="gut-3.html">terza</a>) affronta il problema di come circostanziare meglio i fallimenti legati alle espresioni booleane.</p>
+<h2>Descrizioni estese per le espressioni booleane</h2>
+<p>A volte pu&ograve; non essere soddisfacente il messaggio che la macro <span class="code">CHECK</span> emette a fronte del fallimento di un'espressione booleana:</p>
+<pre class="code">
+#include "gut.h"
+#include &lt;cmath&gt;
+
+const double pi = 3.141592653;
+
+bool AreAlmostEqual(double d1,  double d2) {
+  return std::fabs(d1 - d2) &lt; 0.001; // just an example!!!
+}
+
+TEST {
+  CHECK(AreAlmostEqual(pi, 3.14)); // fails
+  CHECK(AreAlmostEqual(pi, 3.141)); // succeeds
+}
+
+/* output:
+ *
+ * arealmostequal.cpp(11) : AreAlmostEqual(pi, 3.14) evaluates to false
+ * ...
+ */
+</pre>
+<p>Un modo per ovviare a questo inconveniente, dopo aver opportunamente generalizzato l'implementazione della versione unaria del metodo <span class="code">Expression::logAndEvaluate</span>, &egrave; di sostituire la funzione <span class="code">AreAlmostEqual</span> con un oggetto omonimo provvisto di operatore di conversione a <span class="code">bool</span> con la stessa semantica della funzione originale:</p>
+<pre class="code">
+
+struct Expression {
+  // ...
+  <ins>template &lt;typename T&gt;</ins>
+  static bool logAndEvaluate(<del>bool</del><ins>const T&amp;</ins> value) {
+    <del>Expression::last = value ? &quot;true&quot; : &quot;false&quot;;</del>
+    <del>return value;</del>
+    <ins>Expression::last = gut::toString(value);</ins>
+    <ins>return static_cast&lt;bool&gt;(value);</ins>
+  }
+  // ...
+}
+
+// ...
+
+<del>bool AreAlmostEqual(double d1,  double d2) {
+  return std::fabs(d1 - d2) &lt; 0.001;
+}</del>
+
+<ins>struct AreAlmostEqual {
+  double d1_;
+  double d2_;
+  AreAlmostEqual(double d1, double d2) : d1_(d1), d2_(d2) {
+  }
+  operator bool() const {
+    return std::fabs(d1_ - d2_) &lt; 0.001;
+  }
+};</ins>
+</pre>
+<p>La compilazione della nuova versione del test fallisce a causa della presenza di due <span class="code">operator&lt;&lt;</span> compatibili con il nuovo tipo <span class="code">AreAlmostEqual</span>: quello di libreria sul tipo primitivo <span class="code">bool</span> e quello per gli oggetti privi di serializzazione <span class="code">gut::operator&lt;&lt;(std::ostream&amp; os, const NonStreamable&amp;)</span>. L'ambiguit&agrave; si risolve introducendo una versione dedicata dell'operatore di ridirezione:</p>
+<pre class="code">
+// ...
+
+<ins>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const AreAlmostEqual&amp; aae) {
+  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &lt; 0.001&quot;;
+  return os;
+}</ins>
+
+TEST {
+  CHECK(AreAlmostEqual(pi, 3.14)); // fails
+  CHECK(AreAlmostEqual(pi, 3.141)); // succeeds
+}
+
+/* output:
+ *
+ * arealmostequal.cpp(22) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &lt; 0.001
+ * ...
+ */
+</pre>
+<p>Questa soluzione ha lo svantaggio di richiedere obbligatoriamente la presenza dell'<span class="code">operator&lt;&lt;</span>; una possibile alternativa consiste nel definire una classe base <span class="code">Boolean</span> e il relativo <span class="code">operator&lt;&lt;</span>, e da essa derivare <span class="code">AreAlmostEqual</span>:</p>
+<pre class="code">
+// ...
+
+<ins>struct Boolean {
+  virtual ~Boolean() { }
+  operator bool() const {
+    return isTrue();
+  }
+  virtual bool isTrue() const = 0;
+  virtual std::string toString() const {
+    std::stringstream ss;
+    ss &lt;&lt; std::boolalpha &lt;&lt; isTrue();
+    return ss.str();
+  }
+};
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Boolean&amp; boolean) {
+  return os &lt;&lt; boolean.toString();
+}</ins>
+
+struct AreAlmostEqual <ins>: public Boolean</ins> {
+  double d1_;
+  double d2_;
+  AreAlmostEqual(double d1, double d2) : d1_(d1), d2_(d2) {
+  }
+  <del>operator bool() const {</del>
+    <del>return std::fabs(d1_ - d2_) &lt; 0.001;</del>
+  <del>}</del>
+<ins>  virtual bool isTrue() const {
+    return std::fabs(d1_ - d2_) &lt; 0.001;
+  }
+  std::string toString() const {
+    std::stringstream ss;
+    ss &lt;&lt; &quot;|&quot; &lt;&lt; d1_ &lt;&lt; &quot; - &quot; &lt;&lt; d2_ &lt;&lt; &quot;| &lt; 0.001&quot;;
+    return ss.str();
+  }</ins>
+};
+
+<del>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const AreAlmostEqual&amp; aae) {
+  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &lt; 0.001&quot;;
+  return os;
+}</del>
+
+</pre>
+<p>Anche questa soluzione non &egrave; ottimale: richiede una derivazione, due <em>override</em>&hellip; senza dimenticare che se non si fornisce una implementazione dedicata di <span class="code">toString</span>, la struttura <span class="code">AreAlmostEqual</span> ha esattamente lo stesso effetto dell'omonima funzione originaria, con l'aggravante di richiedere la scrittura di molto pi&ugrave; codice. Serve necessariamente qualcosa di pi&ugrave; compatto, simile a:</p>
+<pre class="code">
+// ...
+
+Boolean AreAlmostEqual(double d1, double d2) {
+  return Boolean &larr; (response, expression);
+}
+</pre>
+<p>La descrizione testuale dell'espressione potrebbe per esempio essere &ldquo;iniettata&rdquo; nell'oggetto temporaneo tramite l'operatore di ridirezione:</p>
+<pre class="code">
+// ...
+
+Boolean AreAlmostEqual(double d1, double d2) {
+  return Boolean(response) &lt;&lt; token1 &lt;&lt; token2 &lt;&lt; ...;
+}
+</pre>
+<p>Tuttavia, un'implementazione di questo tipo consentirebbe di intervenire sulla descrizione anche in tempi successivi all'istanziazione dell'oggetto <span class="code">Boolean</span>, mentre sarebbe preferibile che la composizione della descrizione sia solo appannaggio di <span class="code">AreAlmostEqual</span>; conviene perci&ograve; che la descrizione venga passata nel costruttore, come oggetto stringa:</p>
+<pre class="code">
+struct Boolean {
+  Boolean(bool value, const std::string&amp; repr) {
+    // ...
+  }
+  // ...
+}
+
+Boolean AreAlmostEqual(double d1, double d2) {
+  return Boolean(response, TextFlow() &lt;&lt; token1 &lt;&lt; token2 &lt;&lt; ...);
+}
+</pre>
+<p>ove <span class="code">TextFlow</span> &egrave; un oggetto di supporto che si occupa di raccogliere i vari frammenti testuali e riproporli come un unico oggetto <span class="code">std::string</span>. Di seguito la versione completa del test:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+const double pi = 3.141592653;
+
+<ins>class Boolean {
+  bool value_;
+  std::string repr_;
+public:
+  Boolean(bool value) : value_(value), repr_(gut::toString(value)) { }
+  Boolean(bool value, const std::string&amp; repr) : value_(value), repr_(repr) { }
+  operator bool() const {
+    return value_;
+  }
+  std::string str() const {
+    return repr_;
+  }
+};
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Boolean&amp; boolean) {
+  return os &lt;&lt; boolean.str();
+}
+
+class TextFlow {
+  std::ostringstream oss_;
+public:
+  template&lt;typename T&gt;
+  TextFlow&amp; operator&lt;&lt;(const T&amp; item) {
+    oss_ &lt;&lt; item;
+    return *this;
+  }
+  operator std::string() const {
+    return oss_.str();
+  }
+};
+
+Boolean AreAlmostEqual(double d1, double d2) {
+  double diff = std::fabs(d1 - d2);
+  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &lt; 0.001&quot;);
+}</ins>
+
+TEST {
+  CHECK(AreAlmostEqual(pi, 3.14)); // fails
+  CHECK(AreAlmostEqual(pi, 3.141)); // succeeds
+}
+
+/* output:
+ *
+ * arealmostequal.cpp(41) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &lt; 0.001
+ * ...
+ */
+</pre>
+<p>La classe <span class="code">Boolean</span> permette di fornire una descrizione di un'espressione booleana in maniera quasi immediata, come si pu&ograve; desumere confrontando la versione iniziale della funzione <span class="code">AreAlmostEqual</span> con quella finale:</p>
+<pre class="code">
+/* old version
+ * bool AreAlmostEqual(double d1,  double d2) {
+ *   return std::fabs(d1 - d2) &lt; 0.001;
+ * }
+ */
+
+// current version
+Boolean AreAlmostEqual(double d1, double d2) {
+  double diff = std::fabs(d1 - d2);
+  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &lt; 0.001&quot;);
+}</ins>
+</pre>
+<h3>operator!</h3>
+<p><span class="code">Boolean</span> non supporta al meglio la negazione:</p>
+<pre class="code">
+// ...
+
+TEST {
+  // ...
+
+  double e = 3.141592653;
+  CHECK(!AreAlmostEqual(e, pi)); // fails
+}
+
+/* output:
+ *
+ * arealmostequal.cpp(45) : !AreAlmostEqual(e, pi) evaluates to false
+ * ...
+ */
+</pre>
+<p>Come si pu&ograve; notare, la negazione causa la trasformazione dell'oggetto <span class="code">Boolean</span> nel tipo primitivo <span class="code">bool</span> (tramite l'operatore di conversione attivato implicitamente dalla chiamata <span class="code">gut::toString()</span> in <span class="code">Expression::logAndEvaluate(const T&amp;)</span>), che l'infrastruttura di test rappresenta con l'etichetta <span class="code">false</span>. Questo problema non &egrave; risolvibile all'interno di <span class="code">Boolean</span>: se &egrave; vero che &egrave; possibile evitare la conversione <span class="code">Boolean</span> &rarr; <span class="code">bool</span> dotando <span class="code">Boolean</span> dell'operatore <span class="code">operator!</span>, &egrave; altrettanto vero che &egrave; praticamente impossibile determinare programmaticamente la forma negata della rappresentazione testuale dell'espressione:</p>
+<pre class="code">
+struct Boolean
+  // ...
+  <ins>Boolean operator!() const {
+    return Boolean(!value_, ???);
+  }</ins>
+  // ...
+};
+</pre>
+<p>L'operatore <span class="code">operator!</span> si troverebbe nella condizione di dover &laquo;negare&raquo; l'espressione <span class="code">&quot;|3.14159 - 3.14| = 0.00159265 &lt; 0.001&quot;</span>: la cosa &egrave; chiaramente priva di senso.  Il problema non &egrave; risolvibile nemmeno a livello di <span class="code">Term::operator!</span>, per il semplice motivo che tale operatore non viene mai chiamato: la negazione viene effettuata direttamente sull'argomento della direttiva <span class="code">CHECK</span>, ed &egrave; a partire da questa viene istanziato l'oggetto <span class="code">Term</span>.</p>
+<p>Il problema deve essere risolto a monte, nel caso specifico introducendo una funzione duale <span class="code">AreQuiteDifferent</span>, oppure in maniera pi&ugrave; generale tramite una macro dalla semantica opposta a <span class="code">CHECK</span>, denominata ad esempio <span class="code">CHECK_NOT</span>:</p>
+<pre class="code">
+TEST {
+  // ...
+
+  double e = 3.141592653;
+  <ins>CHECK_NOT</ins>(AreAlmostEqual(e, pi)); // fails
+}
+</pre>
+<h3>AreTextFileEqual</h3>
+<p>Un altro caso in cui pu&ograve; tornare utile circostanziare meglio il fallimento di una condizione booleana riguarda il confronto tra file:</p>
+<pre class="code">
+// ...
+
+TEST {
+  CHECK(AreTextFileEqual(&quot;file1.txt&quot;, &quot;file2.txt&quot;));
+}
+
+/* output:
+ *
+ * aretextfileequal.cpp(13) : AreTextFileEqual(&quot;file1.txt&quot;, &quot;file2.txt&quot;) evaluates to false
+ * ...
+ */
+</pre>
+<p>Con un minimo di infrastruttura si pu&ograve; ottenere indicazioni precise circa il punto in cui i due file differiscono:</p>
+<pre class="code">
+/* output:
+ *
+ * aretextfileequal.cpp(13) : AreTextFileEqual(&quot;file1.txt&quot;, &quot;file2.txt&quot;) evaluates to false, files are different:
+ *  file1.txt(2) : Donec laoreet lectus et nibh scelerisque rhoncus in id lacus.
+ *  file2.txt(2) : Morbi imperdiet odio nec felis interdum malesuada.
+ * ...
+ */
+</pre>
+<p>Come si pu&ograve; notare, si ha a disposizione sia il numero di linea ove &egrave; stata riscontrata la prima differenza, sia il contenuto della stessa. Se l'informazione viene presentata in un formato simile a quello degli errori emessi dal compilatore (nell'esempio &egrave; stato usato quello del VC10 di Microsoft), l'uso di un editor di testo sufficientemente &ldquo;evoluto&rdquo; consentir&agrave; all'utente di aprire i due file posizionando automaticamente il cursore sulla linea incriminata.</p>
+<p>Il codice di supporto alla funzione <span class="code">AreTextFileEqual</span> &egrave; riportato qui sotto:</p>
+<pre class="code">
+#include &lt;fstream&gt;
+#include &lt;stdexcept&gt;
+
+class InputTextFile {
+  std::ifstream stream_;
+  int lineNumber_;
+public:
+  class iterator : public std::iterator&lt;std::input_iterator_tag, std::string&gt; {
+    InputTextFile* file_;
+    std::string line_;
+    int lineNumber_;
+  public:
+    iterator(InputTextFile* file, const std::string&amp; line, int lineNumber)
+     : file_(file), line_(line), lineNumber_(lineNumber) {
+    }
+    iterator&amp; operator=(const iterator&amp; i) {
+      file_ = i.file_;
+      line_ = i.line_;
+      lineNumber_ = i.lineNumber_;
+      return *this;
+    }
+    bool operator==(const iterator&amp; i) const {
+      return (file_ == i.file_) &amp;&amp; (lineNumber_ == i.lineNumber_);
+    }
+    bool operator!=(const iterator&amp; i) const {
+      return !operator==(i);
+    }
+    iterator&amp; operator++() {
+      return operator=(file_-&gt;fetchLine());
+    }
+    iterator operator++(int) {
+      iterator me = *this;
+      operator=(file_-&gt;fetchLine());
+      return me;
+    }
+    const std::string&amp; operator*() const {
+      return line_;
+    }
+  };
+  explicit InputTextFile(const std::string&amp; path)
+   : stream_(path.c_str()), lineNumber_(0) {
+  }
+  operator bool() const {
+    return good();
+  }
+  bool operator!() const {
+    return !operator bool();
+  }
+  iterator begin() {
+    std::string line = readLine();
+    return line.empty() ? end() : iterator(this, line, lineNumber_);
+  }
+  iterator end() {
+    return iterator(nullptr, &quot;&quot;, -1);
+  }
+  std::string readLine() {
+    if (!good())
+      throw std::runtime_error(&quot;cannot read from file&quot;);
+    std::string line;
+    std::getline(stream_, line);
+    ++lineNumber_;
+    return line;
+  }
+private:
+  bool good() const {
+    return stream_.good();
+  }
+  iterator fetchLine() {
+    if (!good())
+      return end();
+    std::string line = readLine(); // increments lineNumber_
+    return iterator(this, line, lineNumber_);
+  }
+};
+
+// tuples not available in VC10
+template&lt;class T, class U&gt;
+struct first_diff {
+  T iter1;
+  U iter2;
+  size_t count;
+  first_diff(const T&amp; i1, const U&amp; i2, size_t c) : iter1(i1), iter2(i2), count(c) { }
+};
+
+template&lt;class T, class U&gt;
+first_diff&lt;T, U&gt; mismatch(T first1, T last1, U first2, U last2) {
+  size_t count = 0;
+  while ((first1 != last1) &amp;&amp; (first2 != last2) &amp;&amp; (*first1==*first2)) {
+    ++count;
+    ++first1;
+    ++first2;
+  }
+  return first_diff&lt;T, U&gt;(first1, first2, count);
+}
+
+Boolean AreTextFileEqual(const std::string&amp; path1, const std::string&amp; path2) {
+  static const std::string fileIsExausted(&quot;&lt;past-the-end-of-file&gt;&quot;);
+
+  InputTextFile f1(path1);
+
+  if (!f1)
+    return Boolean(
+      false,
+      TextFlow() &lt;&lt; &quot;false, \&quot;&quot; &lt;&lt; path1 &lt;&lt; &quot;\&quot; not found&quot;);
+
+  InputTextFile f2(path2);
+
+  if (!f2)
+    return Boolean(
+      false,
+      TextFlow() &lt;&lt; &quot;false, \&quot;&quot; &lt;&lt; path2 &lt;&lt; &quot;\&quot; not found&quot;);
+
+  const auto diff = mismatch(f1.begin(), f1.end(), f2.begin(), f2.end());
+  const bool isFile1Exausted = (diff.iter1 == f1.end());
+  const bool isFile2Exausted = (diff.iter2 == f2.end());
+
+  if (isFile1Exausted &amp;&amp; isFile2Exausted)
+    return true;
+  else
+    return Boolean(
+      false,
+      TextFlow()
+        &lt;&lt; &quot;false, files are different:\n&quot;
+        &lt;&lt; &quot; &quot; &lt;&lt; path1 &lt;&lt; &quot;(&quot; &lt;&lt; diff.count + 1 &lt;&lt; &quot;) : &quot;
+        &lt;&lt; (isFile1Exausted ? fileIsExausted : *diff.iter1)
+        &lt;&lt; &quot;\n&quot;
+        &lt;&lt; &quot; &quot; &lt;&lt; path2 &lt;&lt; &quot;(&quot; &lt;&lt; diff.count + 1 &lt;&lt; &quot;) : &quot;
+        &lt;&lt; (isFile2Exausted ? fileIsExausted : *diff.iter2));
+}
+</pre>
+<p>In questo caso, l'assenza dell'operatore di negazione in <span class="code">Boolean</span> &egrave; tutto sommato accettabile &ndash; come a dire: <span class="code">Boolean::operator!</span> non sempre serve. Nel caso infatti una direttiva <span class="code">CHECK(!AreTextFileEqual(&quot;file1.txt&quot;, &quot;file2.txt&quot;))</span> fallisca, la segnalazione:</p>
+<pre class="code">
+  aretextfileequal.cpp(13) : !AreTextFileEqual(&quot;file1.txt&quot;, &quot;file2.txt&quot;) evaluates to false
+</pre>
+<p>&egrave; perfettamente accettabile, poich&eacute;, essendo i file identici, non c'&egrave; ragione di dettagliare ulteriormente la situazione.</p>
+<p class="modification-notice">Pagina modificata il 12/10/2012</p>
+</body>
+</html>

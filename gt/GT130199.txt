@@ -1,0 +1,2533 @@
+
+==================================================
+Name:          BLUE STAINED  
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          030 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             50
+reverb diffusion amount  6
+reverb density           5
+low frequency decay      -20
+high frequency decay     -10
+reverb gate              OFF
+reverb gate hold time    +99
+reverb gate release time +99
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <00> PITCH
+delay time               050 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                05
+pitch feedback           05%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +0.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          95
+pitch level              40
+delay level              00
+reverb level             10
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                01
+distortion               OFF
+preamp tone              FLAT
+bass boost               OFF
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               08
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          SIXTY CRUNCH  
+Configuration: 5BAND EQ-PCH-DLY
+==================================================
+
+REVERB
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               311 milliseconds
+delay feedback           12%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               STEREO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                01
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  5 BAND EQ
+low eq frequency         250Hz
+low eq amplitude         +5.00 dB
+low mid eq freq          500Hz
+low mid eq width         0.20 OCTAVES
+low mid eq amp           -3.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.50 OCTAVES
+mid eq amplitude         +8.00 dB
+high mid eq freq         5000Hz
+high mid eq width        0.60 OCTAVES
+high mid eq amp          -4.00 dB
+hi eq frequency          6000Hz
+hi eq amplitude          +5.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     70
+preamp signal            POST-EQ
+eq output level          95
+pitch level              15
+delay level              00
+modulation               OFF
+modulation depth         39
+modulation speed         40
+
+--------------------------------------------------
+
+PREAMP
+
+compression              01
+overdrive                05
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               04
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          PHASE II      
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          010 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     +0
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1  99> PITCH
+delay time               375 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PHASE SHIFTER
+pitch input              EQ OUTPUT
+phaser speed             50
+phaser depth             70
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +0.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          95
+pitch level              90
+delay level              00
+reverb level             10
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              04
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               08
+preamp output level      80
+
+==================================================
+
+
+==================================================
+Name:          BEST BEFORE   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          088 milliseconds
+predelay mix             PRE <00> POST
+reverb decay             20
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -10
+high frequency decay     -40
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               010 milliseconds
+delay feedback           30%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               STEREO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            SQUARE
+lfo speed                10
+lfo depth                60
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         280Hz
+low eq amplitude         +6.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +8.00 dB
+hi eq frequency          6000Hz
+hi eq amplitude          -6.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     70
+preamp signal            POST-EQ
+eq output level          80
+pitch level              40
+delay level              00
+reverb level             20
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                05
+distortion               OFF
+preamp tone              FLAT
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               06
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          SO NATURAL    
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           PREAMP OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          080 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             50
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -17
+high frequency decay     -24
+reverb gate              OFF
+reverb gate hold time    +3
+reverb gate release time +32
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <00> PITCH
+delay time               082 milliseconds
+delay feedback           00%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PITCH DETUNE
+pitch input              PREAMP OUTPUT
+detune amount            +10
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         300Hz
+low eq amplitude         +1.00 dB
+mid eq frequency         1000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +5.00 dB
+hi eq frequency          3500Hz
+hi eq amplitude          +10.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     99
+preamp signal            PRE-EQ
+preamp level             99
+pitch level              30
+delay level              00
+reverb level             05
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              01
+overdrive                OFF
+distortion               OFF
+preamp tone              BRIGHT
+bass boost               OFF
+cab simulator            OFF
+effect loop              OUT
+noise gate               OFF
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          COWBOY DREAM  
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          077 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             63
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      +0
+high frequency decay     -28
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               500 milliseconds
+delay feedback           08%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                05
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  RESONATORS + EQ
+resonator 1 tune         +6 SEMI TONE
+resonator 1 dcy          50
+resonator 1 amp          99
+resonator 2 tune         -10 SEMI TONE
+resonator 2 dcy          50
+resonator 2 amp          99
+mid eq frequency         1000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +9.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     85
+preamp signal            POST-EQ
+eq output level          99
+pitch level              10
+delay level              00
+reverb level             00
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               OFF
+cab simulator            OFF
+effect loop              OUT
+noise gate               OFF
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          GODZILLA'S    
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          077 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             63
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      +0
+high frequency decay     -28
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               250 milliseconds
+delay feedback           30%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                01
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +10.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +12.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +2.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     65
+preamp signal            POST-EQ
+eq output level          70
+pitch level              40
+delay level              00
+reverb level             15
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              04
+overdrive                04
+distortion               03
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               07
+preamp output level      75
+
+==================================================
+
+
+==================================================
+Name:          ALIEN ATTACK  
+Configuration: 5BAND EQ-PCH-DLY
+==================================================
+
+REVERB
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               320 milliseconds
+delay feedback           36%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO FLANGE
+pitch input              EQ OUTPUT
+lfo speed                10
+lfo depth                80
+pitch feedback           90%
+trigger flange           ON
+
+--------------------------------------------------
+
+EQ
+
+eq preset                01
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     60
+preamp signal            POST-EQ
+eq output level          99
+pitch level              99
+delay level              00
+modulation               OFF
+modulation depth         00
+modulation speed         99
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                05
+distortion               08
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            OFF
+effect loop              OUT
+noise gate               02
+preamp output level      80
+
+==================================================
+
+
+==================================================
+Name:          WINTER STUFF  
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          040 milliseconds
+predelay mix             PRE  40> POST
+reverb decay             50
+reverb diffusion amount  2
+reverb density           5
+low frequency decay      +0
+high frequency decay     -60
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <00> PITCH
+delay time               250 milliseconds
+delay feedback           20%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                20
+lfo depth                30
+pitch feedback           60%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         -2.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +3.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          -6.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     70
+preamp signal            PRE-EQ
+preamp level             80
+pitch level              80
+delay level              00
+reverb level             40
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              06
+overdrive                01
+distortion               OFF
+preamp tone              BRIGHT
+bass boost               OFF
+cab simulator            OFF
+effect loop              OUT
+noise gate               08
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          SOLID AND WET 
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          088 milliseconds
+predelay mix             PRE  80> POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     -35
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               311 milliseconds
+delay feedback           12%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            SQUARE
+lfo speed                05
+lfo depth                72
+pitch feedback           30%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         -2.85 dB
+mid eq frequency         200Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +0.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +4.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     80
+preamp signal            POST-EQ
+eq output level          90
+pitch level              90
+delay level              15
+reverb level             10
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              05
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               07
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          NEUROLEAD     
+Configuration: 3 BAND EQ-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 2
+reverb input             EQ OUTPUT
+reverb predelay          088 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             40
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -10
+high frequency decay     -28
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+PITCH
+
+reverb chorus            ON
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                70
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+low eq frequency         200Hz
+low eq amplitude         +0.50 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +2.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          99
+reverb level             29
+
+--------------------------------------------------
+
+PREAMP
+
+compression              01
+overdrive                02
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               07
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          ALMOST TRUE   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          087 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             40
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      +0
+high frequency decay     +0
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +3%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1  26> PITCH
+delay time               235 milliseconds
+delay feedback           14%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                05
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +4.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +5.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +3.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          90
+pitch level              30
+delay level              00
+reverb level             50
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                OFF
+distortion               OFF
+preamp tone              BRIGHT
+bass boost               ON
+cab simulator            OFF
+effect loop              OUT
+noise gate               OFF
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          MED'S PHANTOM 
+Configuration: GRAPHIC EQ-DELAY
+==================================================
+
+REVERB
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay time               300 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+16 Hz                   +1
+32 Hz                   +14
+62 Hz                   +5
+126 Hz                  +1
+250 Hz                  -6
+500 Hz                  -12
+1 KHz                   -5
+2 KHz                   +2
+4 KHz                   +5
+8 KHz                   +14
+16 KHz                  +1
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     90
+eq output level          90
+delay level              02
+
+--------------------------------------------------
+
+PREAMP
+
+compression              01
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               OFF
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          UP FUNK TALK  
+Configuration: 5BAND EQ-PCH-DLY
+==================================================
+
+REVERB
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               375 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PITCH DETUNE
+pitch input              PREAMP OUTPUT
+detune amount            +20
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  5 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+low mid eq freq          400Hz
+low mid eq width         1.00 OCTAVES
+low mid eq amp           -4.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +10.00 dB
+high mid eq freq         6000Hz
+high mid eq width        1.00 OCTAVES
+high mid eq amp          -6.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     90
+preamp signal            POST-EQ
+eq output level          85
+pitch level              40
+delay level              00
+modulation               OFF
+modulation depth         18
+modulation speed         99
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                OFF
+distortion               OFF
+preamp tone              FLAT
+bass boost               OFF
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               08
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          KISS THE SKY  
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          080 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      -20
+high frequency decay     -20
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <00> PITCH
+delay time               285 milliseconds
+delay feedback           40%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              PREAMP OUTPUT
+lfo waveshape            SQUARE
+lfo speed                05
+lfo depth                90
+pitch feedback           45%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +6.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.50 OCTAVES
+mid eq amplitude         +9.65 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            PRE-EQ
+preamp level             70
+pitch level              90
+delay level              10
+reverb level             15
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                01
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               OFF
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          RADIO DAYS    
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          095 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     +0
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               295 milliseconds
+delay feedback           20%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO FLANGE
+pitch input              EQ OUTPUT
+lfo speed                01
+lfo depth                20
+pitch feedback           15%
+trigger flange           OFF
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         400Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         1000Hz
+mid eq bandwidth         0.30 OCTAVES
+mid eq amplitude         +12.00 dB
+hi eq frequency          6000Hz
+hi eq amplitude          +10.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     85
+preamp signal            POST-EQ
+eq output level          95
+pitch level              25
+delay level              10
+reverb level             30
+modulation               OFF
+modulation depth         70
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              06
+overdrive                02
+distortion               06
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               06
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          PURE TUBE     
+Configuration: RESONATOR-DL-REV
+==================================================
+
+REVERB
+
+reverb type              REVERSE 1
+reverb input 1           EQ OUTPUT
+reverb input 2           RESONATOR OUTPUT
+reverb input mix         1  99> 2
+reverb predelay          048 milliseconds
+predelay mix             PRE <42  POST
+reverb reverse time      16
+reverb diffusion amount  7
+reverb density           9
+low frequency decay      -10
+high frequency decay     -28
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input mix          PREAMP<99 RESOUT
+delay time               004 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+EQ
+
+resonator gate mode      CONTINUOUS
+resonator decay          60
+resonator 1 tune         +36 SEMI TONE
+resonator 2 tune         +4 SEMI TONE
+resonator 3 tune         +12 SEMI TONE
+resonator 4 tune         +16 SEMI TONE
+resonator 5 tune         +36 SEMI TONE
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     99
+preamp level             99
+resonator level          99
+delay level              75
+reverb level             50
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                07
+distortion               06
+preamp tone              PRESENCE
+bass boost               OFF
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               04
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          GOLDEN WIRE   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          095 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             65
+reverb diffusion amount  9
+reverb density           8
+low frequency decay      +0
+high frequency decay     -30
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               360 milliseconds
+delay feedback           15%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PITCH DETUNE
+pitch input              EQ OUTPUT
+detune amount            -12
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         1800Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +6.50 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     80
+preamp signal            POST-EQ
+eq output level          95
+pitch level              20
+delay level              30
+reverb level             40
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              07
+overdrive                OFF
+distortion               08
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               08
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          FLYIN' HIGH   
+Configuration: LEZLIE-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          001 milliseconds
+predelay mix             PRE <00> POST
+reverb decay             30
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      +0
+high frequency decay     -15
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               STEREO DELAY
+delay input mix          PREAMP<99 LEZLIE
+left delay time          311 milliseconds
+delay feedback left      54%
+right delay time         311 milliseconds
+delay feedback right     54%
+
+--------------------------------------------------
+
+PITCH
+
+lezlie stereo separation 80
+lezlie motor control     ON
+lezlie speed             SLOW
+
+--------------------------------------------------
+
+EQ
+
+high rotor level          +4
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     90
+lezlie level             40
+delay level              00
+reverb level             00
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                04
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               OFF
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               08
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          AQUA MARINE   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          080 milliseconds
+predelay mix             PRE  80> POST
+reverb decay             65
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     -20
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               311 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                01
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +2.00 dB
+mid eq frequency         1500Hz
+mid eq bandwidth         1.60 OCTAVES
+mid eq amplitude         +14.00 dB
+hi eq frequency          6000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     50
+preamp signal            POST-EQ
+eq output level          90
+pitch level              00
+delay level              30
+reverb level             20
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              05
+overdrive                04
+distortion               07
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               04
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          KING FISHER   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           PREAMP OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          080 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             50
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -17
+high frequency decay     -24
+reverb gate              OFF
+reverb gate hold time    +3
+reverb gate release time +32
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <00> PITCH
+delay time               082 milliseconds
+delay feedback           00%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PITCH DETUNE
+pitch input              PREAMP OUTPUT
+detune amount            +10
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +6.00 dB
+mid eq frequency         1000Hz
+mid eq bandwidth         0.20 OCTAVES
+mid eq amplitude         +14.00 dB
+hi eq frequency          3500Hz
+hi eq amplitude          -14.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             01
+master effects level     90
+preamp signal            PRE-EQ
+preamp level             95
+pitch level              90
+delay level              00
+reverb level             00
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              OFF
+overdrive                OFF
+distortion               OFF
+preamp tone              BRIGHT
+bass boost               OFF
+cab simulator            OFF
+effect loop              OUT
+noise gate               OFF
+preamp output level      99
+
+==================================================
+
+
+==================================================
+Name:          SNOW MADNESS 2
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          095 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     -30
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               650 milliseconds
+delay feedback           40%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO FLANGE
+pitch input              EQ OUTPUT
+lfo speed                03
+lfo depth                90
+pitch feedback           95%
+trigger flange           ON
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +4.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          95
+pitch level              90
+delay level              50
+reverb level             25
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              04
+overdrive                01
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               04
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          FIFTH STONE   
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          060 milliseconds
+predelay mix             PRE  80> POST
+reverb decay             30
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      +0
+high frequency decay     -30
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               290 milliseconds
+delay feedback           10%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               PHASE SHIFTER
+pitch input              EQ OUTPUT
+phaser speed             01
+phaser depth             01
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +12.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     55
+preamp signal            POST-EQ
+eq output level          80
+pitch level              20
+delay level              06
+reverb level             30
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              05
+overdrive                07
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               08
+preamp output level      80
+
+==================================================
+
+
+==================================================
+Name:          FLANGIN' BACK 
+Configuration: 5BAND EQ-PCH-DLY
+==================================================
+
+REVERB
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <00> PITCH
+delay time               300 milliseconds
+delay feedback           40%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO FLANGE
+pitch input              EQ OUTPUT
+lfo speed                20
+lfo depth                60
+pitch feedback           30%
+trigger flange           OFF
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  5 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+low mid eq freq          100Hz
+low mid eq width         1.00 OCTAVES
+low mid eq amp           +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         1.00 OCTAVES
+mid eq amplitude         +0.00 dB
+high mid eq freq         5000Hz
+high mid eq width        1.00 OCTAVES
+high mid eq amp          +0.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     80
+preamp signal            POST-EQ
+eq output level          80
+pitch level              90
+delay level              00
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              03
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            OFF
+effect loop              OUT
+noise gate               OFF
+preamp output level      90
+
+==================================================
+
+
+==================================================
+Name:          '80 MEMORIES  
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          095 milliseconds
+predelay mix             PRE <99  POST
+reverb decay             60
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     +0
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <99  PITCH
+delay time               375 milliseconds
+delay feedback           20%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            TRIANGLE
+lfo speed                05
+lfo depth                20
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2175Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +8.00 dB
+hi eq frequency          6000Hz
+hi eq amplitude          -2.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     60
+preamp signal            POST-EQ
+eq output level          75
+pitch level              80
+delay level              30
+reverb level             35
+modulation               OFF
+modulation depth         70
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              05
+overdrive                03
+distortion               08
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               06
+preamp output level      85
+
+==================================================
+
+
+==================================================
+Name:          REALLY BAD    
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           DELAY OUTPUT
+reverb input mix         1 <99  2
+reverb predelay          077 milliseconds
+predelay mix             PRE  80> POST
+reverb decay             54
+reverb diffusion amount  9
+low frequency decay      +0
+high frequency decay     -20
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               311 milliseconds
+delay feedback           12%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            SQUARE
+lfo speed                01
+lfo depth                80
+pitch feedback           52%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +8.00 dB
+mid eq frequency         3000Hz
+mid eq bandwidth         2.00 OCTAVES
+mid eq amplitude         +10.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +7.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     80
+preamp signal            POST-EQ
+eq output level          90
+pitch level              30
+delay level              30
+reverb level             20
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                05
+distortion               08
+preamp tone              BRIGHT
+bass boost               ON
+cab simulator            CABINET 2
+effect loop              OUT
+noise gate               07
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          CRAZY DIAMOND 
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              HALL 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          088 milliseconds
+predelay mix             PRE  99> POST
+reverb decay             40
+reverb diffusion amount  9
+low frequency decay      -10
+high frequency decay     -28
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            PREAMP OUTPUT
+delay input mix          1 <99  PITCH
+delay time               311 milliseconds
+delay feedback           12%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO FLANGE
+pitch input              EQ OUTPUT
+lfo speed                25
+lfo depth                70
+pitch feedback           50%
+trigger flange           OFF
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +7.00 dB
+mid eq frequency         1700Hz
+mid eq bandwidth         0.20 OCTAVES
+mid eq amplitude         +10.00 dB
+hi eq frequency          8000Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp signal            POST-EQ
+eq output level          95
+pitch level              80
+delay level              10
+reverb level             30
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                04
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               07
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          UNDER THE TREE  
+Configuration: RESONATOR-DL-REV
+==================================================
+
+REVERB
+
+reverb type              PLATE 1
+reverb input 1           PREAM OUTPUT
+reverb input 2           RESONATOR OUTPUT
+reverb input mix         1 <60  2
+reverb predelay          100 milliseconds
+reverb decay             60
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -10
+high frequency decay     +0
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input mix          PREAMP<00>RESOUT
+delay time               001 milliseconds
+delay feedback           00%
+
+--------------------------------------------------
+
+PITCH
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+EQ
+
+resonator gate mode      CONTINUOUS
+resonator decay          70
+resonator 1 tune         -11 SEMI TONE
+resonator 2 tune         -09 SEMI TONE
+resonator 3 tune         -07 SEMI TONE
+resonator 4 tune         -05 SEMI TONE
+resonator 5 tune         -03 SEMI TONE
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     95
+preamp level             95
+resonator level          80
+delay level              00
+reverb level             60
+
+--------------------------------------------------
+
+PREAMP
+
+compression              03
+overdrive                OFF
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               OFF
+cab simulator            OFF
+effect loop              OUT
+noise gate               04
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          PINK CHAMPAGNE
+Configuration: EQ-PCH-DL-REVERB
+==================================================
+
+REVERB
+
+reverb type              ROOM 1
+reverb input 1           EQ OUTPUT
+reverb input 2           PITCH OUTPUT
+reverb input mix         1 <00> 2
+reverb predelay          088 milliseconds
+predelay mix             PRE  20> POST
+reverb decay             30
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -40
+high frequency decay     -60
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +0
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+delay type               MONO DELAY
+delay input 1            EQ OUTPUT
+delay input mix          1 <60  PITCH
+delay time               221 milliseconds
+delay feedback           20%
+
+--------------------------------------------------
+
+PITCH
+
+pitch mode               MONO CHORUS
+pitch input              EQ OUTPUT
+lfo waveshape            SQUARE
+lfo speed                10
+lfo depth                60
+pitch feedback           00%
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+eq mode                  3 BAND EQ
+low eq frequency         200Hz
+low eq amplitude         +6.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         0.90 OCTAVES
+mid eq amplitude         +8.00 dB
+hi eq frequency          4000Hz
+hi eq amplitude          +6.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     85
+preamp signal            POST-EQ
+eq output level          95
+pitch level              50
+delay level              10
+reverb level             40
+modulation               OFF
+modulation depth         99
+modulation speed         30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                05
+distortion               04
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               06
+preamp output level      95
+
+==================================================
+
+
+==================================================
+Name:          SLOW HAND     
+Configuration: 3 BAND EQ-REVERB
+==================================================
+
+REVERB
+
+reverb type              PLATE 2
+reverb input             EQ OUTPUT
+reverb predelay          090 milliseconds
+predelay mix             PRE  80> POST
+reverb decay             50
+reverb diffusion amount  9
+reverb density           9
+low frequency decay      -10
+high frequency decay     -30
+reverb gate              OFF
+reverb gate hold time    +0
+reverb gate release time +80
+reverb gated level       +0%
+
+--------------------------------------------------
+
+DELAY
+
+NOT USED IN THIS CONFIGURATION
+
+--------------------------------------------------
+
+PITCH
+
+reverb chorus            ON
+lfo waveshape            TRIANGLE
+lfo speed                01
+lfo depth                01
+
+--------------------------------------------------
+
+EQ
+
+eq preset                USER
+low eq frequency         200Hz
+low eq amplitude         +0.00 dB
+mid eq frequency         2000Hz
+mid eq bandwidth         2.55 OCTAVES
+mid eq amplitude         +5.00 dB
+hi eq frequency          6500Hz
+hi eq amplitude          +0.00 dB
+
+--------------------------------------------------
+
+MIX
+
+direct level             00
+master effects level     90
+preamp signal            POST-EQ
+eq output level          90
+reverb level             30
+
+--------------------------------------------------
+
+PREAMP
+
+compression              02
+overdrive                05
+distortion               OFF
+preamp tone              PRESENCE
+bass boost               ON
+cab simulator            CABINET 1
+effect loop              OUT
+noise gate               07
+preamp output level      99
+
+==================================================
+
+

@@ -1,0 +1,253 @@
+<html>
+<head>
+<title>idep</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#idep">risorse</a> | idep</p>
+<h1>idep</h1>
+<h2>Introduzione</h2>
+<p>Nel suo celebre &ldquo;Large-Scale C++ Software Design&rdquo;<a href="#ref-2"><sup>[2]</sup></a>, John Lakos presenta <em>idep</em>, un pacchetto per l'estrazione delle dipendenze di moduli C++. Queste note descrivono come le ho applicate per studiare le dipendenze di un progetto C++ di medie dimensioni.</p>
+<h2>Compilazione</h2>
+<p>Dopo aver scaricato i sorgenti da google code<a href="#ref-1"><sup>[1]</sup></a> (una copia locale &egrave; disponibile <a href="files/idep.zip">qui</a>) ed aver predisposto una soluzione in Visual Studio 2008, ho proceduto al build dei tre applicativi <em>adep</em>, <em>cdep</em> e <em>ldep</em>. Per permettere al compilatore di portare a termine con successo il suo compito &egrave; stato necessario specificare il tipo di ritorno &ndash; <code>int</code> &ndash; delle tre funzioni <code>main</code>, assente nella versione originale.</p>
+<h2>Uso</h2>
+<p>Il progetto da analizzare &egrave; composto da una serie di librerie, i cui file di include si trovano nella cartella <code>%PRJ_HOME%\include\lib-name</code>, i sorgenti in <code>%PRJ_HOME%\src\lib\lib-name</code>. Ogni classe C++ &egrave; dichiarata in un omonimo file <code>.h</code>, e definita nel relativo <code>.cpp</code>. In alcuni rari casi, classi di supporto possono essere state definite e dichiarate all'interno di un file <code>.cpp</code>.</p>
+<p>La libreria <em>idep</em> lavora proprio su questo presupposto, con l'ulteriore assunto che la prima direttiva di inclusione del file sorgente si riferisca al relativo <code>.h</code>. Il codice del progetto da analizzare non rispetta questo secondo vincolo &ndash; in genere il primo <code>#include</code> &egrave; quello della libreria di base &ndash;, ma a ci&ograve; si pu&ograve; rimediare definendo un opportuno file di <em>alias</em> (cfr. applicativo <a href="#adep"><em>adep</em></a>).</p>
+<h3>cdep</h3>
+<p><em>cdep</em> &egrave; l'applicativo che si occupa di estrarre le dipendenze compile-time. Per far questo analizza i file della libreria e determina, per ognuno di essi, l'elenco dei file necessari alla sua compilazione. Affinch&eacute; possa risolvere tutte le dipendenze, &egrave; necessario fornirgli l'elenco di tutti i file coinvolti, <code>.h</code> e <code>.cpp</code>. Indicando con %LIB_NAME% il nome della libreria da analizzare, il primo passo da compiere &egrave; la preparazione della lista dei file della libreria:</p>
+<pre>
+dir /s /b %PRJ_HOME%\include\%LIB_NAME%\*.h > %LIB_NAME%-files.txt
+dir /s /b %PRJ_HOME%\src\lib\%LIB_NAME%\*.cpp >> %LIB_NAME%-files.txt
+</pre>
+<p>Poich&eacute; <em>cdep</em> tratta esclusivamente percorsi unix-like, &egrave; indispensabile intervenire sul file <code>%LIB_NAME%-files.txt</code> eliminando il riferimento all'unit&agrave; disco e sostituendo le barre rovesce con quelle normali; un'immediata conseguenza di questa operazione &egrave; che <em>cdep</em> deve trovarsi nella stessa unit&agrave; disco che ospita i sorgenti.</p>
+<p>Prima di invocare <em>cdep</em> &egrave; conveniente raccogliere in un file i percorsi di inclusione standard; in particolare, se non si ha la necessit&agrave; di analizzare le dipendenze rispetto alla libreria standard, &egrave; sufficiente specificare la sola cartella di inclusione della libreria, pi&ugrave; quella di progetto, avendo cura di farlo sempre in forma unix-like:</p>
+<pre>
+[file: include.txt]
+ %PRJ_HOME%/include
+ %PRJ_HOME%/include/%LIB_NAME%
+</pre>
+<p>La prima risolve tutte le inclusioni dei file <code>.cpp</code>, ove uso la direttiva di inclusione nella forma <code>#include &lt;lib/class.h&gt;</code>, mentre la seconda risolve le inclusioni dei file <code>.h</code>, ove, per includere file appartenenti alla stessa libreria, uso la forma <code>#include &quot;class.h&quot;</code>.</p>
+<p>A questo punto si pu&ograve; invocare <em>cdep</em>:</p>
+<pre>
+cdep -iinclude.txt -f%LIB_NAME%-files.txt > %LIB_NAME%.cdep
+</pre>
+<p>L'esecuzione del comando potrebbe produrre un discreto numero di errori di tipo <code>include directory for file &quot;XXX&quot; not specified.</code>, che risultano accettabili se si riferiscono a file esclusi dall'analisi a ragion veduta, come ad esempio i file della libreria standard, STL, liberie di terze parti, &hellip;.</p>
+<p>Il file <code>%LIB_NAME%.cdep</code> raccoglie, per ogni file elencato in <code>%LIB_NAME%-files.txt</code>, tutti i file <code>.h</code> inclusi, direttamente o indirettamente. Poich&eacute; ho usato la convenzione, nelle direttive di inclusione, di usare percorsi unix-like, il file &egrave; pronto per essere utilizzato nelle fasi successive. In caso contrario, sarebbe necessario ripetere l'operazione di bonifica dei percorsi gi&agrave; effettuata per il file <code>%LIB_NAME%-files.txt</code>.</p>
+<a name="adep"></a>
+<h3>adep</h3>
+<p>La seconda fase del processo di analisi consiste nell'individuazione dei componenti di libreria, e della loro associazione con i file che li implementano. Se avessi rispettato le due indicazioni di Lakos (nome dei file <code>.h</code> e <code>.cpp</code> uguale al nome del componente, prima direttiva di inclusione del file <code>.cpp</code> che include l'omonimo file <code>.g</code>), questo passo sarebbe superfluo. Non rispettando il mio codice la seconda delle due richieste, sono costretto a definire un file di <em>alias</em> che specifichi, per ogni componente, quali sono i file che concorrono alla sua definizione.</p>
+<p>La definizione di un <em>alias</em> di un componente (una classe, al livello di granularit&agrave; attuale), pu&ograve; avvenire in due forme:</p>
+<pre>
+[file: %LIB_NAME%.adep]
+COMPONENTE path path ...
+</pre>
+<p>oppure:</p>
+<pre>
+[file: %LIB_NAME%.adep]
+COMPONENTE
+path1
+path2
+...
+&lt;&lt;&lt;riga vuota&gt;&gt;&gt;
+</pre>
+<p>Se i file <code>.h</code> e <code>.cpp</code> risiedono nella stessa cartella, e si sono rispettate entrambe le indicazioni di Lakos, l'utility <em>adep</em> pu&ograve; essere utilizzata per costruire automaticamente il file di <em>alias</em>; per le condizioni in cui mi trovo, sono costretto a prepararlo manualmente. Trascurando le classi ausiliarie definite nei file <code>.cpp</code>, ho predisposto il file di <em>alias</em> a partire dall'elenco dei file in <code>%PRJ_HOME%\include\%LIB_NAME%</code>, usando il nome del file come nome del componente e specificando di seguito il percorso assoluto del file <code>.h</code> e quello <code>.cpp</code>, se disponibile, comunque <strong>privati dell'estensione</strong>.</p>
+<h3>ldep</h3>
+<p>Il passo finale consiste nell'esaminare le dipendenze a link-time, con l'aiuto dell'utility <em>ldep</em>; poich&eacute; essa tende ad aggregare i file per cartelle, &egrave; necessario esplicitare la volont&agrave; di trattare i singoli file come componenti atomici con l'opzione <code>-U</code>:</p>
+<pre>
+ldep -d%LIB_NAME%.cdep -a%LIB_NAME%.adep -U%PRJ_HOME%/include/%LIB_NAME% -U%PRJ_HOME%/src/lib/%LIB_NAME%
+</pre>
+<p>Il programma fornisce un rapporto dettagliato delle dipendenze esistenti tra i componenti analizzati, e riassume lo stato globale della libreria in una manciata di parametri:</p>
+<dl>
+<dt>cycles</dt><dd>numero di cicli individuati;</dd>
+<dt>members</dt><dd>numero di componenti coinvolti in almeno una dipendenza circolare;</dd>
+<dt>components</dt><dd>numero di componenti con almeno una dipendenza;</dd>
+<dt>packages</dt><dd>numero di componenti senza dipendenze;</dd>
+<dt>levels</dt><dd>numero di livelli del grafo delle dipendenze;</dd>
+<dt>CCD</dt><dd>somma del numero di dipendenze di tutti i componenti;</dd>
+<dt>ACD</dt><dd>numero medio di dipendenze (<em>CCD</em>/<em>components</em>);</dd>
+<dt>NCCD</dt><dd>numero medio normalizzato di dipendenze (<em>CCD</em> rapportato al CCD di un albero binario bilanciato avente un numero di nodi pari a <em>components</em>).</dd>
+</dl>
+<p>Pi&ugrave; <em>NCCD</em> &egrave; prossimo all'unit&agrave;, pi&ugrave; vicina all'ottimo risulta l'organizzazione del software.</p>
+<h2>Automatismi</h2>
+<h3>Analisi di una libreria</h3>
+<p>Il seguente script effettua l'analisi della libreria specificata (ricordarsi di impostare la variabile d'ambiente %prjdir% ad un valore adeguato):</p>
+<pre>
+[file: idep-lib.cmd]
+
+@echo off
+if &quot;%1&quot;==&quot;&quot; goto :usage
+set lib=%1
+
+rem define the project directories
+set prjdir=
+set incprjdir=%prjdir%\include
+set inclibdir=%incprjdir%\%lib%
+set srclibdir=%prjdir%\src\lib\%lib%
+
+rem names for auxiliary files
+set incfile=~%lib%.i
+set srcfile=~%lib%.s
+set depfile=~%lib%.d
+set akafile=~%lib%.a
+
+rem build up the include file
+call :emptyfile %incfile%
+call :flushasunixpath %incprjdir% %incfile%
+call :flushasunixpath %inclibdir% %incfile%
+
+rem build up the source files list
+call :emptyfile %srcfile%
+for %%i in (%inclibdir%\*.h) do call :flushasunixpath %%i %srcfile%
+for %%i in (%srclibdir%\*.cpp) do call :flushasunixpath %%i %srcfile%
+
+rem build up the aliases file
+call :emptyfile %akafile%
+for %%i in (%inclibdir%\*.h) do call :flushalias %%i %akafile%
+for %%i in (%srclibdir%\*.cpp) do call :flushalias %%i %akafile%
+echo. &gt;&gt;%akafile%
+rem add an alias for the project include folder
+call :flushasunixpath &quot;[base] %incprjdir%&quot; %akafile%
+rem add an alias for every library
+for /d %%i in (%incprjdir%\*) do call :flushlibalias %%~pni %akafile%
+rem aliases for other special folders
+call :flushasunixpath &quot;[heap] %incprjdir%\support\heap&quot; %akafile%
+
+rem launch the analysis tools
+cdep -i%incfile% -f%srcfile% &gt;%depfile% 2&gt;nul
+ldep -d%depfile% -a%akafile% -U%inclibdir:\=/% -U%srclibdir:\=/% -x %2
+
+:cleanup
+del /q %incfile% 1&gt;nul 2&gt;&amp;1
+del /q %srcfile% 1&gt;nul 2&gt;&amp;1
+del /q %depfile% 1&gt;nul 2&gt;&amp;1
+del /q %akafile% 1&gt;nul 2&gt;&amp;1
+goto :eof
+
+:emptyfile
+echo. &gt;nul 2&gt;%1
+goto :eof
+
+:flushasunixpath
+set filepath=%~1
+echo %filepath:\=/%&gt;&gt;%2
+goto :eof
+
+:flushalias
+set dirpath=%~p1
+set filename=%~n1
+echo %filename% %dirpath:\=/%%filename%&gt;&gt;%2
+goto :eof
+
+:flushlibalias
+set libdir=%1
+set libname=%~n1
+echo [%libname%] %libdir:\=/%&gt;&gt;%2
+goto :eof
+
+:usage
+echo Usage: %~n0 library-name [-l^|-L]
+echo.
+echo     -l    Long listing: provide non-redundant list of dependencies.
+echo     -L    Long listing: provide complete list of dependencies.
+goto :eof
+</pre>
+<h3>Analisi dell'intero progetto</h3>
+<p><em>idep</em> pu&ograve; essere utilizzato anche per valutare le dipendenze tra le librerie che costituiscono il progetto; a tal scopo pu&ograve; tornare utile il seguente script:</p>
+<pre>
+[file: idep-prj.cmd]
+
+@echo off
+if &quot;%1&quot;==&quot;/?&quot; goto :usage
+if &quot;%1&quot;==&quot;-h&quot; goto :usage
+if &quot;%1&quot;==&quot;--help&quot; goto :usage
+
+rem define the project directories
+set homedir=\Users\dex\Temp\idep-x3\prj
+set incdir=%homedir%\include
+set srcdir=%homedir%\src\lib
+
+rem names for auxiliary files
+set incfile=~prj.i
+set srcfile=~prj.s
+set depfile=~prj.d
+set akafile=~prj.a
+
+rem build up the include file
+call :emptyfile %incfile%
+echo .&gt; %incfile%
+call :flushasunixpath %incdir% %incfile%
+for /d %%i in (%incdir%\*) do call :flushasunixpath %%~pni %incfile%
+
+rem build up the source files list
+call :emptyfile %srcfile%
+for /d %%i in (%incdir%\*) do ^
+for %%j in (%%i\*.h) do ^
+call :flushasunixpath %%j %srcfile%
+
+for /d %%i in (%srcdir%\*) do ^
+for %%j in (%%i\*.cpp) do ^
+call :flushasunixpath %%j %srcfile%
+
+rem build up the aliases file
+call :emptyfile %akafile%
+rem add an alias for the project include folder
+call :flushasunixpath &quot;[base] %incprjdir%&quot; %akafile%
+rem add an alias for the base library global include file
+call :flushasunixpath &quot;[base] %incprjdir%\Base&quot; %akafile%
+rem add an alias for every library
+for /d %%i in (%incdir%\*) do call :flushlibalias %%~pni %akafile%
+for /d %%i in (%srcdir%\*) do call :flushlibalias %%~pni %akafile%
+rem aliases for other special folders
+call :flushasunixpath &quot;[heap] %incprjdir%\support\heap&quot; %akafile%
+
+rem launch the analysis tools
+cdep -i%incfile% -f%srcfile% &gt;%depfile% 2&gt;nul
+ldep -d%depfile% -a%akafile% -x %1
+
+:cleanup
+del /q %incfile% 1&gt;nul 2&gt;&amp;1
+del /q %srcfile% 1&gt;nul 2&gt;&amp;1
+del /q %depfile% 1&gt;nul 2&gt;&amp;1
+del /q %akafile% 1&gt;nul 2&gt;&amp;1
+goto :eof
+
+:emptyfile
+echo. &gt;nul 2&gt;%1
+goto :eof
+
+:flushasunixpath
+set filepath=%~1
+echo %filepath:\=/%&gt;&gt;%2
+goto :eof
+
+:flushlibalias
+set libdir=%1
+set libname=%~n1
+echo [%libname%] %libdir:\=/%&gt;&gt;%2
+goto :eof
+
+:usage
+echo Usage: %~n0 [-l^|-L]
+echo.
+echo     -l    Long listing: provide non-redundant list of dependencies.
+echo     -L    Long listing: provide complete list of dependencies.
+goto :eof
+</pre>
+<p>L'uso di includere nei file <code>.h</code> file appartenenti alla stessa libreria con la direttiva <code>#include &quot;class.h&quot;</code> crea qualche problema a <em>cdep</em> quando differenti librerie contengono file con lo stesso nome; supponendo che <em>lib1</em> e <em>lib2</em> contengano entrambe una classe <em>C</em>, e che un'altra classe <em>C'</em> di <em>lib1</em> la includa con la direttiva <code>#include &quot;C.h&quot;</code> &ndash; caso del tutto lecito e correttamente gestito dal compilatore C++ &ndash;, se la cartella di inclusione di <em>lib2</em> precede quella di <em>lib1</em> nel file <code>include.txt</code>, <em>cdep</em> registrer&agrave; una dipendenza di <em>lib1</em>.C' nei confronti di <em>lib2</em>.C anzich&eacute; in quelli di <em>lib1</em>.C.</p>
+<p>Molteplici solo le soluzioni al problema:</p>
+<ul>
+<li>evitando i casi di omonimia di classi;</li>
+<li>conformando le direttive di inclusione dei file <code>.h</code> a quelle dei file <code>.cpp</code> &ndash; <code>#include &lt;...&gt;</code> anzich&eacute; <code>#include &quot;...&quot;</code>;</li>
+<li>operando una riscrittura automatica dei file <code>.h</code> ad uso e consumo di <em>cdep</em>.</li>
+</ul>
+<p>Un ultimo problema l'ho riscontrato con le direttive di inclusione indentate: <em>cdep</em> sembra ignorarle; conviene quindi assicurarsi di specificarle sempre a inizio riga.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Gumz, M. &quot;idep&quot;. <em>google code</em>. &lt;<a href="http://code.google.com/p/idep/">http://code.google.com/p/idep/</a>&gt;. Visitato l'11 Gennaio 2012.</li>
+<a name="ref-2"></a>
+<li>Lakos, J. <em>Large-Scale C++ Software Design</em>. Addison-Wesley Professional, 1996.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 12/01/2012</p>
+</body>
+</html>

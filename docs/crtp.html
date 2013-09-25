@@ -1,0 +1,405 @@
+<html>
+<head>
+<title>CRTP &ndash; Curiously Recurring Template Pattern</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/crtp.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#crtp">risorse</a> | crtp &ndash; curiously recurring template pattern</p>
+<h1>CRTP &ndash; Curiously Recurring Template Pattern</h1>
+<h2>Introduzione</h2>
+<p>Il Curiously Recurring Template Pattern (espressione coniata da James Coplien<a href="#ref-1"><sup>[1]</sup></a>) &egrave; un idioma del C++ secondo il quale una classe <span class="code">C</span> deriva da una classe template istanziata sulla classe <span class="code">C</span> stessa:</p>
+<pre class="code">
+template &lt;class T&gt;
+class B {
+};
+
+class C : public B&lt;C&gt; {
+};
+</pre>
+<p>Il CRTP viene frequentemente presentato come implementazione del <em>polimorfismo statico</em>, un meccanismo polimorfico risolto a compile-time:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class B {
+public:
+  void f() {
+    static_cast&lt;T*&gt;(this)-&gt;f();
+  }
+};
+
+class C : public B&lt;C&gt; {
+public:
+  void f() {
+    std::cout &lt;&lt; "C::f" &lt;&lt; std::endl;
+  }
+};
+
+int main()
+{
+  B&lt;C&gt;* b = new C;
+  b-&gt;f();
+  delete b;
+  return 0;
+}
+
+/* output:
+ *
+ * C::f
+ */
+</pre>
+<p>A fronte di una minor leggibilit&agrave; del codice, si ottiene un aumento delle prestazioni, venendo meno la risoluzione del metodo <span class="code">C::f</span> attraverso la v-table tipica del polimorfismo dinamico dei metodi virtuali. Con la stessa tecnica si possono rendere polimorfici pure i metodi statici:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class B {
+public:
+  static void f() {
+    T::f();
+  }
+};
+
+class C : public B&lt;C&gt; {
+public:
+  static void f() {
+    std::cout &lt;&lt; "C::f" &lt;&lt; std::endl;
+  }
+};
+
+int main()
+{
+  B&lt;C&gt;::f();
+  return 0;
+}
+
+/* output:
+ *
+ * C::f
+ */
+</pre>
+<p>Se la classe derivata <span class="code">C</span> non implementa tutti i metodi richiamati da <span class="code">B</span>, si corre il rischio di uno <em>stack overflow</em>, in virt&ugrave; del fatto che la chiamata <span class="code">static_cast&lt;T*&gt;(this)-&gt;f()</span> in <span class="code">B::f</span> viene risolta su s&eacute; stessa, causando una ricorsione infinita.</p>
+<h2>Dipendenze circolari</h2>
+<p>Scopo principale del CRTP &egrave; risolvere una dipendenza circolare tra due classi, usando l'ereditariet&agrave; in un senso, il tipo parametrico nell'altro. La classe derivata &laquo;vede&raquo; la base per le propriet&agrave; della derivazione, la classe base &laquo;vede&raquo; la derivata grazie al template. Il compilatore C++ gestisce agevolmente questa dipendenza circolare, fintanto che la <strong>struttura</strong> della classe base non dipende dalla classe derivata.</p>
+<p>Un esempio di dipendenza circolare si pu&ograve; riscontrare nello sviluppo di un albero generico a partire da uno binario:</p>
+<pre class="code">
+class BinaryTreeNode {
+public:
+  typedef std::tr1::shared_ptr&lt;BinaryTreeNode&gt; Ptr;
+private:
+  Ptr m_left;
+  Ptr m_right;
+public:
+  virtual ~BinaryTreeNode() { }
+  Ptr left() const { return m_left; }
+  void left(Ptr left) { m_left = left; }
+  Ptr right() const { return m_right; };
+  void right(Ptr right) { m_right = right; }
+};
+</pre>
+<p>L'implementazione dell'albero generico necessita dei metodi <span class="code">left</span>, <span class="code">right</span> per organizzare, secondo la tradizione, i nodi figli nel sotto-albero di sinistra e i nodi fratelli in quello di destra. L'accesso a tali funzionalit&agrave; avviene sfruttando l'ereditariet&agrave; &ndash; tralasciando in questo caso di considerare quale sia la forma pi&ugrave; opportuna, pubblica o privata, e scegliendo la prima per semplicit&agrave;:</p>
+<pre class="code">
+class MultiwayTreeNode : public BinaryTreeNode {
+  Ptr firstChild() const { return left(); }
+  Ptr nextSibling() const { return right(); }
+  void appendChild(Ptr node) {
+    if (left())
+      appendSibling(left(), node);
+    else
+      left(node);
+  }
+  void appendSibling(Ptr node) {
+    if (right())
+      appendSibling(right(), node);
+    else
+      right(node);
+  }
+protected:
+  void appendSibling(Ptr target, Ptr node) {
+    while (target-&gt;right())
+      target = target-&gt;right();
+    target-&gt;right(node);
+  }
+};
+</pre>
+<p>A questo punto ci si scontra con la dipendenza circolare: ci si attende infatti che i metodi <span class="code">firstChild</span> e <span class="code">nextSibling</span> ritornino dei puntatori a <span class="code">MultiwayTreeNode</span>, piuttosto che puntatori alla classe pi&ugrave; generica <span class="code">BinaryTreeNode</span>. La soluzione si ottiene indicando esplicitamente a <span class="code">BinaryTreeNode</span> la vera natura del tipo dei puntatori <span class="code">m_left</span> e <span class="code">m_right</span> per mezzo di un tipo parametrico, realizzando cos&igrave; il CRTP:</p>
+<pre class="code">
+template &lt;class T&gt;
+class BinaryTreeNode {
+public:
+  typedef std::tr1::shared_ptr&lt;T&gt; Ptr;
+private:
+  Ptr m_left;
+  Ptr m_right;
+public:
+  virtual ~BinaryTreeNode() { }
+  Ptr left() const { return m_left; }
+  void left(Ptr left) { m_left = left; }
+  Ptr right() const { return m_right; };
+  void right(Ptr right) { m_right = right; }
+};
+
+class MultiwayTreeNode : public BinaryTreeNode&lt;MultiwayTreeNode&gt; {
+public:
+  Ptr firstChild() const { return left(); }
+  Ptr nextSibling() const { return right(); }
+  void appendChild(Ptr node) {
+    if (left())
+      appendSibling(left(), node);
+    else
+      left(node);
+  }
+  void appendSibling(Ptr node) {
+    if (right())
+      appendSibling(right(), node);
+    else
+      right(node);
+  }
+protected:
+  void appendSibling(Ptr target, Ptr node) {
+    while (target-&gt;right())
+      target = target-&gt;right();
+    target-&gt;right(node);
+  }
+};
+</pre>
+<p>L'intervento produce, come effetto collaterale, la non-istanziabilit&agrave; della classe base <span class="code">BinaryTreeNode</span>; il problema si risolve introducendo una classe ausiliaria:</p>
+<pre class="code">
+// rename BinaryTreeNode in BinaryTreeNodeImpl, then:
+class BinaryTreeNode : public BinaryTreeNodeImpl&lt;BinaryTreeNode&gt; {
+};
+
+class MultiwayTreeNode : public BinaryTreeNodeImpl&lt;MultiwayTreeNode&gt; {
+  // ...
+</pre>
+<h2>Altri usi del CRTP</h2>
+<h3>Chiamata virtuale nel costruttore</h3>
+<p>Un tipico utilizzo del polimorfismo statico &egrave; l'emulazione di una chiamata virtuale nel costruttore:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class B {
+public:
+  B() {
+    static_cast&lt;T*&gt;(this)-&gt;f();
+  }
+  void f() {
+    std::cout &lt;&lt; "B::f" &lt;&lt; std::endl;
+  }
+};
+
+class C : public B&lt;C&gt; {
+public:
+  void f() {
+    std::cout &lt;&lt; "C::f" &lt;&lt; std::endl;
+  }
+};
+
+int main()
+{
+  C c;
+  return 0;
+}
+
+/* output:
+ *
+ * C::f
+ */
+</pre>
+<h3>Costruttore di copia polimorfico</h3>
+<p>L'uso del polimorfismo pu&ograve; portare alla necessit&agrave; di clonare un oggetto del quale si possiede un riferimento o un puntatore alla classe base. Il problema viene normalmente risolto introducendo un metodo virtuale puro <span class="code">Clone</span> nella classe base, demandando alle classi derivate la sua implmentazione, che di norma si rif&agrave; direttamente al costruttore di copia:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+class B {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "B::f" &lt;&lt; std::endl;
+  }
+  virtual B* clone() = 0;
+};
+
+class D1 : public B {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "D1::f, this=" &lt;&lt; this &lt;&lt; std::endl;
+  }
+  virtual B* clone() {
+    return new D1(*this);
+  }
+};
+
+class D2 : public B {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "D2::f, this=" &lt;&lt; this &lt;&lt; std::endl;
+  }
+  virtual B* clone() {
+    return new D2(*this);
+  }
+};
+
+int main()
+{
+  B* d1 = new D1;
+  B* d1clone = d1-&gt;clone();
+  d1-&gt;f();
+  d1clone-&gt;f();
+
+  B* d2 = new D2;
+  B* d2clone = d2-&gt;clone();
+  d2-&gt;f();
+  d2clone-&gt;f();
+
+  delete d1;
+  delete d1clone;
+
+  delete d2;
+  delete d2clone;
+
+  return 0;
+}
+
+/* output:
+ *
+ * D1::f, this=00D081B8
+ * D1::f, this=00D081E8
+ * D2::f, this=00D08278
+ * D2::f, this=00D082A8
+ */
+</pre>
+<p>Il CRTP consente di rifattorizzare il metodo <span class="code">Clone</span> in una classe intermedia, lasciando alle classi derivate la possibilit&agrave; di sovrascriverlo solo se necessario:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+class B {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "B::f" &lt;&lt; std::endl;
+  }
+  virtual B* clone() = 0;
+};
+
+template &lt;class T&gt;
+class CopyCtorBasedCloner : public B {
+public:
+  virtual B* clone() {
+    return new T(static_cast&lt;const T&amp;&gt;(*this));
+  }
+};
+
+class D1 : public CopyCtorBasedCloner&lt;D1&gt; {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "D1::f, this=" &lt;&lt; this &lt;&lt; std::endl;
+  }
+};
+
+class D2 : public CopyCtorBasedCloner&lt;D2&gt; {
+public:
+  virtual void f() {
+    std::cout &lt;&lt; "D2::f, this=" &lt;&lt; this &lt;&lt; std::endl;
+  }
+};
+
+int main()
+{
+  B* d1 = new D1;
+  B* d1clone = d1-&gt;clone();
+  d1-&gt;f();
+  d1clone-&gt;f();
+
+  B* d2 = new D2;
+  B* d2clone = d2-&gt;clone();
+  d2-&gt;f();
+  d2clone-&gt;f();
+
+  delete d1;
+  delete d1clone;
+
+  delete d2;
+  delete d2clone;
+
+  return 0;
+}
+
+/* output:
+ *
+ * D1::f, this=002181B8
+ * D1::f, this=002181E8
+ * D2::f, this=00218278
+ * D2::f, this=002182A8
+ */
+</pre>
+<p>In generale, il CRTP pu&ograve; essere utile per estrapolare (in una classe base) una funzionalit&agrave; condivisa da un insieme di classi (derivanti dalla nuova classe) la cui implementazione risulti parametrica sul tipo dell'oggetto sul quale si opera.</p>
+<h3>Estensione d'interfaccia</h3>
+<p>Il CRTP pu&ograve; essere usato per estendere un'interfaccia: &egrave; per esempio possibile implementare degli operatori relazionali per un'intera gerarchia di classi derivate che implementano i soli operatori <span class="code">operator&lt;</span> e <span class="code">operator==</span>, ovvero gli operatori infissi a partire dagli operatori di assegnamento composto <span class="code">operator+=</span>, <span class="code">operator-=</span>, &hellip;:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class Comparable {
+public:
+  bool operator&lt;=(const T&amp; c) const {
+    const T&amp; c_ = static_cast&lt;const T&amp;&gt;(*this);
+    return c_ &lt; c || c_ == c;
+  }
+  // etc.
+};
+
+class C : public Comparable&lt;C&gt; {
+  int  m_c;
+public:
+  explicit C(int c) : m_c (c) { }
+  bool operator&lt;(const C&amp; c) const {
+    return m_c &lt; c.m_c;
+  }
+  bool operator==(const C&amp; c) const {
+    return m_c == c.m_c;
+  }
+};
+
+int main()
+{
+  C c1(1), c2(2);
+
+  std::cout &lt;&lt; "c1 is" &lt;&lt; (c1 &lt; c2 ? " " : " not ") &lt;&lt; "less than c2" &lt;&lt; std::endl;
+  std::cout &lt;&lt; "c2 is" &lt;&lt; (c2 &lt; c1 ? " " : " not ") &lt;&lt; "less than c1" &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; "c1 is" &lt;&lt; (c1 == c2 ? " " : " not ") &lt;&lt; "equal to c2" &lt;&lt; std::endl;
+  std::cout &lt;&lt; "c2 is" &lt;&lt; (c2 == c1 ? " " : " not ") &lt;&lt; "equal to c1" &lt;&lt; std::endl;
+
+  // won't compile unless C derives from Comparable&lt;C&gt;
+  std::cout &lt;&lt; "c1 is" &lt;&lt; (c1 &lt;= c2 ? " " : " not ") &lt;&lt; "less than or equal to c2" &lt;&lt; std::endl;
+  std::cout &lt;&lt; "c2 is" &lt;&lt; (c2 &lt;= c1 ? " " : " not ") &lt;&lt; "less than or equal to c1" &lt;&lt; std::endl;
+
+  return 0;
+}
+/* output:
+ *
+ * c1 is less than c2
+ * c2 is not less than c1
+ * c1 is not equal to c2
+ * c2 is not equal to c1
+ * c1 is less than or equal to c2
+ * c2 is not less than or equal to c1
+ */
+</pre>
+<h3>Mix-in</h3>
+<p>Il CRTP &egrave; anche noto come <em>mix-in dall'alto</em>. Un esempio di implementazione mix-in con il CRTP &egrave; disponibile <a href="mix-in.html">qui</a>. Relativamente all'uso del CRTP come mix-in, Scott Meyers ritiene che la scelta del nome CRTP per questo idioma sia piuttosto infelice, e propone &ndash; per quanto per sua stessa ammissione non ne faccia ampio uso nemmeno lui &ndash; <em>Do It For Me</em><a href="#ref-4"><sup>[4]</sup></a>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Coplien, James. &quot;Curiously Recurring Template Patterns&quot;. <em>C++ Report</em>. February 1995. &lt;<a href="http://sites.google.com/a/gertrudandcope.com/info/Publications/InheritedTemplate.pdf">http://sites.google.com/a/gertrudandcope.com/info/Publications/InheritedTemplate.pdf</a>&gt;. Visitato il 2 Novembre 2011.</li>
+<a name="ref-2"></a>
+<li>&quot;Curiously Recurring Template&quot;. <em>c2.com</em>. &lt;<a href="http://c2.com/cgi/wiki?CuriouslyRecurringTemplate">http://c2.com/cgi/wiki?CuriouslyRecurringTemplate</a>&gt;. Visitato il 2 Novembre 2011.</li>
+<a name="ref-3"></a>
+<li>&quot;Curiously recurring template pattern&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern</a>&gt;. Visitato il 2 Novembre 2011.</li>
+<a name="ref-4"></a>
+<li>Meyers, Scott. &quot;Counting Objects in C++&quot;. <em>Dr.Dobb's</em>. April 1998. &lt;<a href="http://drdobbs.com/cpp/184403484">http://drdobbs.com/cpp/184403484</a>&gt;. Visitato il 3 Novembre 2011.</li>
+</ol>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

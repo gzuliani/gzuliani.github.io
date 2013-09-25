@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>Speclight</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/sinclair.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#sinclair">risorse</a> | <a href="index.html#speclight">zx spectrum</a> | speclight</p>
+<h1>Speclight (1986)</h1>
+<p>Il programma crea degli effetti psichedelici sullo schermo a tempo di musica. Collegando il registratore alla presa EAR dello Spectrum, e regolando opportunamente il volume mentre viene riprodotto un nastro musicale, sullo schermo verranno generate sequenze di immagini colorate sincronizzate con il brano in ascolto.</p>
+<p>L'idea alla base &egrave; banale: il programma, durante una scansione del quarto di schermo in alto a sinistra, campiona regolarmente 4 bit dalla presa EAR, i quali determinano il colore e la luminosit&agrave; della posizione del carattere corrente; al termine della scansione, l'area viene riprodotta specularmente sul quarto di schermo in alto a destra. La porzione di schermo superiore viene quindi specularmente riprodotta su quella inferiore.</p>
+<h2>Istantanea</h2>
+<p class="snapshot"><img class="snapshot" width="320" height="240" src="img/splight.png"/></p>
+<h2>Nastro</h2>
+<p>Scarica il nastro virtuale <a href="tzx/speclight.tzx">speclight.tzx</a> (2KB).</p>
+<h2>Listati</h2>
+<h3>Caricatore BASIC</h3>
+<pre class="code">
+10 BORDER 0: PAPER 0: INK 7
+20 CLEAR 39999
+30 LOAD ""CODE 40000
+40 CLS : RANDOMIZE USR 40000
+</pre>
+<h3>Linguaggio macchina</h3>
+<table class="code">
+<tr><td class="label">Graph</td><td class="opcode">ld b,$07</td><td class="hex">06 07</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld hl,($5c7b)</td><td class="hex">2A 7B 5C</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,$80</td><td class="hex">3E 80</td></tr>
+<tr><td class="label">Udg</td><td class="opcode">ld (hl),a</td><td class="hex">77</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">inc hl</td><td class="hex">23</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">djnz Udg</td><td class="hex">10 FC</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,$ff</td><td class="hex">3E FF</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld (hl),a</td><td class="hex">77</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,$02</td><td class="hex">3E 02</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">call $1601</td><td class="hex">CD 01 16</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld bc,$02c0</td><td class="hex">01 C0 02</td></tr>
+<tr><td class="label">Print</td><td class="opcode">ld a,$90</td><td class="hex">3E 90</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">rst $10</td><td class="hex">D7</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">dec bc</td><td class="hex">0B</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,b</td><td class="hex">78</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">or c</td><td class="hex">B1</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr nz,Print</td><td class="hex">20 F8</td></tr>
+<tr><td class="label">Break</td><td class="opcode">ld a,($5c08)</td><td class="hex">3A 08 5C</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">cp $5a</td><td class="hex">FE 5A</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ret z</td><td class="hex">C8</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld hl,$580f</td><td class="hex">21 0F 58</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld b,$0b</td><td class="hex">06 0B</td></tr>
+<tr><td class="label">Line</td><td class="opcode">push bc</td><td class="hex">C5</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld d,h</td><td class="hex">54</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld e,l</td><td class="hex">5D</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">inc de</td><td class="hex">13</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld b,$10</td><td class="hex">06 10</td></tr>
+<tr><td class="label">Attr</td><td class="opcode">xor a</td><td class="hex">AF</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld c,a</td><td class="hex">4F</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">push bc</td><td class="hex">C5</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld b,$04</td><td class="hex">06 04</td></tr>
+<tr><td class="label">Bit</td><td class="opcode">in a,($fe)</td><td class="hex">DB FE</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">bit 6,a</td><td class="hex">CB 77</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr z,Noset</td><td class="hex">28 02</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">set 2,c</td><td class="hex">CB D1</td></tr>
+<tr><td class="label">Noset</td><td class="opcode">rlc c</td><td class="hex">CB 01</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">djnz Bit</td><td class="hex">10 F4</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,c</td><td class="hex">79</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">cp $78</td><td class="hex">FE 78</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr nz,Mem</td><td class="hex">20 04</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,r</td><td class="hex">ED 5F</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">and $78</td><td class="hex">E6 78</td></tr>
+<tr><td class="label">Mem</td><td class="opcode">ld (hl),a</td><td class="hex">77</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld (de),a</td><td class="hex">12</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">dec hl</td><td class="hex">2B</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">inc de</td><td class="hex">13</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">pop bc</td><td class="hex">C1</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">djnz Attr</td><td class="hex">10 DF</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,$30</td><td class="hex">3E 30</td></tr>
+<tr><td class="label">Nextline</td><td class="opcode">inc hl</td><td class="hex">23</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">dec a</td><td class="hex">3D</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr nz,Nextline</td><td class="hex">20 FC</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">pop bc</td><td class="hex">C1</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">djnz Line</td><td class="hex">10 D0</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld bc,$0160</td><td class="hex">01 60 01</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld hl,$5800</td><td class="hex">21 00 58</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld de,$5abf</td><td class="hex">11 BF 5A</td></tr>
+<tr><td class="label">Lowvideo</td><td class="opcode">ld a,(hl)</td><td class="hex">7E</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld (de),a</td><td class="hex">12</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">dec de</td><td class="hex">1B</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">inc hl</td><td class="hex">23</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">dec bc</td><td class="hex">0B</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">ld a,b</td><td class="hex">78</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">or c</td><td class="hex">B1</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr nz,Lowvideo</td><td class="hex">20 F7</td></tr>
+<tr><td class="label">&nbsp;</td><td class="opcode">jr Break</td><td class="hex">18 B1</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>
