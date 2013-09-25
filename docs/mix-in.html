@@ -1,0 +1,322 @@
+<html>
+<head>
+<title>Mix-in</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/mix-in.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mix-in">risorse</a> | mix-in</p>
+<h1>Mix-in</h1>
+<h2>Definizione</h2>
+<p>I <em>mix-in</em> sono delle estensioni funzionali applicabili a qualunque tipo di oggetto. Esempi di funzionalit&agrave; che pu&ograve; essere desiderabile aver disponibili indipendentemente dal tipo di oggetto sono la gestione del valor nullo, il conteggio del numero di istanze create o attualmente disponibili, l'istante di creazione dell'istanza, &hellip;</p>
+<p>Il nome mix-in deriva da una pratica ideata dal gelataio <a href="http://en.wikipedia.org/wiki/Steve%27s_Ice_Cream">Steve Herrell</a> negli anni '70 che permetteva ai suoi clienti di ricoprire il gelato con uno o pi&ugrave; ingredienti a scelta (i mix-in appunto), tipo uvetta, scaglie di cioccolato, mandorle tritate e altro. Cos&igrave; come la presenza dell'ingrediente aggiuntivo non altera la natura del gelato, analogamente l'applicazione del mix-in all'oggetto C++ non ne altera il tipo. Inoltre, cos&igrave; come un cliente non pu&ograve; ottenere un ingrediente aggiuntivo se non a corredo di un gelato, i mix-in vengono utilizzati per estendere una classe esistente: l'istanziazione di un mix-in non &egrave; prevista.</p>
+<h2>Implementazione</h2>
+<p>La classica mplementazione del mix-in in C++ &egrave; la seguente:</p>
+<pre class="code">
+template&lt;class T&gt;
+class Mixin : public T {
+  // mix-in body
+};
+</pre>
+<p>Nell'intento di non alterare il tipo dell'oggetto esteso, le funzionalit&agrave; aggiuntive vengono implementate dalla classe derivata: questo idioma, tipico del C++, prende il nome di <em>abstract subclass</em>. Per sua natura, il mix-in in C++ non pu&ograve; essere applicato ai tipi base. Segue un esempio di mix-in che assegna ad ogni istanza un identificativo univoco:</p>
+<pre class="code">
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+
+template &lt;class T&gt;
+class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+public:
+  SerialNumbered() { serialNumber = ++counter; }
+  long getSerialNumber() { return serialNumber; }
+};
+template &lt;class T&gt; long SerialNumbered&lt;T&gt;::counter = 0;
+
+int main() {
+  typedef SerialNumbered&lt;std::string&gt; StringWithSerialNumber;
+  StringWithSerialNumber aString;
+
+  // calling a std::string method
+  aString.append(&quot;test string 1&quot;);
+
+  // calling a method that accepts a std::string
+  std::cout &lt;&lt; aString &lt;&lt; &quot;: #&quot; &lt;&lt; aString.getSerialNumber() &lt;&lt; std::endl;
+
+  StringWithSerialNumber anotherString;
+  anotherString.append(&quot;test string 2&quot;);
+  std::cout &lt;&lt; anotherString &lt;&lt; &quot;: #&quot; &lt;&lt; anotherString.getSerialNumber() &lt;&lt; std::endl;
+  return 0;
+}
+/* output:
+ *
+ * test string 1: #1
+ * test string 2: #2
+ */
+</pre>
+<p>I mix-in non sono facilmente applicabili alle classi prive del costruttore di default; si consideri l'esempio seguente, che provoca un errore di compilazione:</p>
+<pre class="code">
+int main() {
+  typedef SerialNumbered&lt;std::string&gt; StringWithSerialNumber;
+  StringWithSerialNumber aString(&quot;does not compile&quot;);
+}
+</pre>
+<p>L'errore &egrave; dovuto al fatto che la classe <span class="code">SerialNumbered</span> non prevede un costruttore a partire da un array di caratteri; basta tuttavia definire un nuovo costruttore che accetta un <span class="code">const char*</span> e lo inoltra alla classe base <span class="code">std::string</span> per risolvere il problema:</p>
+<pre class="code">
+template &lt;class T&gt;
+class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+  void assignSerialNumber() {
+    serialNumber = ++counter;
+  }
+public:
+  SerialNumbered() { assignSerialNumber(); }
+  SerialNumbered(const char* str) : T(str) { assignSerialNumber(); }
+  long getSerialNumber() { return serialNumber; }
+};
+</pre>
+<p>Questa tecnica, per quanto giustificabile in particolari contesti, non brilla certo per generalit&agrave;: non &egrave; infatti accettabile che il mix-in dipenda dalla classe cui viene applicato. Una soluzione pi&ugrave; generale, ma comunque sempre parziale, consiste nel fornire il mix-in di un costruttore basato sul costruttore di copia della classe base:</p>
+<pre class="code">
+template &lt;class T&gt;
+class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+  void assignSerialNumber() {
+    serialNumber = ++counter;
+  }
+public:
+  SerialNumbered() { assignSerialNumber(); }
+  SerialNumbered(const T& t) : T(t) { assignSerialNumber(); }
+  long getSerialNumber() { return serialNumber; }
+};
+</pre>
+<p>Il mix-in cos&igrave; modificato pu&ograve; essere istanziato a partire da un'istanza della classe base o da qualunque parametro accettato da un <em>conversion constructor</em> della classe base stessa. Una trattazione pi&ugrave; approfondita della tematica dei costruttori parametrici si trova in <a href="#ref-5"><sup>[5]</sup></a>.</p>
+<p class="update"><strong>Aggiornamento [05/09/2013]</strong>: il problema dei costruttori &egrave; risolvibile per mezzo della <em>constructor inheritance</em> introdotta nel C++11. Un esempio del suo uso in questo contesto &egrave; disponibile in <a href="#ref-7"><sup>[7]</sup></a>.</p>
+<h2>Composizione</h2>
+<p>Secondo Bruce Eckel <a href="#ref-3"><sup>[3]</sup></a>, ci&ograve; che caratterizza i mix-in &egrave; la capacit&agrave; di essere facilmente ricombinati assieme, e di mantenere allo stesso tempo la propri&agrave; identit&agrave;, di essere cio&egrave; perfettamente riconoscibili nell'amalgama finale. Sempre secondo Eckel, il mix-in &egrave; strettamente correlato al pattern <em>Decorator</em>, con la sostanziale differenza di non richiedere la struttura gerarchica tipica del Decorator: mentre l'oggetto risultante dalla composizione dei mix-in comprende tutti i tipi primitivi, nel secondo caso il tipo dell'oggetto risultante coincide con quello dell'ultimo Decorator applicato.</p>
+<p>Un esempio circa la componibilit&agrave; dei mix-in &egrave; fornita dallo stesso Eckel e qui riportata in una versione leggermente riadattata per il Visual Studio 2008:</p>
+<pre class="code">
+#include &lt;ctime&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+template&lt;class T&gt; class TimeStamped : public T {
+  long timeStamp;
+public:
+  TimeStamped() { timeStamp = static_cast&lt;long&gt;(time(0)); }
+  long getStamp() { return timeStamp; }
+};
+
+template&lt;class T&gt; class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+public:
+  SerialNumbered() { serialNumber = counter++; }
+  long getSerialNumber() { return serialNumber; }
+};
+
+template&lt;class T&gt; long SerialNumbered&lt;T&gt;::counter = 1;
+
+int main() {
+  TimeStamped&lt;SerialNumbered&lt;std::string&gt;&gt; mixin1, mixin2;
+  mixin1.append("test string 1"); // A string method
+  mixin2.append("test string 2");
+  std::cout &lt;&lt; mixin1 &lt;&lt; " " &lt;&lt; mixin1.getStamp() &lt;&lt; " " &lt;&lt; mixin1.getSerialNumber() &lt;&lt; std::endl;
+  std::cout &lt;&lt; mixin2 &lt;&lt; " " &lt;&lt; mixin2.getStamp() &lt;&lt; " " &lt;&lt; mixin2.getSerialNumber() &lt;&lt; std::endl;
+  return 0;
+}
+/* output:
+ *
+ * test string 1 1311344893 1
+ * test string 2 1311344893 2
+ */
+</pre>
+<p>Come si pu&ograve; notare, gli oggetti <span class="code">mixin1</span> e <span class="code">mixin2</span> mantengono la loro natura di <span class="code">std::string</span>, pur presentando le nuove interfacce <span class="code">TimeStamped</span> e <span class="code">SerialNumbered</span>. Si nota, inoltre, che l'ordine di applicazione dei mix-in &egrave; ininfluente, fintanto che questi sono ortogonali e immuni dal problema del costruttore.</p>
+<h2>Mix-in e CRTP</h2>
+<p>Generalmente, i mix-in hanno lo scopo di implementare un'estensione indipendente dal tipo di oggetto al quale verr&agrave; applicata, mentre il CRTP si usa per adattare un'interfaccia e fornire un'implementazione che dipende dall'estensione. Dal punto di vista implementativo, la differenza tra mix-in e CRTP &egrave; evidente:</p>
+<pre class="code">
+// mix-in
+template&lt;class T&gt;
+class Mixin : public T {
+  // mix-in body
+};
+
+// CRTP
+template&lt;class T&gt;
+class Base {
+};
+
+class Derived : public Base&lt;Derived&gt; {
+  // crtp implementation
+};
+</pre>
+<p>&Egrave; tuttavia possibile implementare un mix-in per mezzo del CRTP attraverso una derivazione (tant'&egrave; che a volte il CRTP viene anche indicato col termine <em>mix-in dall'alto</em>):</p>
+<pre class="code">
+#include &lt;ctime&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+template&lt;class T&gt;
+class TimeStamped {
+  time_t timeStamp;
+public:
+  TimeStamped() { timeStamp = static_cast&lt;long&gt;(time(0)); }
+  time_t getStamp() { return timeStamp; }
+};
+
+class TimeStampedString : public std::string, public TimeStamped&lt;TimeStampedString&gt; {
+};
+
+int main() {
+  TimeStampedString mixin1, mixin2;
+  mixin1.append(&quot;test string 1&quot;);
+  mixin2.append(&quot;test string 2&quot;);
+  std::cout &lt;&lt; mixin1 &lt;&lt; &quot; &quot; &lt;&lt; mixin1.getStamp() &lt;&lt; std::endl;
+  std::cout &lt;&lt; mixin2 &lt;&lt; &quot; &quot; &lt;&lt; mixin2.getStamp() &lt;&lt; std::endl;
+  return 0;
+}
+/* output:
+ *
+ * test string 1 1317655246
+ * test string 2 1317655246
+ */
+</pre>
+<p>Dall'esempio si nota come il CRTP, nel caso di decorazione di una classe derivata, necessita della derivazione multipla. Pi&ugrave; complicata risulta l'applicazione di una moltitudine di mix-in CRTP alla stessa classe; la combinazione va infatti resa per mezzo di una catena di derivazione, oppure attraverso una derivazione multipla. L'esempio che segue fa uso di una catena di derivazione:</p>
+<pre class="code">
+template&lt;class T&gt;
+class SerialNumbered {
+  long serialNumber;
+  static long counter;
+public:
+  SerialNumbered() { serialNumber = counter++; }
+  long getSerialNumber() { return serialNumber; }
+};
+
+template&lt;class T&gt; long SerialNumbered&lt;T&gt;::counter = 1;
+
+class SerialNumberedTimeStampedString
+  : public TimeStampedString,
+    public SerialNumbered&lt;SerialNumberedTimeStampedString&gt; {
+};
+
+int main() {
+  SerialNumberedTimeStampedString mixin1, mixin2;
+  mixin1.append(&quot;test string 1&quot;);
+  mixin2.append(&quot;test string 2&quot;);
+  std::cout &lt;&lt; mixin1 &lt;&lt; &quot; &quot; &lt;&lt; mixin1.getStamp() &lt;&lt; &quot; &quot; &lt;&lt; mixin1.getSerialNumber() &lt;&lt; std::endl;
+  std::cout &lt;&lt; mixin2 &lt;&lt; &quot; &quot; &lt;&lt; mixin2.getStamp() &lt;&lt; &quot; &quot; &lt;&lt; mixin2.getSerialNumber() &lt;&lt; std::endl;
+  return 0;
+}
+/* output:
+ *
+ * test string 1 1317655550 1
+ * test string 2 1317655550 2
+ */
+</pre>
+<p><span class="code">SerialNumberedTimeStampedString</span> pu&ograve; essere definita senza fare esplicito riferimento a <span class="code">TimeStampedString</span> ricorrendo alla derivazione multipla:</p>
+<pre class="code">
+class SerialNumberedTimeStampedString
+  : public std::string,
+    public TimeStamped&lt;SerialNumberedTimeStampedString&gt;,
+    public SerialNumbered&lt;SerialNumberedTimeStampedString&gt; {
+};
+</pre>
+<p>Resta aperto il problema dei costruttori, che risulta amplificato nel caso della catena di derivazione, dato che il passaggio dei parametri deve avvenire dal fondo della gerarchia fino ai livelli di competenza.</p>
+<h2>Mix-in e Policies</h2>
+<p>Le policies <a href="#ref-1"><sup>[1]</sup></a> possono essere utilizzate per rimandare all'istante dell'istanziazione della classe la scelta dell'incarnazione del mix-in da utilizzare nel caso specifico. Come nel caso del CRTP, le funzionalit&agrave; del mix-in sono iniettate nella classe da decorare dall'alto, per mezzo dell'ereditariet&agrave;:</p>
+<pre class="code">
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+
+/* the &quot;serial number&quot; policy implicitly defines the following interface:
+ *
+ *   long getSerialNumber()
+ */
+
+template &lt;class SerialNumberPolicy&gt;
+class StringWithSerialNumberPolicy
+  : public std::string,
+    public SerialNumberPolicy {
+};
+
+class IncrementalSerialNumber {
+  long serialNumber;
+  static long counter;
+public:
+  IncrementalSerialNumber() { serialNumber = ++counter; }
+  long getSerialNumber() { return serialNumber; }
+};
+long IncrementalSerialNumber::counter = 0;
+
+int main() {
+  typedef StringWithSerialNumberPolicy&lt;IncrementalSerialNumber&gt; StringWithSerialNumber;
+  StringWithSerialNumber aString;
+
+  // calling a std::string method
+  aString.append(&quot;test string 1&quot;);
+
+  // calling a method that accepts a std::string
+  std::cout &lt;&lt; aString &lt;&lt; &quot;: #&quot; &lt;&lt; aString.getSerialNumber() &lt;&lt; std::endl;
+
+  StringWithSerialNumber anotherString;
+  anotherString.append(&quot;test string 2&quot;);
+  std::cout &lt;&lt; anotherString &lt;&lt; &quot;: #&quot; &lt;&lt; anotherString.getSerialNumber() &lt;&lt; std::endl;
+  return 0;
+}
+/* output:
+ *
+ * test string 1: #1
+ * test string 1: #2
+ */
+</pre>
+<p>Qualora si renda necessario modificare il comportamento della policy <span class="code">SerialNumberPolicy</span> per una particolare classe, sar&agrave; sufficiente introdurre una nuova <em>policy class</em> che implementi il nuovo funzionamento, quindi specificarne il nome all'atto della dichiarazione dell'istanza della classe decorata, senza operare nessun altro intervento sul codice esistente:</p>
+<pre class="code">
+class AddressBasedSerialNumber {
+public:
+  long getSerialNumber() { return reinterpret_cast&lt;long&gt;(this); }
+};
+
+int main() {
+  typedef StringWithSerialNumberPolicy&lt;AddressBasedSerialNumber&gt; StringWithSerialNumber;
+  StringWithSerialNumber aString;
+  ...
+}
+/* output:
+ *
+ * test string 1: #3340532
+ * test string 1: #3340492
+ */
+</pre>
+<p>Un modo alternativo di decorare la <em>host class</em> rispetto alla derivazione &egrave; quello per contenimento; in questo caso, tuttavia, si deve avere l'accortezza di replicare l'interfaccia della policy nella classe decorata:</p>
+<pre class="code">
+template &lt;class SerialNumberPolicy&gt;
+class StringWithSerialNumberPolicy
+  : public std::string {
+  SerialNumberPolicy serialNumberPolicy;
+public:
+  long getSerialNumber() {
+    return serialNumberPolicy.getSerialNumber();
+  }
+};
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Alexandrescu, Andrei. <em>Modern C++ Design: Generic Programming and Design Patterns Applied</em>. Addison-Wesley Professional, 2001.</li>
+<a name="ref-2"></a>
+<li>Diggins, Christopher. &quot;Building More Flexible Types with Mixins&quot;. <em>Dr.Dobb's</em>. January 2006. &lt;<a href="http://drdobbs.com/cpp/184402056">http://drdobbs.com/cpp/184402056</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-3"></a>
+<li>Eckel, Bruce. &quot;Mixins: Something Else You Can't Do With Java Generics?&quot;. <em>Aritma developers</em>. &lt;<a href="http://www.artima.com/weblogs/viewpost.jsp?thread=132988">http://www.artima.com/weblogs/viewpost.jsp?thread=132988</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-4"></a>
+<li>Eisenecker, Ulrich W. Blinn, Frank and Czarnecki, Krzysztof. &quot;Mixin-Based Programming in C++&quot;. <em>Dr.Dobb's</em>. January 2001. &lt;<a href="http://drdobbs.com/cpp/184404445">http://drdobbs.com/cpp/184404445</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-5"></a>
+<li>Eisenecker, Ulrich W. Blinn, Frank and Czarnecki, Krzysztof. &quot;A Solution to the Constructor-Problem of Mixin-Based Programming in C++&quot;. <em>oonumerics.org</em>. &lt;<a href="www.oonumerics.org/tmpw00/eisenecker.pdf">www.oonumerics.org/tmpw00/eisenecker.pdf</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-6"></a>
+<li>Meyers, Scott. &quot;Counting Objects in C++&quot;. <em>Dr.Dobb's</em>. April 1998. &lt;<a href="http://drdobbs.com/cpp/184403484">http://drdobbs.com/cpp/184403484</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-7"></a>
+<li>&ndash;, Katy. &quot;C++: Polymorphic cloning and the CRTP&quot;. <em>Katy's Code</em>. &lt;<a href="http://http://katyscode.wordpress.com/2013/08/22/c-polymorphic-cloning-and-the-crtp-curiously-recurring-template-pattern/">http://http://katyscode.wordpress.com/2013/08/22/c-polymorphic-cloning-and-the-crtp-curiously-recurring-template-pattern/</a>&gt;. Visitato il 5 Settembre 2013.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 5/9/2013</p>
+</body>
+</html>

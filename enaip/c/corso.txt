@@ -1,0 +1,64 @@
+Introduzione al linguaggio C
+
+Lezione 1
+Rappresentazione dell'informazione
+Sistema di numerazione binario
+Standard IEEE per i numeri in virgola mobile
+ASCII, UNICODE
+
+Lezione 2
+Introduzione al linguaggio C
+Concetto di variabile e di assegnamento
+Istruzioni while, for
+Primi esempi di programmi C
+
+Lezione 3
+Tipi di dati: variabili e costanti
+Modificatori short/long, signed/unsigned
+Conversioni dei tipi numerici
+Esempi di programmi C
+
+Lezione 4
+Operatori: priorità e associatività
+Istruzione if, do/while, switch, break, continue
+Esercitazione
+
+Lezione 5
+Funzioni
+Variabili: visibilità, life-time, scope
+Esercitazione
+
+Lezione 6
+Cenni sulle funzioni ricorsive
+Tipi vettoriali
+Algoritmi di ordinamento
+Algoritmi di ricerca
+Esercitazione
+Cenni sui vettori multidimensionali
+
+Lezione 7
+Puntatori: definizione, usi più frequenti
+Puntatori e array
+Aritmetica dei puntatori ad array
+
+Lezione 8
+Stringhe: array di caratteri
+Libreria standard
+ string.h: str[n]cat, str[n]cpy, str[n]cmp, strchr, strstr
+ stdlib.h: conversioni: atoi, atol, atof, sprintf
+Esercitazione
+
+Lezione 9
+Libreria standard
+ time.h: time, ctime, asctime, localtime, gmtime
+Classi di memorizzazione delle variabili: auto, register, static
+Tipi di dati strutturati: struct, vettori di struct
+typedef
+Esercitazione
+
+Lezione 10
+Costanti simboliche, enumerative e variabili costanti
+File
+Libreria standard
+ stdio.h: fopen, fclose, fprintf, fscanf, fputc, fgetc, fputs, fgets, fwrite, fread, fseek
+Esercitazione

@@ -1,0 +1,405 @@
+<html>
+<head>
+<title>Good Unit Tests /5</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-5">risorse</a> | good unit tests /5</p>
+<h1>Good Unit Tests /5</h1>
+<p>Questa parte (la quinta; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a> e qui la <a href="gut-4.html">quarta</a>) affronta alcuni aspetti lasciati in sospeso nella terza parte.</p>
+<h2>Introduzione</h2>
+<p>Lo sviluppo della classe di supporto <span class="code">InputTextFile</span> ha messo in evidenza due limiti, per altro gi&agrave; citati, dell'infrastruttura di test <span class="code">gut</span>:</p>
+<ul>
+	<li>l'assenza della macro <span class="code">REQUIRE</span> che, se non soddisfatta, causi l'immediata conclusione del test;</li>
+	<li>la presenza dell'operatore di conversione a <span class="code">bool</span> in un oggetto di test, che causa un'ambiguit&agrave; che impedisce la compilazione del test.</li>
+</ul>
+<h2>REQUIRE</h2>
+<p>Quel che segue &egrave; un frammento del codice di test dell'oggetto <span class="code">InputTextFile</span>:</p>
+<pre class="code">
+// ...
+
+TEST {
+
+  // read file line by line
+  {
+    InputTextFile file("file1.txt");
+    CHECK(file.good());
+    CHECK(file.readLine() == "first line");
+    CHECK(file.readLine() == "second line");
+    // ...
+  }
+  // ...
+}
+
+/* output:
+ *
+ * test-InputTextFile.cpp(23) : file.good() evaluates to false
+ * test-InputTextFile.cpp(18) : unexpected exception "cannot read from file" caught
+ * ...
+ */
+</pre>
+<p>Se per qualche motivo il file non &egrave; stato aperto &ndash; cfr. direttiva <span class="code">CHECK(file.good())</span> &ndash;, &egrave; perfettamente inutile proseguire con il test. In questo caso, la mancata interruzione causa il sollevamento di un'eccezione inattesa da parte della successiva <span class="code">file.readLine()</span>, che viene catturata in <span class="code">TEST</span>. Conviene allora introdurre una nuova direttiva che, oltre a svolgere i controlli implementati da <span class="code">CHECK</span>, richiede in pi&ugrave; l'interruzione del test:</p>
+<pre class="code">
+<ins>#define REQUIRE(expr_) \
+  BEGIN_MACRO \
+    if (!(gut::Capture()-&gt;*expr_)) { \
+      gut::Report::failure(gut::RequireFailure(#expr_, gut::Expression::last, __FILE__, __LINE__)); \
+      throw gut::AbortTest();\
+    } \
+  END_MACRO</ins>
+
+#define TEST \
+  void runTest(); \
+  int main() { \
+    gut::registerReport(std::make_shared&lt;gut::StdErrReport&gt;()); \
+    auto failureCount_ = std::make_shared&lt;gut::FailureCount&gt;(); \
+    gut::registerReport(failureCount_); \
+    gut::Clock clock_; \
+    try { \
+      runTest(); \
+    <ins>} catch(const gut::AbortTest&amp;) { \</ins>
+    } catch(const std::exception&amp; e) { \
+      registerFailure(gut::UnexpectedExceptionFailure(e, __FILE__, __LINE__)); \
+    } catch(...) { \
+      registerFailure(gut::UnknownExceptionFailure(__FILE__, __LINE__)); \
+    } \
+    std::cout.precision(3); \
+    std::cout &lt;&lt; &quot;Test suite ran in &quot; &lt;&lt; clock_.elapsedTime() &lt;&lt; &quot;s.&quot; &lt;&lt; std::endl; \
+    if (failureCount_-&gt;count == 0) \
+      std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl; \
+    else \
+      std::cout &lt;&lt; failureCount_-&gt;count &lt;&lt; &quot; test(s) failed.&quot; &lt;&lt; std::endl; \
+    return failureCount_-&gt;count; \
+  } \
+  void runTest()
+
+// ...
+
+namespace gut {
+  // ...
+<ins>struct AbortTest { };</ins>
+
+struct Failure {
+  std::ostringstream description;
+public:
+  Location location;
+  virtual ~Failure() { }
+  Failure(<ins>const std::string&amp; level, </ins>const char* file, int line) : description(std::ostringstream::out), location(file, line) {
+    <ins>description &lt;&lt; &quot;[&quot; &lt;&lt; level &lt;&lt; &quot;] &quot;;</ins>
+  }
+  std::string what() const {
+    return description.str();
+  }
+};
+
+<ins>struct Error : public Failure {
+  Error(const char* file, int line) : Failure(&quot;error&quot;, file, line) { }
+};
+
+struct Fatal : public Failure {
+  Fatal(const char* file, int line) : Failure(&quot;fatal&quot;, file, line) { }
+};</ins>
+
+struct CheckFailure : public <del>Failure</del><ins>Error</ins> {
+  CheckFailure(const char* expression, const std::string&amp; expansion, const char* file, int line) : <del>Failure</del><ins>Error</ins>(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; expansion;
+  }
+};
+
+<ins>struct RequireFailure : public Fatal {
+  RequireFailure(const char* expression, const std::string&amp; expansion, const char* file, int line) : Fatal(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; expansion;
+  }
+};</ins>
+
+struct NoThrowFailure : public <del>Failure</del><ins>Error</ins> {
+  NoThrowFailure(const char* expression, const char* file, int line) : <del>Failure</del><ins>Error</ins>(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; did not throw&quot;;
+  }
+};
+
+struct WrongTypedExceptionFailure : public <del>Failure</del><ins>Error</ins> {
+  WrongTypedExceptionFailure(const char* expression, const std::exception&amp; exception, const char* file, int line) : <del>Failure</del><ins>Error</ins>(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; threw an unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot;&quot;;
+  }
+};
+
+struct WrongExceptionFailure : public <del>Failure</del><ins>Error</ins> {
+  WrongExceptionFailure(const char* expression, const char* file, int line) : <del>Failure</del><ins>Error</ins>(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; threw an unknown exception&quot;;
+  }
+};
+
+struct UnexpectedExceptionFailure : public <del>Failure</del><ins>Fatal</ins> {
+  UnexpectedExceptionFailure(const std::exception&amp; exception, const char* file, int line) : <del>Failure</del><ins>Fatal</ins>(file, line) {
+    description &lt;&lt; &quot;unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot; caught&quot;;
+  }
+};
+
+struct UnknownExceptionFailure : public <del>Failure</del><ins>Fatal</ins> {
+  UnknownExceptionFailure(const char* file, int line) : <del>Failure</del><ins>Fatal</ins>(file, line) {
+    description &lt;&lt; &quot;unknown exception caught&quot;;
+  }
+};
+
+// ...
+} // namespace gut
+</pre>
+<p>La richiesta di interruzione consiste nel lancio di un'eccezione <span class="code">AbortTest</span> che viene catturata dal blocco <span class="code">try/catch</span> pi&ugrave; esterno in modo &ldquo;silenzioso&rdquo;. Con l'occasione si &egrave; provveduto a classificare gli oggetti <span class="code">Failure</span> in <span class="code">Error</span> e <span class="code">Fatal</span>: gli oggetti del secondo tipo sono quelli che causano l'interruzione del test. Il codice di test diventa:</p>
+<pre class="code">
+// ...
+
+TEST {
+
+  // read file line by line
+  {
+    InputTextFile file("file1.txt");
+    REQUIRE(file.good());
+    CHECK(file.readLine() == "first line"); // not executed!
+    CHECK(file.readLine() == "second line");
+    // ...
+  }
+  // ...
+}
+
+/* output:
+ *
+ * test-InputTextFile.cpp(23) : [fatal] file.good() evaluates to false
+ * ...
+ */
+</pre>
+<h2>operator bool</h2>
+<p>L'ambiguit&agrave; su <span class="code">operator&lt;&lt;</span> si presenta quando un oggetto convertibile a <span class="code">bool</span> viene citato in una direttiva CHECK o REQUIRE. Il caso tuttavia &egrave; tutt'altro che raro: &egrave; infatti probabile che di un oggetto dalla spiccata natura &ldquo;booleana&rdquo; si voglia verificare il valore di verit&agrave;:</p>
+<pre class="code">
+class InputTextFile {
+  std::ifstream is_;
+  // ...
+public:
+  operator bool() const {
+    return is_.good();
+  }
+  // ...
+};
+
+TEST {
+  InputTextFile file(&quot;file1.txt&quot;);
+  CHECK(file); // does not compile!
+}
+</pre>
+<p>Una soluzione poco pratica consiste nel forzare la conversione:</p>
+<pre class="code">
+TEST {
+  InputTextFile file(&quot;file1.txt&quot;);
+  CHECK(<ins>static_cast&lt;bool&gt;(</ins>file<ins>)</ins>);
+}
+</pre>
+<p>Meglio piuttosto intervenire in fase di serializzazione:</p>
+<pre class="code">
+struct Expression {
+  // ...
+  template&lt;typename T&gt;
+  static bool logAndEvaluate(const T&amp; value) {
+    <del>Expression::last = gut::toString(value);</del>
+    <ins>if (HasOperatorString&lt;T&gt;::response)
+      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value).str();
+    else
+      Expression::last = gut::toString(static_cast&lt;bool&gt;(value));</ins>
+    return static_cast&lt;bool&gt;(value);
+  }
+};
+</pre>
+<p><span class="code">HasOperatorString</span> e <span class="code">StringRepr</span> sono due oggetti di comodo: il primo determina se il tipo passato &egrave; convertibile a stringa &ndash; se dispone cio&egrave; di <span class="code">operator std::string() const</span> &ndash;, mentre il secondo opera la conversione vera e propria, quando possibile (maggiori dettagli in <a href="#appendice">appendice</a>). Questa modifica fa venire meno la necessit&agrave; dell'operatore di ridirezione per l'oggetto <span class="code">Boolean</span>, una volta arricchito dell'operatore di conversione a stringa:</p>
+<pre class="code">
+struct Boolean {
+  bool value_;
+  std::string repr_;
+  Boolean(bool value) : value_(value), repr_(gut::toString(value)) { }
+  Boolean(bool value, const std::string&amp; repr) : value_(value), repr_(repr) { }
+  operator bool() const {
+    return value_;
+  }
+  <del>std::string str() const {</del>
+  <ins>operator std::string() const {</ins>
+    return repr_;
+  }
+};
+
+<del>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Boolean&amp; boolean) {
+  return os &lt;&lt; boolean.str();
+}</del>
+</pre>
+<p>Il problema dell'ambiguit&agrave; non &egrave; stato risolto alla radice; si ripresenta ogniqualvolta un oggetto convertibile a un tipo primitivo compare all'interno di una direttiva <span class="code">CHECK</span> e <span class="code">REQUIRE</span>:</p>
+<pre class="code">
+struct ConvertibleToInt {
+  operator int() const {
+    return 42;
+  }
+};
+
+TEST {
+  ConvertibleToInt cti;
+  CHECK(cti == 7); // does not compile!
+}
+</pre>
+<p>Questi casi, che dovrebbero a questo punto rappresentare una rarit&agrave;, sono comunque risolvibili ricorrendo a un <em>cast</em> esplicito:</p>
+<pre class="code">
+TEST {
+  ConvertibleToInt cti;
+  CHECK(<ins>static_cast&lt;int&gt;(cti)</ins> == 7);
+}
+
+/* output:
+ *
+ * test.cpp(499) : [error] static_cast<int>(cti) == 7 evaluates to 42 == 7
+ */
+</pre>
+<a name="appendice"></a>
+<h2>Appendice</h2>
+<h3>Verifica della presenza di un metodo</h3>
+<p>Nonostante le limitate caratteristiche introspettive del C++, &egrave; possibile determinare a <em>runtime</em> se un oggetto implementa un particolare metodo, sfruttando lo <em>SFINAE</em><sup><a href="#ref-3">[3]</a></sup>:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+template&lt;typename T&gt;
+class HasOperatorString {
+  typedef char yes[1];
+  typedef char no [2];
+
+  template&lt;typename U, U u&gt;
+  struct Method {
+  };
+
+  template&lt;typename U&gt;
+  static yes&amp; check(Method&lt;std::string (U::*)() const, &amp;U::operator std::string&gt;*);
+
+  template&lt;typename U&gt;
+  static no&amp; check(...);
+
+public:
+  static const bool response = sizeof(yes) == sizeof(check&lt;T&gt;(0));
+};
+
+struct Convertible {
+  operator std::string() const {
+    return &quot;convertible&quot;;
+  }
+};
+
+struct NonConvertible {
+  std::string str() const {
+    return &quot;non-convertible&quot;;
+  }
+};
+
+int main() {
+
+  std::cout &lt;&lt; std::boolalpha;
+  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
+
+  return 0;
+}
+
+/* output:
+ *
+ * int           : false
+ * Convertible   : true
+ * NonConvertible: false
+*/
+</pre>
+<p>Tutto ha inizio dall'espressione <span class="code">HasOperatorString&lt;Convertible&gt;::response</span> che, effettuando la chiamata <span class="code">check&lt;T&gt;(0)</span>, obbliga il compilatore ad individuare il metodo pi&ugrave; adatto tra i due disponibili. Essendo la forma con l'ellissi la meno privilegiata, il compilatore verifica dapprima se il tipo <span class="code">T</span> &egrave; compatibile con la prima forma:</p>
+<pre class="code">
+  static yes&amp; check(Method&lt;std::string (U::*)() const, &amp;U::operator std::string&gt;*);
+</pre>
+<p>Affinch&eacute; la corrispondenza sia soddisfatta, &egrave; necessario che il tipo <span class="code">U</span> (che non &egrave; altro che un alias di <span class="code">T</span>) possieda un metodo con <em>signature</em> <span class="code">std::string (U::*)() const</span> e nome <span class="code">operator std::string</span>. L'identificazione del metodo istanziato si basa sul valore di ritorno &ndash; sulla sua dimensione, per la precisione &ndash;. I <span class="code">typedef</span> privati hanno lo scopo di definire due tipi (<span class="code">yes</span> e <span class="code">no</span>) di dimensione differente. Il valore di ritorno &egrave; passato per referenza: trattandosi di <em>array</em>, il passaggio per valore &egrave; da escludere; il passaggio per puntatore invece, pur possibile, non consentirebbe di discriminare i due casi.</p>
+<h3>Verifica della disponibilit&agrave; di un metodo</h3>
+<p>Come risponde <span class="code">HasOperatorString</span> nel caso di oggetti che non implementano l'operatore di conversione, ma lo ereditano?</p>
+<pre class="code">
+// ...
+
+<ins>struct Derived : public Convertible {
+};</ins>
+
+int main() {
+
+  std::cout &lt;&lt; std::boolalpha;
+  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
+  <ins>std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::response &lt;&lt; std::endl;</ins>
+
+  return 0;
+}
+
+/* output:
+ *
+ * int           : false
+ * Convertible   : true
+ * NonConvertible: false
+ * Derived       : false
+*/
+</pre>
+<p>La verifica non ha dato l'esito sperato. Il problema &egrave; comunque risolvibile, sempre con la tecnica SFINAE, se si &egrave; disposti a rinunciare all'applicabilit&agrave; del controllo sui tipi primitivi. Se questo &egrave; il caso, allora si introduce una prima classe di comodo, che implementa il metodo cercato, ed una seconda, che deriva dalla prima e dal tipo <span class="code">T</span>: se il tipo <span class="code">T</span> implementa il metodo cercato, la classe derivata presenta l'ambiguit&agrave; da sfruttare per l'istanziazione selettiva del metodo <span class="code">check</span>. La logica ora &egrave; opposta al caso precedente: la scelta della versione template di <span class="code">check</span> indica che non c'&egrave; l'ambiguit&agrave;, e dunque il tipo <span class="code">T</span> <strong>non</strong> implementa il metodo cercato; viceversa, se <span class="code">T</span> dispone del metodo &laquo;target&raquo;, allora l'ambiguit&agrave; &egrave; presente, e il compilatore opta per il metodo <span class="code">check</span> con l'ellissi:</p>
+<pre class="code">
+// ...
+
+template&lt;typename T&gt;
+class HasOperatorString {
+  typedef char yes[1];
+  typedef char no [2];
+
+<ins>  struct Base {
+    operator std::string() const;
+  };
+
+  struct Derived : Base, T {
+  };</ins>
+
+  template&lt;typename U, U u&gt;
+  struct Method {
+  };
+
+  template&lt;typename U&gt;
+  static <ins>no</ins>&amp; check(Method&lt;std::string (<ins>Base</ins>::*)() const, &amp;U::operator std::string&gt;*);
+
+  template&lt;typename U&gt;
+  static <ins>yes</ins>&amp; check(...);
+
+public:
+  static const bool response = sizeof(yes) == sizeof(check&lt;<ins>Derived</ins>&gt;(0));
+};
+
+// ...
+
+int main() {
+
+  std::cout &lt;&lt; std::boolalpha;
+  <del>std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;</del> // does not compile!
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::response &lt;&lt; std::endl;
+
+  return 0;
+}
+
+/* output:
+ *
+ * Convertible   : true
+ * NonConvertible: false
+ * Derived       : true
+ */
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>&quot;More C++ Idioms/Member Detector&quot;. <em>wikibooks</em>. &lt;<a href="http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector">http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+<a name="ref-2"></a>
+<li>&quot;SFINAE to check for inherited member functions&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions">http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+<a name="ref-3"></a>
+<li>&quot;Substitution failure is not an errors&quot;. <em>wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error">http://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 15/10/2012</p>
+</body>
+</html>

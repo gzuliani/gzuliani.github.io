@@ -1,0 +1,841 @@
+<html>
+<head>
+<title>Good Unit Tests /8</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-8">risorse</a> | good unit tests /8</p>
+<h1>Good Unit Tests /8</h1>
+<p>Questa parte (l'ottava; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a> e qui la <a href="gut-7.html">settima</a>) introduce la possibilit&agrave; di emettere della messaggistica in <em>console</em>.</p>
+<h2><p>Notifiche emesse dal codice cliente</p></h2>
+<p>Sono disponibili quattro tipi di notifiche:</p>
+<dl>
+	<dt><span class="code">EVAL</span></dt><dd> visualizza il valore di un'espressione se il test fallisce;</dd>
+	<dt><span class="code">INFO</span></dt><dd> visualizza un messaggio testuale libero se il test fallisce;</dd>
+	<dt><span class="code">WARN</span></dt><dd> visualizza un messaggio testuale libero indipendentemente dall'esito del test;</dd>
+	<dt><span class="code">FAIL</span></dt><dd> visualizza un messaggio testuale libero indipendentemente dall'esito del test e causa il fallimento dello stesso.</dd>
+</dl>
+<h3><span class="code">EVAL</span></h3>
+<p>L'istruzione <span class="code">EVAL</span> cattura l'espressione specificata notificandone il valore al report. A tal fine si rende necessario introdurre un nuovo tipo di informativa, <span class="code">Eval</span>, nonch&eacute; estendere l'interfaccia <span class="code">Report</span>:</p>
+<pre class="code">
+/*
+ * NOTE: `Failure` struct has been renamed in `Notice`!
+ */
+...
+
+<ins>struct Eval : public Notice {
+  template &lt;typename T&gt;
+  Eval(const char* expression, const T&amp; value, const char* file, int line) : Notice(&quot;eval&quot;, file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; value;
+  }
+};</ins>
+...
+
+class Report {
+  ...
+  static void failure(const Notice&amp; failure) {
+    ...
+  }
+  <ins>static void eval(const Notice&amp; eval) {
+    if (report_)
+      report_-&gt;onEval(eval);
+  }</ins>  ...
+
+  virtual void onFailure(const Notice&amp; /*failure*/) { }
+  <ins>virtual void onEval(const Notice&amp; /*eval*/) { }</ins>
+  ...
+
+};
+...
+
+<ins>#define EVAL(expr_) \
+  do { \
+    gut::Report::eval(gut::Eval(#expr_, expr_, __FILE__, __LINE__)); \
+  } while (0)</ins>
+</pre>
+<p>Il programma di test diventa:</p>
+<pre class="code">
+...
+
+class <del>LastFailure</del><ins>TestReport</ins> : public gut::Report {
+  <del>std::string&amp; what_;</del>
+  <ins>std::string&amp; failure_;
+  std::string&amp; eval_;</ins>
+  // disabled!
+  <del>LastFailure&amp; operator=(const LastFailure&amp;);</del>
+  <ins>TestReport&amp; operator=(const TestReport&amp;);</ins>
+public:
+  <del>LastFailure(std::string&amp; what) : what_(what) {</del>
+  <ins>TestReport(std::string&amp; failure, std::string&amp; eval) : failure_(failure), eval_(eval) {</ins>
+  }
+protected:
+  virtual void onFailure(const gut::Notice&amp; failure) {
+    <del>what</del><ins>failure</ins>_ = failure.what();
+  }
+  <ins>virtual void onEval(const Notice&amp; eval) {
+    eval_ = eval.what();
+  }
+</ins>};
+
+...
+int main() {
+
+  std::string lastFailure;
+  <del>gut::Report::set(std::make_shared&lt;LastFailure&gt;(lastFailure));</del>
+  <ins>std::string lastEval;
+  gut::Report::set(std::make_shared&lt;TestReport&gt;(lastFailure, lastEval));</ins>
+  ...
+
+  <ins>// test EVAL
+  assert(lastEval == &quot;&quot;);
+  EVAL(i1);
+  assert(lastEval == &quot;[eval] i1 evaluates to 1&quot;);
+  EVAL((i1 + 3 * i2));
+  assert(lastEval == &quot;[eval] (i1 + 3 * i2) evaluates to 7&quot;);</ins>
+
+  return 0;
+}
+</pre>
+<p>Affinch&eacute; l'esito del test continui ad apparire accanto al nome dello stesso, il <span class="code">DefaultReport</span> emette tutte le notifiche <span class="code">eval</span> assieme, al termine del test, <em>se questo fallisce</em>:</p>
+<pre class="code">
+class DefaultReport : public Report {
+  ...
+  <ins>std::vector&lt;std::string&gt; evals_;</ins>
+public:
+  ...
+protected:
+  ...
+  virtual void onEndTest() {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;
+    else
+      <del>++failedTests_;</del>
+      <ins>testFailed();
+    clear();</ins>
+  }
+  ...
+  virtual void onFailure(const Notice&amp; failure) {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;FAILED&quot; &lt;&lt; std::endl;
+    <del>std::cout &lt;&lt; &quot; &quot; &lt;&lt; failure.location.file &lt;&lt; &quot;(&quot; &lt;&lt; failure.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; failure.what() &lt;&lt; std::endl;</del>
+    <ins>std::cout &lt;&lt; toString(failure) &lt;&lt; std::endl;</ins>
+    ++testFailures_;
+    ++totalFailures_;
+  }
+  <ins>virtual void onEval(const Notice&amp; eval) {
+    evals_.push_back(toString(eval));
+  }</ins>
+  virtual void onQuit() {
+      <del>++failedTests_;</del>
+      <ins>testFailed();</ins>
+  }
+  <ins>void testFailed() {
+    ++failedTests_;
+    flushEvals();
+  }
+  void flushEvals() {
+    if (!evals_.empty()) {
+      for (auto eval : evals_)
+        std::cout &lt;&lt; eval &lt;&lt; std::endl;
+    }
+  }
+  void clear() {
+    evals_.clear();
+  }
+  std::string toString(const Notice&amp; notice) {
+    std::stringstream ss;
+    ss &lt;&lt; &quot; &quot; &lt;&lt; notice.location.file &lt;&lt; &quot;(&quot; &lt;&lt; notice.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; notice.what();
+    return ss.str();
+  }</ins>
+};
+</pre>
+<p>Introducendo un'istruzione <span class="code">EVAL</span> nel codice d'esempio l'effetto &egrave; nullo:</p>
+<pre class="code">
+...
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  <ins>EVAL(anEmptyList.size());</ins>
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Initial list is empty: OK
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Tuttavia, se il test fallisce, compare anche la valutazione dell'espressione richiesta:</p>
+<pre class="code">
+...
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  EVAL(anEmptyList.size());
+  <ins>CHECK(false);</ins>
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Initial list is empty: FAILED
+ *  example.cpp(32) : [error] false evaluates to false
+ *  example.cpp(31) : [eval] anEmptyList.size() evaluates to 0
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Da notare che la notifica <span class="code">[eval]</span> segue quella <span class="code">[error]</span>, sebbene nel codice la preceda.</p>
+<h3><span class="code">INFO</span></h3>
+<p>In modo del tutto analogo a quanto fatto per <span class="code">EVAL</span>, si procede per <span class="code">INFO</span>:</p>
+<pre class="code">
+...
+<ins>struct Info : public Notice {
+  Info(const char* message, const char* file, int line) : Notice(&quot;info&quot;, file, line) {
+    description &lt;&lt; message;
+  }
+};</ins>
+...
+
+class Report {
+...
+public:
+  ...
+  <ins>static void info(const Notice&amp; info) {
+    if (report_)
+      report_-&gt;onInfo(info);
+  }</ins>
+  ...
+protected:
+  ...
+  <ins>virtual void onInfo(const Notice&amp; /*info*/) { }</ins>
+  virtual void onQuit() { }
+};
+
+<ins>#define INFO(message_) \
+  do { \
+    gut::Report::info(gut::Info(message_, __FILE__, __LINE__)); \
+  } while (0)</ins>
+</pre>
+<p>Il codice di test diventa:</p>
+<pre class="code">
+...
+class TestReport : public gut::Report {
+  std::string&amp; failure_;
+  std::string&amp; eval_;
+  <ins>std::string&amp; info_;</ins>
+  // disabled!
+  TestReport&amp; operator=(const Report&amp;);
+public:
+  TestReport(
+    std::string&amp; failure,
+    std::string&amp; eval<ins>,
+    std::string&amp; info</ins>)
+  : failure_(failure), eval_(eval)<ins>, info_(info)</ins> {
+  }
+protected:
+  virtual void onFailure(const gut::Notice&amp; failure) {
+    failure_ = failure.what();
+  }
+  virtual void onEval(const gut::Notice&amp; eval) {
+    eval_ = eval.what();
+  }
+  <ins>virtual void onInfo(const gut::Notice&amp; info) {
+    info_ = info.what();
+  }</ins>
+};
+...
+
+int main() {
+
+  std::string lastFailure;
+  std::string lastEval;
+  <ins>std::string lastInfo;</ins>
+  gut::Report::set(
+    std::make_shared&lt;TestReport&gt;(
+      lastFailure, lastEval<ins>, lastInfo</ins>));
+  ...
+
+  <ins>// test INFO
+  assert(lastInfo == &quot;&quot;);
+  INFO(&quot;message #1&quot;);
+  assert(lastInfo == &quot;[info] message #1&quot;);
+  INFO(&quot;message #2&quot;);
+  assert(lastInfo == &quot;[info] message #2&quot;);</ins>
+
+  return 0;
+}
+</pre>
+<p>Un esempio di utilizzo, dopo aver riadattato il <span class="code">DefaultReport</span> per emettere le notifiche <span class="code">INFO</span> solo se il test fallisce, intercalandole con le notifiche <span class="code">EVAL</span> secondo l'ordine di ricevimento:</p>
+<pre class="code">
+class DefaultReport : public Report {
+  ...
+  std::vector&lt;std::string&gt; <del>evals</del><ins>log</ins>_;
+  ...
+protected:
+  ...
+  virtual void onEval(const Notice&amp; eval) {
+    <del>evals</del><ins>log</ins>_.push_back(toString(eval));
+  }
+  <ins>virtual void onInfo(const Notice&amp; info) {
+    log_.push_back(toString(info));
+  }</ins>
+  ...
+  void testFailed() {
+    ++failedTests_;
+    <del>flushEvals();</del>
+    <ins>flushLog();</ins>
+  }
+  <del>void flushEvals() {</del>
+  <del>  if (!evals_.empty()) {</del>
+  <del>    for (auto eval : evals_)</del>
+  <del>      std::cout &lt;&lt; eval &lt;&lt; std::endl;</del>
+  <del>  }</del>
+  <del>}</del>
+  <ins>void flushLog() {
+    if (!log_.empty()) {
+      for (auto message : log_)
+        std::cout &lt;&lt; message &lt;&lt; std::endl;
+    }
+  }</ins>
+  void clear() {
+    <del>evals</del><ins>log</ins>_.clear();
+  }
+
+  ...
+};
+...
+
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  <ins>INFO(&quot;after anEmptyList initialization&quot;);</ins>
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+...
+
+/* output:
+ * 
+ * Test suite started...
+ * Initial list is empty: OK
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0.001s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Se il test ha successo, l'effetto dell'istruzione <span class="code">INFO</span> &egrave; nullo; il messaggio viene infatti emesso solo se il test fallisce, sempre dopo la segnalazione dell'errore:</p>
+<pre class="code">
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  INFO(&quot;after anEmptyList initialization&quot;);
+  <ins>CHECK(false);</ins>
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+...
+
+/* output:
+ * 
+ * Test suite started...
+ * Initial list is empty: FAILED
+ *  example.cpp(33) : [error] false evaluates to false
+ *  example.cpp(32) : [info] after anEmptyList initialization
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0.001s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>L'ordine relativo delle istruzioni <span class="code">EVAL</span>/<span class="code">INFO</span> &egrave; mantenuto:</p>
+<pre class="code">
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  <ins>EVAL(anEmptyList.size());</ins>
+  INFO(&quot;after anEmptyList initialization&quot;);
+  CHECK (false);
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+/* output:
+ * 
+ * Test suite started...
+ * Initial list is empty: FAILED
+ *  example.cpp(33) : [error] false evaluates to false
+ *  example.cpp(31) : [eval] anEmptyList.size() evaluates to 0
+ *  example.cpp(32) : [info] after anEmptyList initialization
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0.002s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Avendo introdotto il concetto di <em>log</em> in <span class="code">DefaultReport</span>, con una semplice modifica si pu&ograve; fare in modo che tutte le notifiche vengano emesse nell'esatto ordine di ricezione:</p>
+<pre class="code">
+class DefaultReport : public Report {
+...
+protected:
+  ...
+  virtual void onFailure(const Notice&amp; failure) {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;FAILED&quot; &lt;&lt; std::endl;
+    <del>std::cout &lt;&lt; toString(failure) &lt;&lt; std::endl;</del>
+    <ins>log_.push_back(toString(failure));</ins>
+    ++testFailures_;
+    ++totalFailures_;
+  }
+  ...
+};
+
+/* output:
+ *
+ * Test suite started...
+ * Initial list is empty: FAILED
+ *  example.cpp(31) : [eval] anEmptyList.size() evaluates to 0
+ *  example.cpp(32) : [info] after anEmptyList initialization
+ *  example.cpp(33) : [error] false evaluates to false
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0.001s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<h3><span class="code">WARN</span></h3>
+<p>Le notifiche <span class="code">WARN</span> sono a tutti gli effetti delle <span class="code">INFO</span> con la differenza che queste vanno visualizzate anche quanto il test ha successo. Necessitando del tipo di notifica in fase di visualizzazione, conviene rifattorizzare la classe <span class="code">Notice:</span></p>
+<pre class="code">
+<ins>#define PICK_NAME(id_) e_ ## id_,
+#define PICK_LABEL(id_) #id_,
+
+#define LEVELS(lambda_) \
+  lambda_(info) \
+  lambda_(warning) \
+  lambda_(error) \
+  lambda_(fatal) \
+
+enum Level { LEVELS(PICK_NAME) };
+static std::string level_name[] = { LEVELS(PICK_LABEL) };
+
+class Notice {
+  Level level_;
+  Location location_;
+  std::ostringstream content_;
+public:
+  Notice(Level level, const char* file, int line) : level_(level), location_(file, line) {
+    content_ &lt;&lt; &quot;[&quot; &lt;&lt; level_name[level] &lt;&lt; &quot;] &quot;;
+  }
+  Notice(const Notice&amp; notice) : level_(notice.level_), location_(notice.location_) {
+    content_ &lt;&lt; notice.content_.str();
+  }
+  Level level() const {
+    return level_;
+  }
+  std::string what() const {
+    return content_.str();
+  }
+  std::string toString() const {
+    std::ostringstream ss;
+    ss &lt;&lt; location_.file &lt;&lt; &quot;(&quot; &lt;&lt; location_.line &lt;&lt; &quot;) : &quot; &lt;&lt; what();
+    return ss.str();
+  }
+protected:
+  std::ostream&amp; content() {
+    return content_;
+  }
+};</ins>
+
+struct Error : public Notice {
+  Error(const char* file, int line) : Notice(<del>&quot;error&quot;</del><ins>e_error</ins>, file, line) { }
+};
+
+struct Fatal : public Notice {
+  Fatal(const char* file, int line) : Notice(<del>&quot;fatal&quot;</del><ins>e_fatal</ins>, file, line) { }
+};
+
+struct CheckFailure : public Error {
+  CheckFailure(const char* expression, const std::string&amp; expansion, const char* file, int line) : Error(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; expansion;
+  }
+};
+
+struct RequireFailure : public Fatal {
+  RequireFailure(const char* expression, const std::string&amp; expansion, const char* file, int line) : Fatal(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; expansion;
+  }
+};
+
+struct NoThrowFailure : public Error {
+  NoThrowFailure(const char* expression, const char* file, int line) : Error(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; did not throw&quot;;
+  }
+};
+
+struct WrongTypedExceptionFailure : public Error {
+  WrongTypedExceptionFailure(const char* expression, const std::exception&amp; exception, const char* file, int line) : Error(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; threw an unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot;&quot;;
+  }
+};
+
+struct WrongExceptionFailure : public Error {
+  WrongExceptionFailure(const char* expression, const char* file, int line) : Error(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; threw an unknown exception&quot;;
+  }
+};
+
+struct UnexpectedExceptionFailure : public Fatal {
+  UnexpectedExceptionFailure(const std::exception&amp; exception, const char* file, int line) : Fatal(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; &quot;unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot; caught&quot;;
+  }
+};
+
+struct UnknownExceptionFailure : public Fatal {
+  UnknownExceptionFailure(const char* file, int line) : Fatal(file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; &quot;unknown exception caught&quot;;
+  }
+};
+
+struct Eval : public Notice {
+  template &lt;typename T&gt;
+  Eval(const char* expression, const T&amp; value, const char* file, int line) : Notice(<del>&quot;eval&quot;</del><ins>e_info</ins>, file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; value;
+  }
+};
+
+struct Info : public Notice {
+  Info(const char* message, const char* file, int line) : Notice(<del>&quot;info&quot;</del>e_info, file, line) {
+    <del>description</del><ins>content()</ins> &lt;&lt; message;
+  }
+};
+
+<ins>struct Warn : public Notice {
+  Warn(const char* message, const char* file, int line) : Notice(e_warning, file, line) {
+    content() &lt;&lt; message;
+  }
+};</ins>
+...
+
+class Report {
+...
+public:
+  ...
+  <ins>static void warn(const Notice&amp; warn) {
+    if (report_)
+      report_-&gt;onWarn(warn);
+  }</ins>
+  ...
+protected:
+  ...
+  <ins>virtual void onWarn(const Notice&amp; /*warn*/) { }</ins>
+  virtual void onQuit() { }
+};
+...
+
+class DefaultReport : public Report {
+  ...
+protected:
+  ...
+  std::string toString(const Notice&amp; notice) {
+    std::stringstream ss;
+    <del>ss &lt;&lt; &quot; &quot; &lt;&lt; notice.location.file &lt;&lt; &quot;(&quot; &lt;&lt; notice.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; notice.what();</del>
+    <ins>ss &lt;&lt; &quot; &quot; &lt;&lt; notice.toString();</ins>
+    return ss.str();
+  }
+};
+...
+
+<ins>#define WARN(message_) \
+  do { \
+    gut::Report::warn(gut::Warn(message_, __FILE__, __LINE__)); \
+  } while (0)</ins>
+</pre>
+<p>La codifica delle tipologie di notifica &egrave; stata realizzata tramite <a href="x-macro.html">x-macro</a>. Il programma di test diventa:</p>
+<pre class="code">
+class TestReport : public gut::Report {
+  ...
+  std::string&amp; info_;
+  <ins>std::string&amp; warn_;</ins>
+  ...
+public:
+  TestReport(
+    std::string&amp; failure,
+    std::string&amp; eval,
+    std::string&amp; info<ins>,
+    std::string&amp; warn</ins>)
+  : failure_(failure), eval_(eval), info_(info)<ins>, warn_(warn)</ins> {
+  }
+protected:
+  ...
+  <ins>virtual void onWarn(const gut::Notice&amp; warn) {
+    warn_ = warn.what();
+  }</ins>
+};
+...
+
+int main() {
+
+  std::string lastFailure;
+  std::string lastEval;
+  std::string lastInfo;
+  <ins>std::string lastWarn;</ins>
+  gut::Report::set(
+    std::make_shared&lt;TestReport&gt;(
+      lastFailure, lastEval, lastInfo<ins>, lastWarn</ins>));
+  ...
+
+  // test EVAL
+  assert(lastEval == &quot;&quot;);
+  EVAL(i1);
+  assert(lastEval == &quot;[<del>eval</del><ins>info</ins>] i1 evaluates to 1&quot;);
+  EVAL((i1 + 3 * i2));
+  assert(lastEval == &quot;[<del>eval</del><ins>info</ins>] (i1 + 3 * i2) evaluates to 7&quot;);
+  ...
+
+  <ins>// test WARN
+  assert(lastWarn == &quot;&quot;);
+  WARN(&quot;message #1&quot;);
+  assert(lastWarn == &quot;[warning] message #1&quot;);
+  WARN(&quot;message #2&quot;);
+  assert(lastWarn == &quot;[warning] message #2&quot;);</ins>
+
+  return 0;
+}
+</pre>
+<p>L'esempio, una volta riadattato l'oggetto <span class="code">DefaultReport</span>, diventa:</p>
+<pre class="code">
+class DefaultReport : public Report {
+  ...
+  size_t failedTests_;
+  std::vector&lt;<del>std::string</del><ins>Notice</ins>&gt; log_;
+public:
+  ...
+  virtual void onEndTest() {
+    if (testFailures_ == 0) <ins>{</ins>
+      std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;
+      <ins>flushLog(e_warning);
+    }</ins>
+    else
+      testFailed();
+    clear();
+  }
+  virtual void onFailure(const Notice&amp; failure) {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;FAILED&quot; &lt;&lt; std::endl;
+    log_.push_back(<del>toString(</del>failure<del>)</del>);
+    ++testFailures_;
+    ++totalFailures_;
+  }
+  virtual void onEval(const Notice&amp; eval) {
+    log_.push_back(<del>toString(</del>eval<del>)</del>);
+  }
+  virtual void onInfo(const Notice&amp; info) {
+    log_.push_back(<del>toString(</del>info<del>)</del>);
+  }
+  <ins>virtual void onWarn(const Notice&amp; warn) {
+    log_.push_back(warn);
+  }</ins>
+  virtual void onQuit() {
+    testFailed();
+  }
+  void testFailed() {
+    ++failedTests_;
+    flushLog(<ins>e_info</ins>);
+  }
+  void flushLog(<ins>Level minLevel</ins>) {
+    <del>if (!log_.empty()) {</del>
+    <del>  for (auto message : log_)</del>
+    <del>    std::cout &lt;&lt; message &lt;&lt; std::endl;</del>
+    <ins>for (auto notice : log_) {
+      if (notice.level() &gt;= minLevel)
+        std::cout &lt;&lt; &quot; &quot; &lt;&lt; notice.toString() &lt;&lt; std::endl;</ins>
+    }
+  }
+  void clear() {
+    log_.clear();
+  }
+  <del>std::string toString(const Notice&amp; notice) {</del>
+  <del>  std::stringstream ss;</del>
+  <del>  ss &lt;&lt; &quot; &quot; &lt;&lt; notice.toString();</del>
+  <del>  return ss.str();</del>
+  <del>}</del>
+};
+...
+
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  WARN(&quot;verify that...&quot;);
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+/* output:
+ * 
+ * Test suite started...
+ * Initial list is empty: OK
+ *  example.cpp(31) : [warning] verify that...
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 test(s) in 0.001s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Come si pu&ograve; notare, l'avviso &egrave; riportato anche se il test si &egrave; concluso con successo.</p>
+<h3><span class="code">FAIL</span></h3>
+<p>La richiesta <span class="code">FAIL</span> causa l'immediato fallimento del test, alla stregua di una <span class="code">REQUEST</span>:</p>
+<pre class="code">
+namespace gut {
+  ...
+
+<ins>struct UserFailure : public Fatal {
+  UserFailure(const char* message, const char* file, int line) : Fatal(file, line) {
+    content() &lt;&lt; message;
+  }
+};</ins>
+...
+
+} // namespace gut
+...
+
+<ins>#define FAIL(message_) \
+  do { \
+    gut::Report::failure(gut::UserFailure(message_, __FILE__, __LINE__)); \
+  } while (0)</ins>
+</pre>
+<p>Il programma di test diventa:</p>
+<pre class="code">
+int main() {
+  ...
+
+<ins>  // test FAIL
+  FAIL(&quot;user failure&quot;);
+  assert(lastFailure == &quot;[fatal] user failure&quot;);
+</ins>
+
+  return 0;
+}
+</pre>
+<p>Riprendendo l'esempio della <span class="code">RecentlyUsedList</span>, un tipico utilizzo di <span class="code">FAIL</span> &egrave; il seguente:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;Clearing the list makes it empty&quot;) {
+  FAIL(&quot;TODO!&quot;);
+}</ins>
+
+/* output:
+ * Test suite started...
+ * Initial list is empty: OK
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Clearing the list makes it empty: FAILED
+ *  example.cpp(79) : [fatal] TODO!
+ * Ran 6 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<h2>Varie</h2>
+<h3>Colori in console</h3>
+<p>Gran parte dei framework di test ricorrono al testo colorato per evidenziare l'esito dei test; sfruttando del codice <a href="colors-in-console.html">a suo tempo gi&agrave; descritto</a>, si pu&ograve; ottenere qualcosa di analogo:</p>
+<pre class="code">
+...
+#ifdef GUT_HAS_CHRONO
+#include &lt;chrono&gt;
+#else
+#include &lt;time.h&gt;
+#endif
+
+<ins>#include "colors.h"</ins>
+
+#define INT_BASE Dec
+#define CHAR_BASE Hex
+...
+
+class DefaultReport : public Report {
+  ...
+  virtual void onEnd() {
+    std::cout &lt;&lt; &quot;Ran &quot; &lt;&lt; tests_ &lt;&lt; &quot; test(s) in &quot; &lt;&lt; clock_.elapsedTime() &lt;&lt; &quot;s.&quot; &lt;&lt; std::endl;
+    if (failedTests_ == 0)
+      std::cout <ins>&lt;&lt; color::lime</ins> &lt;&lt; &quot;OK - all tests passed.&quot; <ins>&lt;&lt; color::reset</ins> &lt;&lt; std::endl;
+    else
+      std::cout <ins>&lt;&lt; color::red</ins> &lt;&lt; &quot;FAILED - &quot; &lt;&lt; totalFailures_ &lt;&lt; &quot; failure(s) in &quot; &lt;&lt; failedTests_ &lt;&lt; &quot; test(s).&quot; <ins>&lt;&lt; color::reset</ins> &lt;&lt; std::endl;
+  }
+  ...
+};
+</pre>
+<p>L'effetto che si ottiene per un test con esito positivo &egrave; il seguente:</p>
+<img src="img/gut-8/test-ok.png"/>
+<p>In caso d'errore invece:</p>
+<img src="img/gut-8/test-error.png"/>
+<h3>Revisione dell'attivazione dell'opzione <em>fail-fast</em></h3>
+<p>&Egrave; stata modificata la modalit&agrave; di attivazione dell'opzione <em>fail-fast</em>, introducendo la macro <span class="code">ENABLE_FAILFAST</span> che va specificata <strong>dopo</strong> l'inclusione del file <em>gut.h</em>:</p>
+<pre class="code">
+<del>#ifdef GUT_FAILFAST
+FailFast failFast_;
+#endif
+</del><ins>#define ENABLE_FAILFAST gut::FailFast failFast_;
+</ins>
+</pre>
+<p>Il programma d'esempio diventa:</p>
+<pre class="code">
+<del>#define GUT_FAILFAST
+</del>
+#include &quot;gut.h&quot;
+
+<ins>ENABLE_FAILFAST
+</ins>
+TEST(&quot;fail-fast /1&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+TEST(&quot;fail-fast /2&quot;) {
+  CHECK(1 == 2);
+  CHECK(2 == 3);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * fail-fast /1: FAILED
+ *  failfast.cpp(6) : [error] 1 == 2 evaluates to 1 == 2
+ * Ran 1 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p class="modification-notice">Pagina modificata il 29/05/2013</p>
+</body>
+</html>

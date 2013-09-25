@@ -1,0 +1,277 @@
+<html>
+<head>
+<title>Duff's Device</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#duffs-device">risorse</a> | duff's device</p>
+<h1>Duff's Device</h1>
+<h2>Introduzione</h2>
+<p>Il <em>Duff's device</em> &egrave; un costrutto C/C++ che effettua l'unroll di un ciclo tramite una combinazione piuttosto &laquo;creativa&raquo; di uno <span class="code">switch</span> e un <span class="code">while</span>. La formulazione originale &egrave; la seguente (cfr. <a href="#ref-4">[4]</a>):</p>
+<pre class="code">
+/*
+ * loop standard
+ */
+register short *to, *from;
+register count;
+{
+  do
+    *to = *from++;
+  while (--count > 0);
+}
+
+
+/*
+ * duff's device equivalente
+ */
+register short *to, *from;
+register count;
+{
+  register n = (count + 7) / 8;
+  switch(count % 8) {
+    case 0: do {  *to = *from++;
+    case 7:       *to = *from++;
+    case 6:       *to = *from++;
+    case 5:       *to = *from++;
+    case 4:       *to = *from++;
+    case 3:       *to = *from++;
+    case 2:       *to = *from++;
+    case 1:       *to = *from++;
+               } while (--n > 0);
+  }
+}
+</pre>
+<p>Per quanto esoterico, il codice &egrave; perfettamente legale. In rete si trovano diverse risorse che ne spiegano il funzionamento<a href="#ref-2"><sup>[2]</sup></a><a href="#ref-3"><sup>[3]</sup></a>. Di seguito, il mio tentativo.</p>
+<h2>Ricostruzione del Duff's Device</h2>
+<h3>Passo 0: ciclo <span class="code">while</span></h3>
+<p>La versione iniziale del loop:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+int main() {
+  int i = 0;
+  int n = 19;
+
+  while (n &gt; 0) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    --n;
+  }
+
+  std::cout &lt;&lt; std::endl;
+  return 0;
+}
+
+/* output:
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<h3>Passo 1: unroll esplicito con ciclo <span class="code">for</span></h3>
+<p>Versione con unroll di ampiezza 8; si noti il secondo ciclo <span class="code">for</span>, che si occupa di effettuare le operazioni non coperte dal ciclo &ldquo;srotolato&rdquo; nel caso il numero di ripetizioni richieste non sia un multiplo di 8:</p>
+<pre class="code">
+  // ...
+
+  const int unrolled_loops = n / 8;
+
+  for (int j = 0; j &lt; unrolled_loops; ++j) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+  }
+
+  const int uncovered_by_unrolled_looping = n % 8;
+  for (int j = 0; j &lt; uncovered_by_unrolled_looping; j++) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<h3>Passo 3: <span class="code">goto</span></h3>
+<p>Nulla cambia se il secondo ciclo <span class="code">for</span> viene eseguito prima dell'unrolling:</p>
+<pre class="code">
+  // ...
+
+  const int uncovered_by_unrolled_looping = n % 8;
+  for (int j = 0; j &lt; uncovered_by_unrolled_looping; j++) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+  }
+
+  const int unrolled_loops = n / 8;
+
+  for (int j = 0; j &lt; unrolled_loops; ++j) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<p>L'idea che apre la porta al <em>Duff's Device</em> &egrave; che il primo ciclo si pu&ograve; evitare, se si ha l'accortezza di entrare nella posizione corretta del ciclo &ldquo;srotolato&rdquo;:</p>
+<pre class="code">
+  // ...
+  int loop = (n + 7) / 8;
+
+  if (n % 8 == 1) goto one;
+  if (n % 8 == 2) goto two;
+  if (n % 8 == 3) goto three;
+  if (n % 8 == 4) goto four;
+  if (n % 8 == 5) goto five;
+  if (n % 8 == 6) goto six;
+  if (n % 8 == 7) goto seven;
+
+  while (loop &gt; 0) {
+        std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+seven:  std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+six:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+five:   std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+four:   std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+three:  std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+two:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+one:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+        --loop;
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<h3>Passo 4: sostituzione <span class="code">if</span>/<span class="code">switch</span></h3>
+<p>La sequenza di <span class="code">if</span> pu&ograve; essere sostituita da uno <span class="code">switch</span>:</p>
+<pre class="code">
+  // ...
+  int loop = (n + 7) / 8;
+
+  switch (n % 8)
+  {
+    case 1: goto one;
+    case 2: goto two;
+    case 3: goto three;
+    case 4: goto four;
+    case 5: goto five;
+    case 6: goto six;
+    case 7: goto seven;
+  }
+
+  while (loop &gt; 0) {
+        std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+seven:  std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+six:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+five:   std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+four:   std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+three:  std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+two:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+one:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+        --loop;
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<h3>Passo 5: eliminazione dei <span class="code">goto</span></h3>
+<p>La sequenza di <span class="code">goto</span> pu&ograve; essere eliminata sfruttando il <em>fall-thriugh</em>:</p>
+<pre class="code">
+  // ...
+  int loop = (n + 7) / 8;
+
+  switch (n % 8)
+  {
+    case 7: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 6: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 5: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 4: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 3: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 2: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 1: std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+            --loop;
+  }
+
+  while (loop &gt; 0) {
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    --loop;
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<h3>Passo 6: il Duff's Device</h3>
+<p>I blocchi dello <span class="code">switch</span> e del ciclo <span class="code">while</span> hanno una struttura molto simile; in particolare, il primo contiene un numero di &ldquo;srotolamenti&rdquo; inferiore di una unit&agrave; rispetto al secondo. Ci&ograve; tuttavia non impedisce di fondere i due cicli, sfruttando una particolarit&agrave; del linguaggio C (e di conseguenza del C++) che richiede, relativamente all'istruzione <span class="code">switch</span>, solamente che il suo corpo sia sintatticamente corretto e consente che le etichette <span class="code">case</span> siano poste a prefisso di una <em>qualunque</em> sua istruzione. Il seguente codice &egrave; dunque perfettamente legale:</p>
+<pre class="code">
+  // ...
+  int loop = (n + 7) / 8;
+
+  switch (n % 8)
+  {
+    case 0: 
+             while (loop &gt; 0) {
+               std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 7:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 6:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 5:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 4:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 3:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 2:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+    case 1:    std::cout &lt;&lt; ++i &lt;&lt; &quot; &quot;;
+               --loop;
+             }
+  }
+
+  // ...
+
+/* output
+ *
+ * 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ */
+</pre>
+<p>Rispetto alla versione originale, questa implementazione non richiede un valore strettamente positivo per la variabile <span class="code">n</span>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Holly, R. &quot;A Reusable Duff Device&quot;. <em>Dr.Dobb's</em>. &lt;<a href="http://www.drdobbs.com/a-reusable-duff-device/184406208">http://www.drdobbs.com/a-reusable-duff-device/184406208</a>&gt;. Visitato il 20 settembre 2012.</li>
+<a name="ref-2"></a>
+<li>&quot;Duff's device&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Duff%27s_device">http://en.wikipedia.org/wiki/Duff%27s_device</a>&gt;. Visitato il 20 Settembre 2012.</li>
+<a name="ref-3"></a>
+<li>&quot;How does Duff's device work?&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/514118/how-does-duffs-device-work">http://stackoverflow.com/questions/514118/how-does-duffs-device-work</a>&gt;. Visitato il 25 Settembre 2012.</li>
+<a name="ref-4"></a>
+<li>&quot;Tom Duff on Duff's device&quot;. <em>www.lysator.liu.se</em>. &lt;<a href="http://www.lysator.liu.se/c/duffs-device.html">http://www.lysator.liu.se/c/duffs-device.html</a>&gt;. Visitato il 24 Settembre 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 25/09/2012</p>
+</body>
+</html>

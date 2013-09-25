@@ -1,0 +1,491 @@
+<html>
+<head>
+<title>ScopeGuard</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/scope-guard.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scopeguard">risorse</a> | scopeguard</p>
+<h1>ScopeGuard</h1>
+<h2>Definizioni</h2>
+<p>Un'operazione si definisce <em>exception-safe</em> se lascia l'oggetto (o gli oggetti) sul quale ha agito in uno stato consistente quando termina avendo sollevato un'eccezione. Non conta lo stato in cui l'oggetto si trova (pu&ograve; per esempio trattarsi di un particolare stato d'errore che richiede una esplicita cancellazione), ci&ograve; che importa &egrave; che si tratti di uno stato ben definito &ndash; condizione necessaria per scrivere il codice di gestione dell'eccezione.</p>
+<p>Un'operazione exception-safe pu&ograve; offrire le seguenti garanzie in fatto di eccezioni (classificazione di Abrahams<a href="#ref-1"><sup>[1]</sup></a>):
+<ul>
+ <li><em>basic guarantee</em>: le invarianti d'oggetto sono mantenute, nessuna risorsa viene persa;</li>
+ <li><em>strong guarantee</em>: in caso di lancio di un'eccezione l'oggetto assume lo stato precedente alla chiamata;</li>
+ <li><em>no-throw guarantee</em>: non verr&agrave; sollevata alcuna eccezione.</li>
+</ul>
+</p>
+<p class="note">Nota: un livello di garanzia che pu&ograve; essere offerto da operazioni non exception-safe &egrave; la cosiddetta <em>no leak guarantee</em>, che assicura la corretta gestione delle risorse, senza tuttavia dire nulla circa lo stato finale dell'oggetto.</p>
+<p>La garanzia basic assicura che l'oggetto, trovandosi in uno stato valido anche in seguito al sollevamento di un'eccezione, pu&ograve; ancora essere utilizzato. Tuttavia, il fatto che lo stato in cui si trova, per quanto valido, sia ignoto, a volte lo rende di fatto inutilizzabile:</p>
+<pre class="code">
+std::vector&lt;int&gt; v;
+
+for (size_t i = 0; i &lt; items; i++)
+{
+  try
+  {
+    v.push_back(rand());
+  }
+  catch (...)
+  {
+    // ignore any exception
+  }
+}
+
+// how many random numbers will v contain???
+</pre>
+<p>In alcune circostanze un'operazione fornisce garanzie diverse, in funzione di specifiche condizioni al contorno: la funzione di libreria <span class="code">vector&lt;T&gt;::erase</span>, ad esempio, di base fornisce una garanzia basic, che diventa no-throw se il costruttore di copia e l'operatore di assegnamento del tipo <span class="code">T</span> non sollevano eccezioni.</p>
+<h2>Implementazione</h2>
+<p>Scrivere codice exception-safe &egrave; particolarmente difficile. Gli strumenti che il C++ mette a disposizione per implementare operazioni exception-safe sono il costrutto <span class="code">try/catch</span> e il supporto per l'idioma <em>RAII &ndash; Resource Acquisition Is Initialization</em>.</p>
+<p>Le principali linee guida da seguire nella scrittura di codice exception-safe sono riassumibili nei seguenti punti:
+<ul>
+ <li>non rilasciare un oggetto fintanto che il candidato sostituto non &egrave; stato allocato;</li>
+ <li>assicurarsi di lasciare l'oggetto in uno stato consistente prima di sollevare un'eccezione.</li>
+</ul>
+</p>
+<p>Si consideri a titolo d'esempio la seguente funzione:</p>
+<pre class="code">
+void SetName(const std::string&amp; newName) {
+  m_name = newName;
+  // code that can throw an excpetion
+}
+</pre>
+<p>Per rendere il codice exception-safe &egrave; necessario annullare l'effetto dell'assegnamento <span class="code">m_name = newName</span>; una soluzione (ben poco elegante) prevede l'uso un blocco <span class="code">try/catch</span>:</p>
+<pre class="code">
+void Safe::SetName(const std::string&amp; newName) {
+  std::string oldName = m_name;
+  m_name = newName;
+  try {
+      // code that can throw an excpetion
+  } catch (...) {
+    m_name = oldName;
+  }
+}
+</pre>
+<p>Il numero di righe di codice sono lievitate, offuscando la semantica dell'operazione. Una soluzione alternativa &egrave; l'uso dell'idioma RAII, sfruttando un oggetto che nel distruttore annulli l'effetto dell'assegnamento, a meno che non venga esplicitamente istruito diversamente:</p>
+<pre class="code">
+class RevertableString
+{
+  std::string&amp; m_string;
+  std::string m_content;
+  bool m_commit;
+public:
+  RevertableString(std::string&amp; string)
+    : m_string(string), m_content(string), m_commit(false) {
+  }
+  ~RevertableString() {
+    if (!m_commit)
+      m_string = m_content;
+  }
+  void Commit() {
+    m_commit = true;
+  }
+};
+
+// ...
+
+void Safe::SetName(const std::string&amp; newName) {
+  RevertableString guard(m_name);
+  m_name = newName;
+  // code that can throw an excpetion
+  guard.Commit();
+}
+</pre>
+<p>Se il codice richiamato da <span class="code">SetName</span> solleva un'eccezione, il distruttore di <span class="code">guard</span> effettua il ripristino del valore originale di <span class="code">m_name</span>; se l'esecuzione del metodo va a buon fine, la chiamata <span class="code">Commit</span> disinnesca il distruttore di <span class="code">guard</span>.</p>
+<p>Per quanto interessante, questo approccio ha lo svantaggio di costringere il programmatore a definire un discreto numero di classi di supporto. Andrei Alexandrescu e Petru Marginean hanno generalizzato questa idea in <em>ScopeGuard</em><a href="#ref-1"><sup>[2]</sup></a>, un oggetto che, se richiesto, nel suo distruttore effettua una chiamata a metodo, funzione o <em>functor</em>.</p>
+</p>
+<h3>Ripristino mediante chiamata a metodo d'oggetto</h3>
+<p>Si consideri la seguente definizione:</p>
+<pre class="code">
+#include &lt;stdexcept&gt;
+#include &lt;string&gt;
+
+class Safe {
+  std::string m_name;
+protected:
+  void SetName(const std::string&amp; newName, bool fail) {
+    m_name = newName;
+    if (fail)
+      throw std::runtime_error(&quot;error&quot;);
+  }
+public:
+  const std::string&amp; GetName() const {
+    return m_name;
+  }
+  void SetNameSafely(const std::string&amp; newName) {
+    SetName(newName, false);
+  }
+  void SetNameAndFail(const std::string&amp; newName) {
+    SetName(newName, true);
+  }
+};
+</pre>
+<p>La classe non fornisce una garanzia strong, come dimostra il codice che segue:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+
+int main(int argc, char* argv []) {
+  Safe safe;
+  assert(safe.GetName() == &quot;&quot;);
+  safe.SetNameSafely(&quot;buzz&quot;);
+  assert(safe.GetName() == &quot;buzz&quot;);
+
+  try {
+    safe.SetNameAndFail(&quot;fuzz&quot;);
+    assert(false);
+  } catch (...) {
+  }
+
+  assert(safe.GetName() == &quot;buzz&quot;);
+  return 0;
+}
+</pre>
+<p>Volendo generalizzare l'idea alla base di <span class="code">RevertableString</span>, nell'intento di annullare l'effetto di <span class="code">Safe::SetNameAndFail</span> con una chiamata <span class="code">Safe::SetNameSafely</span> (che &egrave; no-throw), si introduce la classe <span class="code">ScopeGuardForMethod1</span> (<span class="code">Method</span> indica che la classe &egrave; predisposta alla chiamata di un metodo, <span class="code">1</span> indica il numero di parametri del metodo):</p>
+<pre class="code">
+template &lt;class Object, typename Method, typename Param&gt;
+class ScopeGuardForMethod1 {
+  Object&amp; m_object;
+  Method m_method;
+  Param m_param;
+  bool m_commit;
+public:
+  ScopeGuardForMethod1(Object&amp; object, Method method, const Param&amp; param)
+    : m_object(object), m_method(method), m_param(param), m_commit(false) {
+  }
+  ~ScopeGuardForMethod1() {
+    if (!m_commit)
+      (m_object.*m_method)(m_param);
+  }
+  void Commit() {
+    m_commit = true;
+  }
+};
+</pre>
+<p>Il metodo <span class="code">Safe::SetName</span> pu&ograve; essere cos&igrave; riscritto:</p>
+<pre class="code">
+  void SetName(const std::string&amp; newName, bool fail) {
+    ScopeGuardForMethod1&lt;Safe, void (Safe::*)(const std::string&amp;), std::string&gt;
+      guard (*this, &amp;Safe::SetNameSafely, m_name);
+    m_name = newName;
+    if (fail)
+      throw std::runtime_error(&quot;error&quot;);
+    guard.Commit ();
+  }
+</pre>
+<p>Per evitare di dichiarare esplicitamente il tipo di <span class="code">guard</span> (risultando questo spesso tutt'altro che banale), si ricorre ad una caratteristica del linguaggio C++, per la quale quando un oggetto temporaneo viene associato ad una referenza (che deve necessariamente essere costante), la vita del temporaneo viene estesa a quello della referenza. L'idea dunque &egrave; quella di definire una classe base per <span class="code">ScopeGuardForMethod1</span>, e tenere in vita il temporaneo per mezzo di una referenza costante alla sua classe base:</p>
+<pre class="code">
+class ScopeGuardBase {
+  // ...
+};
+
+template &lt;class Object, typename Method, typename Param&gt;
+class ScopeGuardForMethod1 : public ScopeGuardBase {
+  // ...
+
+class Safe {
+  // ...
+  void SetName(const std::string&amp; newName, bool fail) {
+    const ScopeGuardBase& guard = ...
+</pre>
+<p>L'oggetto temporaneo si pu&ograve; ottenere come valore di ritorno di una funzione ausiliaria:</p>
+<pre class="code">
+template &lt;class Object, typename Method, typename Param&gt;
+ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(Object&amp; object, Method method, const Param&amp; param) {
+  return ScopeGuardForMethod1&lt;Object, Method, Param&lt;(object, method, param);
+}
+</pre>
+<p><span class="code">guard</span> pu&ograve; essere cos&igrave; istanziata pi&ugrave; agevolmente:</p>
+<pre>
+class Safe {
+  // ...
+  void SetName(const std::string&amp; newName, bool fail) {
+    const ScopeGuardBase& guard = CreateGuard(*this, &amp;Safe::SetNameSafely, m_name);
+</pre>
+<p>Con poco altro zucchero sintattico si giunge ad alla forma:</p>
+<pre class="code">
+typdef const ScopeGuardBase&amp; Guard;
+
+class Safe {
+  // ...
+  void SetName(const std::string&amp; newName, bool fail) {
+    Guard guard = CreateGuard(*this, &amp;Safe::SetNameSafely, m_name);
+</pre>
+<p>La rifattorizzazione appena compiuta, oltre a rendere pi&ugrave; leggibile il codice, ha il vantaggio di isolare la gestione del flag <span class="code">commit</span> nella nuova classe base <span class="code">ScopeGuardBase</span>, oltre a unificare la definizione delle guardie, grazie alla deduzione automatica dei tipi e dell'overloading: indipendentemente dal numero e dal tipo di parametri, l'istanziazione di <span class="code">guard</span> pu&ograve; avvenire sfruttando una generica chiamata <span class="code">CreateGuard</span>. Di seguito &egrave; riportato il codice completo per la nuova versione di <span class="code">ScopeGuardForMethod1</span> (la generalizzazione ad un differente numero di parametri &egrave; banale); degni di nota il costruttore di copia della classe base, che si occupa di trasferire la responsabilit&agrave; del ripristino finale, e il distruttore, non virtuale, che cattura le eventuali eccezioni sollevate dal codice di ripristino:</p>
+<pre class="code">
+class ScopeGuardBase {
+protected:
+  mutable bool m_commit;
+public:
+  ScopeGuardBase()
+    : m_commit(false) {
+  }
+  ScopeGuardBase(const ScopeGuardBase&amp; guard)
+    : m_commit(guard.m_commit) {
+    guard.m_commit = true;
+  }
+  void Commit() const {
+    m_commit = true;
+  }
+};
+
+typedef const ScopeGuardBase&amp; Guard;
+
+template &lt;class Object, typename Method, typename Param&gt;
+class ScopeGuardForMethod1 : public ScopeGuardBase {
+  Object&amp; m_object;
+  Method m_method;
+  Param m_param;
+public:
+  ScopeGuardForMethod1(Object&amp; object, Method method, const Param&amp; param)
+    : m_object(object), m_method(method), m_param(param) {
+  }
+  ~ScopeGuardForMethod1() {
+    if (!m_commit)
+      try {
+        (m_object.*m_method)(m_param);
+      } catch (...) {
+      }
+  }
+};
+
+template &lt;class Object, typename Method, typename Param&gt;
+ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(Object&amp; object, Method method, const Param&amp; param) {
+  return ScopeGuardForMethod1&lt;Object, Method, Param&gt;(object, method, param);
+}
+</pre>
+<p>Non c'&egrave; la necessit&agrave; di dichiarare il distruttore <span class="code">virtual</span> perch&eacute; in gioco non ci sono metodi virtuali, ed essendo stato allocato un oggetto temporaneo di tipo <span class="code">ScopeGuardForMethod1</span>, sar&agrave; esattamente il suo distruttore ad essere chiamato, non quello del tipo della referenza che lo ha mantenuto in vita.</p>
+<h3>Ripristino mediante chiamata a funzione</h3>
+<p>Si consideri il seguente esempio, che si interrompe in corrispondenza dell'ultima <span class="code">assert</span>:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+#include &lt;stdexcept&gt;
+
+bool g_busy = false;
+
+void Acquire() {
+  g_busy = true;
+}
+
+void Release() {
+  g_busy = false;
+}
+
+void UseResource(bool fail = false) {
+  Acquire();
+  if (fail)
+    throw std::runtime_error(&quot;error&quot;);
+  Release();
+}
+
+void UseResourceAndFail() {
+  UseResource(true);
+}
+
+int main(int argc, char* argv[]) {
+  assert (g_busy == false);
+  UseResource();
+  assert (g_busy == false);
+
+  try {
+    UseResourceAndFail();
+    assert(false);
+  } catch (...) {
+  }
+
+  assert(g_busy == false);
+  return 0;
+}
+</pre>
+<p>In questo caso, il ripristino delle condizioni precedenti alla chiamata <span class="code">UseResource</span> si ottiene chiamando la funzione <span class="code">Release</span>. &Egrave; semplice, a partire da <span class="code">ScopeGuardForMethod1</span>, definire una nuova classe che effettua una chiamata a funzione senza parametri:</p>
+<pre class="code">
+template &lt;typename Func&gt;
+class ScopeGuardForFunc0 : public ScopeGuardBase {
+  Func m_func;
+public:
+  ScopeGuardForFunc0(const Func&amp; func)
+    : m_func (func) {
+  }
+  ~ScopeGuardForFunc0() {
+    if (!m_commit)
+      try {
+        m_func();
+      } catch (...) {
+      }
+  }
+};
+
+template &lt;typename Func&gt;
+ScopeGuardForFunc0&lt;Func&gt; CreateGuard(Func func) {
+  return ScopeGuardForFunc0&lt;Func&gt;(func);
+}
+
+// ...
+
+void UseResource(bool fail = false) {
+  Acquire();
+  Guard guard = CreateGuard(Release);
+  if (fail)
+    throw std::runtime_error(&quot;error&quot;);
+  Release();
+  guard.Commit();
+}
+</pre>
+<p><span class="code">ScopeGuardForFunc0</span> supporta anche <em>functor</em>, come dimostra l'esempio seguente:</p>
+<pre class="code">
+class Releaser {
+public:
+  void operator()() {
+    Release();  
+  }
+};
+
+// ...
+
+void UseResource(bool fail = false) {
+  Acquire();
+  Guard guard = CreateGuard(Releaser());
+  if (fail)
+    throw std::runtime_error(&quot;error&quot;);
+  Release();
+  guard.Commit();
+}
+</pre>
+<p>Questo esempio si presta ad un'ulteriore considerazione: gli oggetti <span class="code">guard</span> possono essere utilizzati come veri e propri deallocatori automatici, in pieno stile RAII, se si omette la chiamata <span class="code">Commit</span> finale:</p>
+<pre class="code">
+void UseResource(bool fail = false) {
+  Acquire();
+  Guard guard = CreateGuard(Release);
+  if (fail)
+    throw std::runtime_error(&quot;error&quot;);
+  // guard will always call Release!
+}
+</pre>
+<h3>Passaggio di parametri per referenza</h3>
+<p>Un ultimo aspetto da considerare riguarda il passaggio di parametri per referenza; modificando il codice dell'esempio precedente, introducendo l'uso di una referenza, il rilascio della risorsa acquisita in <span class="code">UseResourceAndFail</span> avviene in modo scorretto:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+#include &lt;stdexcept&gt;
+
+class ScopeGuardBase {
+protected:
+  mutable bool m_commit;
+public:
+  ScopeGuardBase()
+    : m_commit(false) {
+  }
+  ScopeGuardBase(const ScopeGuardBase&amp; guard)
+    : m_commit(guard.m_commit) {
+    guard.m_commit = true;
+  }
+  void Commit() const {
+    m_commit = true;
+  }
+};
+
+typedef const ScopeGuardBase&amp; Guard;
+
+template &lt;typename Func, typename Param&gt;
+class ScopeGuardForFunc1 : public ScopeGuardBase {
+  Func m_func;
+  Param m_param;
+public:
+  ScopeGuardForFunc1(Func func, const Param&amp; param)
+    : m_func(func), m_param(param) {
+  }
+  ~ScopeGuardForFunc1() {
+    if (!m_commit)
+      try {
+        m_func(m_param);
+      } catch (...) {
+      }
+  }
+};
+
+template &lt;typename Func, typename Param&gt;
+ScopeGuardForFunc1&lt;Func, Param&gt; CreateGuard(Func func, const Param&amp; param) {
+  return ScopeGuardForFunc1&lt;Func, Param&gt;(func, param);
+}
+
+void Acquire(bool&amp; busy) {
+  busy = true;
+}
+
+void Release(bool&amp; busy) {
+  busy = false;
+}
+
+void UseResource(bool&amp; busy, bool fail = false) {
+  Acquire(busy);
+  Guard guard = CreateGuard(Release, busy);
+  if (fail)
+    throw std::runtime_error(&quot;error;&quot;);
+  Release(busy);
+  guard.Commit();
+}
+
+void UseResourceAndFail(bool&amp; busy) {
+  UseResource(busy, true);
+}
+
+int main(int argc, char* argv[]) {
+  bool busy = false;
+  UseResource(busy);
+  assert (busy == false);
+
+  try {
+    UseResourceAndFail(busy);
+    assert(false);
+  } catch (...) {
+  }
+
+  assert(busy == false);
+  return 0;
+}
+</pre>
+<p>Il problema nasce dal fatto che <span class="code">ScopeGuardForFunc1</span> mantiene una copia dei parametri passati in fase di istanziazione. Il supporto per le referenze pu&ograve; tuttavia essere facilmente introdotto sfruttando un oggetto che renda la referenza copiabile:</p>
+<pre class="code">
+template &lt;typename T&gt;
+class Reference {
+  T&amp; m_ref;
+public:
+  Reference (T&amp; ref) : m_ref (ref) { }
+  operator T&amp; () const { return m_ref; }
+};
+
+template &lt;class T&gt;
+inline Reference&lt;T&gt; ByRef (T&amp; t) {
+  return Reference&lt;T&gt; (t);
+}
+</pre>
+<p><span class="code">ByRef</span> &egrave; una funzione utile per trasformare una referenza in un oggetto sul posto:</p>
+<pre class="code">
+void UseResource(bool&amp; busy, bool fail = false) {
+  Acquire(busy);
+  Guard guard = CreateGuard(Release, ByRef(busy));
+  if (fail)
+    throw std::runtime_error(&quot;error;&quot;);
+  Release(busy);
+  guard.Commit();
+}
+</pre>
+<p>Un'accortezza che consente di individuare i casi in cui si definisce una <span class="code">guard</span> su una referenza non costante &ndash; e che dovrebbe perci&ograve; essere trasformata in un oggetto <span class="code">Reference</span> &ndash; consiste nel definire <span class="code">const</span> le variabili membro di <span class="code">ScopeGuardForXYZ</span>; in questo modo, in assenza di una sola delle chiamate <span class="code">ByRef</span> necessarie, il compilatore si rifiuter&agrave; di compilare la chiamata inserita nel distruttore:</p>
+<pre class="code">
+template &lt;typename Func, typename Param&gt;
+class ScopeGuardForFunc1 : public ScopeGuardBase {
+  Func m_func;
+  const Param m_param; // const!
+  // ...
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Abrahams, D. &quot;Exception-Safety in Generic Components&quot;. <em>boost.org</em>. &lt;<a href="http://www.boost.org/community/exception_safety.html">http://www.boost.org/community/exception_safety.html</a>&gt;. Visitato il 4 Novembre 2011.</li>
+<a name="ref-2"></a>
+<li>Alexandrescu, A. and Marginean, P. &quot;Generic: Change the Way You Write Exception-Safe Code &ndash; Forever&quot;. <em>Dr.Dobb's</em>. December 2000. &lt;<a href="http://drdobbs.com/cpp/184403758">http://drdobbs.com/cpp/184403758</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<a name="ref-3"></a>
+<li>Stroustrup, B. &quot;Standard-Library Exception Safety&quot;. <em>AT&amp;T Labs Research</em>. &lt;<a href="http://www2.research.att.com/~bs/3rd_safe.pdf">http://www2.research.att.com/~bs/3rd_safe.pdf</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+</ol>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

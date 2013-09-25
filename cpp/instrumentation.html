@@ -1,0 +1,256 @@
+<html>
+<head>
+<title>instrumentation</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+<link href="css/instrumentation.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#instrumentation">risorse</a> | instrumentation</p>
+<h1>instrumentation</h1>
+<h2>Introduzione</h2>
+<p><span class="library">instrumentation</span> &egrave; una libreria che realizza l'MCI. MCI sta per <em>Method Call Interception</em> ed &agrave; una tecnica che consente di intercettare le chiamate a funzione effettuate durante l'esecuzione di un programma. Le ragioni che giustificano il ricorso a tale tecnica sono riconducibili a due tipi di analisi:</p>
+<ul>
+ <li><em>tracing</em>: quando l'interesse &egrave; rivolto ai percorsi di esecuzione del codice;</li>
+ <li><em>profiling</em>: quando l'interesse &egrave; rivolto alla valutazione dei tempi di esecuzione del codice.</li>
+</ul>
+<h2>Le funzioni di controllo _penter e _pexit</h2>
+<p>Le recenti versioni del Microsoft Visual Studio offrono un'estensione proprietaria che, se attivata, inducono il compilatore ad inserire una chiamata a funzione all'inizio e al termine di ogni metodo o funzione del programma. Le due funzioni si chiamano rispettivamente <span class="function">_penter</span> e <span class="function">_pexit</span>, e sono attivate dalle opzioni di compilazione <span class="compiler-option">/Gh</span> e <span class="compiler-option">/GH</span>. Le firme delle due funzioni sono rispettivamente:</p>
+<ul>
+ <li><span class="code">void __declspec(<span class="compiler-directive">naked</span>) _cdecl <span class="function">_penter</span>( void );</span></li>
+ <li>void __declspec(<span class="compiler-directive">naked</span>) _cdecl <span class="function">_pexit</span>( void );</li>
+</ul>
+<p>Secondo quanto riportato dalla documentazione ufficiale, entrambe le funzioni devono salvare sullo stack i contenuti di tutti i registri in ingresso e li devono ripristinare all'uscita.</p>
+<p>La direttiva <span class="compiler-directive">naked</span> richiede al compilatore di non generare prologo/epilogo per le due funzioni.</p>
+<p>Non serve dichiarare le due funzioni, a meno che queste non vengano chiamate esplicitamente; di norma dunque &egrave; sufficiente definirle:</p>
+<pre class="code">
+extern &quot;C&quot; void __declspec(naked) _cdecl _penter( void ) {
+  _asm {
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push ebp
+    push edi
+    push esi
+  }
+
+  // entering function
+
+  _asm {
+    pop esi
+    pop edi
+    pop ebp
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+  }
+}
+</pre>
+<pre class="code">
+extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
+  _asm {
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push ebp
+    push edi
+    push esi
+  }
+
+  // exiting function
+
+  _asm {
+    pop esi
+    pop edi
+    pop ebp
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+  }
+}
+</pre>
+<h2>Identificazione della funzione chiamata</h2>
+<p>Una volta definite le funzioni di controllo, nasce l'esigenza di stabilire l'identit&agrave; della funzione aggangiata (si noti infatti che le funzioni <span class="function">_penter</span> e <span class="function">_pexit</span> non ricevono alcun parametro che consenta di stabilire qual'&egrave; la funzione oggetto della chiamata). Tra le tecniche disponibili, le pi&ugrave; frequentemente adottate sono due: la prima ricorre alle informazioni di debug, mentre la seconda fa uso dell'indirizzo di ritorno disponibile nello stack. Il primo metodo (che richiede la presenza delle informazioni di debug nei file oggetto) recupera automaticamente i nomi simbolici delle funzioni (al costo di un maggiore sforzo computazionale), mentre il secondo lo fa a posteriori, purch&eacute; si disponga del file *.map generato dal linker.</p>
+<p>Nel seguito viene descritta una possibile implementazione della seconda delle due. La soluzione proposta consiste nel definire le funzioni di controllo in modo tale che richiamino due funzioni ausiliarie (dette funzioni di notifica) passando loro l'indirizzo della funzione originale.</p>
+<p>Si consideri il frammento di codice (le etichette racchiuse tra parentesi quadre rappresentano indirizzi in memoria):</p>
+<pre class="code">
+
+            // some code
+
+            fun(p0, p1, ..., pN)
+
+[ret-addr]  // some other code
+
+</pre>
+<p>La chiamata alla funzione <span class="function">fun</span> ha l'effetto di caricare sullo stack il valore dei parametri (da destra a sinistra, che la convenzione sia <span class="compiler-directive">__cdecl</span> oppure <span class="compiler-directive">__stdcall</span>), quindi l'indirizzo di ritorno:</p>
+<table class="stack" cellspacing="0">
+<tr><td></td><td class="stack-top">p<sub>N</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">...</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>1</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>0</sub></td><td></td><td></td></tr>
+<tr><td class="stack-bottom">&nbsp;</td><td class="stack-mid">ret-addr</td><td class="stack-bottom">&nbsp;</td><td>&larr; esp</td></tr>
+</table>
+<p>Successivamente viene effettuata la chiamata vera e propria:</p>
+<pre class="code">
+
+            call fun
+
+</pre>
+<p>il controllo &egrave; dunque trasferito alla funzione <span class="function">fun</span>, che, essendo stata decorata dal compilatore delle due chiamate <span class="function">_penter</span> e <span class="function">_pexit</span>, risulta essere:</p>
+<pre class="code">
+
+[fun]       call _penter
+
+[fun-body]  // f body
+
+            call _pexit
+
+</pre>
+<p>Dunque, non appena giunti in <span class="function">fun</span>, viene subito effettuata una nuova chiamata a funzione, e conseguentemente anche l'indirizzo di ritorno di questa nuova chiamata viene inserito nello stack:</p>
+<table class="stack" cellspacing="0">
+<tr><td></td><td class="stack-top">p<sub>N</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">...</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>1</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>0</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">ret-addr</td><td></td><td></td></tr>
+<tr><td class="stack-bottom">&nbsp;</td><td class="stack-mid">fun-body</td><td class="stack-bottom">&nbsp;</td><td>&larr; esp</td></tr>
+</table>
+<p>Si giunge infine all'interno della funzione <span class="function">_penter</span>, che provvede innanzitutto a salvare la configurazione dei registri generici:</p>
+<pre class="code">
+
+[_penter]   pushad
+
+</pre>
+<p>Il contenuto dello stack ora &egrave;:</p>
+<table class="stack" cellspacing="0">
+<tr><td></td><td class="stack-top">p<sub>N</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">...</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>1</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>0</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">ret-addr</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">fun-body</td><td></td><td></td></tr>
+<tr><td class="stack-bottom">&nbsp;</td><td class="stack-mid">&lt;REGS&gt;</td><td class="stack-bottom">&nbsp;</td><td>&larr; esp</td></tr>
+</table>
+<p><span class="function">_penter</span> prosegue ricavando il puntatore allo stack frame della chiamata:</p>
+<pre class="code">
+
+            mov eax, esp
+            add eax, 32
+
+</pre>
+<table class="stack" cellspacing="0">
+<tr><td></td><td class="stack-top">p<sub>N</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">...</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>1</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>0</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">ret-addr</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">fun-body</td><td></td><td>&larr; eax (esp + 32)</td></tr>
+<tr><td class="stack-bottom">&nbsp;</td><td class="stack-mid">&lt;REGS&gt;</td><td class="stack-bottom">&nbsp;</td><td>&larr; esp</td></tr>
+</table>
+<p><span class="function">_penter</span> pone sullo stack questo valore per passarlo come parametro alla funzione di notifica di chiamata:</p>
+<pre class="code">
+
+            push eax
+
+</pre>
+<table class="stack" cellspacing="0">
+<tr><td></td><td class="stack-top">p<sub>N</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">...</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>1</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">p<sub>0</sub></td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">ret-addr</td><td></td><td></td></tr>
+<tr><td></td><td class="stack-mid">fun-body</td><td></td><td>[frame]</td></tr>
+<tr><td></td><td class="stack-mid">&lt;REGS&gt;</td><td></td><td></td></tr>
+<tr><td class="stack-bottom">&nbsp;</td><td class="stack-mid">frame</td><td class="stack-bottom">&nbsp;</td><td>&larr; points to the stack's cell containing fun-body</td></tr>
+</table>
+<p>A questo punto viene effettuata la chiamata alla funzione di notifica:</p>
+<pre class="code">
+
+            call NotifyEnter
+
+</pre>
+<p>La funzione di notifica riceve come parametro l'indirizzo [fun-body] che pu&ograve; essere utilizzato come identificativo univoco per distinguere tutte le funzioni chiamate durante l'esecuzione del programma.</p>
+<p>Un ragionamento analogo si compie per la chiamata <span class="function">_pexit</span> all'uscita della funzione <span class="function">fun</span>.</p>
+<h2>La libreria <span class="library">instrumentation</span></h2>
+<p>La libreria <span class="library">instrumentation</span> costituisce un esempio d'uso della tecnica appena descritta, per scopi di profiling. Definendo delle opportune funzioni di notifica, la libreria registra, per ogni funzione, gli istanti di inizio e termine dell'esecuzione. Al termine dell'esecuzione, i risultati sono salvati su file di testo per una immediata consultazione.</p>
+<p>L'oggetto principale della libreria &egrave; <span class="object">Hook</span>, che espone due funzioni statiche che rappresentano le funzioni di notifica richiamate dalle funzioni di controllo <span class="function">_penter</span> e <span class="function">_pexit</span>. Sua responsabilit&agrave; principale &egrave; quella di inoltrare le notifiche ad un generico oggetto di tipo <span class="object">Hook::Observer</span>.</p>
+<p>La raccolta dei dati &egrave; curata dall'oggetto <span class="object">Tracer</span>, che utilizza la struttura <span class="object">FnCall</span> per memorizzare i dati caratteristici di ogni chiamata effettuata.</p>
+<p>L'oggetto <span class="object">Logger</span> si occupa infine del salvataggio dei dati raccolti; viene chiamato in causa all'uscita del programma dall'oggetto <span class="object">Tracer</span>.</p>
+<p>La liberia consiste di due file:</p>
+<ul>
+ <li><a href="src/instrumentation/instrumentation.h"><span class="file-name">instrumentation.h</span></a></li>
+ <li><a href="src/instrumentation/instrumentation.cpp"><span class="file-name">instrumentation.cpp</span></a></li>
+</ul>
+<h2>Uso della libreria <span class="library">instrumentation</span></h2>
+<p>Per attivare l'analisi con la libreria <span class="library">instrumentation</span>, procedere come segue:</p>
+<ol>
+ <li>compilare i moduli da analizzare con le opzioni <span class="compiler-option">/Gh</span> e <span class="compiler-option">/GH</span>;</li>
+ <li>includere il file di libreria <span class="file-name">instrumentation.lib</span>;</li>
+ <li>richiedere la generazione del file *.map in fase di linking (opzione <span class="linker-option">/MAP[:filename]</span>);</li>
+ <li>avviare il programma;</li>
+ <li>effettuare le attivit&agrave; da analizzare;</li>
+ <li>terminare il programma.</li>
+</ol>
+<p>Al termine della prova, le statistiche relative alle chiamate effettuate verranno registrate nel file <span class="file-name">instrumentation.log</span>, salvato nella stessa cartella che ospita il programma analizzato.</p>
+<p>Le statistiche raccolte sono:</p>
+<ul>
+ <li><span class="item">call</span>: identificativo della chiamata;</li>
+ <li><span class="item">parent</span>: identificativo della funzione chiamante;</li>
+ <li><span class="item">addr</span>: indirizzo della funzione chiamata;</li>
+ <li><span class="item">elapsed</span>: durata totale dell'esecuzione, in secondi.</li>
+</ul>
+<p>A partire dalle statistiche contenute nel file <span class="file-name">instrumentation.log</span> si possono ricavare altri dati di interesse. Un esempio &egrave; costituito dallo script Python <a href="src/instrumentation/samples/instrumentation-stats.py"><span class="file-name">instrumentation-stats.py</span></a>, che determina i seguenti parametri:</p>
+<ul>
+ <li><span class="item">addr</span>: indirizzo della funzione chiamata;</li>
+ <li><span class="item">name</span>: nome della funzione (solo con file .map);</li>
+ <li><span class="item">hits</span>: numero totale di chiamate distinte effettuate;</li>
+ <li><span class="item">exceptions</span>: numero di eccezioni sollevate;</li>
+ <li><span class="item">min</span>: tempo minimo di esecuzione;</li>
+ <li><span class="item">max</span>: tempo massimo di esecuzione;</li>
+ <li><span class="item">total</span>: tempo cumulativo di esecuzione.</li>
+</ul>
+<p>L'associazione indirizzo/nome (decorato) della funzione avviene tramite il file .map, associando il valore della colonna <span class="item">addr</span> dei file di log con la colonna <span class="item">Rva+Base</span> del file .map.</p>
+<p>Analizzando a titolo d'esempio il programma di prova <a href="src/instrumentation/samples/instrumentation-test.cpp"><span class="file-name">instrumentation-test.cpp</span></a>, la natura delle statistiche raccolte sar&agrave; del tipo:</p>
+<pre>
+call parent addr     elapsed
+0    N/A    0041b0b0 1.206
+1    0      0041af50 0.082
+2    1      0041aef0 0.049
+3    2      0041ae70 0.022
+4    0      0041af50 0.705
+5    4      0041aef0 N/A
+6    5      0041ae70 N/A
+7    0      0041b010 0.087
+8    7      0041b010 0.075
+9    8      0041b010 0.063
+10   9      0041b010 0.031
+11   10     0041b010 0.018
+12   11     0041b010 0.006
+13   0      0041b010 N/A
+14   13     0041b010 N/A
+15   14     0041b010 N/A
+16   15     0041b010 N/A
+17   16     0041b010 N/A
+18   17     0041b010 N/A
+</pre>
+<p>La rielaborazione delle stesse per mezzo dello script Python produce come risultato:</p>
+<pre>
+addr      name    hits    exceptions      min     max     total
+0041aef0  inner   2       1               0.049   0.049   0.049
+0041af50  outer   2       0               0.082   0.705   0.787
+0041b010  recurse 12      6               0.006   0.087   0.280
+0041b0b0  main    1       0               1.206   1.206   1.206
+0041ae70  bomb    2       1               0.022   0.022   0.022
+</pre>
+<h2>Note</h2>
+<p>La libreria <span class="library">instrumentation</span> &egrave; stata sviluppata in ambiente Win32 su Microsoft Windows XP Professional con Microsoft Visual Studio 2005/2008 Professional Edition. Non funziona in ambiente x64 per due motivi: in primo luogo i frammenti assembly sono specifici della piattaforma Intel a 32 bit, inoltre i compilatori Microsoft a 64 bit non consentono di intercalare codice C/C++ con codice assembly.</p>
+<p class="warning">Attenzione: i log prodotti superano facilmente le centinaia di MB. Conviene valutare di volta in volta i moduli per i quali &egrave; opportuno attivare l'analisi.</p>
+<p class="modification-notice">Pagina modificata il 15/11/2011</p>
+</body>
+</html>

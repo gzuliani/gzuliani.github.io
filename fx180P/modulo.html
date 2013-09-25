@@ -1,0 +1,160 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY &Egrave; "&#200;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Modulo lunare</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#modulo">casio fx-180p</a> | modulo lunare</p>
+<h1>Modulo lunare</h1>
+<p>Scopo del gioco &egrave; riuscire a far toccare al modulo di allunaggio la superficie lunare ad una velocit&agrave; consona, provvedendo ad azionare i motori quando opportuno, evitando nel contempo di esaurire il carburante a disposizione.</p>
+<p>Il gioco &egrave; realizzato mediante un programma che, passo dopo passo, indica l'altitudine alla quale si trova il modulo di allunaggio, la sua velocit&agrave; verticale corrente e la quantit&agrave; di carburante disponibile nei serbatoi; l'utente, valutando i dati forniti dagli &quot;strumenti di bordo&quot;, decide se &egrave; opportuno accendere i motori, e quanto carburante consumare durante il passo corrente. In funzione del carburante consumato, la velocit&agrave; di discesa del modulo risulter&agrave; ridotta nella misura di 1m/s per ogni kg di carburante utilizzato. L'allunaggio, affinch&eacute; possa essere considerato valido, deve avvenire con una velocit&agrave; verticale finale inferiore a 2m/s; in caso contrario il modulo di allunaggio sar&agrave; considerato irrimediabilmente distrutto.</p>
+<p class="note">Nota: introdurre la sequenza <span class="key">KAC</span> <span class="key">5</span> <span class="key">Kin 3</span> prima di iniziare la programmazione.</p>
+<h2>Fisica (approssimata) del gioco</h2>
+<p>Le variabili considerate sono la quota q, la velocit&agrave; v, la quantit&agrave; di carburante c e la quantit&agrave; di carburante cc utilizzata per ottenere la spinta s.</p>
+<p>Sono prefissati i valori delle variabili dipendenti iniziali q(0), v(0), c(0).</p>
+<p>Al passo p, l'utente pu&ograve; decidere di utilizzare una quantit&agrave; di carburante pari a:</p>
+<p class="formula">cc(p) &le; c(p)</p>
+<p>La quantit&agrave; di carburante consumato determina la spinta risultante sul modulo lunare, che per semplicit&agrave; si considera numericamente equivalente al carburante utilizzato:</p>
+<p class="formula">s(p) = cc(p)</p>
+<p>La velocit&agrave; verticale del modulo, considerando l'accelerazione di gravit&agrave; e l'eventuale spinta dovuta all'accensione del motore, &egrave; espressa dall'equazione (&Delta;t=1):</p>
+<p class="formula">v(p+1) = v(p) - g + s(p)</p>
+<p>La quota alla quale si trover&agrave; il modulo al passo p+1 sar&agrave;:</p>
+<p class="formula">q(p+1) = q(p) + v(p) + &frac12; a(t)</p>
+<p>Essendo:</p>
+<p class="formula">a(p) = v(p+1) - v(p)</p>
+<p>per sostituzione si ottiene:</p>
+<p class="formula">q(p+1) = q(p) + &frac12; (v(p+1) + v(p))</p>
+<p>Detto</p>
+<p class="formula">p<sub>a</sub> = min<sub>p</sub> { q(p) &le; 0 }</p>
+<p>l'allunaggio si considerer&agrave; riuscito se:</p>
+<p class="formula">|v(pa)| &lt; 2</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>M contiene la quantit&agrave; di carburante consumata cc(p), successivamente v(p+1);</li>
+	<li>K1 contiene la quota corrente q(p);</li>
+	<li>K2 contiene la quantit&agrave; di carburante disponibile c(p);</li>
+	<li>K3 contiene la velocit&agrave; verticale corrente v(p).</li>
+</ul>
+<h2>Note implementative</h2>
+<p>La sequenza <span class="key">M</span> <span class="key">-</span> <span class="key">Kout N</span> <span class="key">x&sup2;</span> <span class="key">=</span> <span class="key">&radic;</span> verifica la condizione |KN| &lt; &radic;M, generando un errore in caso di esito negativo.</p>
+<h2>Esempio d'uso</h2>
+<h3>Sequenza di inizializzazione del programma</h3>
+<ul>
+	<li>
+		<p>&Egrave; necessario impostare i valori q(0), v(0), c(0) nelle rispettive memorie:</p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">Kin 1</span> <span class="key">5</span> <span class="key">0</span> <span class="key">Kin 2</span> <span class="key">1</span> <span class="key">0</span> <span class="key">+/-</span> <span class="key">Kin 3</span></p>
+	</li>
+</ul>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>Il programma mostra in sequenza quota, velocit&agrave;, carburante disponibile:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">100</span> <span class="key">RUN</span> &rarr; <span class="display">-10</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+	</li>
+	<li>
+		<p>Dei 50kg di carburante disponibili, l'utente prova a bruciarne 60:</p>
+		<p><span class="key">6</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">100</span> <span class="key">RUN</span> &rarr; <span class="display">-10</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p>il programma rifiuta di consumare pi&ugrave; carburante di quello disponibile, e ripete la richiesta&hellip;</p>
+	</li>
+	<li>
+		<p>L'utente opta per una caduta libera, lasciando il motore sempre spento: la velocit&agrave; di discesa aumenta incontrollata fino all'inevitabile schianto finale:</p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">87.5</span> <span class="key">RUN</span> &rarr; <span class="display">-15</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">70</span> <span class="key">RUN</span> &rarr; <span class="display">-20</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">47.5</span> <span class="key">RUN</span> &rarr; <span class="display">-25</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">20</span> <span class="key">RUN</span> &rarr; <span class="display">-30</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">E</span></p>
+	</li>
+	<li>
+		<p>L'utente re-inizializza gli strumenti di bordo:</p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">Kin 1</span> <span class="key">5</span> <span class="key">0</span> <span class="key">Kin 2</span> <span class="key">1</span> <span class="key">0</span> <span class="key">+/-</span> <span class="key">Kin 3</span></p>
+	</li>
+	<li>
+		<p>L'utente riavvia quindi la procedura di allunaggio:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">100.0</span> <span class="key">RUN</span> &rarr; <span class="display">-10</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">87.5</span> <span class="key">RUN</span> &rarr; <span class="display">-15</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">70</span> <span class="key">RUN</span> &rarr; <span class="display">-20</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">47.5</span> <span class="key">RUN</span> &rarr; <span class="display">-25</span> <span class="key">RUN</span> &rarr; <span class="display">50</span></p>
+		<p><span class="key">1</span> <span class="key">5</span> <span class="key">RUN</span> &rarr; <span class="display">27.5</span> <span class="key">RUN</span> &rarr; <span class="display">-15</span> <span class="key">RUN</span> &rarr; <span class="display">35</span></p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">15</span> <span class="key">RUN</span> &rarr; <span class="display">-10</span> <span class="key">RUN</span> &rarr; <span class="display">25</span></p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">7.5</span> <span class="key">RUN</span> &rarr; <span class="display">-5</span> <span class="key">RUN</span> &rarr; <span class="display">15</span></p>
+		<p><span class="key">5</span> <span class="key">RUN</span> &rarr; <span class="display">2.5</span> <span class="key">RUN</span> &rarr; <span class="display">-5</span> <span class="key">RUN</span> &rarr; <span class="display">10</span></p>
+		<p><span class="key">1</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">0</span></p>
+		<p>Allunaggio perfetto!</p>
+	</li>
+	<li>
+		<p>Al termine del programma, la memoria K2 contiene la quantit&agrave; di carburante residuo, K3 la velocit&agrave; finale:</p>
+		<p><span class="key">Kout 2</span> &rarr; <span class="display">0</span></p>
+		<p><span class="key">Kout 3</span> &rarr; <span class="display">0</span></p>
+	</li>
+</ul>
+<h2>Programma P1</h2>
+<p>Determina il valore del prossimo numero da proporre.</p>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">Kout 1</span></td><td class="note">visualizza la quota corrente q(p)</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">HLT</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">Kout 3</span></td><td class="note">visualizza la velocit&agrave; corrente v(p)</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">HLT</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">Kout 2</span></td><td class="note">visualizza la quantit&agrave; di carburante disponibile c(p)</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">ENT</span></td><td class="note">richiede la la quantit&agrave; di carburante da bruciare cc(p)</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">Min</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">Kout 2</span></td><td class="note">verifica che cc(p)&le;c(p)</td></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">x&gt;0</span></td><td class="note">se cc(p)&gt;c(p), riesegui la procedura</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">+/-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">Kin 2</span></td><td class="note">aggiorna la quantit&agrave; di carburante disponibile</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">(</span></td><td class="note">determina v(p+1)</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">5</span></td><td class="note">assumi g=5</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">M-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">Kout 3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">M+</span></td><td class="note">la memoria M ora contiene v(p+1)</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">MR</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">Kin 3</span></td><td class="note">salva v(p+1) nella memoria K3</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">)</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">+</span></td><td class="note">sul display è ora presente il valore &frac12;(v(p) + v(p+1))</td></tr>
+	<tr><td class="step">26</td><td class="key"><span class="key">Kout 1</span></td><td class="note">che sommato al valore q(p)</td></tr>
+	<tr><td class="step">27</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">28</td><td class="key"><span class="key">Kin 1</span></td><td class="note">origina q(p+1), che viene salvato nella memoria K1</td></tr>
+	<tr><td class="step">29</td><td class="key"><span class="key">x&gt;0</span></td><td class="note">se q(p+1) &egrave; negativo, la discesa &egrave; terminata</td></tr>
+	<tr><td class="step">30</td><td class="key"><span class="key">4</span></td><td class="note">il modulo &egrave; allunato&hellip;</td></tr>
+	<tr><td class="step">31</td><td class="key"><span class="key">-</span></td><td class="note">verifica la condizione |v(p+1)|&le;2</td></tr>
+	<tr><td class="step">32</td><td class="key"><span class="key">Kout 3</span></td><td class="note">con l'espressione equivalente &radic;(4-v(p+1)&sup2;)</td></tr>
+	<tr><td class="step">33</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">che esiste solo per i valori ammissibili di v(p+1)</td></tr>
+	<tr><td class="step">34</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">35</td><td class="key"><span class="key">&radic;</span></td><td class="note">se v(p+1) &egrave; troppo elevata, produci una condizione d'errore,</td></tr>
+	<tr><td class="step">36</td><td class="key"><span class="key">0</span></td><td class="note">altrimenti segnala l'avvenuto allunaggio visualizzando quota 0</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata il 9/11/2011</p>
+</body>
+</html>

@@ -1,0 +1,49 @@
+Introduzione al linguaggio BASIC
+
+Lezione 1
+Richiami sull'architettura degli elaboratori e software
+Storia e classificazione dei linguaggi di programmazione
+Presentazione del linguaggio BASIC
+Primi contatti con il linguaggio: istruzioni PRINT, LET INPUT
+
+Lezione 2
+Il concetto di variabile
+Cicli FOR/NEXT
+Valori casuali
+
+Lezione 3
+Istruzione IF/THEN/ELSE
+Introduzione alle tecniche di analisi
+Il concetto di algoritmo
+Descrizione degli algoritmi mediante i diagrammi di flusso
+
+Lezione 4
+Istruzione SELECT CASE
+Introduzione alla programmazione strutturata
+Cicli DO/LOOP
+
+Lezione 5
+Introduzione alle variabili scalari (vettori)
+Studio degli algoritmi di ricerca
+
+Lezione 6
+Studio degli algoritmi di ordinamento dei vettori
+Esercitazioni 
+
+Lezione 7
+Il tipo di dati STRING
+Funzioni di manipolazione delle stringhe
+Le matrici
+
+Lezione 8
+Tipi definiti dall'utente
+Introduzione alla programmazione modulare: SUB e FUNCTION
+Il concetto di libreria
+
+Lezione 9
+Cenni sulla programmazione ad eventi e orientata agli oggetti
+Introduzione ai file: accesso sequenziale
+
+Lezione 10
+I file ad accesso casuale
+Test finale

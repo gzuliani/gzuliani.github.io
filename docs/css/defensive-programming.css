@@ -1,0 +1,37 @@
+blockquote
+{
+	text-align: center;
+	font-style: italic;
+	padding: 0.5em;
+}
+
+pre.code
+{
+	font-family: Consolas, Courier New, monospace;
+	font-size: 90%;
+}
+
+span.code
+{
+	font-family: Consolas, Courier New, monospace;
+	font-size: 90%;
+}
+
+td
+{
+	padding-bottom: .1em;
+	padding-left: 1em;
+	padding-right: 1em;
+	padding-top: .1em;
+}
+
+td.centered
+{
+	text-align: center;
+}
+
+th
+{
+	background-color: gray;
+	padding: .5em;
+}

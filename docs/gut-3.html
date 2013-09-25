@@ -1,0 +1,593 @@
+<html>
+<head>
+<title>Good Unit Tests /3</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-3">risorse</a> | good unit tests /3</p>
+<h1>Good Unit Tests /3</h1>
+<p>La <a href="gut-1.html">prima parte</a> di <em>Good Unit Tests</em> &egrave; incentrata sulla valutazione e la corretta rappresentazione dei valori citati nella macro <span class="code">CHECK</span>; la <a href="gut-2.html">seconda parte</a> parte introduce la macro <span class="code">THROWS</span> per la cattura delle eccezioni. Questa terza parte affronta il problema della gestione delle segnalazioni di fallimento.</p>
+<h2>Failure</h2>
+<p>Il primo passo da compiere consiste nel tipizzare il tipo di fallimento registrato:</p>
+<pre class="code">
+struct Location {
+  const char* file;
+  int line;
+  Location(const char* file_, int line_) : file(file_), line(line_) {
+  }
+};
+
+struct Failure {
+protected:
+  std::ostringstream description;
+public:
+  Location location;
+  Failure(const char* file, int line) : location(file, line) {
+  }
+  std::string what() const {
+    return description.str();
+  }
+};
+
+struct CheckFailure : public Failure {
+  CheckFailure(const char* expression, const std::string&amp; expansion, const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; evaluates to &quot; &lt;&lt; expansion;
+  }
+};
+
+struct NoThrowFailure : public Failure {
+  NoThrowFailure(const char* expression, const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; did not throw&quot;;
+  }
+};
+
+struct WrongTypedExceptionFailure : public Failure {
+  WrongTypedExceptionFailure(const char* expression, const std::exception&amp; exception, const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; threw an unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot;&quot;;
+  }
+};
+
+struct WrongExceptionFailure : public Failure {
+  WrongExceptionFailure(const char* expression, const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; expression &lt;&lt; &quot; threw an unknown exception&quot;;
+  }
+};
+
+struct UnexpectedExceptionFailure : public Failure {
+  UnexpectedExceptionFailure(const std::exception&amp; exception, const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; &quot;unexpected exception \&quot;&quot; &lt;&lt; exception.what() &lt;&lt; &quot;\&quot; caught&quot;;
+  }
+};
+
+struct UnknownExceptionFailure : public Failure {
+  UnknownExceptionFailure(const char* file, int line) : Failure(file, line) {
+    description &lt;&lt; &quot;unknown exception caught&quot;;
+  }
+};
+</pre>
+<p>Le specifiche tipologie di fallimento sono oggetti di tipo <span class="code">Failure</span>, e hanno la responsabilit&agrave;/opportunit&agrave; di serializzare, nel proprio costruttore, una descrizione testuale nel membro <span class="code">description</span>. Il contesto del fallimento &egrave; rappresentato dal membro <span class="code">location</span>, che contiene il percorso al file sorgente e il numero di linea ove il fallimento &egrave; stato registrato.</p>
+<h2>Report</h2>
+<p>L'oggetto <span class="code">Report</span> ha lo scopo di disaccoppiare l'istanziazione di un oggetto <span class="code">Failure</span> con la notifica di tale evento all'utente:</p>
+<pre class="code">
+class Report {
+  static std::shared_ptr&lt;Report&gt; report_;
+public:
+  static void set(std::shared_ptr&lt;Report&gt; report) {
+    report_ = report;
+  }
+  static void failure(const Failure&amp; failure) {
+    if (report_)
+      report_-&gt;failure(failure);
+  }
+protected:
+  virtual void onFailure(const Failure&amp; failure) { }
+};
+
+std::shared_ptr&lt;Report&gt; Report::report_;
+</pre>
+<p>La responsabilit&agrave; di <span class="code">Report</span> &egrave; di dirottare la notifica dell'avvenuto fallimento al <span class="code">Report</span> concreto, che la gestir&agrave; nel modo pi&ugrave; opportuno.</p>
+<p>Le macro <span class="code">CHECK</span> e <span class="code">THROWS</span> diventano:</p>
+<pre class="code">
+#define CHECK(expr_) \
+  do { \
+    if (!(Capture()-&gt;*expr_)) \
+      Report::failure(CheckFailure(#expr_, Expression::last, __FILE__, __LINE__)); \
+  while (0)
+
+#define THROWS(expr_, exception_) \
+  do { \
+    try { \
+      (void)(expr_); \
+        Report::failure(NoThrowFailure(#expr_, __FILE__, __LINE__)); \
+    } catch(const exception_&amp;) { \
+    } catch(const std::exception&amp; e) { \
+      Report::failure(WrongTypedExceptionFailure(#expr_, e, __FILE__, __LINE__)); \
+    } catch(...) { \
+      Report::failure(WrongExceptionFailure(#expr_, __FILE__, __LINE__)); \
+    } \
+  while (0)
+</pre>
+<p>Similmente, il blocco <span class="code">try</span>/<span class="code">catch</span> principale diventa:</p>
+<pre class="code">
+  // ...
+  } catch(const std::exception&amp; e) {
+    Report::failure(UnexpectedExceptionFailure(e, __FILE__, __LINE__));
+  } catch(...) {
+    Report::failure(UnknownExceptionFailure(__FILE__, __LINE__));
+  }
+</pre>
+<p>A titolo d'esempio, un <span class="code">Report</span> che serializza su <span class="code">std::cout</span> i fallimenti alla stessa stregua di quanto faceva la versione &ldquo;diretta&rdquo; &egrave; lo <span class="code">StdErrReport</span> seguente:</p>
+<pre class="code">
+struct StdErrReport : public Report {
+protected:
+  virtual void onFailure(const Failure&amp; failure) {
+    std::cout &lt;&lt; failure.location.file &lt;&lt; &quot;(&quot; &lt;&lt; failure.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; failure.what() &lt;&lt; std::endl;
+  }
+};
+
+// ...
+
+// log to std::cout
+Report::set(std::make_shared&lt;StdErrReport&gt;());
+</pre>
+<p>Diventa ora possibile verificare puntualmente la cattura dei fallimenti:</p>
+<pre class="code">
+// ...
+#include &lt;cassert&gt;
+
+class LastFailure : public Report {
+  std::string&amp; what_;
+  LastFailure&amp; operator=(const LastFailure&amp;); // disabled!
+public:
+  LastFailure(std::string&amp; what) : what_(what) {
+  }
+protected:
+  virtual void onFailure(const Failure&amp; failure) {
+    what_ = failure.what();
+  }
+};
+
+// ...
+
+int main() {
+
+  std::string lastFailure;
+  Report::set(std::make_shared&lt;LastFailure&gt;(lastFailure));
+
+  // ints
+  int i1 = 1;
+  int i2 = 2;
+  CHECK(i1 == i2);
+  assert(lastFailure == "i1 == i2 evaluates to 1 == 2");
+
+  // ...
+}
+</pre>
+<h2>Zucchero sintattico</h2>
+<p>Giunti a questo punto, &egrave; ora di mettere alla prova l'infrastruttura di test, e renderne l'uso agevole quanto basta. A titolo d'esempio, una possibile implementazione della classica <span class="code">RecentlyUsedList</span> spesso citata da Henney, seguita dal suo test:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+#include &lt;algorithm&gt;
+#include &lt;stdexcept&gt;
+#include &lt;vector&gt;
+
+<ins>class RecentlyUsedList {
+  std::vector&lt;std::string&gt; items_;
+public:
+  bool empty() const {
+    return items_.empty();
+  }
+  size_t size() const {
+    return items_.size();
+  }
+  std::string operator[] (size_t index) const {
+    if (index &gt;= size())
+      throw std::out_of_range(&quot;invalid subscript&quot;);
+    return items_[size() - index - 1];
+  }
+  void insert(const std::string&amp; item) {
+    auto found = std::find(begin(items_), end(items_), item);
+    if (found != items_.end())
+      items_.erase(found);
+    items_.push_back(item);
+  }
+};</ins>
+
+int main() {
+
+  // initial list is empty
+  {
+    RecentlyUsedList anEmptyList;
+  
+    CHECK(anEmptyList.empty());
+    CHECK(anEmptyList.size() == 0);
+  }
+  
+  // insertion to empty list is retained
+  {
+    RecentlyUsedList aListWithOneElement;
+    aListWithOneElement.insert(&quot;one&quot;);
+  
+    CHECK(!aListWithOneElement.empty());
+    CHECK(aListWithOneElement.size() == 1);
+    CHECK(aListWithOneElement[0] == &quot;one&quot;);
+  }
+  
+  // distinct insertions are retained in stack order
+  {
+    RecentlyUsedList aListWithManyElements;
+    aListWithManyElements.insert(&quot;one&quot;);
+    aListWithManyElements.insert(&quot;two&quot;);
+    aListWithManyElements.insert(&quot;three&quot;);
+  
+    CHECK(!aListWithManyElements.empty());
+    CHECK(aListWithManyElements.size() == 3);
+    CHECK(aListWithManyElements[0] == &quot;three&quot;);
+    CHECK(aListWithManyElements[1] == &quot;two&quot;);
+    CHECK(aListWithManyElements[2] == &quot;one&quot;);
+  }
+  
+  // duplicate insertions are moved to the front but not inserted
+  {
+    RecentlyUsedList aListWithDuplicatedElements;
+    aListWithDuplicatedElements.insert(&quot;one&quot;);
+    aListWithDuplicatedElements.insert(&quot;two&quot;);
+    aListWithDuplicatedElements.insert(&quot;three&quot;);
+    aListWithDuplicatedElements.insert(&quot;two&quot;);
+  
+    CHECK(!aListWithDuplicatedElements.empty());
+    CHECK(aListWithDuplicatedElements.size() == 3);
+    CHECK(aListWithDuplicatedElements[0] == &quot;two&quot;);
+    CHECK(aListWithDuplicatedElements[1] == &quot;three&quot;);
+    CHECK(aListWithDuplicatedElements[2] == &quot;one&quot;);
+  }
+  
+  // out of range indexing throws exception
+  {
+    RecentlyUsedList aListWithOneElement;
+    aListWithOneElement.insert(&quot;one&quot;);
+  
+    THROWS(aListWithOneElement[1], std::out_of_range);
+  }
+
+  return 0;
+}
+</pre>
+<p class="note">Nota: secondo la classificazione di Henney, il test &egrave; strutturato come una <em>specifica</em>: non &egrave; <em>monolitico</em><a href="#monolitico"><sup>[1]</sup></a> nel senso che non &egrave; una sequenza arbitraria di chiamate a metodi seguiti da altrettanto arbitrarie verifiche dello stato dell'oggetto, e non &egrave; <em>procedurale</em><a href="#procedurale"><sup>[2]</sup></a> nel senso che i test non sono in corrispondenza biunivoca con i metodi dell'interfaccia.</p>
+<p>L'esecuzione del test dovrebbe produrre uno <span class="code">0</span> (a indicare successo) e un messaggio adeguato, qualcosa come &laquo;All tests passed&raquo;. In caso di errore, invece, dovrebbe tornare un valore diverso da <span class="code">0</span> (a indicare il fallimento di almeno un test), oltre alle indicazioni circa le condizioni d'errore verificate. Il conteggio dei test falliti &egrave; assegnato ad un <span class="code">Report</span> apposito:</p>
+<pre class="code">
+<ins>class ReportWithFailureCount : public Report {
+  size_t count_;
+public:
+  size_t count() const {
+    return count_;
+  }
+  ReportWithFailureCount() : count_(0) { }
+protected:
+  virtual void onFailure(const Failure&amp; failure) {
+    std::cout &lt;&lt; failure.location.file &lt;&lt; &quot;(&quot; &lt;&lt; failure.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; failure.what() &lt;&lt; std::endl;
+    ++count_;
+  }
+};</ins>
+
+// ...
+
+int main() {
+
+  <ins>auto report = std::make_shared&lt;ReportWithFailureCount&gt;();
+  Report::set(report);</ins>
+
+  // ...
+
+  <del>return 0;</del>
+
+  <ins>if (report-&gt;count() == 0)
+    std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+  else
+    std::cout &lt;&lt; report-&gt;count() &lt;&lt; &quot; test(s) failed.&quot; &lt;&lt; std::endl;</ins>
+
+  <ins>return report-&gt;count();</ins>
+}
+</pre>
+<p>Modificando alcune condizioni di test si verifica facilmente il buon funzionamento del test case.</p>
+<p>Conviene tuttavia lasciare a <span class="code">report</span> la responsabilit&agrave; di emettere l'esito finale del test; cosa facilmente realizzabile, se gli si notifica la conclusione delle verifiche:</p>
+<pre class="code">
+class Report {
+  static std::shared_ptr&lt;Report&gt; report_;
+public:
+  static void set(std::shared_ptr&lt;Report&gt; report) {
+    report_ = report;
+  }
+  <ins>static void start() {
+    if (report_)
+      report_-&gt;onStart();
+  }
+  static void end() {
+    if (report_)
+      report_-&gt;onEnd();
+  }</ins>
+  static void failure(const Failure&amp; failure) {
+    if (report_)
+      report_-&gt;onFailure(failure);
+  }
+protected:
+  <ins>virtual void onStart() { }
+  virtual void onEnd() { }</ins>
+  virtual void onFailure(const Failure&amp; /*failure*/) { }
+};
+
+// ...
+
+class ReportWithFailureCount : public Report {
+  // ...
+protected:
+  // ...
+  <ins>virtual void onEnd() {
+    if (count_ == 0)
+      std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+    else
+      std::cout &lt;&lt; count_ &lt;&lt; &quot; test(s) failed.&quot; &lt;&lt; std::endl;
+  }</ins>
+};
+
+// ...
+
+int main() {
+
+  auto report = std::make_shared&lt;ReportWithFailureCount&gt;();
+  Report::set(report);
+
+  <ins>Report::start();</ins>
+
+  // ...
+
+<del>  if (report-&gt;count() == 0)
+    std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+  else
+    std::cout &lt;&lt; report-&gt;count() &lt;&lt; &quot; test(s) failed.&quot; &lt;&lt; std::endl;</del>
+
+  <ins>Report::end();</ins>
+
+  return report-&gt;count();
+}
+</pre>
+<p>Arricchendo il report di un &ldquo;contaminuti&rdquo;, &egrave; banale fornire una stima circa la durata del test:</p>
+<pre class="code">
+<ins>#include &lt;chrono&gt;
+
+class Clock {
+  std::chrono::steady_clock::time_point start_;
+public:
+  Clock() { start_ = std::chrono::steady_clock::now(); }
+  double elapsedTime() {
+    return std::chrono::duration_cast&lt;std::chrono::milliseconds&gt;(
+      std::chrono::steady_clock::now() - start_).count() / 1000.;
+  }
+};</ins>
+
+/* alternative implementation, based on clock(),
+ * suitable if the &lt;chrono&gt; header is not available
+ *
+ * struct Clock {
+ *   clock_t start_;
+ *   Clock() { start_ = clock(); }
+ *   double elapsedTime() {
+ *     return static_cast&lt;double&gt;(clock() - start_) / CLOCKS_PER_SEC;
+ *   }
+ * };
+ */
+
+class Report {
+  static std::shared_ptr&lt;Report&gt; report_;
+<ins>protected:
+  Clock clock_;</ins>
+  // ...
+};
+
+class ReportWithFailureCount : public gut::Report {
+  // ...
+  virtual void onEnd() {
+    <ins>std::cout &lt;&lt; &quot;Test suite ran in &quot; &lt;&lt; clock_.elapsedTime() &lt;&lt; &quot;s.&quot; &lt;&lt; std::endl;</ins>
+    if (count_ == 0)
+      std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+    else
+      std::cout &lt;&lt; count_ &lt;&lt; &quot; test(s) failed.&quot; &lt;&lt; std::endl;
+  }
+};
+
+// ...
+</pre>
+<p>Se infine tutto il test viene spostato all'interno di una funzione di comodo <span class="code">runTest</span>, il programma principale assume la forma:</p>
+<pre class="code">
+<ins>void runTest();</ins>
+
+int main() {
+
+  auto report = std::make_shared&lt;ReportWithFailureCount&gt;();
+  gut::Report::set(report);
+
+  gut::Report::start();
+
+  <ins>try {
+    runTest();
+  } catch(const std::exception&amp; e) {
+    Report::failure(UnexpectedExceptionFailure(e, __FILE__, __LINE__));
+  } catch(...) {
+    Report::failure(UnknownExceptionFailure(__FILE__, __LINE__));
+  }</ins>
+
+  gut::Report::end();
+
+  return report-&gt;count();
+}
+
+<ins>void runTest() {
+  // test code here!!!
+}</ins>
+</pre>
+<p>Rinominando <span class="code">ReportWithFailureCount</span> in <span class="code">DefaultReport</span> e definendo la macro <span class="code">TEST</span> come segue:</p>
+<pre class="code">
+<ins>#define TEST \
+  void runTest(); \
+  int main() { \
+    auto report = std::make_shared&lt;DefaultReport&gt;(); \
+    Report::set(report); \
+    Report::start(); \
+    try { \
+      runTest(); \
+    } catch(const std::exception&amp; e) { \
+      Report::failure(UnexpectedExceptionFailure(e, __FILE__, __LINE__)); \
+    } catch(...) { \
+      Report::failure(UnknownExceptionFailure(__FILE__, __LINE__)); \
+    } \
+    Report::end(); \
+    return report-&gt;count(); \
+  } \
+  void runTest()</ins>
+</pre>
+<p>il test case si riduce alla forma:</p>
+<pre class="code">
+#include "gut.h"
+
+class RecentlyUsedList {
+  // ...
+};
+
+<ins>TEST {</ins>
+  // initial list is empty
+  {
+    RecentlyUsedList anEmptyList;
+  
+    CHECK(anEmptyList.empty());
+    CHECK(anEmptyList.size() == 0);
+  }
+  // ...
+<ins>}</ins>
+</pre>
+<h3>namespace</h3>
+<p>Per evitare spiacevoli collisioni, tutte le funzioni e gli oggetti di supporto sono stati inseriti nel namespace <span class="code">gut</span>.</p>
+<h2>Sviluppi futuri</h2>
+<dl>
+<dt>SPECIFICATION, PROPOSITION, DIVISION</dt>
+<dd>introdurle solo per strutturare il test mi sembra una forzatura: un po' di disciplina &egrave; sufficiente per non cadere nel monolitico o nel procedurale (cfr. ad esempio <span class="code">RecentlyUsedList</span>); anche a livello di diagnostica non mi sembrano cos&igrave; fondamentali &ndash; le coordinate del fallimento sono disponibili nel messaggio d'errore, e  qualunque editor di testo &egrave; in grado di interpretarle e portare il cursore in posizione &ndash;; potrebbe per&ograve; risultare utile come filtro, per ignorare temporaneamente determinate sezioni (con un meccanismo che sfrutti la linea di comando);</dd>
+<dt>REQUIRE</dt>
+<dd>le macro <span class="code">CHECK</span>e <span class="code">THROW</span>, a fronte di un fallimento, non causano l'arresto del test; in certi casi potrebbe invece essere auspicabile interrompere immediatamente il test a fronte di una condizione non soddisfatta (ad esempio per l'indisponibilit&agrave; di risorse indispensabili al prosieguo del test);</dd>
+<dt>PRINT</dt>
+<dd>avendo predisposto la cattura dei parametri, potrebbe essere utile a volte visualizzare il valore di una variabile;</dd>
+<dt>descrizioni estese per le espressioni booleane</dt>
+<dd>indagare su come potrebbero essere trattati casi di oggetti convertibili a <span class="code">bool</span>. Penso a casi del tipo:
+<pre class="code">
+  CHECK(AreAlmostEqual(float1, float2));
+  // ...
+  CHECK(AreTextFilesEqual(path1, path2));
+  // ...
+</pre>
+ove le funzioni <span class="code">Are&hellip;Equal</span> tornano un oggetto complesso convertibile a booleano (che vale <span class="code">true</span> se e solo se il criterio d'eguaglianza &egrave; soddisfatto) ma che una volta &ldquo;catturato&rdquo; genera una rappresentazione testuale della disuguaglianza (evidenziando ad esempio la distanza dei due valori numerici nel primo caso, la prima non-corrispondenza tra i due file nel secondo).</dd>
+</dl>
+<h2>Appendice</h2>
+<a name="monolitico"></a>
+<p>Esempio di test monolitico: la sequenza delle chiamate, per quanto possa seguire una certa logica, questa &egrave; del tutto arbitraria e non necessariamente evidente; il funzionamento dell'oggetto sotto test non &egrave; esplicito, ma va dedotto analizzando attentamente il codice di test.</p>
+<pre class="code">
+// ...
+
+int main() {
+  // ...
+  RecentlyUsedList aList;
+  CHECK(aList.empty());
+  CHECK(aList.size() == 0);
+
+  aList.insert(&quot;one&quot;);
+  CHECK(!aList.empty());
+  CHECK(aList.size() == 1);
+  CHECK(aList[0] == &quot;one&quot;);
+
+  aList.insert(&quot;two&quot;);
+  CHECK(!aList.empty());
+  CHECK(aList.size() == 2);
+  CHECK(aList[0] == &quot;two&quot;);
+  CHECK(aList[1] == &quot;one&quot;);
+
+  aList.insert(&quot;three&quot;);
+  CHECK(!aList.empty());
+  CHECK(aList.size() == 3);
+  CHECK(aList[0] == &quot;three&quot;);
+  CHECK(aList[1] == &quot;two&quot;);
+  CHECK(aList[2] == &quot;one&quot;);
+
+  aList.insert(&quot;two&quot;);
+  CHECK(!aList.empty());
+  CHECK(aList.size() == 3);
+  CHECK(aList[0] == &quot;two&quot;);
+  CHECK(aList[1] == &quot;three&quot;);
+  CHECK(aList[2] == &quot;one&quot;);
+
+  std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+  return 0;
+}
+</pre>
+<a name="procedurale"></a>
+<p><p>Esempio di test procedurale: ogni metodo viene testato in &ldquo;isolamento&rdquo;. Ipotesi chiaramente falsa: per verificare il buon funzionamento del metodo <span class="code">empty</span>, per esempio, &egrave; indispensabile effettuare almeno una chiamata <span class="code">insert</span> (oltre a quella del costruttore, ovviamente).</p>
+</p>
+<pre class="code">
+// ...
+
+int main() {
+  // ...
+  // empty
+  {
+    RecentlyUsedList aList;
+    CHECK(aList.empty());
+
+    aList.insert(&quot;one&quot;);
+    CHECK(!aList.empty());
+  }
+
+  // size
+  {
+    RecentlyUsedList aList;
+    CHECK(aList.size() == 0);
+
+    aList.insert(&quot;one&quot;);
+    CHECK(aList.size() == 1);
+
+    aList.insert(&quot;two&quot;);
+    CHECK(aList.size() == 2);
+  }
+
+  // insert
+  {
+    RecentlyUsedList aList;
+
+    aList.insert(&quot;one&quot;);
+    CHECK(aList[0] == &quot;one&quot;);
+
+    aList.insert(&quot;two&quot;);
+    CHECK(aList[0] == &quot;two&quot;);
+    CHECK(aList[1] == &quot;one&quot;);
+
+    aList.insert(&quot;three&quot;);
+    CHECK(aList[0] == &quot;three&quot;);
+    CHECK(aList[1] == &quot;two&quot;);
+    CHECK(aList[2] == &quot;one&quot;);
+
+    aList.insert(&quot;two&quot;);
+    CHECK(aList[0] == &quot;two&quot;);
+    CHECK(aList[1] == &quot;three&quot;);
+    CHECK(aList[2] == &quot;one&quot;);
+  }
+
+  // operator[]
+  {
+    RecentlyUsedList aList;
+    aList.insert(&quot;one&quot;);
+
+    THROWS(aList[1], std::out_of_range);
+  }
+
+  std::cout &lt;&lt; &quot;All tests passed.&quot; &lt;&lt; std::endl;
+  return 0;
+}
+</pre>
+<p class="modification-notice">Pagina modificata il 03/10/2012</p>
+</body>
+</html>

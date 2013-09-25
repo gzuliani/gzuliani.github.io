@@ -1,0 +1,185 @@
+/***************************************
+* OPERAZIONI PER LA GESTIONE DEI FILE. *
+****************************************
+
+FILE *fopen ( nomefile, modalita )
+
+	Apre un file (eventualmente lo crea), restituisce l'indirizzo del
+	file aperto; le modalita' sono:
+
+	"r" - LETTURA (TESTO)   (posizionamento all'inizio del file)
+	"w" - SCRITTURA (TESTO) (posizionamento all'inizio del file)
+	"a" - SCRITTURA (TESTO) (posizionamento alla fine del file)
+
+	"rb" - LETTURA   (BINARIA) (posizionamento all'inizio del file)
+	"wb" - SCRITTURA (BINARIA) (posizionamento all'inizio del file)
+	"ab" - SCRITTURA (BINARIA) (posizionamento alla fine del file)
+
+
+int fclose ( FILE *puntfile )
+
+	Chiude il file puntato da "puntfile"; se l'operazione viene eseguita
+	correttamente restituisce 0 altrimenti EOF (cost. def. in stdio.h)
+
+
+*************************************
+* OPERAZIONI DI LETTURA E SCRITTURA *
+*************************************
+
+*************** Formattata ***************
+
+int fprintf ( FILE *puntfile, stringa_di_controllo, elementi )
+
+	Analogo a "printf"; scrive sul file puntato da "puntfile" invece che
+	stampare a video. Restituisce il numero di elementi effettivamente
+	letti o un numero negativo in caso di errore.
+
+int fscanf ( FILE *puntfile, stringa_di_controllo, indirizzo_elementi )
+
+	Analogo a "scanf"; legge dal file puntato da "puntfile" invece che
+	leggere da tastiera. Restituisce il numero di elementi effettivamente
+	letti o un numero negativo in caso di errore.
+
+**************** Caratteri ***************
+
+int fgetc ( FILE *puntfile )
+
+	Analogo a "getchar"; legge carattere per carattere il contenuto del
+	file puntato da "puntfile" invece di cio' che viene digitato tramite
+	tastiera. Restituisce il carattere come intero o EOF in caso di errore
+
+int fputc ( int c, FILE *puntfile )
+
+	Analogo a "putchar"; scrive un carattere alla volta (come intero) nel
+	file puntato da "puntfile" invece di scriverlo a video. Restituisce
+	il carattere in ingresso come intero o EOF in caso di errore.
+
+
+**************** Stringhe ****************
+
+char *fgets ( char *s, int n, FILE *puntfile )
+
+	Legge caratteri dal file puntato da "puntfile" fino a quando:
+	- ha letto n-1 caratteri
+	- ha raggiunto un carattere di newline
+	- ha raggiunto la fine del file
+	Restituisce l'indirizzo della stringa data come parametro, oppure
+	NULL in caso di errore.
+
+int *fputs ( char *s, FILE *puntfile )
+
+	Scrive la stringa "s" sul file puntato da "puntfile"; restituisce 0
+	oppure un altro valore in caso di errore.
+
+
+
+
+
+
+**************** Strutture ***************
+
+int fread ( void *ptr, dim_elemento, num_elementi, FILE *puntfile )
+
+	Legge un blocco di dati binari o testuali dal file puntato da
+	"puntfile" e li memorizza in un vettore identificato da "ptr";
+	restituisce il numero di elementi effettivamente letti.
+
+int fwrite ( void *ptr, dim_elemento, num_elementi, FILE *puntfile )
+
+	Scrive un blocco di dati binari o testuali sul file puntato da
+	"puntfile" prelevandoli dal vettore identificato da "ptr";
+	restituisce il numero di elementi effettivamente scritti.
+
+******************************************/
+
+
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+ {
+  /////////////////////////////
+  // DICHIARAZIONE VARIABILI //
+  /////////////////////////////
+
+  FILE *pfile;                          // PUNTATORE A FILE
+  char nomefile[12];                       // PUNTATORE A CARATTERE
+  char stringa[20];                        //(STRINGA DI DIMENSIONE NON DEFINITA)
+  char carattere;                       // CARATTERE
+
+  //////////////////////////
+  // CREAZIONE NUOVO FILE //
+  //////////////////////////
+
+  clrscr();
+  printf("Inserisci il nome del file: ");
+  scanf("%s",nomefile);
+  pfile = fopen(nomefile,"w");          // APERTURE FILE (SCRITTURA)
+					//             (A INIZIO FILE)
+
+
+  fputc('C',pfile);
+  fputc('i',pfile);
+  fputc('a',pfile);                     // SCRITTURA 1 CARATTERE ALLA VOLTA
+  fputc('o',pfile);
+  fputc('\n',pfile);
+
+  fputs("a Tutti!\n",pfile);		// SCRITTURA DI UNA STRINGA
+
+  fclose(pfile);			// CHIUSURA FILE
+
+  printf("\n>> Debug: E' stato creato il file %s \n\n",nomefile);
+
+  getch();
+
+  ///////////////////////////////////////////////////////////////////////////
+  // LETTURA E VISUALIZZAZIONE DI UN FILE DI TESTO CARATTERE PER CARATTERE //
+  ///////////////////////////////////////////////////////////////////////////
+
+  pfile = fopen(nomefile,"r");		// APERTURE FILE (LETTURA)
+
+  if ( pfile != NULL )			// SE NON CI SONO ERRORI
+   {
+    printf("\n>> Visualizzazione del file %s carattere per carattere:\n\n",nomefile);
+
+    do
+     {
+      carattere = fgetc(pfile);         // LEGGI CATTERE PER CARATTERE
+      putchar(carattere);               // VISUALIZZA CARATTERE A VIDEO
+     }
+    while (carattere != EOF);		// FINCHE' NON E' FINITO IL FILE
+
+   }
+  else
+   printf("Il file non puo' essere aperto");
+
+  fclose(pfile);			// CHIUSURA FILE
+
+  getch();
+
+  ////////////////////////////////////////////////////////////////
+  // LETTURA E VISUALIZZAZIONE DI UN FILE DI TESTO PER STRINGHE //
+  ////////////////////////////////////////////////////////////////
+
+  pfile = fopen(nomefile,"r");		// APERTURE FILE (LETTURA)
+
+  if ( pfile != NULL )			// SE NON CI SONO ERRORI
+   {
+    printf("\n>> Visualizzazione del file %s per stringhe:\n\n",nomefile);
+
+    while (fgets(stringa,80,pfile)!= NULL) // LEGGE UNA STRINGA DAL FILE
+     {                                     // FINCHE' NON E' FINITO IL FILE
+
+      printf("%s",stringa);               // VISUALIZZA LA STINGA A VIDEO
+
+     }
+
+   }
+  else
+   printf("Il file non puo' essere aperto");
+
+  fclose(pfile);			// CHIUSURA FILE
+
+  getch();
+ }
+

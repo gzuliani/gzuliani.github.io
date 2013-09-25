@@ -1,0 +1,199 @@
+<html>
+<head>
+<title>Metriche C++</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#metrics">risorse</a> | metriche C++</p>
+<h1>Metriche C++</h1>
+<p>Da tempo sto valutando l'idea di integrare il processo di build di un progetto C++ di qualche decina di migliaia di righe con una attivit&agrave; automatica di monitoraggio della &laquo;qualit&agrave;&raquo; del codice sorgente. Ho dapprima introdotto un'analisi statica del codice, ad opera del programma gratuito open-source <a href="cppcheck.html">Cppcheck</a>: avviato prima della fase di compilazione, causa l'interruzione della procedura di build nel caso abbia individuato uno o pi&ugrave; errori. Vorrei raffinare quest'attivit&agrave; raccogliendo ora alcune metriche del codice, per far emergere potenziali criticit&agrave; del progetto e individuare le aree che necessitano di <em>refactoring</em>. Se le misure raccolte vengono archiviate sistematicamente, risulter&agrave; semplice valutare a posteriori l'effetto delle modifiche.</p>
+<p>L'individuazione di una metrica fuori tolleranza non causa l'interruzione della procedura di build. Scopo dell'integrazione &agrave; fissare nel tempo lo stato del codice &ndash; sfruttando la produzione di una nuova versione degli artefatti come &laquo;orologio&raquo; &ndash; per osservare l'andamento della qualit&agrave; del codice all'evolversi del progetto.</p>
+<p>Tra le varie possibilit&agrave;, ho deciso di concentrarmi su <a href="#cccc">CCCC</a> e <a href="#sourcemonitor">Source Monitor</a>.</p>
+<a name="cccc"></a>
+<h2>CCCC</h2>
+<p><a href="http://sourceforge.net/projects/cccc/">CCCC</a> &egrave; un programma open-source, gratuito e multi-piattaforma. Riconosce sorgenti ADA, C, C++ e Java. Ricava le seguenti metriche:</p>
+<h3>Metriche di progetto:</h3>
+<ul>
+	<li><strong>Number of modules (NOM)</strong>: i moduli sono generici contenitori di codice, come classi, file, &hellip;;</li>
+	<li><strong>Lines of code (LOC)</strong>: numero di righe di codice, escluse quelle vuote e quelle di commento;</li>
+	<li><strong>Lines of comments (COM)</strong>: numero di righe di commento;</li>
+	<li><strong>McCabe's Cyclomatic Complexity (MVG)</strong>: complessit&agrave; ciclomatica globale;</li>
+	<li><strong>Lines of code per line of comment (L_C)</strong>: stima della densit&agrave; dei commenti;</li>
+	<li><strong>Cyclomatic Complexity per line of comment (M_C)</strong>: stima la quantit&agrave; dei commenti rispetto alla complessit&agrave; del codice;</li>
+	<li><strong>Information flow measure (IF4)</strong>: stima della interdipendenza dei moduli &ndash; basato sul metodo Henry-Kafura.</li>
+</ul>
+<h3>Metriche di modulo:</h3>
+<p>Le metriche di modulo comprendono un sottoinsieme di quelle di progetto (<strong>LOC</strong>, <strong>COM</strong>, <strong>MVG</strong>, <strong>L_C</strong>, <strong>M_C</strong>), oltre alle seguenti, classificate per tipologia:</p>
+<h4>Object-oriented</h4>
+<ul>
+	<li><strong>Weighted methods per class (WMC)</strong>: la metrica &egrave; usata in due varianti: <em>WMC1</em>, attribuendo un peso unitario a tutti i metodi, conteggia tutti i metodi del modulo, mentre <em>WMCv</em>, attribuendo un peso nullo ai metodi privati, conteggia i soli metodi accessibili agli altri moduli;</li>
+	<li><strong>Depth of inheritance tree (DIT)</strong>: indica la lunghezza della pi&ugrave; lunga catena di derivazione;</li>
+	<li><strong>Number of children (NOC)</strong>: numero di moduli che derivano dal modulo in esame;</li>
+	<li><strong>Coupling between objects (COB)</strong>: numero di moduli accoppiati al modulo in esame, clienti o fornitori che siano;</li>
+</ul>
+<h4>Strutturali</h4>
+<ul>
+	<li><strong>Fan-in (FI)</strong>: numero di moduli che passano informazione al modulo in esame;</li>
+	<li><strong>Fan-out (FO)</strong>: numero di moduli cui il modulo sotto esame passa informazione;</li>
+	<li><strong>Information flow measure (IF4)</strong>: indice di complessit&agrave; strutturale, calcolato come &radic;(FI &times; FO).</li>
+</ul>
+<h3>Metriche di metodo:</h3>
+<p>Le metriche di metodo comprendono un sottoinsieme di quelle di progetto: <strong>LOC</strong>, <strong>COM</strong>, <strong>MVG</strong>, <strong>L_C</strong>, <strong>M_C</strong>.</p>
+<h3>Soglie</h3>
+<p>CCCC attribuisce ad ogni metrica una soglia di attenzione &laquo;media&raquo; e una &laquo;alta&raquo;; i dati raccolti sono etichettati come rientranti in un ambito di normalit&agrave;, nella zona d'attenzione media o in quella alta conformemente ai valori assunti rispetto ai valori di soglia. In assenza di specifiche configurazioni, CCCC utilizza le seguenti soglie:</p>
+<table cellspacing="0">
+	<tr><th>&nbsp;</th><th>media</th><th>alta</th></tr>
+	<tr><td>LOC (funzione)</td><td>30</td><td>100 </td></tr>
+	<tr><td>LOC (modulo)</td><td>500</td><td>2000 </td></tr>
+	<tr><td>MVG (funzione)</td><td>10</td><td>30</td></tr>
+	<tr><td>MVG (modulo)</td><td>200</td><td>1000</td></tr>
+	<tr><td>M_C</td><td>5</td><td>10</td></tr>
+	<tr><td>L_C</td><td>7</td><td>30</td></tr>
+	<tr><td>FI</td><td>12</td><td>20</td></tr>
+	<tr><td>FO</td><td>12</td><td>20</td></tr>
+	<tr><td>IF4</td><td>100</td><td>1000</td></tr>
+	<tr><td>WMC1</td><td>30</td><td>100</td></tr>
+	<tr><td>WMCv</td><td>10</td><td>30</td></tr>
+	<tr><td>DIT</td><td>3</td><td>6</td></tr>
+	<tr><td>NOC</td><td>4</td><td>15</td></tr>
+	<tr><td>CBO</td><td>12</td><td>30</td></tr>
+</table>
+<h3>Integrazione</h3>
+<p>CCCC si attende di ricevere l'elenco dei file da analizzare sulla linea di comando o sullo stream di input. I risultati dell'analisi sono salvati in una directory ad-hoc, di norma <code>.cccc</code>. Le metriche di progetto e di modulo si trovano nel file <code>cccc.xml</code>, mentre quelle di metodo sono raggruppate per modulo di appartenenza e salvate in un file dedicato. Lo script seguente di occupa di analizzare tutti i file presenti nelle cartelle passate sulla linea di comando:</p>
+<pre class="code">
+rem cccc.cmd
+@echo off
+
+if &quot;%1&quot;==&quot;&quot; echo Usage: %~n0 source-folders &amp;&amp; exit /b %ERROR%
+
+set PROGRAMFILES32=%ProgramFiles(x86)%
+if &quot;%PROCESSOR_ARCHITECTURE%&quot;==&quot;x86&quot; set PROGRAMFILES32=%ProgramFiles%
+
+set CCCC=&quot;%PROGRAMFILES32%\CCCC\cccc.exe&quot;
+
+set FILE_LIST=%TEMP%\cccc.lst
+echo. &gt;nul 2&gt;%FILE_LIST%
+
+:loop
+if &quot;%1&quot;==&quot;&quot; goto done
+dir /s /b %1 &gt;&gt; %FILE_LIST%
+shift
+goto :loop
+
+:done
+
+set REPORT_FOLDER=.\.cccc
+type %FILE_LIST% | %CCCC% --outdir=%REPORT_FOLDER% - &gt;nul 2&gt;&amp;1
+del /q %FILE_LIST% &gt;nul 2&gt;&amp;1
+
+rem TODO: time to analyze the report!
+
+rd /q /s %REPORT_FOLDER% &gt;nul 2&gt;&amp;1
+</pre>
+<h3>Note</h3>
+<p>CCCC non &egrave; in grado di gestire distintamente moduli omonimi: classi con lo stesso nome, poste in namespace diversi, sono trattate come definizioni parziali di un'unico modulo.</p>
+<a name="sourcemonitor"></a>
+<h2>Source Monitor</h2>
+<p><a href="http://www.campwoodsw.com/sourcemonitor.html">Source Monitor</a> &egrave; un programma closed-source gratuito che gira su Windows. Riconosce sorgenti C, C++, C#, Delphi, HTML, Java, VB.NET e Visual Basic. La versione in prova, 3.4.0.283, limitatamente al C/C++, fornisce le seguenti metriche:</p>
+<h3>Metriche di file:</h3>
+<ul>
+	<li><strong>lines</strong>: numero di linee di codice;</li>
+	<li><strong>statements</strong>: numero totale di comandi; il conteggio include anche alcune direttive (es. <span class="code">#include</span>, <span class="code">#define</span> e <span class="code">#undef</span>), cos&igrave; come le istruzioni <span class="code">try</span>/<span class="code">catch</span>; non sono conteggiati i comandi all'interno delle direttive <span class="code">#else</span>/<span class="code">#elif</span> e il relativo <span class="code">#endif</span>;</li>
+	<li><strong>percent branch statements</strong>: percentuale di comandi di salto rispetto alla totalit&agrave; dei comandi (<span class="code">if</span>, <span class="code">else</span>, <span class="code">for</span>, <span class="code">while</span>, <span class="code">break</span>, &hellip;); entrano nel conteggio anche le istruzioni <span class="code">try</span>/<span class="code">catch</span>;</li>
+	<li><strong>percent lines with comments</strong>;</li>
+	<li><strong>classes</strong>: numero di classi definite; un <span class="code">template</span> conta come una classe;</li>
+	<li><strong>methods implemented per class</strong>: numero medio di metodi per classe;</li>
+	<li><strong>functions</strong>: numero di funzioni identificate;</li>
+	<li><strong>average statements per method</strong>: numero medio di comandi per metodo/funzione;</li>
+	<li><strong>maximum method or function complexity</strong>: complessit&agrave; del metodo pi&ugrave; complesso;</li>
+	<li><strong>calls</strong>: numero totale di chiamate a metodo o funzione;</li>
+	<li><strong>maximum block depth</strong>: massimo livello di annidamento raggiunto dal codice;</li>
+	<li><strong>average block depth</strong>: livello medio di annidamento del codice;</li>
+	<li><strong>average complexity</strong>: media aritmetica delle complessit&agrave; dei metodi.</li>
+</ul>
+<h3>Metriche di metodo:</h3>
+<ul>
+	<li><strong>complexity</strong>: complessit&agrave; ciclomatica (approssimata);</li>
+	<li><strong>statements</strong>: numero di comandi che compongono il metodo;</li>
+	<li><strong>maximum block depth</strong>: massimo livello di annidamento del codice;</li>
+	<li><strong>calls</strong>: numero di chiamate di altri metodi o funzioni (<em>fan-out</em>).</li>
+</ul>
+<p>Source Monitor pu&ograve; archiviare le metriche raccolte in una sequenza di <em>checkpoint</em>; ci&ograve; consente di monitorare l'evoluzione del codice nel tempo.</p>
+<p>L'analisi dei sorgenti avviene molto rapidamente: su un PC equipaggiato con una CPU quad-core a 3GHz e 8GB di RAM, si raggiungono velocit&agrave; dell'ordine delle centinaia di migliaia di linee al secondo.</p>
+<h3>Soglie</h3>
+<table cellspacing="0">
+	<tr><th>&nbsp;</th><th>minimo</th><th>massimo</th></tr>
+	<tr><td>Lines</td><td>-</td><td>-</td></tr>
+	<tr><td>Statements</td><td>-</td><td>-</td></tr>
+	<tr><td>Percent branch statements</td><td>-</td><td>-</td></tr>
+	<tr><td>Percent lines with comments</td><td>15</td><td>25</td></tr>
+	<tr><td>Classes defined</td><td>-</td><td>-</td></tr>
+	<tr><td>Methods implemented per class</td><td>4</td><td>20</td></tr>
+	<tr><td>Average statements per method</td><td>5</td><td>10</td></tr>
+	<tr><td>Maximum complexity</td><td>2</td><td>8</td></tr>
+	<tr><td>Maximum block depth</td><td>3</td><td>6</td></tr>
+	<tr><td>Average block depth</td><td>1.0</td><td>2.5</td></tr>
+	<tr><td>Average complexity</td><td>2.0</td><td>4.5</td></tr>
+	<tr><td>Functions</td><td>-</td><td>-</td></tr>
+</table>
+<h3>Integrazione</h3>
+<p>Il programma &egrave; richiamabile da linea di comando; il manuale a corredo del programma illustra chiaramente questa modalit&agrave; di invocazione. I risultati in questo caso vengono salvati a scelta in formato XML o CSV. L'integrazione di Source Monitor nella procedura di build avviene per mezzo di due file di supporto:</p>
+<ul>
+	<li><strong>source-monitor.cmd</strong>: &egrave; lo script che si occupa di avviare Source Monitor:
+<pre class="code">
+rem source-monitor.cmd
+@echo off
+
+if &quot;%1&quot;==&quot;&quot; echo Usage: %~n0 project-name &amp;&amp; exit /b %ERROR%
+
+set PROGRAMFILES32=%ProgramFiles(x86)%
+if &quot;%PROCESSOR_ARCHITECTURE%&quot;==&quot;x86&quot; set PROGRAMFILES32=%ProgramFiles%
+
+set SOURCEMONITOR=&quot;%PROGRAMFILES32%\SourceMonitor\SourceMonitor.exe&quot;
+set SOURCEMONITOR_CMD=&quot;%~dp0\%1.xml&quot;
+
+%SOURCEMONITOR% /S %SOURCEMONITOR_CMD%
+
+rem TODO: time to analyze the report!
+
+rem remove project file
+del /q %TEMP%\%1.smp 1&gt; nul 2&gt;&amp;1
+</pre>
+	</li>
+	<li><strong>my-project.xml</strong>: &egrave; il file di configurazione necessario a Source Monitor per stabilire come e su quali file operare:
+<pre class="code">
+  &lt;sourcemonitor_commands&gt;
+    &lt;log_all_to_console /&gt;
+    &lt;command&gt;
+      &lt;project_file&gt;<strong>%TEMP%\PROJECT.SMP</strong>&lt;/project_file&gt;
+      &lt;project_language&gt;C++&lt;/project_language&gt;
+      &lt;modified_complexity&gt;true&lt;/modified_complexity&gt;
+      &lt;source_directory&gt;<strong>SOURCES-DIRECTORY</strong>&lt;/source_directory&gt;
+      &lt;source_subdirectory_list&gt;
+        &lt;exclude_subdirectories&gt;false&lt;/exclude_subdirectories&gt;
+        &lt;source_subtree&gt;include\&lt;/source_subtree&gt;
+        &lt;source_subtree&gt;sources\&lt;/source_subtree&gt;
+      &lt;/source_subdirectory_list&gt;
+      &lt;parse_utf8_files&gt;True&lt;/parse_utf8_files&gt;
+      &lt;checkpoint_name&gt;baseline&lt;/checkpoint_name&gt;
+      &lt;show_measured_max_block_depth&gt;True&lt;/show_measured_max_block_depth&gt;
+      &lt;file_extensions&gt;*.h,*.cpp&lt;/file_extensions&gt;
+      &lt;include_subdirectories&gt;true&lt;/include_subdirectories&gt;
+      &lt;export&gt;
+        &lt;export_file&gt;<strong>%TEMP%\PROJECT-METRICS.XML</strong>&lt;/export_file&gt;
+        &lt;export_type&gt;1 (export project summary in XML format)&lt;/export_type&gt;
+        &lt;export_option&gt;3&lt;/export_option&gt;
+      &lt;/export&gt;
+    &lt;/command&gt;
+  &lt;/sourcemonitor_commands&gt;
+</pre>
+	</li>
+</ul>
+<h3>Note</h3>
+<p>Salta immediatamente agli occhi l'assenza di misure relative al grado di accoppiamento dei moduli.</p>
+<p>I dati esportati non recano alcuna indicazione circa il rispetto delle soglie di attenzione, il che implica la necessit&agrave; di un meccanismo di sogliatura esterno nel caso si desideri evidenziare le entit&agrave; fuori norma.</p>
+<p>Per ottenere le statistiche in formato CSV, &egrave; necessario comandare due esportazioni distinte, una per quelle di progetto, l'altra per quelle di metodo &ndash; il formato CSV non permette di ragguppare statistiche strutturalmente diverse all'interno dello stesso file.</p>
+<p>Un ultimo aspetto da considerare &egrave; che, nella modalit&agrave; interattiva, manca un meccanismo per individuare rapidamente le aree critiche: il programma fornisce, alla granularit&agrave; del file, una rappresentazione grafica dei parametri rispetto ai limiti impostati, ma non fornisce alcun criterio di selezione dei file fuori tolleranza.</p>
+<p class="modification-notice">Pagina modificata il 27/05/2013</p>
+</body>
+</html>

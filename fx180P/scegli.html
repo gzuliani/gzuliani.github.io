@@ -1,0 +1,110 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Scegli un numero</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#scegli">casio fx-180p</a> | scegli un numero</p>
+<h1>Scegli un numero</h1>
+<p>Scopo del gioco &egrave; dimostrare che la calcolatrice &egrave; in grado di indovinare il numero scelto a piacere dall'utente, se questi indica correttamente in quali colonne del seguente specchietto esso si trova:</p>
+<table cellspacing="0">
+	<tr><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+	<tr><td class="data">15</td><td class="data">15</td><td class="data">15</td><td class="data">15</td></tr>
+	<tr><td class="data">13</td><td class="data">14</td><td class="data">14</td><td class="data">14</td></tr>
+	<tr><td class="data">11</td><td class="data">11</td><td class="data">13</td><td class="data">13</td></tr>
+	<tr><td class="data">9</td><td class="data">10</td><td class="data">12</td><td class="data">12</td></tr>
+	<tr><td class="data">7</td><td class="data">7</td><td class="data">7</td><td class="data">11</td></tr>
+	<tr><td class="data">5</td><td class="data">6</td><td class="data">6</td><td class="data">10</td></tr>
+	<tr><td class="data">3</td><td class="data">3</td><td class="data">5</td><td class="data">9</td></tr>
+	<tr><td class="data">1</td><td class="data">2</td><td class="data">4</td><td class="data">8</td></tr>
+</table>
+<p>Il gioco &egrave; realizzato tramite un programma che propone in successione all'utente i numeri 1, 2, 3 e 4, ed attende una risposta che deve essere 1 se il numero &egrave; presente nella colonna indicata, 0 se &egrave; assente.</p>
+<p>La risoluzione del problema &egrave; banale quando si nota che la disposizione dei numeri in tabella &egrave; tale per cui ogni numero &egrave; inserito nell'i-esima colonna se e solo se l'i-esimo bit della sua rappresentazione binaria &egrave; 1 (considerando il bit meno significativo in posizione 1 ed il bit pi&ugrave; significativo in posizione 4).</p>
+<p>Il programma si limita pertanto a calcolare il numero decimale rappresentato dai bit forniti dall'utente come risposte alle 4 domande poste.</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>M contiene la rappresentazione binaria &quot;in divenire&quot; del numero scelto dall'utente.</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>L'utente sceglie il numero 11, quindi avvia il programma:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">1</span></p>
+	</li>
+	<li>
+		<p>Poich&eacute; il numero 11 compare in colonna 1, l'utente risponde 1:</p>
+		<p><span class="key">1</span> <span class="key">RUN</span> &rarr; <span class="display">2</span></p>
+	</li>
+	<li>
+		<p>Poich&eacute; il numero 11 compare anche in colonna 2, l'utente risponde 1:</p>
+		<p><span class="key">1</span> <span class="key">RUN</span> &rarr; <span class="display">3</span></p>
+	</li>
+	<li>
+		<p>Il numero 11 non compare in colonna 3, l'utente perci&ograve; risponde 0:</p>
+		<p><span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">4</span></p>
+	</li>
+	<li>
+		<p>Il numero 11 compare in colonna 4, quindi l'utente risponde 1:</p>
+		<p><span class="key">1</span> <span class="key">RUN</span> &rarr; <span class="display">11</span></p>
+		<p>La calcolatrice ha indovinato!</p>
+	</li>
+</ul>
+<h2>Programma P1</h2>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">Min</span></td><td class="note">azzera l'accumulatore</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">1</span></td><td class="note">visualizza sul display il numero 1</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">ENT</span></td><td class="note">attende la risposta circa la presenza del numero in colonna 1</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">M+</span></td><td class="note">aggiorna l'accumulatore</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">2</span></td><td class="note">visualizza sul display il numero 2</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">ENT</span></td><td class="note">attende la risposta circa la presenza del numero in colonna 2</td></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">M+</span></td><td class="note">aggiorna l'accumulatore</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">3</span></td><td class="note">visualizza sul display il numero 3</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">ENT</span></td><td class="note">attende la risposta circa la presenza del numero in colonna 3</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">&times;</span></td><td class="note">il bit in posizione 3 pesa 4,</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">4</span></td><td class="note">perci&ograve; moltiplica per 4 e dividi per 3&hellip;</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">M+</span></td><td class="note">aggiorna l'accumulatore</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">4</span></td><td class="note">visualizza sul display il numero 4</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">ENT</span></td><td class="note">attende la risposta circa la presenza del numero in colonna 4</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">&times;</span></td><td class="note">il bit in posizione 4 pesa 8,</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">2</span></td><td class="note">perci&ograve; moltiplica ulteriormente per 2&hellip;</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">M+</span></td><td class="note">aggiorna l'accumulatore</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">MR</span></td><td class="note">visualizza il numero decimale risultante</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

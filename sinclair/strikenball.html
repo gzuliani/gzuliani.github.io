@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>Strike and ball</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/sinclair.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#sinclair">risorse</a> | <a href="index.html#strikenball">zx spectrum</a> | strikenball</p>
+<h1>Strike and ball (1986)</h1>
+<p>&Egrave; il classico gioco del mastermind con le cifre a sostituire i colori.</p>
+<p class="note">Nota: una veloce scorsa al listato evidenzia l'assenza di una chiamata RANDOMIZE che eviterebbe che il programma proponga, ad ogni avvio, sempre la stessa sequenza di codici.</p>
+<h2>Istantanea</h2>
+<p class="snapshot"><img class="snapshot" width="320" height="240" src="img/strikenball.png"/></p>
+<h2>Nastro</h2>
+<p>Scarica il nastro virtuale <a href="tzx/strikenball.tzx">strikenball.tzx</a> (3KB).</p>
+<h2>Listato</h2>
+<pre class="code">
+  10 REM *********************
+  20 REM *                   *
+  30 REM *  STRIKE AND BALL  *
+  40 REM *                   *
+  50 REM *********************
+  60 REM 
+  70 GO TO 460
+  80 REM 
+  90 REM =====================
+ 100 REM  GENERA COMBINAZIONE
+ 110 REM =====================
+ 120 REM 
+ 130 LET I$=&quot;&quot;
+ 140 FOR F=1 TO LUNG
+ 150 LET NUM=INT (RND*10)
+ 160 LET I$=I$+STR$ (NUM)
+ 170 NEXT F
+ 180 RETURN 
+ 190 REM 
+ 200 REM ====================
+ 210 REM  PROVA A INDOVINARE
+ 220 REM ====================
+ 230 REM 
+ 240 INPUT &quot;COMBINAZIONE..&quot;;LINE T$: IF LEN T$&lt;&gt;LUNG THEN PRINT #0; INVERSE 1;&quot;* LUNGHEZZA ERRATA *&quot;: PAUSE 50: GO TO 240
+ 250 RETURN 
+ 260 REM 
+ 270 REM ===========
+ 280 REM  CONTROLLO
+ 290 REM ===========
+ 300 REM 
+ 310 LET C$=I$
+ 320 LET STRIKE=0: LET BALL=0
+ 330 FOR F=1 TO LUNG
+ 340 IF C$(F)&lt;&gt;&quot;*&quot; AND T$(F)&lt;&gt;&quot;*&quot; AND C$(F)=T$(F) THEN LET STRIKE=STRIKE+1: LET C$(F)=&quot;*&quot;: LET T$(F)=&quot;*&quot;
+ 350 NEXT F
+ 360 FOR F=1 TO LUNG
+ 370 FOR N=1 TO LUNG
+ 380 IF C$(F)&lt;&gt;&quot;*&quot; AND T$(N)&lt;&gt;&quot;*&quot; AND C$(F)=T$(N) THEN LET BALL=BALL+1: LET C$(F)=&quot;*&quot;: LET T$(N)=&quot;*&quot;
+ 390 NEXT N: NEXT F
+ 400 RETURN 
+ 410 REM 
+ 420 REM ===============
+ 430 REM  PRESENTAZIONE
+ 440 REM ===============
+ 450 REM 
+ 460 BORDER 0: PAPER 0: INK 7: BRIGHT 1: CLS : POKE 23624,71
+ 470 PRINT &quot;{+6}{-2}{-1}{+4}{-5}{-3}{+7}{+5}{+5}{+6}{-5}{-3}{-2} {+6}{-6}{-5}{-8}{+5}{+4}{-6} {-5}{-3}{+7}{+6}{-6}{-5}{-8}{-8}{+5} &quot;
+ 480 PRINT &quot;{-1}{-6}{-8}{+5}{-5}{+3}{-2}{+5}{+4}{+7}{-5}{+3}{-8}{-8}{+1}{+2}{-5}{-6}{+5}{+5}{-5}{-8}{-5}{-3}{+7}{+1}{+2}{-5}{-8}{-8}{+5}{-8}&quot;
+ 490 PRINT &quot;{-6}{+6}{-8}{+5}{-5}{-8}{+5}{+5}{+5}{-5}{-5}{+3}{+7} {+5}{-5}{-5}{-8}{+5}{+1}{+6} {-5}{+3}{-2}{+5}{-5}{-5}{+3}{+7}{+1}{+3}&quot;
+ 500 PRINT '&quot;        &quot;; INVERSE 1;&quot;CIFRA&quot;; INVERSE 0;&quot;    &quot;; INVERSE 1;&quot;POSIZIONE&quot;'&quot;S&quot;; INVERSE 0;&quot;TRIKE: ESATTA    ESATTA&quot;' INVERSE 1;&quot;B&quot;; INVERSE 0;&quot;ALL  : ESATTA    ERRATA&quot;
+ 510 INPUT &quot;LUNGHEZZA CODICE [3..9]:&quot;;LUNG
+ 520 IF LUNG&lt;3 OR LUNG&gt;9 THEN GO TO 510
+ 530 PRINT '&quot;LUNGHEZZA DEL CODICE: &quot;;LUNG;&quot; CIFRE..&quot;
+ 540 GO SUB 100
+ 550 FOR T=0 TO 9
+ 560 PRINT 
+ 570 PRINT T;&quot;)  &quot;;
+ 580 GO SUB 210
+ 590 PRINT T$;&quot;    &quot;;
+ 600 GO SUB 280
+ 610 IF STRIKE=LUNG THEN GO TO 760
+ 620 IF STRIKE=0 THEN GO TO 660
+ 630 FOR F=1 TO STRIKE
+ 640 PRINT &quot;S&quot;;
+ 650 NEXT F
+ 660 IF BALL=0 THEN NEXT T
+ 670 FOR F=1 TO BALL
+ 680 PRINT &quot;B&quot;;
+ 690 NEXT F
+ 700 NEXT T
+ 710 PRINT '&quot;NON CE L'HAI FATTA!!&quot;'&quot;IL CODICE ERA --&gt;&quot;; INVERSE 1;I$; INVERSE 0;&quot;&lt;--&quot;
+ 720 PRINT #0;&quot;VUOI RITENTARE ?&quot;
+ 730 LET R$=INKEY$: IF R$=&quot;&quot; THEN GO TO 730
+ 740 IF R$=&quot;N&quot; OR R$=&quot;n&quot; THEN CLS : STOP 
+ 750 IF R$=&quot;S&quot; OR R$=&quot;s&quot; THEN GO TO 460
+ 760 PRINT ''&quot;SEI FORTUNATO, HAI INDOVINATO!&quot;
+ 770 PRINT #0;&quot;VUOI SFIDARMI DI NUOVO ?&quot;: GO TO 730
+</pre>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

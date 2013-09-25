@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>Semplice o facile?</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#semplice-facile">risorse</a> | semplice o facile?</p>
+<h1>Semplice o facile?</h1>
+<p>Dalla <a href="www.treccani.it">Treccani</a>:</p>
+<dl>
+<dt>s&eacute;mplice</dt><dl>(ant. s&iacute;mplice) agg. [lat. simplex simplicis, comp. della radice *sem- &laquo;uno, uno solo&raquo; (cfr. semel) e di una radice *plek- presente in plectere &laquo;allacciare&raquo;, plicare &laquo;piegare&raquo; (cfr. duplice, triplice, &hellip; molteplice)]. &ndash; Che &egrave; costituito di un solo elemento e non pu&ograve; risolversi perci&ograve; in ulteriori componenti [&hellip;] In altri casi ancora [&hellip;] significa che non è misto o combinato con altro [&hellip;]</dl>
+<dt>f&agrave;cile</dt><dd>agg. [dal lat. facilis, der. di facere &laquo;fare&raquo;]. &ndash;
+Che si pu&ograve; fare agevolmente, senza grande abilit&agrave; o sforzo (fisico o mentale) [&hellip;]</dd>
+</dl>
+<h2>Introduzione</h2>
+<p>Nell'esaminare la differenza di significato tra semplice e facile, Hickey<a href="#ref-1"><sup>[1]</sup></a><a href="#ref-2"><sup>[2]</sup></a> pone l'accento sull'oggettivit&agrave; insita nella semplicit&agrave; &ndash; in quanto propriet&agrave; &ldquo;strutturale&rdquo; &ndash; e la soggettivit&agrave; della facilit&agrave; &ndash; in quanto legata alle peculiari abilit&agrave; dell'individuo. Una cosa semplice lo di per s&eacute;, e pu&ograve; purtuttavia risultare facile per qualcuno, difficile per altri.</p>
+<p>A titolo d'esempio, Hickey cita il costrutto della variabile: un concetto facile da assimilare &ndash; il mutare delle cose nel tempo &egrave; un aspetto ben noto della nostra natura &ndash;, ma non semplice da gestire, perch&eacute; fonde la nozione di <em>valore</em> con quella di <em>tempo</em>. Buona parte degli errori della programmazione procedurale sono riconducibili ad una variabile che assume, in un certo istante di tempo, un valore errato.</p>
+<h2>Sistemi complessi, sistemi complicati.</h2>
+<p>Sempre dalla Treccani:</p>
+<dl>
+<dt>compl&egrave;sso</dt><dd>s. m. [dal lat. complexus -us, der. di complecti]. – 1. Il tutto, l’insieme, in quanto costituito di pi&ugrave; parti o elementi: un c. di persone, di cose [&hellip;]</dd>
+<dt>complicato</dt><dd>agg. [part. pass. di complicare]. – 1. Non semplice n&eacute; facile; confuso, intricato [&hellip;]</dd>
+</dl>
+<p>Un sistema <em>complesso</em> &egrave; un sistema costituito da un insieme di diversi componenti, ed &egrave; per definizione &ldquo;non-semplice&rdquo;. Qualunque sistema non banale &egrave; per forza di cose complesso. Ci&ograve; che rende un sistema <em>complicato</em> &egrave; la difficolt&agrave; di comprenderne il funzionamento. La complessit&agrave; &egrave; dunque una propriet&agrave; oggettiva del sistema &ndash; &egrave; l'opposto della semplicit&agrave; &ndash;, mentre l'essere complicato &egrave; una caratteristica soggettiva.</p>
+<p>Non potendo esimersi dal costruire sistemi software complessi, &egrave; doveroso limitarne la complicatezza.</p>
+<p>Nel corso del suo intervento Hickey elenca una serie di complicazioni del dominio dello sviluppo di sistemi software, citando per ognuna di esse gli aspetti base che, essendo interlacciati, le rendono tali; prosegue quindi proponendo un'alternativa pi&ugrave; semplice, indicando, di volta in volta, quale strumento software pu&ograve; risultare utile. Buona parte di quell'elenco &egrave; riportato qui sotto:</p>
+<table cellpadding="5" cellspacing="0">
+<tr>
+	<th class="main-header" colspan="2">complicato</th>
+	<th class="main-header">&nbsp;</th>
+	<th class="main-header" colspan="2">semplice</th>
+</tr>
+<tr>
+	<td class="sub-header">entit&agrave;</td>
+	<td class="sub-header">aspetti interlacciati</td>
+	<td class="sub-header">&nbsp;</td>
+	<td class="sub-header">entit&agrave;</td>
+	<td class="sub-header">strumento</td>
+</tr>
+<tr>
+	<td>stato</td>
+	<td>tempo, valore</td>
+	<td>&rarr;</td>
+	<td>valore</td>
+	<td><span class="code">const</span></td>
+</tr>
+<tr>
+	<td>oggetto</td>
+	<td>stato, valore, identit&agrave;</td>
+	<td>&rarr;</td>
+	<td>valore</td>
+	<td><span class="code">const</span></td>
+</tr>
+<tr>
+	<td>metodo</td>
+	<td>stato, funzionalit&agrave;</td>
+	<td>&rarr;</td>
+	<td>funzione/messaggio</td>
+	<td>funzioni pure</td>
+</tr>
+<tr>
+	<td>ereditariet&agrave;</td>
+	<td>tipi</td>
+	<td>&rarr;</td>
+	<td>polimorfismo</td>
+	<td><span class="code">typeclass</span><sup>(1)</sup>, <span class="code">protocol</span><sup>(2)</sup></td>
+</tr>
+<tr>
+	<td><span class="code">switch</span></td>
+	<td>molteplicit&agrave; di chi, cosa</td>
+	<td>&rarr;</td>
+	<td>polimorfismo</td>
+	<td><span class="code">typeclass</span><sup>(1)</sup>, <span class="code">protocol</span><sup>(2)</sup></td>
+</tr>
+<tr>
+	<td>ciclo <span class="code">for</span></td>
+	<td>cosa, come</td>
+	<td>&rarr;</td>
+	<td>insiemi</td>
+	<td>funzioni di libreria<sup>(3)</sup></td>
+</tr>
+<tr>
+	<td>attore</td>
+	<td>cosa, chi</td>
+	<td>&rarr;</td>
+	<td>coda</td>
+	<td>funzioni di libreria</td>
+</tr>
+<tr>
+	<td><span class="code">if</span></td>
+	<td>perch&eacute;, computazione</td>
+	<td>&rarr;</td>
+	<td>regole</td>
+	<td>funzioni di libreria</td>
+</tr>
+<tr>
+	<td>ORM</td>
+	<td>tutto!</td>
+	<td>&rarr;</td>
+	<td>linguaggi dichiarativi</td>
+	<td>SQL, LINQ, &hellip;</td>
+</tr>
+<tr>
+	<td>inconsistenza</td>
+	<td>-</td>
+	<td>&rarr;</td>
+	<td>consistenza</td>
+	<td>transazioni</td>
+</tr>
+</table>
+<p>La &ldquo;deriva&rdquo; funzionale &egrave; ben evidente. Il perseguimento della semplicit&agrave; secondo questi canoni ha comunque un suo prezzo: un interessante articolo<sup><a href="#ref-3">[3]</a></sup> dimostra che per una certa categoria di problemi, la migliore delle soluzioni che fa uso di sole strutture immutabili ha un'efficienza pari a O(n log n), mentre quella che fa uso di oggetti modificabili ne ha una pari a O(n).</p>
+<p class="footnote---"></p>
+<p class="footnote"><sup>(1)</sup> cfr. Haskell</p>
+<p class="footnote"><sup>(2)</sup> cfr. Closure</p>
+<p class="footnote"><sup>(3)</sup> ad esempio la <em>list-comprehension</em> di Python</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Hickey, R. &quot;Simple Made Easy&quot;. <em>strangeloop 2011</em>, St. Louis, Missouri. &lt;<a href="http://www.infoq.com/presentations/Simple-Made-Easy/">http://www.infoq.com/presentations/Simple-Made-Easy/</a>&gt;. Visitato il 2 Agosto 2012.</li>
+<a name="ref-2"></a>
+<li>Hickey, R. &quot;Simplicity Matters&quot;. <em>RailsConf 2012</em>, Austin, Texas. &lt;<a href="http://www.confreaks.com/videos/860-railsconf2012-keynote-simplicity-matters">http://www.confreaks.com/videos/860-railsconf2012-keynote-simplicity-matters</a>&gt;. Visitato il 2 Agosto 2012.</li>
+<a name="ref-3"></a>
+<li>Pippenger N. &quot;Pure versus impure LISP&quot;. <em>POPL '96</em>, St. Petersburg, Florida. &lt;<a href="http://www.cs.princeton.edu/courses/archive/fall03/cs528/handouts/Pure%20Versus%20Impure%20LISP.pdf">http://www.cs.princeton.edu/courses/archive/fall03/cs528/handouts/Pure%20Versus%20Impure%20LISP.pdf</a>. Visitato il 3 Agosto 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 29/08/2012</p>
+</body>
+</html>

@@ -1,0 +1,63 @@
+FPSrv - FotoPrint Server
+
+Il driver originale fornito con la stampante, un programma DOS a linea di
+comando, occupa interamente il processore durante il trasferimento
+dell'immagine alla stampante, rendendo impossibile le attivita' di fotoritocco
+che il committente intende svolgere.
+
+Il programma ovvia al problema richiamando il driver all'interno di una console
+DOS di un processo esterno e catturandone l'uscita per determinare l'esito
+della stampa.
+
+Nel tempo l'applicazione e' divenuta una sorta di server di stampa:
+la versione finale monitora infatti costantemente una cartella (INPUT
+DIRECTORY) in attesa che l'utente vi salvi le immagini da stampare.
+Se la stampa di un'immagine ha successo, il file relativo e' copiato nella
+cartella contentente le immagini gia' stampate (OUTPUT DIRECTORY), in caso
+contrario in quella contenente le immagini che per qualche ragione non sono
+state stampate (ERROR DIRECTORY). Un parametro (OUTPUT DIRECTORY OVERWRITING)
+definisce il comportamento tenuto dal programma nel caso di omonimie di file:
+sovrascrittura o ridenominazione del file con un indice progressivo per evitare
+di perdere i file immagine di cui si e' precedentemente tentata la stampa. In
+questo caso, il nome del file originale viene arricchito di un suffisso della
+forma "#NNNN" ove NNNN e' un numero di al piu' quattro cifre che garantisce
+l'unicita' del nome del file. Nel caso non sia stato possibile individuare un
+nome di file univoco, il file originale, appena stampato, viene eliminato.
+
+Durante il suo funzionamento, la finestra principale dell'applicativo rimane
+nascosta, e l'attivita' del programma e' deducibile da un'icona posta nella
+area di notifica: il colore verde indica che il server e' fermo (IDLE),
+il colore giallo indica che il server e' in attesa di un file immagine (WAIT),
+il colore rosso indica che il server e' impegnato nel trasferimento di
+dati alla stampante (BUSY). Durante l'elaborazione di un'immagine, il nome del
+file relativo e' visibile nel tooltip dell'icona di notifica. La finestra
+principale del programma e' richiamabile con un doppio click sull'icona di
+notifica o per mezzo del menu contestuale della stessa.
+
+La console entro la quale viene eseguito il driver puo', a scelta dell'utente,
+essere visualizzata sullo schermo (OPEN DOS PROMPT); e' possibile inoltre
+definire la priorita' del processo driver (DRIVER PRIORITY) e impostare gli
+eventuali parametri ausiliari supplementari (COMMAND LINE OPTIONS).
+
+Il programma offre inoltre una serie di automatismi che agevolano il lavoro
+dell'utente; tra questi, l'opzione MultiPrint (USE MULTI PRINT) che consente
+di produrre piu' stampe di una stessa immagine effettuando un unico
+trasferimento - il numero di copie desiderate e' specificato in un suffisso
+del file nella forma "@N" ove N rappresenta il numero di repliche da produrre
+(es. "FILE@12.TIF"). L'opzione di auto-rotazione (AUTO ROTATE), se attivata,
+determina l'orientamento ideale dell'immagine di stampa in funzione delle
+dimensioni dell'immagine originale, introducendo una rotazione di 90 gradi se
+la larghezza risulta inferiore all'altezza con quest'ultima inferiore alla
+larghezza del rotolo di carta fotografica installata, oppure se l'altezza
+risulta essere inferiore alla dimensione del rotolo e la larghezza superiore.
+Le risoluzioni di stampa possono essere indifferentemente quelle specificate
+nel file immagine (USE TIFF'S DPI) oppure una a scelta dell'utente (HORZ/VERT).
+E' infine possibile determinare i margini di posizionamento della stampa
+rispetto alla carta fotografica (ZERO MARGINS/TOP, LEFT), nonche' impostare
+i parametri di taglio in modo automatico (CUT AUTOMATICALLY/GAP) o manuale 
+(HEIGHT).
+
+E' disponibile un livello minimale di gestione della priorita' di stampa:
+i file immagine prefissati da un punto esclamativo (!) sono inviati alla
+stampante prima di qualunque altro file. L'ordine di invio dei file a
+priorita' alta, qualora ve ne sia piu' d'uno, non e' definito.

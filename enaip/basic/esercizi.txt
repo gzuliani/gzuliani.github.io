@@ -1,0 +1,323 @@
+[decisioni]
+
+Esercizio n.
+Realizzare un programma che, dato un numero intero, ne visualizzi il valore assoluto.
+
+Esercizio n.
+Realizzare un programma che, data l'età di una persona, determini se questa è maggiorenne.
+
+Esercizio n.
+Realizzare un programma che, dati due numeri interi, ne visualizzi il massimo.
+
+Esercizio n.
+Realizzare un programma che, dati tre numeri interi, ne visualizzi il massimo.
+
+Esercizio n.
+Realizzare un programma che, dato il peso di un pugile, ne visualizzi la categoria, secondo la tabella (il peso minimo ammissibile è pari a 46Kg):
+
+Categoria    Peso Max.
+----------------------
+Mini Mosca      48
+Mosca           51
+Gallo           54
+Piuma           57
+Leggeri         60
+Super Leggeri   63.5
+Welter          67
+Super Welter    71
+Medi            75
+Medio Massimi   81
+Massimi         91
+Super Massimi  oltre
+
+[cicli]
+
+Esercizio n.
+Realizzare un programma che calcoli il prodotto tra due numeri interi positivi utilizzando il solo operatore di somma.
+
+Esercizio n.
+Realizzare un programma che visualizzi i caratteri ASCII stampabili.
+
+Esercizio n.
+Realizzare un programma che visualizzi la tavola pitagorica.
+
+Esercizio n.
+Realizzare un programma che visualizzi un rettangolo di asterischi di dimensioni date.
+
+Esercizio n.
+Realizzare un programma che visualizzi il perimetro di un rettangolo di dimensioni date mediante asterischi.
+
+Esercizio n.
+Realizzare un programma che, dato un numero intero positivo maggiore di 2, visualizzi i primi numeri della successione di Fibonacci.
+
+Esercizio n.
+Realizzare un programma che, dati N numeri interi, ne visualizzi la somma e la media.
+
+Esercizio n.
+Realizzare un programma che, dato un numero intero positivo, determini se tale numero è primo esaminando il resto della divisione per tutti gli interi compresi tra 2 e la sua metà (test di primalità).
+
+[cicli con guardia]
+
+Esercizio n.
+Realizzare un programma che, data una sequenza di numeri interi positivi il cui termine è indicato dal valore 0, ne visualizzi i valori massimo e minimo.
+
+Esercizio n.
+Realizzare un programma che, dato un importo inferiore a 1 Euro espresso in centesimi, determini la combinazione composta dal minor numero di monete da 0.01, 0.02, 0.05, 0.1, 0.2 e 0.5 Euro equivalente all'importo dato.
+
+[+ numeri casuali]
+
+Esercizio n.
+Realizzare un programma che simuli il lancio di due dadi.
+
+Esercizio n.
+Realizzare un programma che giochi a "indovina il numero". Il programma dovrà dapprima generare un numero casuale intero compreso tra 1 e 100 - il numero segreto -, quindi chiederà all'utente di provare ad indovinarlo. Ad ogni tentativo errato dell'utente, il programma dovrà indicare se il numero immesso è più grande o più piccolo del numero segreto; al termine del gioco, che si conclude quando l'utente indovina il numero segreto, il programma dovrà visualizzare il numero di tentativi dell'utente.
+
+Esercizio n.
+Realizzare un programma che simuli una "margherita elettronica" composta da un numero di petali variabile casualmente tra 5 e 20. Il programma, contando ad uno ad uno i petali, dovrà visualizzare alternativamente i messaggi "m'ama" e "non m'ama".
+
+Esercizio n.
+Realizzare un programma che giochi a "morra cinese". Per ogni mossa il programma dovrà visualizzare le mosse propria e dell'utente, dichiarando di volta in volta il vincitore o la condizione di parità. Al termine della partita, determinata da una opportuna mossa "speciale" dell'utente, il programma dovrà visualizzare i punteggi complessivi, dichiarando il vincitore finale.
+
+[vettori]
+
+Esercizio n.
+Realizzare un programma che, dati un vettore di numeri interi ed un valore intero, verifichi se quest'ultimo è contenuto nel vettore.
+
+Esercizio n.
+Realizzare un programma che, dati due vettori di numeri interi di pari lunghezza, determini se questi sono uguali.
+
+Esercizio n.
+Realizzare un programma che, dati due vettori di numeri interi di pari lunghezza, visualizzi tutti gli elementi del primo vettore presenti anche nel secondo.
+
+Esercizio n.
+Realizzare un programma che, dato un vettore di numeri interi rappresentanti delle quote altimetriche, determini posizione e altezza del pianoro più ampio.
+
+Esercizio n.
+Realizzare un programma che, dati un vettore di numeri interi ed un valore intero, esegua un numero di rotazioni dei valori del vettore pari al valore assoluto del secondo parametro; il segno del parametro determina la direzione di scorrimento: verso la testa del vettore (all'indietro) se il parametro è negativo, verso la coda (in avanti) se è positivo.
+
+Esercizio n.
+Realizzare un programma che, dati un vettore ordinato di numeri interi ed un valore intero, verifichi se quest'ultimo è contenuto nel vettore, utilizzando l'algoritmo di ricerca binaria. La ricerca binaria si effettua valutando l'elemento mediano del vettore: se questo è pari a quello cercato, la ricerca termina, altrimenti prosegue seguendo lo stesso criterio nella metà sinistra del vettore se il valore dell'elemento mediano è superiore al valore cercato, nella metà di destra nel caso opposto.
+
+Esercizio n.
+Realizzare un programma che scopra, mediante l'algoritmo della ricerca binaria, il numero segreto pensato dall'utente (compreso tra 1 e 100). Ad ogni tentativo prodotto dal programma, l'utente risponde con 1 se il numero che ha pensato è più grande, -1 se è più piccolo, 0 se il programma ha indovinato. Al termine, il programma visualizzerà il numero di tentativi impiegati per indovinare il numero segreto.
+indovino io il numero
+
+Esercizio n.
+Realizzare un programma che, dati due vettori di numeri interi positivi ordinati, li fonda in un terzo, di dimensioni pari alla somma dei primi due, anch'esso ordinato.
+
+Esercizio n.
+Realizzare un programma che, dato un vettore di numeri interi compresi tra 0 e 9, costruisca un nuovo vettore contenente l'istogramma delle occorrenze: ogni posizione del secondo vettore dovrà quindi contenere il numero di volte che quell'indice appare nella sequenza data.
+
+Esercizio n.
+Realizzare un programma che ordini in modo crescente un vettore numerico mediante l'algoritmo di estrazione del minimo. L'algoritmo di ordinamento procede iterando sequenzialmente su tutte le posizioni del vettore ad esclusione dell'ultima, ponendo in ogni posizione l'elemento minimo tra quello già presente ed i successivi.
+
+Esercizio n.
+Realizzare un programma che ordini in modo crescente un vettore numerico mediante l'algoritmo di ordinamento a bolle. L'ordinamento a bolle procede iterando sequenzialmente su tutte le posizioni del vettore, scambiando le coppie non ordinate di elementi contigui; le iterazioni si susseguono fino all'ordinamento del vettore, condizione evidenziata da un'iterazione senza di scambi.
+
+Esercizio n.
+Realizzare un programma che, dato un vettore ordinato di interi, inserisca nuovi valori nel vettore, mantendendone lunghezza e ordinamento.
+
+Esercizio n.
+Realizzare un programma che, dato un numero intero positivo maggiore di 10 e minore di 100, determini i numeri primi minori del numero dato utilizzando il setaccio di Eratostene. L'algoritmo di Eratostene procede iterativamente sulla sequenza di numeri compresi tra 2 ed il numero dato, eliminando, ad ogni iterazione, tutti i multipli dell'ultimo numero primo identificato. Segue un esempio di ricerca dei numeri primi compresi tra 2 e 10:
+
+sequenza iniziale:               2 3 4 5 6 7 8 9 10 -> 2 è primo
+eliminazione dei multipli di 2:  2 3   5   7   9    -> 3 è primo
+eliminazione dei multipli di 3:  2 3   5   7        -> 5 è primo
+eliminazione dei multipli di 5:  2 3   5   7        -> 7 è primo
+eliminazione dei multipli di 7:  2 3   5   7       
+
+Esercizio n.
+Realizzare un programma che visualizzi un numero dato di generazioni di un automa cellulare di lunghezza prefissata. Un automa cellulare è una sequenza di celle che possono ospitare una cellula o essere vuote. Data una configurazione di celle piene e vuote, la configurazione (o generazione) successiva si determina con la seguente regola ("regola 90"): in una data posizione nasce una cellula se nella generazione precedente tale posizione aveva una sola cellula adiacente. La configurazione iniziale dovrà prevedere la presenza di una sola cellula, posta nella posizione centrale.
+
+Esercizio n.
+Realizzare un programma che simuli il funzionamento di una calcolatrice facente uso della notazione postfissa (RPN - Reverse Polish Notation). Il programma dovrà accettare una sequenza formata da numeri interi compresi tra 0 e 999, dagli operatori <+>, <->, <*> e </>, e dai simboli <C> (azzeramento) <OFF> (uscita dal programma), e e dovrà applicare gli operatori ai due operandi precedenti; a titolo d'esempio, la sequenza
+ 
+ [7 1 2 + 4 * 5 6 + - /]
+
+dovrà essere così interpretata:
+
+operatore + applicato agli operandi  1  2 -> [7 3 4 * 5 6 + - /]
+operatore * applicato agli operandi  3  4 -> [7 12 5 6 + - /]
+operatore + applicato agli operandi  5  6 -> [7 12 11 - /]
+operatore - applicato agli operandi 12 11 -> [7 1 /]
+operatore / applicato agli operandi  7  1 -> [7]
+
+Il programma dovrà trattare le seguenti condizioni d'errore: simbolo non valido (es. [1 a +]) numero di operandi insufficiente (es. [1 3 + *]), risultato negativo (es. [3 5 -]), numero troppo grande (es. [100 12 5 + *]), divisione per zero (es. [4 3 2 1 + - /]).
+
+Suggerimento: utilizzare un vettore nel quale impilare i valori dell'espressione; alla lettura di un simbolo, applicare l'operazione agli ultimi due valori impilati, e sostituirli con il risultato ottenuto.
+
+[stringhe]
+
+Esercizio n.
+Realizzare un programma che, data una stringa, ne determini la lunghezza e visualizzi i codici ASCII dei suoi caratteri.
+
+Esercizio n.
+Realizzare un programma che converta un numero intero positivo dato in stringa.
+
+Esercizio n.
+Realizzare un programma che converta una stringa contenente al più quattro cifre nel numero corrispondente. Prima di procedere alla conversione, si verifichi la validità della stringa data.
+
+Esercizio n.
+Realizzare un programma che rovesci una stringa data.
+
+Esercizio n.
+Realizzare un programma che implementi il gioco "strike and ball". Il programma genererà dapprima un numero casuale di 5 cifre, e successivamente indicherà, per ogni tentativo dell'utente, quante cifre del numero immesso si trovano nel posto giusto (numero di strike), quante invece nel posto sbagliato (numero di ball); al termine del gioco, qando l'utente avrà indovinato la combinazione segreta, il programma visualizzerà il numero di tentativi dell'utente. Si richiede che il programma verifichi la correttezza dei dati immessi dall'utente.
+
+Esercizio n.
+Realizzare un programma di codifica di una stringa data secondo il codice ROT13. Il programma dovrà operare sui soli caratteri alfabetici; eventuali caratteri minuscoli dovranno essere preventivamente trasformati in caratteri maiuscoli. Disponendo le 26 lettere dell'alfabeto a formare una corona circolare, l'algoritmo di cifratura ROT13 trasforma ogni lettera nella corrispondente distante 13 posizioni, originando la seguente associazione:
+
+    A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+    N O P Q R S T U V W X Y Z A B C D E F G H I J K L M
+
+L'algoritmo ROT13 può essere utilizzato anche per la decifratura di testi cifrati ROT13:
+
+   SEGRETO  -ROT13->  FRTERGB  -ROT13->  SEGRETO
+
+Esercizio n.
+Realizzare un programma che, data una stringa, visualizzi l'istogramma delle occorrenze delle vocali in essa contenute.
+
+Esercizio n.
+Realizzare un programma che visualizzi le parole contenute in una stringa data. Con "parola" si intende una qualunque sequenza non vuota di caratteri, esclusi gli spazi ed i segni di interpunzione.
+
+Esercizio n.
+Realizzare un programma che, date due parole, verifichi se costituiscono un anagramma.
+
+Esercizio n.
+Realizzare un programma che, data una parola, verifichi se è palindroma.
+
+Esercizio n.
+Realizzare un programma che, dato un vettore di stringhe contenente alcuni nomi propri, stampi tutti quelli inizianti per una lettera data.
+
+[matrici]
+
+Esercizio n.
+Realizzare un programma che inserisca la tavola pitagorica in una matrice.
+
+Esercizio n.
+Realizzare un programma che, data una matrice quadrata di lato dato, verifichi se questa è un quadrato magico (un quadrato magico è costituito da una matrice quadrata contenente i numeri compresi tra 1 e il quadrato del lato, ed i numeri sono disposti in modo tale che la somma dei valori posti sulle righe, sulle colonne e sulle diagonali principali è costante).
+Seguono due esempi di quadrati magici di ordine 3 e 4:
+
+2 7 6      1 15 14  4
+9 5 1     12  6  7  9
+4 3 8      8 10 11  5
+          13  3  2 16
+
+Esercizio n.
+Realizzare un programma che, data una matrice booleana ed un numero intero positivo, visualizzi l'evoluzione della matrice per il numero di generazioni date, secondo le regole del gioco "life" di John Conway, con la convenzione che il valore di verità FALSO rappresenta una cella vuota, VERO una cella che ospita un organismo vivente. Le due regole del gioco sono le seguenti:
+1. un organismo sopravvive se nella generazione precedente la sua cella era circondata da due o tre organismi;
+2. in una cella vuota nasce un nuovo organismo se nella generazione precedente la cella era circondata da esattamente tre organismi.
+Segue un esempio di evoluzione:
+
+* *
+* *   ** **   ** **    ** **   ** **
+***    * *    ** **    *   *   *   *
+        *       *       ***     ***
+                                ***
+
+Alcune configurazioni stabili
+
+  **   **
+ * *   **
+  *
+
+Il semaforo ed il rospo, due configurazioni bistabili
+
+ *
+ *    ***
+ *   ***
+
+L'aliante, una configurazione semovente
+
+   *
+ * *
+  **
+
+Il pulsar, un generatore di un oscillatore di periodo 3
+
+  *
+ ***
+ * *
+ ***
+  *
+
+Il pentomino r, un generatore caotico
+
+  **
+ **
+  *
+
+Esercizio n.
+Realizzare un programma che permetta all'utente di giocare al "gioco del 15": ad ogni turno l'utente muove la casella a sinistra, destra, soprastante o sottostante quella libera, mediante opportuni comandi. Il programma dovrà verificare la bontà delle mosse, rifiutando quelle non valide.
+
+[tipi strutturati]
+
+Esercizio n.
+Realizzare un programma che consenta l'archiviazione di un numero predefinito di Compact Disc musicali; per ogni elemento della raccolta dovranno essere richiesti all'utente autore, titolo e data di pubblicazione del disco. Al termine della fase di immissione dei dati, il programma dovrà visualizzare l'elenco completo dei dischi ordinati per autore. Definire un opportuno tipo strutturato per rappresentare le informazioni relative ad un CD, ed utilizzare un vettore opportunamente dimensionato per memorizzare i singoli dischi.
+
+Esercizio n.
+Realizzare un programma che implementi un'agenda telefonica: per ogni posizione il programma dovrà richiedere nome, cognome e numero telefonico. Al termine della fase di immissione dei dati, il programma dovrà visualizzare l'elenco completo dei contatti ordinati per cognome e nome. Successivamente il programma, ricevuta una stringa dall'utente, visualizzerà nome, cognome e numero di telefono di tutte le persone i cui caratteri iniziali del cognome corrispondono alla chiave di ricerca immessa dall'utente.
+
+Esercizio n.
+Realizzare un programma che simuli una serie di pescate casuali da un mazzo di carte francesi. Definire un opportuno tipo strutturato "carta" per rappresentare seme e valore delle carte, ed utilizzare un vettore di carte per rappresentare il mazzo.
+
+[funzioni e procedure]
+
+Esercizio n.
+Realizzare una funzione che determini il massimo comun divisore di due numeri dati utilizzando l'algoritmo di Euclide. L'algoritmo di Euclide opera iterativamente sui due numeri dati, assegnando ad ogni ciclo al primo il valore del secondo, al secondo il resto della divisione del primo col secondo, terminando quando tale resto risulta nullo.
+
+Esercizio n.
+Realizzare una funzione che, dato un numero intero compreso tra 0 e 255, ne determini la rappresentazione binaria utilizzando una stringa composta da una sequenza di 8 cifre "0" e "1".
+
+Esercizio n.
+Realizzare una funzione che, data una stringa, verifichi il corretto bilanciamento delle parentesi.
+
+Esercizio n.
+Realizzare una funzione che elimini tutti gli spazi superflui da una stringa data.
+
+Esercizio n.
+Realizzare un programma che gestisca i numeri razionali, definendo il tipo di dato "razionale" e definendo le funzioni di lettura, semplificazione (eliminazione dei fattori comuni a numeratore e denominatore), somma, prodotto e stampa.
+
+[funzioni e procedure - ricorsione]
+
+Esercizio n. 
+Realizzare un programma ricorsivo che esegua la somma di due numeri interi positivi.
+
+Esercizio n.
+Realizzare un programma ricorsivo che determini il fattoriale di un numero intero positivo dato.
+
+Esercizio n.
+Realizzare un programma ricorsivo che inverta i caratteri di una stringa data.
+
+Esercizio n.
+Realizzare un programma ricorsivo che implementi l'algoritmo di ricerca binaria su un vettore ordinato.
+
+Esercizio n.
+Realizzare un programma ricorsivo che ordini un vettore di stringhe mediante l'algoritmo "quick sort". L'algoritmo opera sul vettore individuandone due sottoparti, non necessariamente di uguale dimensione, contenenti rispettivamente i valori minori e maggiori del valore dell'elemento mediano; l'algoritmo viene quindi applicato ricorsivamente ai due sottovettori così ottenuti.
+
+Esercizio n.
+Realizzare un programma ricorsivo che, dato un numero intero positivo maggiore di 1, visualizzi le mosse necessarie per risolvere il problema della "torre di hanoi" per una torre dell'altezza data.
+
+[file]
+
+Esercizio n.
+Realizzare un programma che, dato un file di testo, ne visualizzi il contenuto.
+
+Esercizio n.
+Realizzare un programma che salvi i valori di un vettore in un file, li rilegga ponendoli in un secondo vettore e verifichi che i due vettori contengano gli stessi valori.
+
+Esercizio n.
+Realizzare un programma che, dato un file di testo, visualizzi il numero di righe di cui è costituito.
+
+Esercizio n.
+Realizzare un programma che estragga il testo contenuto in un file HTML. A tal scopo sarà necessario realizzare un filtro che agisce su un flusso di caratteri, rimuovendo tutte le sequenze comprese tra le parentesi angolate < e >, parentesi comprese.
+ 
+Esercizio n.
+Realizzare un programma che, dato un file di testo, ne crei uno nuovo, contenente il testo del primo codificato in ROT13.
+
+Esercizio n.
+Realizzare un programma che, dato un file di testo, ne crei uno nuovo contenente, per ogni parola, il numero di occorrenze trovate. Sono da considerarsi parole tutte le sequenze di caratteri alfabetici maiuscoli e minuscoli contigui. Se necessario, si supponga che una parola sia costituita da al più 20 caratteri, e che il testo possa contenere al massimo 1000 parole diverse.
+
+Esercizio n.
+Realizzare un programma che, dato un file di testo, ne crei uno nuovo contenente l'indice analitico. L'indice dovrà contenere, per ogni parola, il numero della riga del file nella quale appare per la prima volta. Sono da considerarsi parole tutte le sequenze di caratteri alfabetici, maiuscoli e minuscoli, contigui. Se necessario, si supponga che una parola sia costituita da al più 20 caratteri, e che l'indice possa essere costituito al massimo da 1000 voci. Si supponga infine che il file non contenga parole spezzate su due righe. 
+
+

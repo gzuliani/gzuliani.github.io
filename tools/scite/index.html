@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>SciTE</title>
+<link rel='stylesheet' type='text/css' href='../../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/scite.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../../index.html#scite">risorse</a> | scite</p>
+<h1>SciTE</h1>
+<p><a href="http://www.scintilla.org/SciTE.html">SciTE</a> &egrave; un potente editor di testo libero, scritto da Neil Hodgson. Lo utilizzo regolarmente dal 2004.</p>
+<h2>Personalizzazioni</h2>
+<p>SciTE &egrave; un editor altamente personalizzabile; <span class="path"><a href="files/SciTEUser.properties">qui</a></span> &egrave; disponibile una configurazione per la versione 3.3.1. Le personalizzazioni riguardano in particolare:</p>
+<ul>
+	<li>visualizzazione della toolbar;</li>
+	<li>visualizzazione della statusbar;</li>
+	<li>visualizzazione dell'indicatore dell'80esima colonna;</li>
+	<li>disabilitazione del <span class="term">code folding</span>;</li>
+	<li>attivazione delle <span class="term">api</span> per i linguaggi <span class="path"><a href="files/.scite/api/c.api">C</a></span> e <span class="path"><a href="files/.scite/api/cpp.api">C++</a></span>;</li>
+	<li>impostazione delle tabulazioni a 4 spazi;</li>
+	<li>definizione del comando <span class="term">find in files</span> per la piattaforma MS Windows;</li>
+	<li>utilizzo di un font non proporzionale;</li>
+	<li>attivazione dello schema di colori (<a href="#zenburn">Zenburn</a> o <a href="#twilight">Twilight</a>);</li>
+	<li>definizione di alcuni comandi speciali:
+		<ul>
+			<li>attivazione degli <a href="#snippets">snippet</a>;</li>
+			<li>rimozione delle linee vuote (<span class="path"><a href="files/.scite/lua/SciTEStartup.lua">script</a></span> lua);</li>
+			<li>indicizzazione dei sorgenti C/C++ per mezzo di <a href="http://ctags.sourceforge.net/">exuberant ctags</a>;</li>
+			<li>formattazione automatica dei sorgenti C/C++ per mezzo di <a href="http://astyle.sourceforge.net/">astyle</a>;</li>
+			<li>formattazione automatica dei file HTML/XML per mezzo di <a href="http://tidy.sourceforge.net/">HTMLTidy</a>.</li>
+		</ul>
+	</li>
+</ul>
+<p>Le personalizzazioni possono essere attivate copiando il contenuto di <span class="path"><a href="files">questa</a></span> cartella nella cartella utente (quella indicata dalla variabile d'ambiente <span class="code">%USERPROFILE%</span>, che di norma corrisponde a <span class="path">C:\Documents and settings\<strong>nome-utente</strong></span> in Windows 2000/XP, <span class="path">C:\Users\<strong>nome-utente</strong></span> in Windows Vista e successivi), preservando la struttura delle sotto-cartelle.</p>
+<a name="zenburn"></a>
+<h2>Zenburn</h2>
+<p>Trovo molto rilassante lo schema di colori <a href="http://slinky.imukuppi.org/zenburn/">Zenburn</a> sviluppato da Jani Nurminen per <a href="http://www.vim.org">Vim</a>. Ho quindi deciso di configurare SciTE in modo che esibisse una livrea simile, ed il risultato &egrave; <span class="path"><a href="files/SciTETheme.zenburn.properties">SciTETheme.zenburn.properties</a></span>. Il file va copiato nella cartella utente e incluso nel file <span class="path"><a href="files/SciTEUser.properties">SciTEUser.properties</a></span> tramite la direttiva <code>import SciTETheme.zenburn</code>. Il file <span class="path"><a href="files/SciTEUser.properties">SciTEUser.properties</a></span>, nella sua parte terminale, contiene le direttive per la colorazione di alcuni linguaggi, tra cui C/C++, Python, HTML/XML e SQL.</p>
+<p class="note">L'inclusione del file di definizione dello schema dei colori produce, come effetto collaterale, la definizione della variabile globale <code>USE_CUSTOM_COLOURS</code>.</p>
+<a name="twilight"></a>
+<h2>Twilight</h2>
+<p>Uno schema di colori leggermente pi&ugrave; contrastato che a volte uso in alternativa a Zenburn &egrave; Twilight; mi sono ispirato in partcolare alla versione sviluppata per <a href="http://www.vim.org">Vim</a>  da Yoshimasa Niwa.</p>
+<p>Per abilitare il tema Twilight, copiare il file <span class="path"><a href="files/SciTETheme.twilight.properties">SciTETheme.twilight.properties</a></span> nella cartella utente, quindi sostituire la direttiva <code>import SciTETheme.zenburn</code> con <code>import SciTETheme.tiwlight</code> nel file <span class="path"><a href="files/SciTEUser.properties">SciTEUser.properties</a></span>.</p>
+<a name="snippets"></a>
+<h2>Snippets</h2>
+<p>Mitchell Foral ha sviluppato un interessante sistema di <a href="http://caladbolg.net/scite_snippets.php">snippets</a> simile a quello disponibile in TextMate. Poich&eacute; tuttavia la sua implementazione ricorre a Ruby, io ne ho predisposta <span class="path"><a href="files/.scite/lua/snippets.lua">una</a></span> basata su Python, che gli ho sottoposto e che lui ha reso disponibile per il download nell'area Files del gruppo Google SciTE-tools.</p>
+<p>Dal sito di Mitchell:<br>
+	<blockquote>Gli snippet sono memorizzati all'interno di una tabella. Uno scope &egrave; un indice numerico che identifica una classe di snippet che si applica ad un particolare lexer. Le stringhe che indicizzano le tabelle rappresentano il testo che attiva lo snippet. All'atto dell'attivazione dello snippet, tale stringa viene sostituita dallo snippet. Per esempio:
+	<pre>
+	snippets = {
+	  file = "$(FileNameExt)",
+	  [SCLEX_RUBY] = {
+		['def'] = "def ${1:initialize}(${2:})\n  ${0}\nend"
+		[SCE_RB_STRING] = {
+		  ['c'] = "#{${0}}"
+		}
+	  }
+	}
+	</pre>
+	Gli snippet privi di scope sono globali, gli snippet SCLEX_RUBY sono globali all'interno di un buffer contenente un file Ruby, mentre uno snippet SCLEX_RUBY SCE_RB_STRING pu&ograve; essere attivato all'interno di un buffer Ruby solo se il cursore si trova all'interno di una stringa.	La sintassi prevede:
+	<ul>
+		<li>segnaposti: <code>${num:testo}</code> (es. <code>${1:ciao}</code>). I segnaposto sono visitati secondo l'ordine numerico; il segnaposto <code>${0}</code> indica la posizione finale assunta dal cursore. Se tale posizione non viene specificata, il cursore verr&agrave; posizionato in fondo allo snippet;</li>
+		<li>cloni: <code>${num}</code> (es. <code>${1}</code>). L'elemento <code>${1}</code> viene sostituito con il testo inserito nel segnaposto <code>${1:testo}</code> dell'esempio precedente. Le clonazioni vengono effettuate una volta passati al segnaposto successivo;</li>
+		<li>trasformazioni: <code>${num/testo/rimpiazzo/opzioni}</code> (es. <code>${1/(ciao)/ti dico \\1/re.IGNORECASE}</code>). Le trasformazioni sono simili ai cloni, con la differenza che il testo originale viene trasformato per mezzo di un'espressione regolare. L'esempio citato, ad esempio, prevede la sostituzione la stringa &quot;ciao&quot; con &quot;ti dico ciao&quot;. Le espressioni regolari sono normali re Python. &Egrave; possibile anche richiamare codice Python nelle trasformazioni, racchiudendolo all'interno dei caratteri <code>#{}</code> (es. <code>${1/(ciao)/#{\\1.upper()}/})</code>;</li>
+		<li>variabili d'ambiente SciTE: <code>$(variabile)</code> (es. <code>$(FileNameExt)</code>). La variabile speciale <code>SelectedText</code> contiene il testo correntemente selezionato;</li>
+		<li>codice batch: <code>`comando`</code> (es. <code>`date /t`</code>);</li>
+		<li>I caratteri $, /, }, e ` devono essere preceduti da un carattere di back-slash. Tenere a mente che si tratta comunque di stringhe Lua, quindi nelle stringhe letterali il carattere back-slash va raddoppiato, mentre nelle stringhe <code>[[ ]]</code> ne va specificato uno solo.</li>
+	</ul>
+</blockquote>
+</p>
+<p class="note">Le peculiarit&agrave; dei due linguaggi mi ha costretto a modificare leggermente la sintassi per la definizione delle espressioni regolari utilizzabili negli snippet. In particolare, mentre in Ruby i gruppi sono identificati da un carattere dollaro seguito da un intero, e la numerazione inizia da 0, in Python i gruppi sono identificati da un back-slash seguito da un intero, a partire 1. Cos&igrave;, per esempio, la trasformazione <code>${1/text/other $0/}</code> va cos&igrave; riscritta: <code>${1/(text)/other \\1/}</code>.</p>
+<p>Sono disponibili gli snippet per <span class="path"><a href="files/.scite/lua/snippets-html.lua">HTML</a></span> sviluppati da Jani stesso, adattati per Python, oltre ad alcuni snippet sperimentali per <span class="path"><a href="files/.scite/lua/snippets-cpp.lua">C++</a></span>.</p>
+<p class="modification-notice">Pagina modificata il 18/04/2013</p>
+</body>
+</html>

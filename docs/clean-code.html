@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>Clean Code</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/clean-code.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#clean-code">risorse</a> | clean code</p>
+<h1>Clean Code</h1>
+<p>A Handbook of Agile Software Craftsmanship</p>
+<p class="note">Una raccolta di alcuni interessanti spunti trovati nel libro, raggruppati per capitolo.</p>
+<h2>1. Clean Code</h2>
+<p>Il primo capitolo contiene la definizione di <span class="term">clean code</span> secondo l'esperienza dei maggiori esperti del settore; alcune di esse sono riportate qui di seguito:
+ <ul>
+  <li><q>I like my code to be elegant and efficient. The logic should be straightforward to make it hard for bugs to hide&hellip;</q> &ndash; Bjarne Stroustrup, inventor of C++;</li>
+  <li><q>Clean Code always looks like it was written by someone who cares.</q> &ndash; Michael Feathers, author of Working Effectively with Legacy Code.</li>
+  <li><q>You know you are working on clean code when each routine you read turns out to be pretty much what you expect&hellip;</q> &ndash; Ward Cunningham, inventor of Wiki;</li>
+ </ul>
+</p>
+<p>Si argomenta sul paradosso che il codice sporco, risultato di un'attivit&agrave; frenetica di sviluppo volta ad accelarare i tempi di consegna, si rivela essere in realt&agrave; una &ndash; se non la principale &ndash; causa di ritardo. Viene quindi presentata la metafora della finestra rotta, la cui morale dovrebbe spronare a ripulire il codice ogni qualvolta se ne presenti la possibilit&agrave;, in particolare durante le fasi di <span class="term">refactoring</span>: anche la ripulitura del codice quindi, pu&ograve; essere effettuata in maniera incrementale.</p>
+<p>La regola dei boyscout viene cos&igrave; decinata: <q>lascia il codice pi&ugrave; pulito di come l'hai trovato</q>.</p>
+<h2>2. Meaningful names</h2>
+<p>I consigli proposti in questo capitolo sono piuttosto noti, e spesso si ritrovano in pubblicazioni analoghe (cfr. Pescio, <em>Manuale di Stile C++</em>, Fowler, <em>Refactoring</em>, &hellip;):</p>
+<ul>
+ <li>scegliere nomi che chiariscano lo scopo delle variabili;</li>
+ <li>sostituire i valori numerici con costanti <em>parlanti</em>;</li>
+ <li>scegliere nomi che agevolino le ricerche;</li>
+ <li>rinunciare ai prefissi (<span class="code">m_</span> per le variabili membro, <span class="code">I</span> per le interfacce,  <span class="code">C</span> per classi, &hellip;);</li>
+ <li>usare sostantivi per interfacce e classi, verbi o predicati per i metodi;</li>
+ <li>nomi dal dominio della soluzione sono accettabili se usati per descrivere aspetti puramente algoritmici.</li>
+</ul>
+<h2>3. Functions</h2>
+<p>Anche le indicazioni riportate in questo capitolo, riguardante la scrittura delle funzioni, si trovano spesso citati in pubblicazioni simili; interessante l'idea della stratificazione delle funzioni in analogia con i livelli di astrazione delle operazioni effettuate.</p>
+<ul>
+ <li>le funzioni devono essere brevi (4/5 righe al massimo);</li>
+ <li>una funzione deve fare una cosa sola;</li>
+ <li>le istruzioni di una funzione devono condividere lo stesso livello di astrazione: in questo modo il codice si stratifica, e ogni <span class="term">step-in</span> corrisponde alla discesa al livello di astrazione sottostante;</li>
+ <li>il numero di argomenti deve essere limitato (non pi&ugrave; di tre); argomenti tra loro correlati possono essere aggregati in oggetti o strutture;</li>
+ <li>evitare i <span class="term">flag</span> negli argomenti, significa che la funzione assolve a due compiti diversi (meglio definire un'altra funzione);</li>
+ <li>evitare di usare gli argomenti come valori di ritorno, non &egrave; naturale;</li>
+ <li>evitare gli effetti collaterali;</li>
+ <li><p>separare funzioni operative e interrogazioni, si generano forme ambigue:
+  <pre class="code">
+    if (set("username", "pippo")) {
+      // ???
+    }
+  </pre>
+ </p></li>
+ <li>preferire le eccezioni ai codici d'errore;</li>
+ <li><p>isolare i blocchi <span class="code">try/catch</span> in funzioni esterne; la funzione:
+  <pre class="code">
+    void doSeveralThings()
+    {
+      doOneThing();
+
+      try
+      {
+        tryToDoSomethingCritical();
+      }
+      catch (...)
+      {
+      }
+
+      doAnotherThing();
+    }
+  </pre>
+  &egrave; consigliabile riscriverla in questa forma:
+  <pre class="code">
+    void doSeveralThings()
+    {
+      doOneThing();
+      doSomethingCritical();
+      doAnotherThing();
+    }
+
+    void doSomethingCritical()
+    {
+      try
+      {
+        tryToDoSomethingCritical();
+      }
+      catch (...)
+      {
+      }
+    }
+  </pre>
+ </p></li>
+ <li>preferire il polimorfismo ai costrutti if e switch;</li>
+ <li><p>esplicitare le dipendenze temporali: se due funzioni vanno chiamate secondo un ordine determinato, fare in modo che la seconda dipenda dal risultato della prima:
+  <pre class="code">
+    class A
+    {
+      B b;
+      C c;
+    public:
+      void f() {
+        first(); // calcola b
+        second(); // usa b per calcolare c
+        // usa c
+      }
+    }
+  </pre>
+  diventa:
+  <pre class="code">
+    class A
+    {
+    public:
+      void f() {
+        B b = first();
+        C c = second(b);
+        // usa c
+      }
+    }
+ </p></li>
+</ul>
+<h2>4. Comments</h2>
+<p>Le avvertenze sono le solite:</p>
+<ul>
+ <li>definire e rispettare le regole di formattazione;</li>
+ <li>preferire il codice autoesplicativo (rifattorizzare piuttosto che commentare);</li>
+ <li>evitare commenti ridondanti o fuorvianti; guardarsi l'obsolescenza dei commenti;</li>
+ <li>rimuovere il codice commentato;</li>
+ <li>non usare i commenti per registrare le attivit&agrave; svolte: usare un sistema di controllo dei sorgenti.</li>
+</ul>
+<h2>5. Formatting</h2>
+<p>Anche in questo caso non ci si discosta da ci&ograve; che si trova in letteratura:</p>
+<ul>
+ <li>ordinare le funzioni per livello di astrazione (il chiamante prima del chiamato);</li>
+ <li>minimizzare la distanza verticale tra funzioni affini;</li>
+ <li>minimizzare la distanza verticale tra dichiarazione e uso delle variabili;</li>
+ <li>separare con una riga vuota i segmenti di codice fortemente correlati;</li>
+ <li>il limite delle 80 colonne &egrave; superato, ma meglio non esagerare (suggerisce 120);</li>
+ <li><p>evitare gli allineamenti orizzontali:
+ <pre class="code">
+  int                current_page;
+  std::vector&lt;int&gt;   pages;
+  bool               is_published;
+  std::string        header;
+ </pre>
+ questo tipo di formattazione induce una suddivisione tra i tipi (a sinistra) e le variabili (a destra) anzich&eacute; l'associazione di ogni variabile col suo tipo.</p></li>
+</ul>
+<h2>6. Objects and Data Structures</h2>
+<p>Il sesto capitolo affronta la dicotomia oggetti/strutture, affermando che se l'interfaccia dei primi deve astrarre dall'implementazione, per le seconde ci&ograve; non vale, essendo dei semplici contenitori di dati. Seguono due considerazioni:
+ <ul>
+  <li>preferire oggetti a strutture rende semplice aggiungere nuovi oggetti;</li>
+  <li>preferire strutture a oggetti rende semplice aggiungere nuove funzioni.</li>
+ </ul>
+</p>
+<p>La tesi viene suffragata considerando che l'introduzione di una nuova entit&agrave; all'interno di una gerarchia di classi si ottiene derivando la nuova entit&agrave; da una esistente ed implementandone le funzionalit&agrave; specifiche; nel caso di una gerarchia di strutture, &egrave; necessario intervenire su tutte le funzioni operanti sulle strutture esistenti, dovendo esse ora trattare anche la nuova casistica. Viceversa, l'introduzione di una nuova funzionalit&agrave; in una gerarchia di classi spesso si traduce nell'aggiornamento dell'interfaccia di gran parte delle classi esistenti; nel caso di strutture, normalmente &egrave; sufficiente implementare la nuova funzionalit&agrave; in un metodo globale.</p>
+<p>Limitatamente al dominio degli oggetti, viene citata la <span class="term">legge di Demeter</span>, e viene proposto un metodo per soddisfarla, che consiste nell'esporre parte della funzionalit&agrave; del contenuto nell'interfaccia del contenitore:
+ <pre class="code">
+    final String outputDir = ctxt.options.scratchDir.absolutePath;
+    ...
+    String outFile = outputDir + "/" + className.replace('.', '/') + ".class";
+    FileOutputStream fout = new FileOutputStream(outFile);
+    BufferedOutputStream bos = new BufferedOutputStream(fout);
+ </pre>
+ si pu&ograve; rendere meglio cos&igrave;:
+ <pre class="code">
+    BufferedOutputStream bos = ctxt.createScratchFileStream(classFileName);
+ </pre>
+</p>
+<h2>7. Error Handling</h2>
+<p></p>
+<ul>
+ <li>la gestione dell'errore non deve nascondere la logica del codice;</li>
+ <li>le eccezioni devono fornire informazioni circa il contesto dal quale provengono;</li>
+ <li>non ritornare <span class="code">null</span>; meglio sollevare un'eccezione oppure ritornare un oggetto <span class="term">special case</span> in grado di gestire il caso anomalo;</li>
+ <li>non passare <span class="code">null</span> come argomento, &egrave; sintomo di flag; meglio definire due funzioni o passare uno special-case.</li>
+</ul>
+<h2>8. Boundaries</h2>
+<p>L'ottavo capitolo &egrave; dedicato alla gestione dei <em>confini</em> del proprio codice, ovvero come rendere il codice di nostra competenza robusto rispetto alla variabilit&agrave; e alla disponibilit&agrave; di librerie di terze parti o di codice sviluppato da altri colleghi. Il suggerimento principale &egrave; il ricorso al <span class="term">wrapping</span>.</p>
+<p>Librerie di terze parti:
+ <ul>
+  <li>disaccoppiare il codice dalle API proprietarie per mezzo di wrappers;</li>
+  <li>se la documentazione fornita con la libreria non &egrave; sufficientemente affidabile, o se il suo comportamento non &egrave; stabile nelle versioni che si succedono, pu&ograve; risultare conveniente sviluppare unit test per determinarne il reale funzionamento (<span class="term">learning tests</span>).</li>
+ </ul>
+</p>
+<p>Relativamente al codice sviluppato da altri colleghi, qualora questo non sia ancora disponibile, si raccomanda l'uso di <span class="term">mock/stubs</span> per emulare le funzionalit&agrave; necessarie; questi potranno in seguito essere riutilizzati come <span class="term">adapter</span> dei componenti reali, quando diventeranno disponibili.</p>
+<h2>9. Unit Test</h2>
+<p>Il capitolo inizia enunciando le tre leggi del <span class="term">TDD</span>:
+ <ol>
+  <li>non si scrive codice di produzione finch&eacute; un test non fallisce;</li>
+  <li>non si scrive codice di test se non quello necessario al fallimento (un errore di compilazione &egrave; gi&agrave; di per se un fallimento);</li>
+  <li>non si scrive codice di produzione se non quello necessario per far passare il test che fallisce.</li>
+ </ol>
+</p>
+<p>Il TDD costringe lo sviluppatore a passare continuamente dallo scrivere codice di test &ndash; che fallisce &ndash; alla scrittura di codice di produzione &ndash; che fa passare il test. Il codice progredisce duqnue per piccoli passi, essendo la durata tipica di un ciclo di qualche minuto. Risulta perci&ograve; quasi impossibile ritrovarsi in situazioni inestricabili, dato che per definizione, se a un dato momento il test non passa, &egrave; sicuramente dovuto alle modifiche introdotte nell'ultima iterazione. Ci&ograve; regala una notevole serenit&agrave; al programmatore, che ha la certezza che, qualunque cosa sia successa, pochi <em>undo</em> ci ricondurranno ad una situazione stabile.</p>
+<p>Il codice di test va trattato come il codice di produzione. Cosa fa invece di un test case un <em>buon</em> test case?
+<ul>
+ <li>deve emergere chiaramente la struttura <span class="term">build-operate-check</span>;</li>
+ <li>deve considerare un unico aspetto dell'oggetto in test;</li>
+ <li>deve essere rapido, indipendente, ripetibile rispetto all'ambiente di esecuzione, auto-validante (deve fornire una chiara indicazione circa il successo o il fallimento);</li>
+</ul>
+</p>
+<p>La copertura del codice di produzione deve essere totale: deve essere testato tutto ci&ograve; che in linea di principio potrebbe fallire; non si devono trascurare nemmeno le funzionalit&agrave; pi&ugrave; banali (se non altro, &egrave; documentazione).</p>
+<h2>10. Classes</h2>
+<p>Oggetto di questo capitolo sono le classi; vengono rispolverati i pi&ugrave; importanti principi della progettazione object-oriented:
+<ul>
+  <li><p><em>Single Responsibility Principle</em>: per una classe deve esistere un unica ragione perch&eacute; debba essere modificata;</li>
+  <li><em>Open/Close Principle</em>: una classe deve essere <strong>aperta</strong> alle estensioni, ma <strong>chiusa</strong> alle modifiche;</li>
+  <li><em>Dependency Inversion Principle</em>: si deve dipendere dalle astrazioni, non dai dettagli.</li>
+ </ul>
+</p>
+<p>Non ci si deve spaventare di fronte ad una moltitudine di piccole (super-focalizzate) classi rispetto a poche, vaste classi: essendo le funzionalit&agrave; implementate le medesime, medesima &egrave; la quantit&agrave; di concetti da gestire e comprendere.</p>
+<p>Una classe deve essere coesa:
+ <ul>
+  <li>deve possedere pochi membri fortemente correlati;</li>
+  <li>deve esporre pochi metodi che manipolano i membri (pi&ugrave; membri un metodo manipola, pi&ugrave; il metodo &egrave; coeso alla classe);
+</ul>
+</p>
+<p>Un'osservazione interessante &egrave; la seguente: <q>favorire la coesione porta all'aumento del numero di classi</q>.</p>
+<h2>11. Systems</h2>
+<p>Il capitolo &egrave; molto <em>java-oriented</em>, essendo particolarmente focalizzato sull'AOP.</p>
+<p>Alcune osservazioni di carattere generale sono dedicate all'inizializzazione del <em>sistema</em> software, inteso come istanziazione degli oggetti principali. Vengono presentate tre differenti tecniche di start-up del sistema software:
+ <ul>
+  <li>il <span class="code">main</span> decide cosa costruire, e quando;</li>
+  <li>il <span class="code">main</span> decide cosa costruire, il codice quando (&egrave; un esempio di <span class="term">lazy initialization</span>, realizzabile ad esempio per mezzo di oggetti <span class="term">factory</span>);</li>
+  <li>l'applicativo decide cosa costruire, quando (tramite <span class="term">dependency injection</span>).</li>
+ </ul>
+</p>
+<h2>12. Emergence</h2>
+<p>Vengono descritte e commentate le regole del <span class="term">simple design</span>, riportate qui sotto nella loro forma originale:
+ <ol>
+  <li>runs all the tests;</li>
+  <li>no duplication;</li>
+  <li>express developer intent;</li>
+  <li>minimizes the number of classes and methods.</li>
+ </ol>
+una volta ottemperato alla prima regola, il refactoring consente di realizzare le successive.</p>
+<h2>Riferimenti</h2>
+<p>Martin, Robert C. <em>Clean Code: A Handbook of Agile Software Craftsmanship</em>. Prentice Hall, 2008.</p>
+<p class="modification-notice">Pagina modificata l'8/11/2011</p>
+</body>
+</html>

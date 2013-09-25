@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>SciTE/markdown</title>
+<link rel='stylesheet' type='text/css' href='../../css/main.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../../index.html#scite-markdown">risorse</a> | scite/markdown</p>
+<h1>SciTE/markdown</h1>
+<p>Quel che segue &egrave; l'adattamento del messaggio <a href="https://groups.google.com/forum/?fromgroups=#!topic/scite-interest/ykjdisitDvY=">SciTE and Markdown</a> che ho inviato alla mailing list <a href="http://groups.google.com/group/scite-interest">scite-interest</a> nel quale riporto alcuni risultati che ho ottenuto nella configurazione di SciTE per il supporto a <a href="http://daringfireball.net/projects/markdown/">markdown</a>. L'originale in markdown è disponibile <a href="files/readme.md">qui.</a></p>
+<blockquote>
+<h1>Markdown and SciTE</h1>
+<p><em>How to get a live preview (on Firefox) of a markdown file.</em></p>
+<p>Environment:</p>
+<ul>
+<li>Windows 7 SP1 64 bit</li>
+<li>Python 2.6.6</li>
+<li>SciTE 3.3.1</li>
+</ul>
+<p>Prerequisites:</p>
+<ul>
+<li><a href="http://pythonhosted.org/Markdown/">python markdown</a></li>
+</ul>
+<p>Optional packages:</p>
+<ul>
+<li>
+<p><a href="https://pypi.python.org/pypi/mdx_smartypants/1.3">smarty pants</a>, to emit typographically nicer (&ldquo;curly&rdquo;) quotes, proper (&ldquo;em&rdquo; and &ldquo;en&rdquo;) dashes, etc.;</p>
+</li>
+<li>
+<p><a href="https://pypi.python.org/pypi/mdx_del_ins/1.0">del/ins</a>, to support the <code>del</code> and <code>ins</code> tags;</p>
+</li>
+<li>
+<p><a href="https://bitbucket.org/thinkstorm/xhtml_wrap/src">xhtml_wrap</a>, to wrap the output in XHTML, optionally adding a title and a CSS URL.</p>
+</li>
+</ul>
+<h2 id="scite-setup">SciTE setup</h2>
+<ul>
+<li>
+<p>pick up a temporary folder to host the markdown previews, e.g. <code>%UserProfile%\.md</code> &ndash; put the <code>markdown.css</code> file of your choice here;</p>
+</li>
+<li>
+<p>define the following variables <em>before</em> the inclusion of the lua scripts in your <code>SciTEUser.properties</code> file:</p>
+<pre><code>python.home=C:\Python26
+python=$(python.home)\python.exe
+python.scripts.dir=$(python.home)\Scripts
+markdown.rendering.command=1121
+markdown.rendering.dir=$(SciteUserHome)\.md
+markdown.rendering.file=$(markdown.rendering.dir)\$(FileName).html
+</code></pre>
+</li>
+<li>
+<p>to open the markdown preview on the default browser, add these lines:</p>
+<pre><code>command.build.subsystem.$(file.patterns.markdown)=2
+command.build.$(file.patterns.markdown)="$(markdown.rendering.file)"
+</code></pre>
+</li>
+<li>
+<p>to render it automatically at save time:</p>
+<ul>
+<li>
+<p>add the following lines to your <code>SciTEUser.properties</code> file:</p>
+<pre><code>file.patterns.markdown=*.md;*.markdown
+filter.markdown=Markdown (md markdown)|$(file.patterns.markdown)|
+command.name.21.$(file.patterns.markdown)=
+command.save.before.21.$(file.patterns.markdown)=2
+command.21.$(file.patterns.markdown)=$(python.scripts.dir)\markdown_py.bat -x extra -x del_ins -x meta -x sane_lists -x smartypants -x toc -x wikilinks -x xhtml_wrap(title="",css_url="markdown.css",js_url="") -f "$(markdown.rendering.file)" "$(FilePath)"
+user.shortcuts=Ctrl+3|1121|
+</code></pre>
+</li>
+<li>
+<p>create a <code>markdown.lua</code> file in the same folder where your <code>SciTEStartup.lua</code> file lives, and copy the following lua fragment:</p>
+<pre><code>function Render()
+  if editor.LexerLanguage == "markdown" then
+    scite.MenuCommand(tonumber(props["markdown.rendering.command"]))
+  end
+end
+
+function OnSavePointReached()
+  pcall(Render)
+  return false
+end
+</code></pre>
+</li>
+<li>
+<p>add the following line to your <code>SciTEStartup.lua</code> file:</p>
+<pre><code>require "markdown"
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="workflow">Workflow</h2>
+<ul>
+<li>
+<p>Open an exisiting markdown file or begin with an empty, <em>UTF-8 with BOM</em> encoded file and write some markup text;</p>
+</li>
+<li>
+<p>to start the preview, press F7: your default browser should open the temporary html preview file;</p>
+</li>
+<li>
+<p>to refresh the preview, either:</p>
+</li>
+<li>
+<p>save the markdown file in SciTE, then refresh the preview in the browser;</p>
+</li>
+<li>
+<p>install an extension to let Firefox reload the modified file automatically &ndash; I currently use the <a href="https://addons.mozilla.org/en-US/firefox/addon/auto-reload">Auto Reload</a> extension, which monitors my <code>$(SciteUserHome)\.md</code> folder and reloads any file as it changes.</p>
+</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<p>1) being a lua newby, the <code>pcall(Render)</code> call catches the <em>Editor pane is not accessible at this time</em> error that occours at SciTE startup;</p>
+<p>2) could not find a better method than <code>scite.MenuCommand(tonumber(props["markdown.rendering.command"]))</code> to fire the markdown rendering procedure.</p>
+</blockquote>
+<h2>Aggiornamento</h2>
+<p>La versione 3.3.2 di Scite corregge un baco che causava una doppia chiamata <span class="code">OnSave</span>, al quale al tempo avevo rimediato ricorrendo a <span class="code">OnSavePointReached</span>. Ora &egrave; possibile avviare il <em>rendering</em> molto pi&ugrave; semplicemente:</p>
+<pre class="code">
+  [markdown.lua]
+
+  function OnSave()
+    if editor.LexerLanguage == "markdown" then
+      scite.MenuCommand(tonumber(props["markdown.rendering.command"]))
+    end
+  end
+</pre>
+<p class="modification-notice">Pagina modificata il 18/04/2013</p>
+</body>
+</html>

@@ -1,0 +1,62 @@
+img.snapshot
+{
+	border-color: black;
+	border-width: 1;
+	border-style: solid;
+}
+
+li.input
+{
+	color: #800000;
+	font-style: italic;
+}
+
+li.output
+{
+	color: #000080;
+	font-style: italic;
+}
+
+p.snapshot
+{
+	margin-left: 1em;
+}
+
+pre.code
+{
+	background-color: #e0e0e0;
+	border-color: black;
+	border-width: 1;
+	border-style: solid;
+	font-family: courier new, courier;
+	padding: 1em;
+}
+
+table.code
+{
+	background-color: #e0e0e0;
+	border-color: black;
+	border-width: 1;
+	border-style: solid;
+	font-family: courier new, courier;
+	font-size: 95%;
+	padding: 1em;
+}
+
+td.label
+{
+	padding-right: 2em;
+	white-space: nowrap;
+}
+
+td.opcode
+{
+	padding-right: 2em;
+	white-space: nowrap;
+}
+
+td.hex
+{
+	white-space: nowrap;
+	width: 99%;
+}

@@ -1,0 +1,34 @@
+p.warning
+{
+	font-weight: bold;
+}
+
+pre.code
+{
+	font-family: Consolas, Courier New, monospace;
+}
+
+span.code
+{
+	font-family: Consolas, Courier New, monospace;
+}
+
+span.file-name
+{
+	font-style: italic;
+}
+
+span.function
+{
+	font-family: Consolas, Courier New, monospace;
+}
+
+span.library
+{
+	font-style: italic;
+}
+
+span.object
+{
+	font-family: Consolas, Courier New, monospace;
+}

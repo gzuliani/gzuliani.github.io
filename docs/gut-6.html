@@ -1,0 +1,289 @@
+<html>
+<head>
+<title>Good Unit Tests /6</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-6">risorse</a> | good unit tests /6</p>
+<h1>Good Unit Tests /6</h1>
+<p>Questa parte (la sesta; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a> e qui la <a href="gut-5.html">quinta</a>) mostra una possibile strutturazione del codice di test in un insieme di <span class="code">TEST</span> che costituiscono una <span class="code">TEST_SUITE</span>.</p>
+<h2>Introduzione</h2>
+<p>L'implementazione si ispira fortemente a quanto presentato da Henney: &egrave; facilmente individuabile la corrispondenza TEST_SUITE &harr; SPECIFICATION, TEST &harr; PROPOSITION &ndash; il concetto di DIVISON, che costituisce un'ulteriore suddivisione gerarchica di PROPOSITION, l'ho tralasciato di proposito. I concetti chiave sono due:</p>
+<ul>
+	<li><span class="code">TEST_SUITE</span> &egrave; una funzione;</li>
+	<li>ogni <span class="code">TEST</span> &egrave; un blocco che pu&ograve; essere eseguito opzionalmente.</li>
+</ul>
+<pre class="code">
+TEST_SUITE {               &rarr;  void runTests(...) {
+
+  TEST(&quot;1st test name&quot;) {  &rarr;    if (...) {
+    // test code                    // test code
+  }                             }
+
+  TEST(&quot;2nd test name&quot;) {  &rarr;    if (...) {
+    // test code                   // test code
+  }                             }
+
+  // ...                        // ...
+}                             }
+</pre>
+<p>L'idea originale di Henney consiste nell'introdurre un oggetto di comodo, che lui chiama <span class="code">execution</span>, che vien passato alla <span class="code">TEST_SUITE</span> (ovvero alla funzione <span class="code">runTest</span>), e al quale ogni <span class="code">TEST</span> chiede l'autorizzazione per l'esecuzione:</p>
+<pre class="code">
+void runTests(<ins>execution&amp; e</ins>) {
+
+  if (<ins>e.shouldRun("1st test name")</ins>) {
+    // test code
+  }
+
+  if (<ins>e.shouldRun("2nd test name")</ins>) {
+    // test code
+  }
+
+  // ...
+}
+</pre>
+<p>La scelta di strutturare i singoli test in una successione di <span class="code">if</span> permette di condividere facilmente strutture ausiliarie necessarie a pi&ugrave; test:</p>
+<pre class="code">
+void runTests(execution&amp; e) {
+
+  <ins>TestData someTestData;</ins>
+
+  if (e.shouldRun("1st test name")) {
+    <del>TestData someTestData;</del>
+    // test code
+  }
+
+  if (e.shouldRun("2nd test name")) {
+    <del>TestData someTestData;</del>
+    // test code
+  }
+
+  // ...
+}
+</pre>
+<p>Per garantire l'esecuzione dei vari test in isolamento, si effettua una prima chiamata a <span class="code">runTests</span> con un <span class="code">execution</span> che raccoglie il nome dei test presenti, senza attivarne nessuno; i singoli test sono quindi eseguiti sequenzialmente, con una chiamata <span class="code">runTests</span> dedicata, sfruttando un ulteriore <span class="code">execution</span> che attiva il solo test prescelto:</p>
+<pre class="code">
+struct TestSelection {
+  virtual bool shouldRun(const std::string&amp; testName) = 0;
+};
+
+struct Schedule : public TestSelection {
+  std::vector&lt;std::string&gt; testNames;
+  size_t size() const {
+    return testNames.size();
+  }
+  virtual bool shouldRun(const std::string&amp; testName) {
+    testNames.push_back(testName);
+    return false;
+  }
+};
+
+struct SingleTestSelection : public TestSelection {
+  std::string testName_;
+  SingleTestSelection(const std::string&amp; testName) : testName_(testName) { }
+  virtual bool shouldRun(const std::string&amp; testName) {
+    return testName == testName_;
+  }
+};
+
+// ...
+
+int main() {
+  // ...
+
+  // retrieve test names
+  gut::Schedule schedule;
+  runTests(schedule);
+
+  // execute the tests one by one
+  for (const std::string&amp; testName : schedule.testNames) {
+    gut::SingleTestSelection testsToPerform(testName);
+    // ...
+    runTests(testsToPerform);
+    // ...
+  }
+  // ...
+}
+</pre>
+<p>Con l'occasione &egrave; stata arricchita l'interfaccia <span class="code">Report</span>:</p>
+<pre class="code">
+class Report {
+  // ...
+public:
+  static void start(<ins>const std::string&amp; label</ins>) {
+    if (report_)
+      report_->onStart(<ins>label</ins>);
+  }
+  // ...
+  <ins>static void startTest(const std::string&amp; name) {
+    if (report_)
+      report_->onStartTest(name);
+  }
+  static void endTest() {
+    if (report_)
+      report_->onEndTest();
+  }</ins>
+
+  // ...
+
+protected:
+  virtual void onStart(<ins>const std::string&amp; /*label*/</ins>) { }
+  // ...
+  <ins>virtual void onStartTest(const std::string&amp; /*name*/) { }</ins>
+  <ins>virtual void onEndTest() { }</ins>
+  // ...
+};
+</pre>
+<p>L'oggetto <span class="code">DefaultReport</span> sfrutta la nuova interfaccia per fornire indicazioni pi&ugrave; precise circa lo svolgimento del test:</p>
+<pre class="code">
+class DefaultReport : public gut::Report {
+  size_t tests_;
+  size_t testFailures_;
+  size_t totalFailures_;
+  size_t failedTests_;
+public:
+  size_t failedTestCount() const {
+    return failedTests_;
+  }
+  DefaultReport() : tests_(0), testFailures_(0), totalFailures_(0), failedTests_(0) { }
+protected:
+  virtual void onStart(const std::string&amp; label) {
+    std::cout &lt;&lt; &quot;Testing &quot; &lt;&lt; label &lt;&lt; &quot;...&quot; &lt;&lt; std::endl;
+  }
+  virtual void onEnd() {
+    std::cout &lt;&lt; &quot;Ran &quot; &lt;&lt; tests_ &lt;&lt; &quot; test(s) in &quot; &lt;&lt; clock_.elapsedTime() &lt;&lt; &quot;s.&quot; &lt;&lt; std::endl;
+    if (failedTests_ == 0)
+      std::cout &lt;&lt; &quot;OK - all tests passed.&quot; &lt;&lt; std::endl;
+    else
+      std::cout &lt;&lt; &quot;FAILED - &quot; &lt;&lt; totalFailures_ &lt;&lt; &quot; failure(s) in &quot; &lt;&lt; failedTests_ &lt;&lt; &quot; test(s)&quot; &lt;&lt; std::endl;
+  }
+  virtual void onStartTest(const std::string&amp; name) {
+    ++tests_;
+    testFailures_ = 0;
+    std::cout &lt;&lt; name &lt;&lt; &quot;: &quot;;
+  }
+  virtual void onEndTest() {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;
+    else
+      ++failedTests_;
+  }
+  virtual void onFailure(const gut::Failure&amp; failure) {
+    if (testFailures_ == 0)
+      std::cout &lt;&lt; &quot;FAILED&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot; &quot; &lt;&lt; failure.location.file &lt;&lt; &quot;(&quot; &lt;&lt; failure.location.line &lt;&lt; &quot;) : &quot; &lt;&lt; failure.what() &lt;&lt; std::endl;
+    ++testFailures_;
+    ++totalFailures_;
+  }
+};
+</pre>
+<p>Segue la definizione completa delle macro <span class="code">TEST_SUITE</span> e <span class="code">TEST</span>:</p>
+<pre class="code">
+#define TEST_SUITE(name_) \
+void runTests_(gut::TestSelection&amp; selection_); \
+int main() { \
+  gut::Schedule schedule_; \
+  runTests_(schedule_); \
+  auto report_ = std::make_shared&lt;gut::DefaultReport&gt;(); \
+  gut::Report::set(report_); \
+  gut::Report::start(name_); \
+  for (const std::string&amp; testName_ : schedule_.testNames) { \
+    gut::SingleTestSelection testsToPerform_(testName_); \
+    gut::Report::startTest(testName_); \
+    try { \
+      runTests_(testsToPerform_); \
+    } catch(const gut::AbortTest&amp;) { \
+    } catch(const std::exception&amp; e_) { \
+      gut::Report::failure(gut::UnexpectedExceptionFailure(e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::Report::failure(gut::UnknownExceptionFailure(__FILE__, __LINE__)); \
+    } \
+    gut::Report::endTest(); \
+  } \
+  gut::Report::end(); \
+  return report_->failedTestCount(); \
+} \
+void runTests_(gut::TestSelection&amp; selection_)
+
+#define TEST(name_) \
+  if (selection_.shouldRun(name_))
+</pre>
+<p>Infine, la nuova versione del progamma di test della classe <span class="code">RecentlyUsedList</span>:</p>
+<pre class="code">
+TEST_SUITE(&quot;RecentlyUsedList&quot;) {
+
+  TEST(&quot;Initial list is empty&quot;) {
+    RecentlyUsedList anEmptyList;
+
+    CHECK(anEmptyList.empty());
+    CHECK(anEmptyList.size() == 0);
+  }
+
+  TEST(&quot;Insertion to empty list is retained&quot;) {
+    RecentlyUsedList aListWithOneElement;
+    aListWithOneElement.insert(&quot;one&quot;);
+
+    CHECK(!aListWithOneElement.empty());
+    CHECK(aListWithOneElement.size() == 1);
+    CHECK(aListWithOneElement[0] == &quot;one&quot;);
+  }
+
+  TEST(&quot;Distinct insertions are retained in stack order&quot;) {
+    RecentlyUsedList aListWithManyElements;
+    aListWithManyElements.insert(&quot;one&quot;);
+    aListWithManyElements.insert(&quot;two&quot;);
+    aListWithManyElements.insert(&quot;three&quot;);
+
+    CHECK(!aListWithManyElements.empty());
+    CHECK(aListWithManyElements.size() == 3);
+    CHECK(aListWithManyElements[0] == &quot;three&quot;);
+    REQUIRE(aListWithManyElements[1] == &quot;two&quot;);
+    CHECK(aListWithManyElements[2] == &quot;one&quot;);
+  }
+
+  TEST(&quot;Duplicate insertions are moved to the front but not inserted&quot;) {
+    RecentlyUsedList aListWithDuplicatedElements;
+    aListWithDuplicatedElements.insert(&quot;one&quot;);
+    aListWithDuplicatedElements.insert(&quot;two&quot;);
+    aListWithDuplicatedElements.insert(&quot;three&quot;);
+    aListWithDuplicatedElements.insert(&quot;two&quot;);
+
+    CHECK(!aListWithDuplicatedElements.empty());
+    CHECK(aListWithDuplicatedElements.size() == 3);
+    CHECK(aListWithDuplicatedElements[0] == &quot;two&quot;);
+    CHECK(aListWithDuplicatedElements[1] == &quot;three&quot;);
+    CHECK(aListWithDuplicatedElements[2] == &quot;one&quot;);
+  }
+
+  TEST(&quot;Out of range indexing throws exception&quot;) {
+    RecentlyUsedList aListWithOneElement;
+    aListWithOneElement.insert(&quot;one&quot;);
+
+    THROWS(aListWithOneElement[1], std::out_of_range);
+  }
+}
+
+/* output:
+ * Testing RecentlyUsedList...
+ * Initial list is empty: OK
+ * Insertion to empty list is retained: OK
+ * Distinct insertions are retained in stack order: OK
+ * Duplicate insertions are moved to the front but not inserted: OK
+ * Out of range indexing throws exception: OK
+ * Ran 5 tests in 0.015s
+ * OK - all tests passed
+ */
+</pre>
+<h2>Sviluppi futuri</h2>
+<p>La presenza della classe <span class="code">Schedule</span> fa immediatamente pensare alla possibilit&agrave; di selezionare i test da effettuare (o da ignorare) sulla base del nome, sfruttando magari i caratteri <em>jolly</em> oppure le espressioni regolari. Altre direzioni di sviluppo contemplano:</p>
+<ul>
+	<li>opzione <em>fail-fast</em>: il primo fallimento causa l'interruzione dell'intera test suite;</li>
+	<li>opzione di richiamo automatico del debugger in caso di fallimento (cfr. <span class="code">DebugBreak</span> in ambiente Microsoft);</li>
+	<li>nuovi formati di report, utili in contesti di <em>continuous integration</em>;</li>
+	<li>possibilit&agrave; di intervenire sul livello di dettaglio dei report;</li>
+	<li>possibilit&agrave; di inserire delle informazioni extra nei report;</li>
+	<li>&hellip;</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 17/10/2012</p>
+</body>
+</html>

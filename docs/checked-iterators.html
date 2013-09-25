@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>Checked Iterators</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/clean-code.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#checked-iterators">risorse</a> | checked iterators</p>
+<h1>Checked Iterators</h1>
+<p class="note">perch&eacute; STL &egrave; lenta in debug?</p>
+<h2>Introduzione</h2>
+<p>Lavorando in modalit&agrave; <span class="code">DEBUG</span> in ambiente Microsoft, pu&ograve; accadere di sperimentare un rallentamento del codice che fa uso della libreria standard. Parte della responsabilit&agrave; &egrave; attribuibile ai <em>checked iterators</em>, un'implementazione in grado di individuare gran parte degli usi inappropriati di iteratori STL nel codice utente.</p>
+<h2>Checked iterators in VC8/VC9</h2>
+<p>La libreria standard fornita con i compilatori VC8/VC9 contiene due implementazioni indipendenti volte al controllo del corretto uso degli iteratori; la prima, associata alla macro <span class="code">_SECURE_SCL</span>, &egrave; stata sviluppata da Microsoft, mentre la seconda, associata alla macro <span class="code">_HAS_ITERATOR_DEBUGGING</span>, &egrave; stata realizzata da <a href="http://www.dinkumware.com">Dinkumware</a>, l'azienda incaricata dello sviluppo e del mantenimento della libreria STL di Microsoft.</p>
+<h3>_SECURE_SCL</h3>
+<p>Per attivare il controllo <em>secure standard c++ library</em> &egrave; necessario porre a 1 la macro <span class="code">_SECURE_SCL</span>; l'uso scorretto di un iteratore STL genera un <em>runtime error</em> che causa la terminazione immediata del programma. Un esaustivo elenco dei controlli effettuati &egrave; riportato in<a href="#ref-2"><sup>[2]</sup></a>.</p>
+<h3>_HAS_ITERATOR_DEBUGGING</h3>
+<p>L'<em>iterator debugging feature</em> di Dinkumware verifica la validit&agrave; degli iteratori in uso. Per attivare il controllo, che &egrave; disponibile solamente in modalit&agrave; <span class="code">DEBUG</span>, &egrave; necessario porre a 1 la macro <span class="code">_HAS_ITERATOR_DEBUGGING</span>. La dereferenziazione di un iteratore invalido genera il fallimento di un'asserzione, che causa a sua volta la visualizzazione della maschera di scelta <em>Retry</em>/<em>Ignore</em>/<em>Abort</em>.</p>
+<p>L'attivazione di questa caratteristica modifica la rappresentazione in memoria dei contenitori e degli iteratori della libreria standard; per tale ragione non si possono linkare assieme moduli compilati con differenti valori di <span class="code">_HAS_ITERATOR_DEBUGGING</span>. Il linker di VC10 riconosce la situazione ed emette un errore, mentre quelli di VC8 e VC9 non effettuano alcuna verifica: la responsabilit&agrave; di linkare oggetti tra loro compatibili &egrave; lasciata al programmatore.</p>
+<h3>Valori di default</h3>
+<table cellspacing="0">
+<tr><th>VC8/9</th><th>Release</th><th>Debug</th></tr>
+<tr><td><span class="code">_SECURE_SCL</span></td><td>1</td><td>1</td></tr>
+<tr><td><span class="code">_HAS_ITERATOR_DEBUGGING</span></td><td>N/A</td><td>1</td></tr>
+</table>
+<h2>Checked iterators in VC10</h2>
+<p>VC10 unifica i due controlli <span class="code">_SECURE_SCL</span> e <span class="code">_HAS_ITERATOR_DEBUGGING</span> sotto il cappello <span class="code">_ITERATOR_DEBUG_LEVEL</span>, che pu&ograve; assumere uno tra i seguenti valori:</p>
+<ul>
+	<li><span class="code">_ITERATOR_DEBUG_LEVEL = 0</span> &rarr; nessun controllo;</li>
+	<li><span class="code">_ITERATOR_DEBUG_LEVEL = 1</span> &rarr; equivalente a <span class="code">_SECURE_SCL = 1</span>;</li>
+	<li><span class="code">_ITERATOR_DEBUG_LEVEL = 2</span> &rarr; equivalente a <span class="code">_HAS_ITERATOR_DEBUGGING = 1</span></li>
+</ul>
+<p>Tipicamente, <span class="code">_ITERATOR_DEBUG_LEVEL</span> &egrave; impostato a <span class="code">0</span> o <span class="code">1</span> in <span class="code">RELEASE</span>, a <span class="code">2</span> in <span class="code">DEBUG</span>.</p>
+<p>Per ragioni di retro-compatibili&agrave;, le macro <span class="code">_SECURE_SCL</span> e <span class="code">_HAS_ITERATOR_DEBUGGING</span> sono ancora disponibili in VC10, con una piccola differenza nei valori di default:</p>
+<table cellspacing="0">
+<tr><th>VC10</th><th>Release</th><th>Debug</th></tr>
+<tr><td><span class="code">_ITERATOR_DEBUG_LEVEL</span></td><td>0</td><td>2</td></tr>
+<tr><td>&nbsp;</td><td></td><td></td></tr>
+<tr><td><span class="code">_SECURE_SCL</span></td><td>0</td><td>1</td></tr>
+<tr><td><span class="code">_HAS_ITERATOR_DEBUGGING</span></td><td>N/A</td><td>1</td></tr>
+</table>
+<h2>Lentezza nel debugger</h2>
+<p>Se la lentezza si registra esclusivamente quando all'applicativo &egrave; collegato un debugger, la causa potrebbe essere l'uso del <em>debug heap</em><a href="#ref-5"><sup>[5]</sup></a>:</p>
+<blockquote>
+Running under a Microsoft debugger (windbg, kd, cdb, Visual Studio Debugger) by default forces Windows to use the debug heap instead of the default heap.
+</blockquote>
+<p>L'uso del <em>debug heap</em> &egrave; disattivabile impostando la <em>variabile d'ambiente</em> <span class="code">_NO_DEBUG_HEAP=1</span>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>&quot;_HAS_ITERATOR_DEBUGGING&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/aa985939">http://msdn.microsoft.com/en-us/library/aa985939</a>&gt;. Visitato il 21 Maggio 2012.</li>
+<a name="ref-2"></a>
+<li>&quot;_SECURE_SCL&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/aa985896">http://msdn.microsoft.com/en-us/library/aa985896</a>&gt;. Visitato il 21 Maggio 2012.</li>
+<a name="ref-3"></a>
+<li>&quot;Checked Iterators&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/aa985965">http://msdn.microsoft.com/en-us/library/aa985965</a>&gt;. Visitato il 21 Maggio 2012.</li>
+<a name="ref-41"></a>
+<li>&quot;Debug Iterator Support&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/aa985982">http://msdn.microsoft.com/en-us/library/aa985982</a>&gt;. Visitato il 21 Maggio 2012.</li>
+<a name="ref-5"></a>
+<li>&quot;Why the low fragmentation heap (LFH) mechanism may be disabled on some computers that are running Windows Server 2003, Windows XP, or Windows 2000&quot;. <em>Microsoft Knowledge Base</em>. &lt;<a href="http://support.microsoft.com/kb/929136">http://support.microsoft.com/kb/929136</a>&gt;. Visitato il 21 Maggio 2012.</li>
+<a name="ref-6"></a>
+<li>Lavavej, S. T. &quot;Advanced STL, 3 of n&quot;. <em>Channel 9 Lectures</em>. &lt;<a href="http://channel9.msdn.com/Shows/Going+Deep/C9-Lectures-Stephan-T-Lavavej-Advanced-STL-3-of-n">http://channel9.msdn.com/Shows/Going+Deep/C9-Lectures-Stephan-T-Lavavej-Advanced-STL-3-of-n</a>&gt;. Visitato il 21 Maggio 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 21/05/2012</p>
+</body>
+</html>

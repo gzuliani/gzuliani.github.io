@@ -1,0 +1,590 @@
+Programma:
+
+#include <stdio.h>
+
+main()
+{
+	printf("Hello, World!\n");
+}
+
+come si scrive, come si compila (errori, warning), come si esegue
+cosa vuol dire compilare (errori sintattici/semantici, compile/run-time)
+analisi riga per riga
+
+esercizio 1-1
+esercizio 1-2
+
+1-2
+1-2b incolonnamento
+1-2c floating point
+
+esercizio 1-3
+esercizio 1-4
+
+1-3  for
+1-4  costanti
+
+1-5-1 copia file
+
+esercizio 1-6
+esercizio 1-7
+
+1-5-2 conteggio caratteri
+1-5-3 conteggio linee
+
+esercizio 1-8
+esercizio 1-9
+esercizio 1-10
+
+1-5-4 conteggio parole
+
+esercizio 1-11
+esercizio 1-12
+
+
+
+nomi di variabili (lettere, numeri, underscore - si inizia con una lettera; case-sensitive)
+prassi del C: variabili minuscole, constanti maiuscole
+usare nomi sensati (brevi solo per var. locali, temporanee e indici cicli)
+tipi di dati: char (1 byte), int, float, double
+short/long sugli interi (int può essere omesso)
+16 bit <= short = short int <= int <= long = long int <= 32 bit
+signed/unsigned su char e int (unsigned ammette solo valori non nulli, serve per "spostare" l'intervallo coperto)
+float <= double <= long double 
+vedere limits.h e float.h per scoprire i valori limite per i tipi predefiniti per il proprio compilatore.
+costanti numeriche
+ intere: seq. di cifre; se il valore non è troppo grande, la costante è int, altrimenti long
+ per forzare il tipo, posporre l o L per long, u o U per unsigned ul o UL per entrambe
+ se il numero inizia per 0, il valore è considerato espresso in ottale, 0x in esadecimale
+ decimali: compare il separatore . o l'esponente e (o tutti e due)
+ se non c'e' suffisso, sono sempre double, altrimenti f o F forzano il float l o L impone il long double
+costanti carattere
+ un carattere tra apici: 'x' - corrisponde al valore numerico del carattere all'interno del set della macchina (di norma ASCII)
+ si possono esprimere direttamente i valori:
+ '\ooo' -> sequenza di al piu' tre cifre ottali (0..7) -> al max 377 (255)
+ '\xhh' -> sequenza di al piu' due cifre esadecimali (0..F) -> al max FF (255)
+
+costanti simboliche: #define nome valore
+#define VTAB '\013'
+#define BELL '\007'
+
+#define VTAB '\xb'
+#define BELL '\x7'
+caratteri speciali (sequenze escape)
+\a campanello 
+\b backspace
+\f salto pagina
+\n new line
+\r ritorno di carrello
+\t tab orizzontale
+\v tab verticale
+\\ carattere \
+\? carattere ?
+\' carattere '
+\" carattere "
+\0 carattere nullo (vale 0, ma si enfattizza la natura di carattere)
+espressione costante -> espressione costituita da sole costanti (vengono valutate durante la compilazione anzichè durante l'esecuzione)
+stringhe costanti: sequenza (anche vuota) di caratteri racchiusa tra doppi apici (gli apici non fanno parte della stringa, la delimitano solo; se si vuole inserire un doppio apice, \")
+apice singolo -> singolo carattere
+apice doppio -> stringa
+stringhe in sequenza vengono concatenate durante la compilazione "Hello,"   " World" (utile per spezzare su piu' righe stringhe molto lunghe)
+le stringhe terminano con il carattere '\0' (usano un byte in piu' del previsto)
+'x' non e' "x": "x" = 'x' + '\0'
+dichiarazioni: tipo, nomi separati da virgole
+int num, quad;
+si può dichiarare una variabile per volta:
+int num;
+int quad;
+inizializzazione nella dichiarazione:
+int num = 1; /* inizializzazione tramite espressione costante */
+int quad = num * num; /* inizializzazione tramite espressione */
+le variabili non inizializzate hanno valore indefinito (fatta eccezione per le statiche e le esterne, che vengono inizializzate prima dell'esecuzione e percio' solo attraverso espressioni costanti)
+variabili dichiarate per mezzo del qualificatore const non possono essere modificate dopo la loro inizializzazione
+per i vettori, il const si riferisce agli elementi
+operatori aritmetici + - * / %
+divisione tra interi -> tronca
+% non applicabile a float e double; applicato su negativi, la direzione di troncamento dipende dalla macchina
+associativi da sx a dx, precendenza: + e - unari, * / %, infine + e - binari
+operatori relazionali e logici in ordine di priorità
+< >= < <=
+== !=
+e comunque inferiore agli aritmetici i < x + 1 equivale a i < (x + 1)
+connettivi logici || e && 
+da sx a dx, terminano non appena il valore dell'espressione è determinato (short-cut): MOLTO UTILIZZATO IN C
+&& ha precedenza su || (come * su +), entrambi dopo gli operatori relazionali
+espressione logica/relazionale VERA -> 1
+espressione logica/relazionale FALSA -> 0
+! operatore unario di negazione (qualunque valore non nullo lo trasforma in zero, e zero un 1)
+if (! valid) equivale a if (valid != 0)
+conversioni di tipo
+molte implicite, determinate in base all'operatore e al tipo degli operandi
+in genere, dal tipo più piccolo a quello più grande:
+int i;
+float f;
+result = f + i;
+non esiste + tra float e int; i viene "promosso" a float e si usa l'operatore di somma tra float
+
+1. se c'è un operando long double, l'altro viene convertito in un long double
+2. altrimenti se c'è un operando double, l'altro viene convertito in un double
+3. altrimenti se c'è un operando float, l'altro viene convertito in un float
+4. altrimenti char e short sono convertiti in int
+5. infine, se c'è un operando long, l'altro viene convertito in un long
+
+in realtà più complicate, per il problema del signed/unsigned: se int=16bit, long=32bit, -1L<1U (U viene convertito a L) ma -1L>1UL perché -1L convertito a UL diventa (in complemento a 2) il numero positivo più grande rappresentabile
+
+float, double -> int : troncamento
+float -> double : troncamento o arrotondamento dipende dalla macchina
+
+le conversioni avvengono anche per gli assegnamenti: la parte di destra viene convertita al tipo della variabile sinistra. 
+le conversioni avvengono anche per le chiamate a funzione: gli argomenti vengono convertiti al tipo del parametro formale.
+a volte può accadere il declassamento verso il basso, con possibile perdita di informazione (es. un float trasformato in int, si perde la parte decimale). se serve, il compilatore lo fa (è considerato legale, ed il linguaggio assume che il programmatore sappia SEMPRE quello che sta facendo), ed al massimo emette un messaggio di warning
+se non esiste una conversione implicita -> errore
+si puo' forzare una conversione con l'operatore unario cast:
+(nome_tipo)espressione
+float f;
+long l = (long)f;
+operatori incremento/decremento pre/post fissi
+effetto finale identico, ma l'operazione viene eseguita prima o dopo l'utilizzo del valore
+
+int i = 5;
+int x = i++; /* x vale 5; i viene incrementato DOPO che è stato utilizzato nell'operazione di assegnamento */
+
+int j = 5;
+int y = ++j;  /* y vale 6; j è stato incrementato PRIMA di utilizzarlo nell'operazione di assegnamento */
+++ e -- sono applicabili solo a variabili (i + 5)++ NO!
+operatori bit a bit
+& | ^ << >> ~
+| e & sono diversi da || e &&: 1 & 2 è zero, 1 && 2 è 1
+<< fa entrare degli zeri
+>> fa entrare degli zeri sugli unsigned; sui signed 1 (shift aritmetico) o 0 (shift logico) a seconda della macchina
+usato per i campi di bit (flag):
+(esempi di test, set e reset di flag)
+sugli interi, << moltiplica per 2, >> divide per 2 (molto più veloce, però!)
+^ e ~ molto usati in crittografia
+operatori di assegnamento
+tutti gli operatori binari hanno la forma op=: var op= espr equivale a var = var op espr. (sono esclusi || e &&)
+una operazione di assegnamento e' essa stessa un'espressione: ritorna il valore assegnato
+espressioni condizionali:
+if (cond) var = espr1 else var espr2 equivale a var = cond ? espr1 : espr2;
+es: max: max = (a > b) ? a : b;
+operatore , (usato nei cicli for)
+espressione_1, espressione_2 -> valutazione da sx a dx, ritorna il valore dell'ultima espressione (dx)
+
+operatori: chiara la priorità, indefinito l'ordine di valutazione (int a = f() + g(); non si può stabilire a priori quale funzione venga chiamata per prima)
+
+
+espr. postfisse: () [] . -> ++ --                           sd    () chiamata a funzione, ++/-- postfissi
+op. unari      : ~ ! - + ++ -- * & sizeof                   ds    * & inteso come op. di indirizzamento e indirezione, ++/-- prefissi (es. !~0 = 0, ~!0=-2)
+cast           : (tipo) 
+op. moltipl.   : * / %                                      sd    * inteso come molt.
+op. additivi   : + -                                        sd    binari
+shift          : << >>                                      sd
+op.relaz.      : < <= > >=                                  sd    producono valore 1 o 0
+op. ugugl.     : == !=                                      sd
+AND bit a bit  : &                                                solo su int
+XOR bit a bit  : ^                                                solo su int
+OR bit a bit   : |                                                solo su int
+AND logico:    : &&                                         sd
+OR logico      : ||                                         sd
+op. condizion. : ? :
+espr. di ass.  : = += -= *= /= %= &= ^= |= <<= >>=          ds
+virgola:       : ,                                          sd
+
+
+istruzioni e blocchi
+il ; indica il termine dell'istruzione (non è un separatore, come in PASCAL!)
+le parentesi graffe individuano i blocchi (istruzioni composte, considerate come un'unica macro-istruzione)
+if else -> non serve il then, è sottointeso; else facoltativo -> uso dell'indentazione
+
+if (espressione)
+	istruzione_1
+else
+	istruzione_2
+
+la condizione è vera se ha un valore non nullo, falsa altrimenti
+in if annidati, visto che l'else è facoltativo, viene assegnato al primo if senza else; le parentesi graffe permettono di alterare l'associazione
+else if (scelta multipla) - semantica normale, ma indentazione inusuale
+
+if (espressione)
+	istruzione
+else if (espressione)
+	istruzione
+else if (espressione)
+	istruzione
+else
+	istruzione
+
+le condizioni sono valutate in sequenza, e viene presa la prima vera, quindi si esce
+l'ultimo else della catena gestisce il caso "nessuna delle possibilità previste", e può mancare.
+
+switch (espressione)
+{
+	case espressione_costante:
+		istruzioni
+	case espressione_costante:
+		istruzioni
+	default:
+		istruzioni
+}
+
+break per rompere la cascata, commentare se il "fall through" è voluto.
+per efficienza, prima i casi più probabili, dopo quelli più rari.
+while/for (cicli a condizione iniziale)
+while (espressione)
+	istruzione
+
+for (espressione_1; espressione_2; espressione_3)
+	istruzione
+
+espressione_1;
+while (espressione_2)
+{
+	istruzione
+	espressione_3;
+}
+
+fatta ecezione per l'esecuzione dell'istruzione continue. le espressioni possono mancare, ma non il punto e virgola
+
+for (int i = 0; i < 10; ++i) equivale a int i = 0; for (; i < 10; ++i)
+
+while con cicli indeterminati (non si sa quante iterazioni saranno necessarie)
+for su inizializzazioni semplici e incrementi, perche' sono ben evidenziati all'inizio:
+espressione_1 -> inizializzazione
+espressione_2 -> condizione d'uscita
+espressione_3 -> incremento
+
+do-while (ciclo a condizione finale)
+do
+	istruzione
+while (espressione);
+
+break -> esce dal ciclo di un while, for, do o switch
+continue -> interrompe il ciclo corrente e si forza la prossima iterazione (su un for si esegue prima l'incremento)
+goto e label
+
+goto label
+
+label:
+	istruzione
+
+
+funzioni
+tipo_ritornato nome_funzione(dichiarazione_argomenti)
+{
+ dichiarazioni_e_istruzioni;
+}
+
+tipo_ritornato, dichiarazione_argomenti e dichiarazioni_e_istruzioni sono opzionali:
+
+funzione_vuota()
+{
+}
+
+è legale!
+
+le funzioni comunicano tra loro con gli argomenti, i valori di ritorno e le variabili esterne
+gli argomenti sono specificati nell'istruzione di chiamata:
+nome_funzione(espressioni)
+tante espressioni, quanti gli argomenti
+istruzione return per ritornare un valore al chiamante
+
+ return espressione
+
+se necessario e possibile espressione viene automaticamente convertita al tipo_ritornato.
+chi chiama può trascurare il valore ritornato
+
+tipo_ritornato se non specificato, si assume int
+se una funzione non ritorna valori -> void nome_funzione
+se una funzione non ha argomenti -> nome_funzione(void): più chiaro!
+
+programma C insieme di oggetti (variabili e funzioni)
+oggetti interni ed esterni: interno -> dentro ad un altro oggetto
+esterno -> al di fuori di ogni altro oggetto
+variabili esterne: definite al di fuori di ogni funzione ("globali")
+variabili interne: definite all'interno di di una funzione ("locali")
+le funzioni sono esterne (non sono ammesse definizioni di funzioni all'interno di funzioni - in PASCAL si)
+i parametri delle funzioni sono trattati alla stregua di variabili interne
+
+ricorsione possibile grazie all'allocazione dei parametri e var. locali ad ogni chiamata
+
+qualunque funzione può accedere ad una variabile esterna purché dichiarata
+-> ecco perche' possono essere utilizzate per comunicare tra piu' programmi
+
+life-time
+le variabili esterne nascono all'avvio del programma (prima che il main sia avviato) e muoiono alla conclusione
+le variabili interne ri-nascono ad ogni chiamata della funzione e ri-muoiono ad ogni terminazione
+
+scope
+porzione di programma all'interno del quale la var. può essere utilizzata
+var. interne, dich. all'inizio di una funzione -> scope coincide con la funzione
+quindi var. interne di due funzioni possono avere lo stesso nome -> non hanno nulla in comune (hanno SCOPE diversi)
+
+var. esterne: dal punto in cui sono dichiarate, fino alla fine del file
+se voglio usare una var. esterna non ancora dichiarata o dichiarata in un altro file (unità di compilazione/traduzione)
+extern variabile
+
+ int a          -> definisce una variabile int -> allocazione mem, ev. inizializzazione, etc
+ extern int a;  -> dichiara: sappi che esiste una var. int a dichiarata da qualche altra parte
+
+tra tutti i file, uno solo deve avere la dichiarazione, gli altri solo definizioni
+l'inizializzazione puo' avvenire solo tramite dich, non def
+
+classi di memorizzazione
+auto -> standard, per var. iterne
+register -> (solo scalari) si richiede che la variabile sia memorizzata in un registro della CPU (accesso rapido, per var. indice) DECIDE IL COMPILATORE solo poche var. dovrebbero essere register (su queste non si usa l'op. &)
+static -> applicato ad una variabile esterna o a una funzione, limita il suo scope al file nel quale è dichiarata, ad una var. automatica indica che deve conservare il valore tra una chiamata e l'altra (l'inizializzazione avviene solo la prima volta)
+
+blocchi
+le variabili possono essere dichiarate all'interno di ogni blocco:
+if(x)
+{
+ int i;
+}
+
+regole di visibilità
+una variabile interna "nasconde" ogni altra variabile omonima, interna ai blocchi esterni ed ev. esterna
+
+
+
+
+
+inizializzazione: register e static a zero, le auto restano "sporche"
+statiche ed esterne inizializzate una volta (prima dell'exec), da una espr. costante
+interne ad ogni ingresso nello scope, iniz. da una espres con var. (verificare che siano gia' inizializzate!) e chiamate a funzione 
+
+iniz. di array 
+nome [dim] = { v1, v2, }
+se dim non c'e', dim = n. valori
+se dim c'e' e val > dim errore
+se dim c'e' e val < dim i restanti sono azzerati (static ed extern), sporchi per auto
+
+
+esercizi (ordinamento, ricerca, trasformazione...)
+
+
+
+
+preprocessore
+#include
+#define
+#if #else #elif #endif #if defined == #ifdef #if !defined == #ifndef
+
+
+
+
+
+
+
+puntatore: variabile contenente l'indirizzo di memoria di un'altra variabile
+& operatore di indirizzamento ritorna l'indirizzo della variabile (applicabile a oggetti in mem; no espressioni costanti o register)
+* operatore di indirezione o dereferimento -> ritorna l'oggetto puntato
+
+int x = 1, y = 2;
+int *ip;        -> attenzione int* ip; per far vedere il tipo, ma int* ip, p; p non e' un puntatore
+ip = &x;
+y = *ip;
+*ip = 0;
+
+i puntatori puntano a un tipo (eccezione puntatori void*)
+precedenze
+
+y = *ip + 1;
+++*ip;
+(*ip)++; (causa associativita' unaria dx->sx)
+
+int* iq = &y;
+ip = iq;   assegnamento tra puntatori ora ip punta a y
+
+es. swap (int a, int b)
+non produce effetti collaterali, serve swap (int* pa, int *pb) viene copiato in locale il valore del puntatore, non il valore puntato
+utile se devo ritornare piu' di un valore
+puntatori e vettori -> memorizzazione consecutiva, aritmetica dei puntatori
+
+int a[10];
+int *pa;
+pa = &a[0]; /* eq. pa = a */
+*pa = 1;      /* a[0] = 1 */
+*(pa + 1) = 2 /* a[1] = 2 */
+
+pa + i = "puntatore all'i-esimo elemento di a"
+(il valore del puntatore viene incrementato del sizeof(int))
+
+il fatto che a sia l'indirizzo del vettore a[i] = *(a + i) = *(pa + i) = pa[i]
+
+pa = a;   // OK
+pa++;     // OK
+a++;      // ERRORE - a non e un puntatore
+a = pa;   // ERRORE - a non e un puntatore
+
+sottovettori
+pa = a[2]
+pa     -> punta a a[0]
+pa - 1 -> punta a a[1]
+pa - 2 -> punta a a[0]
+
+pa = 0 -> mnemonico, per dire "non punta a nulla"
+in C
+#define NULL (void*)0
+in C++
+#define NULL 0
+
+in C++ meglio lo 0, il NULL e' mantenuto solo per compatibilita
+confronto tra puntatori: se puntano a elementi dello stesso vettore, == != < <= etc. funzionano correttamente
+qualunque puntatore puo' essere confrontato con lo zero
+i puntatori si possono sottrarre: p-q n. di elementi tra p e q (incluso p, escluso q)
+
+operazioni ammesse
+assegnamento se tipo uguale
++ e - con un intero
+- e cfr. tra puntatori sullo stesso vettore
+assegn e cfr. con lo zero
+
+per assegn. a un puntatore un puntatore diverso -> cast (unica ecc. void* che accetta qualunque tipo)
+
+puntatori a carattere
+stringa costante -> array di caratteri con zero terminale
+char *pmsg;
+pmsg = "Ciao Mondo"; -> nessuna copia, assegnamento di ptr!
+
+char msg[]="Ciao Mondo"  vett
+char* pmsg="Ciao Mondo"   ptr
+
+msg vettore suff. grande
+pmsg puntatore
+
+pmsg puo' assumere altri valori (puntare ad altre zone di mem), msg no (e' una var. allocata, e non si puo' spostare una var)!
+
+
+
+esercizi su stringhe
+(implementare le funzioni di libreria, trasformazione maiuscolo/minuscolo, vocali/consonanti, rot13, inversione, conversioni da/a numeri...)
+
+
+
+
+costanti enumerative
+enum boolean { NO, YES };
+il primo nome assume valore 0, il secondo 1, ...
+si possono forzare i valori per le costanti:
+enum escape { BACKSPACE = '\b', TAB = '\t', NEWLINE = '\n', RETURN = '\r' };
+le costanti con valore non specificato continuano la progressione dall'ultimo valore specificato
+enum giorni { LUN = 1, MAR = 2, MER = 3, GIO = 4, VEN = 5; SAB = 6, DOM = 7 };
+ATTENZIONE: i nomi devono essere distinti anche su enumerazioni distinte
+i valori possono essere ripetuti anche per la stessa enumerazione (è ammesso definire due costanti con valore uguale)
+
+
+
+typedef dichiarazione di tipo alias
+utile per
+ 1) rendere il programma piu' leggibile (es. typedef int Peso; Peso p; <- indica anche la natura della variabile)
+ 2) rendere il programma piu' portabile (es. typedef INT16 short; typedef INT32 long; se la nuova macchina ha i long a 64 e gli int a 32, basta cambiare il typedef INT32 int; ed il programma e' perfettamente compilabile)
+
+
+struct TAG
+{
+  MEMBRI;
+} x, y, z;
+
+se non ci sono variabili, non viene riservato spazio in mem, ma il tipo (TAG) puo' essere usato "piu' tardi" 
+
+struct TAG
+{
+   MEMBRI;
+}
+
+struct TAG x, y, z;
+inizializzazione: struct TAG x { 1 ,2 ,3 }; <- una espressione costante per ogni membro
+uno o piu' membri possono a loro volta essere strutture (strutture nidificate, es rect {pt, pt};)
+membri, tag, variabili ordinarie possono condividere i nomi
+
+le strutture si possono assegnar, copiare, ricavarne l'indirizzo (&) e accedere (p. es. non confrontare)
+i membri si accedono attraverso l'operatore unario ".":
+
+struttura.membro
+
+nel caso di puntatori:
+
+(*p-struttura).membro oppure p-struttura -> membro;
+
+vettori di strutture, puntatori a strutture
+
+struct TAG v[ELEMENTI];
+
+
+
+union TAG
+{
+   MEMBRI;
+}
+
+puo' contenere variabili diverse in momenti diversi
+(una union ha la dimensione del membro piu' grande)
+operazioni consentite: copia, assegnamento, indirizzamento, accesso ai membri
+inizializzazione ammessa solo attraverso il primo membro
+
+es.
+
+union valore_numerico
+{
+	short s;
+	int i;
+	long l;
+	float f;
+	double d;
+} num;
+
+num.s = 34;
+ora non ha senso accedere agli altri membri!
+num.d = 3.14;
+ora non ha senso accedere agli altri membri!
+
+classico esempio di utilizzo
+
+enum tipo_numerico {SHORT, INT, LONG, FLOAT, DOUBLE; }
+struct numero
+{
+	tipo_numerico tipo;
+	valore_numerico valore;
+}
+
+void stampa_numero(numero n)
+{
+	if (n.tipo == SHORT)
+		printf("%d", n.s);
+	else if (n.tipo == INT)
+		printf("%d", n.i);
+	else if (n.tipo == LONG)
+		printf("%d", n.l);
+	else if (n.tipo == FLOAT)
+		printf("%f", n.f);
+	else if (n.tipo == DOUBLE)
+		printf("%f", n.d);
+	else 
+		printf("tipo sconosciuto");
+}
+
+campi di bit
+
+si definisce il n. di bit da utilizzare
+solo su membri int; meglio specificare sempre unsigned, per evitare problemi col bit di segno
+campi allineati a dx o sx, dipende dalla macchina
+
+es:
+
+struct bit_field
+{
+	unsigned int cifra_ottale: 3;      /* usa solo tre bit (max 8 valori!) */
+	unsigned int cifra_esadecimale: 4; /* usa solo tre bit (max 8 valori!) */
+	unsigned int flag: 1;              /* usa solo tre bit (max 8 valori!) */
+} x;
+
+x.flag = 1;               /* ok */
+x.flag = 2;               /* errore! */
+x.cifra_ottale = 7;       /* ok */
+x.cifra_esadecimale = 24; /* errore */
+
+
+
+files
+
+

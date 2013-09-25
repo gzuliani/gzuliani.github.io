@@ -1,0 +1,252 @@
+<html>
+<head>
+<title>Good Unit Tests /1 bis</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-1-bis">risorse</a> | good unit tests /1 bis</p>
+<h1>Good Unit Tests /1 bis</h1>
+<h2>Introduzione</h2>
+<p>La macro <span class="code">CHECK</span> descritta nella <a href="gut-1.html">prima parte</a> di questo ciclo presenta, all'atto pratico, alcuni problemi; in particolare:</p>
+<ul>
+<li>non supporta operatori all'infuori di <span class="code">==</span> e <span class="code">!=</span>;</li>
+<li>causa l'emissione di <em>warning</em> da parte del compilatore quando si confrontano tra loro tipi numerici con e senza segno.</li>
+</ul>
+<p>Il secondo punto, essendo quello che richiede uno sforzo maggiore per essere risolto, verr&agrave; affrontato per primo.</p>
+<h2>Signed vs. unsigned</h2>
+<p>Il primo test sul campo dell'infrastruttura di test, per quanto banale, ha da subito evidenziato un problema (ove si intende che <span class="code">gut.h</span> contiene tutte le definizioni fin qui descritte):</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+class recently_used_list {
+public:
+  bool empty() const {
+    return true;
+  }
+  size_t size() const {
+    return 0;
+  }
+};
+
+int main() {
+  recently_used_list anEmptyList;
+
+  CHECK(anEmptyList.size() == 0);
+  return 0;
+}
+
+/* output:
+ *
+ * ...\recently_used_list.cpp(16): warning C4389: '==' : signed/unsigned mismatch
+ */
+</pre>
+<p>Il <em>warning</em> &egrave; dovuto al fatto che i termini dell'espressione sono confrontati tra loro cos&igrave; come sono stati catturati:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+  //...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    return Expression::logAndEvaluate(Equal&lt;T, U&gt;(lhs_, rhs));
+  }
+</pre>
+<p>La segnalazione pu&ograve; pu&ograve; essere eliminata con una conversione preliminare dei dati. &Egrave; necessario allora disaccoppiare le due attivit&agrave; di cattura e comparazione, per avere l'opportunit&agrave;, una volta catturati i due termini, di convertire il termine <span class="code">signed</span> in <span class="code">unsigned</span>. Il primo passo da compiere consiste dunque nel separare cattura e confronto:</p>
+<pre class="code">
+<ins>template&lt;class E, typename T, typename U&gt;
+bool compare(const T&amp; lhs, const U&amp; rhs) {
+  return Expression::logAndEvaluate(E(lhs, rhs));
+}</ins>
+
+template&lt;typename T&gt;
+class Term {
+  // ...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    <ins>return compare&lt;Equal&lt;T, U&gt;,T, U&gt;(lhs_, rhs);</ins>
+  }
+  // ...
+};
+</pre>
+<p>Ci&ograve; tuttavia non &egrave; sufficiente, poich&eacute; la funzione <span class="code">compare</span> riceve un oggetto <span class="code">Expression</span> gi&agrave; tipizzato su <span class="code">T</span>, <span class="code">U</span>: serve un ulteriore grado di indirezione, che istanzi l'oggetto <span class="code">Expression</span> solo dopo che i tipi <span class="code">T</span> e <span class="code">U</span> sono stati identificati e la conversione attuata; a tal fine <span class="code">compare</span> potrebbe ricevere un <em>token</em> che indica il tipo di confronto richiesto, anzich&eacute; direttamente l'oggetto che lo implementa:</p>
+<pre class="code">
+<ins>enum Operator {
+  e_equal,
+  // ...
+};</ins>
+
+template&lt;typename T&gt;
+class Term {
+  // ...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    <ins>return compare&lt;e_equal,T, U&gt;(lhs_, rhs);</ins>
+  }
+  // ...
+};
+</pre>
+<p><span class="code">compare</span> a sua volta usa <span class="code">Operator</span> per discriminare il tipo <span class="code">Expression</span> da istanziare:</p>
+<pre class="code">
+template&lt;<ins>Operator op</ins>, typename T, typename U&gt;
+bool compare(const T&amp; lhs, const U&amp; rhs) {
+  <ins>return ExprFactory&lt;T, U, op&gt;::logAndEvaluate(lhs, rhs);</ins>
+}
+</pre>
+<p><span class="code">ExprFactory</span> si occupa di istanziare l'oggetto <span class="code">Expression</span> adatto, e ne invoca il metodo <span class="code">logAndEvaluate</span> (che a questo punto da statico diventa di istanza):</p>
+<pre class="code">
+struct Expression {
+  // ...
+  <ins>bool logAndEvaluate() {
+    Expression::last = toString();
+    return evaluate();
+  }</ins>
+  // ...
+};
+
+// ...
+
+<ins>template&lt;typename T, typename U, Operator op&gt;
+struct ExprFactory {
+  static bool logAndEvaluate(const T&amp; /*lhs*/, const U&amp; /*rhs*/) {
+    OPERATION_NOT_SUPPORTED dummy;
+    return false;
+  }
+};
+
+template&lt;typename T, typename U&gt;
+struct ExprFactory&lt;T, U, e_equal&gt; {
+  static bool logAndEvaluate(const T&amp; lhs, const U&amp; rhs) {
+    return Equal&lt;T, U&gt;(lhs, rhs).logAndEvaluate();
+  }
+};</ins>
+</pre>
+<p>Siamo prossimi alla soluzione; quel che resta da fare, alla luce del fatto che il <em>partial template specialization</em> non &egrave; applicabile alle funzioni, &egrave; di sfruttare l'<em>overloading</em> per gestire i confronti sui tipi numerici <span class="code">signed</span>/<span class="code">unsigned</span>:</p>
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+  // ...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    <ins>return compare&lt;e_equal&gt;(lhs_, rhs);</ins>
+  }
+  // ...
+};
+
+<ins>template&lt;Operator op&gt;
+bool compare(unsigned int lhs, const int rhs) {
+  return compare&lt;op&gt;(lhs, static_cast&lt;unsigned int&gt;(rhs));
+}</ins>
+</pre>
+<p>L'esempio riporta la specializzazione di <span class="code">compare</span> per il caso <span class="code">unsigned int</span>/<span class="code">int</span>; le altre combinazioni sono gestite in modo analogo.</p>
+<h2>Equal_ e NotEqual_</h2>
+<p>Con l'introduzione della funzione globale <span class="code">compare</span> viene meno la necessit&agrave; delle gerarchie facenti capo alle classi <span class="code">Equal_</span> e <span class="code">NotEqual_</span> per la comparazione dei puntatori con <span class="code">NULL</span>: ci&ograve; che si &egrave; ottenuto con la specializzazione parziale di template si pu&ograve; ora pi&ugrave; semplicemente realizzare con l'overloading:</p>
+<pre class="code">
+
+template&lt;typename T, typename U&gt;
+struct <del>Equal_</del><ins>Equal</ins> : public BinaryExpression&lt;T, U&gt; {
+  <del>Equal_</del><ins>Equal</ins>(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  <ins>virtual bool evaluate() const { return this-&gt;lhs_ == this-&gt;rhs_; }</ins>
+  virtual std::string getOpName() const { return &quot;==&quot;; }
+};
+
+<del>template&lt;typename T, typename U&gt;
+struct Equal : public Equal_&lt;T, U&gt; {
+  Equal(const T&amp; lhs, const U&amp; rhs) : Equal_&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ == this-&gt;rhs_; }
+};</del>
+
+<del>template&lt;typename T&gt;
+struct Equal&lt;T*, int&gt; : public Equal_&lt;T*, int&gt; {
+  Equal(T* const&amp; lhs, const int&amp; rhs) : Equal_&lt;T*, int&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ == reinterpret_cast&lt;T*&gt;(this-&gt;rhs_); }
+};</del>
+
+<del>template&lt;typename T&gt;
+struct Equal&lt;int, T*&gt; : public Equal_&lt;int, T*&gt; {
+  Equal(const int&amp; lhs, T* const&amp; rhs) : Equal_&lt;int, T*&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return reinterpret_cast&lt;T*&gt;(this-&gt;lhs_) == this-&gt;rhs_; }
+};</del>
+
+template&lt;typename T, typename U&gt;
+struct <del>NotEqual_</del><ins>NotEqual</ins> : public BinaryExpression&lt;T, U&gt; {
+  <del>NotEqual_</del><ins>NotEqual</ins>(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  <ins>virtual bool evaluate() const { return this-&gt;lhs_ != this-&gt;rhs_; }</ins>
+  virtual std::string getOpName() const { return &quot;!=&quot;; }
+};
+
+<del>template&lt;typename T, typename U&gt;
+struct NotEqual : public NotEqual_&lt;T, U&gt; {
+  NotEqual(const T&amp; lhs, const U&amp; rhs) : NotEqual_&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ != this-&gt;rhs_; }
+};</del>
+
+<del>template&lt;typename T&gt;
+struct NotEqual&lt;T*, int&gt; : public NotEqual_&lt;T*, int&gt; {
+  NotEqual(T* const&amp; lhs, const int&amp; rhs) : NotEqual_&lt;T*, int&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ != reinterpret_cast&lt;T*&gt;(this-&gt;rhs_); }
+};</del>
+
+<del>template&lt;typename T&gt;
+struct NotEqual&lt;int, T*&gt; : public NotEqual_&lt;int, T*&gt; {
+  NotEqual(const int&amp; lhs, T* const&amp; rhs) : NotEqual_&lt;int, T*&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return reinterpret_cast&lt;T*&gt;(this-&gt;lhs_) != this-&gt;rhs_; }
+};</del>
+
+<ins>template&lt;Operator op, typename T&gt;
+bool compare(T* lhs, int rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(lhs, reinterpret_cast&lt;T*&gt;(rhs));
+}
+
+template&lt;Operator op, typename T&gt;
+bool compare(int lhs, T* rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(reinterpret_cast&lt;T*&gt;(lhs), rhs);
+}</ins>
+</pre>
+<h2>Altri operatori</h2>
+<p>Con l'infrastruttura attuale, introdurre il supporto per un altro operatore si riduce a:</p>
+<ol>
+<li>aggiungere l'identificativo dell'operatore in <span class="code">Operators</span>:
+<pre class="code">
+enum Operator {
+  e_equal,
+  <ins>e_lessThan</ins>,
+  // ...
+};</pre></li>
+<li>definire l'<span class="code">operator</span> in <span class="code">Term</span>:
+<pre class="code">
+template&lt;typename T&gt;
+class Term {
+  // ...
+  template&lt;typename U&gt;
+  bool operator==(const U&amp; rhs) const {
+    return compare&lt;e_equal&gt;(lhs_, rhs);
+  }
+  <ins>template&lt;typename U&gt;
+  bool operator&lt;(const U&amp; rhs) const {
+    return compare&lt;e_lessThan&gt;(lhs_, rhs);
+  }</ins>
+  // ...
+};</pre></li>
+<li>definire l'oggetto <span class="code">ExprFactory</span> relativo:
+<pre class="code">
+<ins>template&lt;typename T, typename U&gt;
+struct ExprFactory&lt;T, U, e_lessThan&gt; {
+  static bool logAndEvaluate(const T&amp; lhs, const U&amp; rhs) {
+  return LessThan&lt;T, U&gt;(lhs, rhs).logAndEvaluate();
+  }
+};</ins>
+</pre></li>
+<li>definire l'oggetto <span class="code">Expression</span> che realizza il confronto vero e proprio:
+<pre class="code">
+<ins>template&lt;typename T, typename U&gt;
+struct LessThan : public BinaryExpression&lt;T, U&gt; {
+  LessThan(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) { }
+  virtual bool evaluate() const { return this-&gt;lhs_ &lt; this-&gt;rhs_; }
+  virtual std::string getOpName() const { return &quot;&lt;&quot;; }
+};</ins>
+</pre></li>
+</ol>
+<h2>Conclusioni</h2>
+<p>Con le modifiche apportate, il programma d'esempio riportato all'inizio compila finalmente senza <em>warning</em>.</p>
+<p class="modification-notice">Pagina modificata il 03/10/2012</p>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Balistica</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#balistica">casio fx-180p</a> | balistica</p>
+<h1>Balistica</h1>
+<p>Scopo del gioco &egrave; colpire un bersaglio fisso, posto ad una distanza inferiore alla gittata, regolando l'alzo del cannone a disposizione.</p>
+<p>Il gioco &egrave; realizzato mediante due programmi: il programma P2 inizializza l'ambiente, mentre il programma P1 effettua il tiro, determinandone l'esito.</p>
+<p class="note">Nota: per comodit&agrave; &egrave; conveniente utilizzare una sola cifra decimale (FIX 1) durante il gioco.</p>
+<h2>Fisica (approssimata) del gioco</h2>
+<p>Per facilitare il gioco, l'unica variabile indipendente &egrave; l'alzo &alpha;. La variabile dipendente cercata &egrave; la distanza cui il proiettile tocca terra. Detta h(t) l'altezza del proiettile e v il modulo della velocit&agrave;, si determina il tempo di caduta tramite la relazione:</p>
+<p class="formula">h(t) = vsin(&alpha;)t - &frac12;gt&sup2;</p>
+<p>Ponendo h(t)=0 si ricava il tempo di caduta:</p>
+<p class="formula">t = 2 v sin(&alpha;) / g</p>
+<p>Lo spazio percorso dal proiettile &egrave; perci&ograve;:</p>
+<p class="formula">s = v cos(&alpha;) t</p>
+<p>Sostituendo il valore di t precedentemente ricavato si ottiene:</p>
+<p class="formula">s = 2 v&sup2; cos(&alpha;) sin(&alpha;) / g</p>
+<p>o equivalentemente:</p>
+<p class="formula">s = 2 v&sup2; sin(2&alpha;) / g</p>
+<p>Derivando in &alpha; e annullando si ottiene che la gittata massima si ha per &alpha;=45&deg;, e vale:</p>
+<p class="formula">s<sub>max</sub> = v&sup2; / g</p>
+<p>Ponendo per semplicit&agrave; v=100m/s e g=10m/s&sup2;, la gittata diventa pari a 1Km.</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>M contiene il numero di colpi effettuati;</li>
+	<li>K1 contiene la distanza del bersaglio dalla postazione di tiro;</li>
+	<li>K2 contiene la tolleranza di tiro (distanza entro la quale il colpo viene assegnato).</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Sequenza di inizializzazione del programma</h3>
+<ul>
+	<li>
+		<p><span class="key">P2</span> &rarr; <span class="display">0</span></p>
+	</li>
+</ul>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>Prima del tiro, il programma visualizza la posizione del bersaglio:</p>
+		<p><span class="key">P1</span> &rarr; <span class="display">560.0</span></p>
+	</li>
+	<li>
+		<p>L'utente imposta l'alzo a 30&deg;:</p>
+		<p><span class="key">3</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">866.0</span> <span class="key">RUN</span> &rarr; <span class="display">560.0</span></p>
+		<p>Il tiro &egrave; troppo lungo&hellip;</p>
+	</li>
+	<li>
+		<p>L'utente imposta l'alzo a 20&deg;:</p>
+		<p><span class="key">2</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">642.8</span> <span class="key">RUN</span> &rarr; <span class="display">560.0</span></p>
+		<p>Il tiro &egrave; ancora lungo&hellip;</p>
+	</li>
+	<li>
+		<p>L'utente imposta l'alzo a 15&deg;:</p>
+		<p><span class="key">1</span> <span class="key">5</span> <span class="key">RUN</span> &rarr; <span class="display">500.0</span> <span class="key">RUN</span> &rarr; <span class="display">560.0</span></p>
+		<p>Il tiro &egrave; corto&hellip;</p>
+	</li>
+	<li>
+		<p>L'utente imposta l'alzo a 17&deg;:</p>
+		<p><span class="key">1</span> <span class="key">7</span> <span class="key">RUN</span> &rarr; <span class="display">559.2</span> <span class="key">RUN</span> &rarr; <span class="display">0</span></p>
+		<p>Il bersaglio &egrave; stato colpito!</p>
+	</li>
+	<li>
+		<p>Il numero di tiri effettuati &egrave; visibile richiamando la memoria M:</p>
+		<p><span class="key">MR</span> &rarr; <span class="display">5</span></p>
+	</li>
+</ul>
+<h2>Programma P2</h2>
+<p>Inizializza il gioco.</p>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">RAN#</span></td><td class="note">determina la posizione del bersaglio nel campo [0.0, 999.0]</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">EXP</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">Kin 1</span></td><td class="note">memorizza la posizione del bersaglio nella memoria K1</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">Kin 2</span></td><td class="note">memorizza la tolleranza di tiro nella memoria K2</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">Min</span></td><td class="note">azzera il contatore dei tiri effettuati</td></tr>
+</table>
+<h2>Programma P1</h2>
+<p>Determina il valore del prossimo numero da proporre.</p>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">1</span></td><td class="note">aggiorna il contatore dei tiri effettuati</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">M+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">Kout 1</span></td><td class="note">visualizza la distanza cui si trova il bersaglio</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">ENT</span></td><td class="note">attendi l'immissione dell'alzo</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">&times;</span></td><td class="note">determina la posizione di caduta del colpo</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">SIN</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">EXP</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">26</td><td class="key"><span class="key">HLT</span></td><td class="note">visualizza il punto di caduta del colpo</td></tr>
+	<tr><td class="step">27</td><td class="key"><span class="key">-</span></td><td class="note">determina la distanza dal bersaglio</td></tr>
+	<tr><td class="step">28</td><td class="key"><span class="key">Kout 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">29</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">30</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">31</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">32</td><td class="key"><span class="key">-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">33</td><td class="key"><span class="key">Kout 2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">34</td><td class="key"><span class="key">=</span></td><td class="note">se la distanza &egrave; superiore alla tolleranza di tiro,</td></tr>
+	<tr><td class="step">35</td><td class="key"><span class="key">x&gt;0</span></td><td class="note">si richiede di sparare un nuovo colpo,</td></tr>
+	<tr><td class="step">36</td><td class="key"><span class="key">0</span></td><td class="note">in caso contrario si segnala il centro visualizzando uno zero</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata il 9/11/2011</p>
+</body>
+</html>

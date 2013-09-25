@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>heap &amp; VC10</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+<link href="css/heap.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#heap-vc10">risorse</a> | heap &amp; vc10</p>
+<h1>heap &amp; VC10</h1>
+<h2>Introduzione</h2>
+<p>Per quanto primitiva, ho utilizzato con profitto la libreria <span class="library">heap</span> in un paio di progetti, prima in ambiente MinGW, successivamente con il Visual Studio 2008 Express Edition. La migrazione di uno di questi progetti verso il compilatore VC10 &ndash; disponibile nel Windows Platform SDK 7.1 &ndash; ha evidenziato tempi d'esecuzione particolarmente elevati in modalit&agrave; <span class="code">DEBUG</span>. La responsabilit&agrave; della libreria &egrave; risultata da subito evidente: disabilitando il tracciamento delle allocazioni, i tempi di esecuzione si sono attestati su valori di gran lunga pi&ugrave; ragionevoli.</p>
+<h2>Analisi</h2>
+<p>Le ipotesi pi&ugrave; accretidate sono due: un'inefficienza intrinseca della libreria, che conserva l'elenco delle allocazioni in una lista linkata, non particolarmente efficiente nello scenario d'uso &ndash; l'applicativo tende a deallocare l'ultimo oggetto allocato &ndash;, associata ad un possibile aumento del numero di allocazioni (il nuovo compilatore porta in dote una libreria standard in gran parte riscritta<a href="#ref-1"><sup>[1]</sup></a>).</p>
+<p>Si sono allora messe a confronto due differenti implementazioni della libreria <em>heap</em>, quella originale basata su lista linkata ed una &ndash; approntata per l'occasione &ndash; che sfrutta una mappa della libreria standard. La tabella sottostante raccoglie i risultati degli esperimenti condotti su un test-case particolarmente critico:</p>
+<table cellspacing="0" cellpadding="3">
+<tr>
+	<th>ADT</th>
+	<th>Piattaforma</th>
+	<th>Allocazioni</th>
+	<th>Durata (ms)</th>
+</tr>
+<tr>
+	<td>lista linkata</td>
+	<td>VC9</td>
+	<td>174061</td>
+	<td>14071</td>
+</tr>
+<tr>
+	<td>lista linkata</td>
+	<td>VC10</td>
+	<td>2375492</td>
+	<td>105721</td>
+</tr>
+<tr>
+	<td>std::map</td>
+	<td>VC9</td>
+	<td>348123</td>
+	<td>11232</td>
+</tr>
+<tr>
+	<td>std::map</td>
+	<td>VC10</td>
+	<td>4750984</td>
+	<td>32292</td>
+</tr>
+</table>
+<p>&Egrave; confermata l'ipotesi che a fronte del codice esistente, la nuova liberia standard effettua un numero di allocazioni molto maggiore rispetto alla versione precedente; i numeri in gioco sono talmente elevati da mettere in crisi l'implementazione della lista linkata, considerate le risorse disponibili della macchina di test (Windows Vista Businness SP2 con 2GB di RAM).</p>
+
+
+<p>L'aumento del numero di allocazioni &egrave; in parte da imputare al controllo sulla validit&agrave; degli iteratori<a href="#ref-3"><sup>[3]</sup></a> che la libreria standard fornita da Microsoft mette in atto di default quando &egrave; compilata in modalit&agrave; <span class="code">DEBUG</span>; la tabella sottostante evidenzia l'effetto della disabilitazione del controllo sul numero di allocazioni e sui tempi di esecuzione del test-case citato in precedenza per la combinazione lista linkata/VC10:</p>
+<table cellspacing="0" cellpadding="3">
+<tr>
+	<th>Impostazione</th>
+	<th>Allocazioni</th>
+	<th>Durata (ms)</th>
+	<th>Note</th>
+</tr>
+<tr>
+	<td><span class="code">_ITERATOR_DEBUG_LEVEL=2</span></td>
+	<td>2375492</td>
+	<td>106891</td>
+	<td>default di sistema</td>
+</tr>
+<tr>
+	<td><span class="code">_ITERATOR_DEBUG_LEVEL=1</span></td>
+	<td>2375492</td>
+	<td>105487</td>
+	<td></td>
+</tr>
+<tr>
+	<td><span class="code">_ITERATOR_DEBUG_LEVEL=0</span></td>
+	<td>541053</td>
+	<td>20373</td>
+	<td></td>
+</tr>
+</table>
+<h2>#define new&hellip;</h2>
+<p>Durante le analisi &egrave; emersa una possibile criticit&agrave; circa la ridefinizione di una parola chiave del linguaggio; al punto 17.4.3.1.1.2, lo standard C++11 recita infatti:</p>
+<blockquote>
+A translation unit that includes a header shall not contain any macros that define names declared or defined in that header. Nor shall such a translation unit define macros for names lexically identical to keywords.
+</blockquote>
+<p>Risulta quindi che la definizione:</p>
+<pre class="code">
+#define new new(__FILE__, __LINE__)
+</pre>
+<p>usata dalla libreria per catturare la posizione ove ha avuto luogo l'allocazione &egrave; in contrasto con quanto prescritto dallo standard. Aspetti correlati a questo problema si trovano in abbondanza<a href="#ref-2"><sup>[2]</sup></a><a href="#ref-5"><sup>[5]</sup></a>.</p>
+<h2>Conclusioni</h2>
+<p>La libreria <span class="library">heap</span> presenta delle problematiche che non la rendono utilizzabile in progetti che richiedono l'uso di compilatori &laquo;moderni&raquo;. Conviene quindi dotarsi (o sviluppare) strumenti alternativi. Limitatamente all'ambiente Microsoft, uno spunto interessante per lo sviluppo di una nuova libreria si trova in MSDN<a href="#ref-4"><sup>[4]</sup></a>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>&quot;C++11 Features in Visual C++ 11&quot;. <em>MSDN</em>. &lt;<a href="http://blogs.msdn.com/b/vcblog/archive/2011/09/12/10209291.aspx">http://blogs.msdn.com/b/vcblog/archive/2011/09/12/10209291.aspx</a>&gt;. Visitato il 18 Maggio 2012.</li>
+<a name="ref-2"></a>
+<li>&quot;C++ preprocessor #define-ing a keyword. Is it standards conforming?&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/2726204">http://stackoverflow.com/questions/2726204</a>&gt;. Visitato il 18 Maggio 2012.</li>
+<a name="ref-3"></a>
+<li>&quot;Debug Iterator Support&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/aa985982.aspx">http://msdn.microsoft.com/en-us/library/aa985982.aspx</a>&gt;. Visitato il 18 Maggio 2012.</li>
+<a name="ref-4"></a>
+<li>&quot;Finding Memory Leaks Using the CRT Library&quot;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx">http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx</a>&gt;. Visitato il 18 Maggio 2012.</li>
+<a name="ref-5"></a>
+<li>&quot;Is it legal to redefine a C++ keyword?&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/9109377">http://stackoverflow.com/questions/9109377</a>&gt;. Visitato il 18 Maggio 2012.</li>
+<a name="ref-6"></a>
+<li>&quot;VS2008 to VS 2010 migration - a breaking change?&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/4745583">http://stackoverflow.com/questions/4745583</a>&gt;. Visitato il 18 Maggio 2012.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 21/05/2012</p>
+</body>
+</html>

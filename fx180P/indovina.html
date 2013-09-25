@@ -1,0 +1,119 @@
+<!--
+<!DOCTYPE html [
+	<!ENTITY agrave "&#224;">
+	<!ENTITY alpha "&#945;">
+	<!ENTITY deg "&#176;">
+	<!ENTITY delta "&#948;">
+	<!ENTITY divide "&#247;">
+	<!ENTITY eacute "&#233;">
+	<!ENTITY egrave "&#232;">
+	<!ENTITY epsilon "&#949;">
+	<!ENTITY frac12 "&#189;">
+	<!ENTITY harr "&#8596;">
+	<!ENTITY hellip "&#8230;">
+	<!ENTITY igrave "&#236;">
+	<!ENTITY le "&#8804;">
+	<!ENTITY nbsp "&#160;">
+	<!ENTITY ograve "&#242;">
+	<!ENTITY pi "&#960;">
+	<!ENTITY radic "&#8730;">
+	<!ENTITY rarr "&#8594;">
+	<!ENTITY sup2 "&#178;">
+	<!ENTITY times "&#215;">
+	<!ENTITY ugrave "&#249;">
+]>
+-->
+<html>
+<head>
+<title>Indovina il numero</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/fx180P.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#fx180p">risorse</a> | <a href="index.html#indovina">casio fx-180p</a> | indovina il numero</p>
+<h1>Indovina il numero</h1>
+<p>Scopo del gioco &egrave; indovinare il numero pensato dalla calcolatrice.</p>
+<p>Il gioco &egrave; realizzato mediante due programmi: il programma P2 inizializza il gioco, generando un numero compreso tra 0 e 999 (estremi inclusi), che rappresenta il numero da indovinare, ed azzerando il contatore dei tentativi effettuati; il programma P1 che risponde -1 se il numero proposto dall'utente &egrave; inferiore al numero da indovinare, 0 se uguale, 1 se superiore.</p>
+<h2>Uso delle memorie</h2>
+<ul>
+	<li>K1 contiene il numero di tentativi effettuati;</li>
+	<li>K2 contiene il numero da indovinare.</li>
+</ul>
+<h2>Note implementative</h2>
+<ul>
+	<li>la sequenza <span class="key">x&sup2;</span> <span class="key">&radic;</span> &egrave; utilizzata per determinare il valore assoluto dell'ultimo risultato ottenuto;</li>
+	<li>la sequenza <span class="key">&times;</span> <span class="key">(</span> <span class="key">Kout N</span> <span class="key">+</span> <span class="key">1</span> <span class="key">)</span> <span class="key">Kin N</span> <span class="key">&divide;</span> <span class="key">Kout N</span> <span class="key">=</span> incrementa la memoria KN, preservando il valore dell'espressione in corso di valutazione.</li>
+</ul>
+<h2>Esempio d'uso</h2>
+<h3>Sequenza di inizializzazione del programma</h3>
+<ul>
+	<li><span class="key">P2</span> &rarr; <span class="display">0</span></li>
+</ul>
+<h3>Uso del programma</h3>
+<ul>
+	<li>
+		<p>L'utente presuppone che il numero generato dalla calcolatrice sia 500:</p>
+		<p><span class="key">5</span> <span class="key">0</span> <span class="key">0</span> <span class="key">P1</span> &rarr; <span class="display">-1</span></p>
+	</li>
+	<li>
+		<p>Considerata la risposta della calcolatrice, 500 &egrave; inferiore al numero da indovinare; l'utente gioca perci&ograve; 750:</p>
+		<p><span class="key">7</span> <span class="key">5</span> <span class="key">0</span> <span class="key">P1</span> &rarr; <span class="display">1</span></p>
+	</li>
+	<li>
+		<p>750 &egrave; maggiore del numero segreto, l'utente tenta allora con 675:</p>
+		<p><span class="key">6</span> <span class="key">7</span> <span class="key">5</span> <span class="key">P1</span> &rarr; <span class="display">0</span></p>
+	</li>
+	<li>
+		<p>L'utente ha indovinato! Il numero di tentativi effettuati &egrave; contenuto nella memoria K1:</p>
+		<p><span class="key">Kout 1</span> &rarr; <span class="display">3</span></p>
+	</li>
+</ul>
+<h2>Programma P2</h2>
+<p>Inizializza il gioco.</p>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">1</td><td class="key"><span class="key">RAN#</span></td><td class="note">genera un numero casuale compreso tra 0.000 e 0.999</td></tr>
+	<tr><td class="step">2</td><td class="key"><span class="key">&times;</span></td><td class="note">moltiplicandolo per 1000, lo si porta nel campo [0, 999]</td></tr>
+	<tr><td class="step">3</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">4</td><td class="key"><span class="key">EXP</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">5</td><td class="key"><span class="key">3</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">6</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">7</td><td class="key"><span class="key">Kin 2</span></td><td class="note">il numero segreto viene memorizzato in K2</td></tr>
+	<tr><td class="step">8</td><td class="key"><span class="key">0</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">9</td><td class="key"><span class="key">Kin 1</span></td><td class="note">azzera il contatore dei tentativi ed elimina il numero segreto dal display</td></tr>
+</table>
+<h2>Programma P1</h2>
+<p>Determina l'esito del tentativo dell'utente.</p>
+<table cellspacing="0">
+	<tr><th>passo</th><th>tasto</th><th>note</th></tr>
+	<tr><td class="step">10</td><td class="key"><span class="key">-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">11</td><td class="key"><span class="key">Kout 2</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">12</td><td class="key"><span class="key">=</span></td><td class="note">determina la differenza tra il tentativo dell'utente ed il numero segreto</td></tr>
+	<tr><td class="step">13</td><td class="key"><span class="key">&times;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">14</td><td class="key"><span class="key">(</span></td><td class="note">incrementa il contatore dei tentativi</td></tr>
+	<tr><td class="step">15</td><td class="key"><span class="key">Kout 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">16</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">17</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">18</td><td class="key"><span class="key">)</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">19</td><td class="key"><span class="key">Kin 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">20</td><td class="key"><span class="key">&divide;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">21</td><td class="key"><span class="key">Kout 1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">22</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">23</td><td class="key"><span class="key">Min</span></td><td class="note">memorizza temporaneamente il valore della differenza nella memoria M</td></tr>
+	<tr><td class="step">24</td><td class="key"><span class="key">x&sup2;</span></td><td class="note">determina il valore assoluto della differenza</td></tr>
+	<tr><td class="step">25</td><td class="key"><span class="key">&radic;</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">26</td><td class="key"><span class="key">&divide;</span></td><td class="note">fornisce l'esito del tentativo come risultato dell'espressione</td></tr>
+	<tr><td class="step">27</td><td class="key"><span class="key">(</span></td><td class="note">|&delta;| / (&delta; + &epsilon;)</td></tr>
+	<tr><td class="step">28</td><td class="key"><span class="key">MR</span></td><td class="note">che per &delta; non nullo torna il segno della differenza, 0 altrimenti</td></tr>
+	<tr><td class="step">29</td><td class="key"><span class="key">+</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">30</td><td class="key"><span class="key">1</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">31</td><td class="key"><span class="key">EXP</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">32</td><td class="key"><span class="key">9</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">33</td><td class="key"><span class="key">9</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">34</td><td class="key"><span class="key">+/-</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">35</td><td class="key"><span class="key">)</span></td><td class="note">&nbsp;</td></tr>
+	<tr><td class="step">36</td><td class="key"><span class="key">=</span></td><td class="note">&nbsp;</td></tr>
+</table>
+<p class="modification-notice">Pagina modificata il 9/11/2011</p>
+</body>
+</html>

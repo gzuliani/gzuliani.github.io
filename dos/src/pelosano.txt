@@ -1,0 +1,215 @@
+         La "Jonni & Zula Sottuer Aus" e' lieta di presentarVi
+        
+                              Il progetto
+                           "P E L O S A N O"
+ 
+     (la GESTIONE di CASSA secondo Quei due Matti di Jonni e Zula)
+
+
+SOMMARIO:
+    
+    1. Introduzione
+    2. Cosa e' necessario?
+    3. Cosa puo' essere utile?
+    4. Gli archivi
+    5. Come si fa a...
+    6. Trucchetti a gogo
+    7. Perche' non funziona un ..zzo?
+
+
+
+
+
+1. INTRODUZIONE
+Se credi di trovare delle notizie esaurienti, sei cascato male...
+Se credi che quelle poche che ci sono siano veritiere, allora ti saluto...
+
+Cominciamo intanto con un po' di nomenclatura.
+Il programma, che originariamente si chiamava PELOSANO (immagino  che  gli
+avrai gia' cambiato nome, a quest'ora...) serve a gestire la  cassa  della
+sagra de "Il Melograno", come dice il Paludetti Seggio. In termini tecnici
+abbiamo realizzato una telenavigazione virtuale semiautomatica,  purtroppo
+per te non ancora multimediale (diamo tuttavia tempo al tempo...).
+Pensa quindi di avere davanti un menu (che noi chiameremo PREZZIARIO);  il
+prezziario e' formato da diverse CATEGORIE, che corrispondono a insiemi di
+ARTICOLI. Per fare un parallelo con il menu di una pizzeria, le  categorie
+potrebbero essere "Primi Piatti", "Pizze", "Dolci", "Vini"  etc. etc.
+Ogni categoria e' formata da un certo numero di articoli, cui e' associato
+un prezzo. All'interno della categoria "Primi Piatti" possiamo per esempio
+supporre di trovare tra gli altri gli articoli "Pasta", "Gnocchi" etc. etc.
+
+Come faccio allora a far sapere al calcolatore qual'e'  l'ordinazione  che
+il cliente ha richiesto, e soprattutto, come faccio a sapere qual'e' l'im-
+porto che devo chiedere al cliente stesso di cui sopra (cioe' lui)?
+Facile! Telenavigando semiautomaticamente, anche se non multimedialmente!!
+Categoria per categoria, fisso le quantita' che, articolo per articolo, il
+cliente ha ordinato, dopodiche' richiedo la stampa dello scontrino...
+
+                               C O M E ?
+
+Nella prima pagina, che appare all'accensione, vengono visualizzate  tutte
+le categorie; con i cursori si seleziona la categoria prescelta e si preme
+il tasto RETURN; magicamente, come per incanto, apparira' la seconda pagi-
+na, quella contenente gli articoli della categoria precedentemente aperta.
+Sempre attraverso i cursori si sceglie l'articolo in questione, e, questa
+volta per mezzo del tastierino numerico, si determina il numero di  arti- 
+coli da inserire nell'ordinazione (ovvero: "quanti di questi?").
+Premendo RETURN, previa conferma, l'ordinazione viene accettata, premendo
+ESC la stessa viene annullata.
+Dopo aver memorizzato le quantita' di articoli voluti per ogni  categoria,
+si puo' richiedere la stampa dello scontrino  (anche qui previa conferma).
+
+Per uscire dal programma hai due possibilita':
+
+   a. Se sei dotato di una mazza, percuotila ripetutamente sul computer;
+   b. Se non hai proprio nessun oggetto pesante a portata di mano,  puoi
+      uscire premendo il tasto ESC quando ti trovi nella prima pagina  e
+      rispondendo affermativamente al messaggio che ti si parera' davanti.
+
+
+
+
+
+2. COSA E' NECESSARIO?
+L'unica cosa indispensabile per il corretto funzionamento del programma  e'
+il file contenente il prezziario. Cos'e' il prezziario? Se non lo sai, vuol
+dire che non hai letto attentamente l'INTRODUZIONE... male!!! Rileggila, se
+l'hai gia' letta, altrimenti leggila e basta.
+Qual'e' il formato del prezziario? Semplice! Innanzitutto il prezziario  e' 
+un file di testo, che contiene le varie categorie del menu (cos'e' una  ca-
+tegoria?). Una categoria si definisce con una linea come quella che  segue:  
+
+ELENCO:<nome categoria>[RETURN]
+
+Di seguito si scrivono i nomi degli articoli, uno per linea, con  a  fianco
+il prezzo, separato dal nome da un numero arbitrario di caratteri di  tabu-
+lazione orizzontale. Segue un esempio di prezziario composto da due catego-
+rie:
+
+ELENCO:Bibite
+CocaCola[TAB][TAB][TAB]1200[RETURN]
+Minerale[TAB][TAB][TAB]1400[RETURN]
+Oransoda[TAB][TAB][TAB]1000[RETURN]
+
+ELENCO:Gastronomia
+Costa[TAB][TAB][TAB][TAB]4500[RETURN]
+Pasta[TAB][TAB][TAB][TAB]2500[RETURN]
+Pollo[TAB][TAB][TAB][TAB]3000[RETURN]
+[EOF]
+
+N.B. Si possono inserire righe vuote ovunque, poiche' vengono trascurate...
+
+Domanda: dove va memorizzato il prezziario?
+Domanda: che nome devo assegnare al file del prezziario?
+
+Risposta: Bho! 
+(Dai, non abbatterti, ti abbiamo scherzato!  
+ Troverai le risposte alla sezione COME SI FA A...)
+
+
+
+
+
+3. COSA PUO' ESSERE UTILE?
+Puo' risultare comodo personalizzare la barra del titolo, scrivendo un testo
+a tuo piacimento sulla seconda delle due righe previste per  questo compito.
+Per far cio' e' sufficiente modificare il file MELO.CFG se gia' esiste (dato
+che esso viene creato per assolvere ad altri compiti dal programma),  oppure
+crearlo se ancora non c'e', PONENDOLO NELLA DIRECTORY RADICE <C:\>,  aggiun-
+gendoci all'inizio una riga che rispetti il seguente formato:
+
+TITOLO:<testo della seconda riga del titolo>
+
+Attenzione: la lunghezza del testo non deve superare i 78 caratteri.
+
+
+
+
+
+4. GLI ARCHIVI
+Tra le innumerevoli sue capacita', PELOSANO dimostra una spiccata attitudi-
+ne alla gestione degli archivi. In seguito ad una ordinazione, PELOSANO me-
+morizza sia le quantita' di articoli richesta, sia i totali parziali della
+ordinazione, classificati per articolo. Mi spiego: per ogni categoria,  il
+progamma costruisce due file, il cui nome e' ricavato da quello della cate-
+goria relativa (previo troncamento sui primi otto caratteri), le cui esten-
+sioni sono rispettivamente ".MAG" e ".TOT". All'interno del primo  vengono
+memorizzate le quantita' degli articoli relativi ad una particolare ordina-
+zione secondo il formato:
+
+GG/MM/AA  HH:MM:SS  CodOrdine  qtaART1  qtaART2  ...  ...  qtaARTn   
+
+All'interno del secondo vengono invece memorizzati i totali parziali  degli
+articoli relativi alla stessa ordinazione secondo il formato:
+
+GG/MM/AA  HH:MM:SS  CodOrdine  przART1  przRT2  ...  ...  przARTn   
+
+
+N.B: Risultera' sempre che: przARTi = qtaARTi * PrezzoUnitarioARTi
+
+
+Domanda: dove vengono memorizzati gli archivi? Vedi COME SI FA A...
+
+
+
+
+
+5. COME SI FA A...
+Cerchiamo di rispondere alle domande piu' frequenti che i numerosi clienti
+ci pongono (sia chiaro: le domande sorgono per la totale incapacita' degli
+utenti, non per la scarsa utilizzabilita' del nostro fantastico prodotto).
+
+  a. Come faccio a dire a PELOSANO che voglio usare il mio prezziario?
+     Ah ah! Niente di piu' semplice...
+     PELOSANO usa per default il prezziario C:\MELO.PRZ.
+     E' possibile tuttavia usare un altro prezziario indicandone il nome
+     sulla riga di comando di PELOSANO come primo parametro. Per esempio,
+     se il tuo prezziario e' C:\PREZZIARI\ACME.SPA, devi usare il comando
+
+         C:\...\PELOSANO C:\PREZZIARI\ACME.SPA
+
+  b. Perche' PELOSANO salva i file di archivio sulla directory radice?
+     Gia', perche'?
+     Facile! Perche' questo e' il funzionamento di default di PELOSANO.
+     Se vuoi che memorizzi i suoi archivi in un direttorio diverso,  e'
+     sufficiente indicarglielo sulla riga di comando come secondo para-
+     metro; supponendo di voler salvare gli archivi in C:\ARCHIVI\, usa
+     il seguente comando:
+
+         C:\...\PELOSANO C:\PREZZIARI\ACME.SPA C:\ARCHIVI\
+
+     oppure
+        
+         C:\...\PELOSANO C:\PREZZIARI\ACME.SPA C:\ARCHIVI\
+
+     
+     In sostanza, la sintassi del comando di avviamento e':
+
+         PELOSANO [filePrezziario [direttorioArchivi]]
+
+
+  c. Perche' vedo dei caratteri strani sul video?
+     PELOSANO usa i caratteri grafici della pagina dos 437 per disegnare
+     i margini delle finestre nonche' tutte le cornicette; se invece  tu
+     vedi caratteri strani, probabilmente il tuo computer usa una pagina
+     diversa (per sapere quale, usa il comando dos CHCP). Se sai come si
+     fa, cambia la pagina, altrimenti... mi sa che ti devi attaccare....
+
+
+
+
+
+6. TRUCCHETTI A GOGO
+Dato che probabilmente ti spacchera' avere il prezziario ed i magazzini
+in radice, fatti un batch con i parametri giusti e un nome piu' cristiano...
+
+
+
+
+
+7. PERCHE' NON FUNZIONA UN ..ZZO?
+Bho!
+
+
+                                        Ultima Modifica: 19 Marzo 1995
+
