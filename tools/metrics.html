@@ -100,7 +100,7 @@ rd /q /s %REPORT_FOLDER% &gt;nul 2&gt;&amp;1
 	<li><strong>lines</strong>: numero di linee di codice;</li>
 	<li><strong>statements</strong>: numero totale di comandi; il conteggio include anche alcune direttive (es. <span class="code">#include</span>, <span class="code">#define</span> e <span class="code">#undef</span>), cos&igrave; come le istruzioni <span class="code">try</span>/<span class="code">catch</span>; non sono conteggiati i comandi all'interno delle direttive <span class="code">#else</span>/<span class="code">#elif</span> e il relativo <span class="code">#endif</span>;</li>
 	<li><strong>percent branch statements</strong>: percentuale di comandi di salto rispetto alla totalit&agrave; dei comandi (<span class="code">if</span>, <span class="code">else</span>, <span class="code">for</span>, <span class="code">while</span>, <span class="code">break</span>, &hellip;); entrano nel conteggio anche le istruzioni <span class="code">try</span>/<span class="code">catch</span>;</li>
-	<li><strong>percent lines with comments</strong>;</li>
+	<li><strong>percent lines with comments</strong>: percentuale di linee di commento rispetto a <em>lines</em>;</li>
 	<li><strong>classes</strong>: numero di classi definite; un <span class="code">template</span> conta come una classe;</li>
 	<li><strong>methods implemented per class</strong>: numero medio di metodi per classe;</li>
 	<li><strong>functions</strong>: numero di funzioni identificate;</li>
@@ -116,7 +116,7 @@ rd /q /s %REPORT_FOLDER% &gt;nul 2&gt;&amp;1
 	<li><strong>complexity</strong>: complessit&agrave; ciclomatica (approssimata);</li>
 	<li><strong>statements</strong>: numero di comandi che compongono il metodo;</li>
 	<li><strong>maximum block depth</strong>: massimo livello di annidamento del codice;</li>
-	<li><strong>calls</strong>: numero di chiamate di altri metodi o funzioni (<em>fan-out</em>).</li>
+	<li><strong>calls</strong>: numero di chiamate di altri metodi o funzioni.</li>
 </ul>
 <p>Source Monitor pu&ograve; archiviare le metriche raccolte in una sequenza di <em>checkpoint</em>; ci&ograve; consente di monitorare l'evoluzione del codice nel tempo.</p>
 <p>L'analisi dei sorgenti avviene molto rapidamente: su un PC equipaggiato con una CPU quad-core a 3GHz e 8GB di RAM, si raggiungono velocit&agrave; dell'ordine delle centinaia di migliaia di linee al secondo.</p>
