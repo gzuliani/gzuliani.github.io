@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="pyramid.css">
+</head>
+<body>
+<h1>Overview Pyramid</h1>
+<p class="source">Source: SourceMonitor</p><br><table class="pyramid" cellpadding="0" cellspacing="0" boder="1">
+<tr>
+<td class="outer" colspan="4"></td>
+<td class="inheritance-label">ANDC</td>
+<td class="inheritance-inner"></td>
+<td class="ratio-undef">n/a</td>
+<td class="outer" colspan="4"></td>
+</tr>
+<tr>
+<td class="outer" colspan="4"></td>
+<td class="inheritance-label">AHH</td>
+<td class="inheritance-inner"></td>
+<td class="ratio-undef">n/a</td>
+<td class="outer" colspan="4"></td>
+</tr>
+<tr>
+<td class="outer" colspan="3"></td>
+<td class="ratio-ok">30.6</td>
+<td class="size-and-complexity-label">NOP</td>
+<td class="size-and-complexity-inner"></td>
+<td class="size-and-complexity-value">49</td>
+<td class="outer" colspan="4"></td>
+</tr>
+<tr>
+<td class="outer" colspan="2"></td>
+<td class="ratio-ok">4.8</td>
+<td class="size-and-complexity-label">NOC</td>
+<td class="size-and-complexity-inner" colspan="2"></td>
+<td class="size-and-complexity-value">1500</td>
+<td class="outer" colspan="4"></td>
+</tr>
+<tr>
+<td class="outer"></td>
+<td class="ratio-high">25.8</td>
+<td class="size-and-complexity-label">NOM</td>
+<td class="size-and-complexity-inner" colspan="3"></td>
+<td class="size-and-complexity-value">7215</td>
+<td class="coupling-value"></td>
+<td class="coupling-label">NOM</td>
+<td class="ratio-high">4.8</td>
+<td class="outer"></td>
+</tr>
+<tr>
+<td class="ratio-low">.1</td>
+<td class="size-and-complexity-label">LOC</td>
+<td class="size-and-complexity-inner" colspan="4"></td>
+<td class="size-and-complexity-value">186497</td>
+<td class="coupling-value">34714</td>
+<td class="coupling-inner"></td>
+<td class="coupling-label">CALLS</td>
+<td class="ratio-undef">n/a</td>
+</tr>
+<tr>
+<td class="size-and-complexity-label">CYCLO</td>
+<td class="size-and-complexity-inner" colspan="5"></td>
+<td class="size-and-complexity-value">14009</td>
+<td class="coupling-value">n/a</td>
+<td class="coupling-inner" colspan="2"></td>
+<td class="coupling-label">FANOUT</td>
+</tr>
+</table><br><table class="legend" cellpadding="0" cellspacing="0">
+<tr>
+<td class="legend-caption">Legend:</td>
+<td class="ratio-undef"></td>
+<td class="legend">undefined</td>
+<td class="ratio-ok"></td>
+<td class="legend">value in range</td>
+<td class="ratio-low"></td>
+<td class="legend">value too small</td>
+<td class="ratio-high"></td>
+<td class="legend">value too big</td>
+</tr>
+</table>
+<h2>Thresholds</h2>
+<table class="thresholds" cellpadding="0" cellspacing="0">
+<tr><th>Value</th><th>Low</th><th>High</th></tr>
+<tr>
+<td class="thresholds-value">ANDC</td>
+<td class="thresholds-low">0.19</td>
+<td class="thresholds-high">0.37</td>
+</tr>
+<tr>
+<td class="thresholds-value">AHH</td>
+<td class="thresholds-low">0.05</td>
+<td class="thresholds-high">0.21</td>
+</tr>
+<tr>
+<td class="thresholds-value">NOM/NOC</td>
+<td class="thresholds-low">4</td>
+<td class="thresholds-high">15</td>
+</tr>
+<tr>
+<td class="thresholds-value">LOC/NOM</td>
+<td class="thresholds-low">5</td>
+<td class="thresholds-high">16</td>
+</tr>
+<tr>
+<td class="thresholds-value">CYCLO/LOC</td>
+<td class="thresholds-low">0.2</td>
+<td class="thresholds-high">0.3</td>
+</tr>
+<tr>
+<td class="thresholds-value">CALLS/NOM</td>
+<td class="thresholds-low">1.17</td>
+<td class="thresholds-high">2</td>
+</tr>
+<tr>
+<td class="thresholds-value">FANOUT/CALLS</td>
+<td class="thresholds-low">0.2</td>
+<td class="thresholds-high">0.48</td>
+</tr>
+</table>
+<h2>Smells</h2>
+<ul>
+<li>LOC/NOM is high: methods tend to be rather long.</li>
+<li>CYCLO/LOC is low: methods tend to have a rather simple logic.</li>
+<li>CALLS/NOM is high: methods tend to call many other methods.</li>
+</ul>
+<h2>Explanation</h2>
+<p>A brief description of the metrics used in the <em>Overview Pyramid</em>.</p>
+<h3>Top part: System Inheritance</h3>
+<dl>
+<dt>ANDC</dt><dd>average number of derived classes;</dd>
+<dt>AHH</dt><dd>average hierarchy height.</dd>
+</dl>
+<h3>Left part: Size and Complexity</h3>
+<h4>Direct metrics</h4>
+<dl>
+<dt>NOP</dt><dd>number of packages;</dd>
+<dt>NOC</dt><dd>number of classes;</dd>
+<dt>NOM</dt><dd>number of methods;</dd>
+<dt>LOC</dt><dd>lines of code;</dd>
+<dt>CYCLO</dt><dd>cyclomatic complexity index.</dd>
+</dl>
+<h4>Derived metrics</h4>
+<dl>
+<dt>NOC/NOP</dt><dd>average number of classes per package → high-level structuring, indicates if packages tend to be coarse or fine grained;</dd>
+<dt>NOM/NOC</dt><dd>average number of methods per class → class structuring, indicates how operations are distributed over the system;</dd>
+<dt>LOC/NOM</dt><dd>average number of lines per method → operation structuring, indicates how well the system's behaviuor is distributed over operations;</dd>
+<dt>CYCLO/LOC</dt><dd>average method complexity → intrinsic operation complexity, indicates the expected complexity of an operation.</dd>
+</dl>
+<h3>Right part: Coupling</h3>
+<h4>Direct metrics</h4>
+<dl>
+<dt>CALLS</dt><dd>number of calls;</dd>
+<dt>FANOUT</dt><dd>number of referenced types.</dd>
+</dl>
+<h4>Derived metrics</h4>
+<dl>
+<dt>CALLS/NOM</dt><dd>average number of calls in a method → coupling intensity, indicates how many operations are invoked on average by each operation;</dd>
+<dt>FANOUT/CALLS</dt><dd>average number of external calls → coupling dispersion, indicates how many classes are involved on average in a single operation.</dd>
+</dl>
+</body>
+</html>
