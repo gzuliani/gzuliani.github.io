@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>Overview Pyramid con SourceMonitor</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#pyramid">risorse</a> | pyramid</p>
+<h1>Overview Pyramid con SourceMonitor</h1>
+<h2>Introduzione</h2>
+<p>L'<em>Overview Pyramid</em> &egrave; una rappresentazione sintetica dello stato di un progetto software.</p>
+<img src="img/overview-pyramid/pyramid.png" alt="esempio di overview pyramid"/>
+<p>La piramide &egrave; suddivisa in tre parti: il vertice, con le metriche relative alle gerarchie ereditarie, la parte di sinistra, con quelle associate alla dimensione e alla complessit&agrave; del codice, e la parte di destra, con quelle sull'accoppiamento del sistema.</p>
+<h3>Il vertice: <em>system inheritance</em></h3>
+<p>Il vertice della piramide mostra due indici relativi all'ereditariet&agrave;:</p>
+<dl>
+<dt>ANDC (average number of derived classes)</dt><dd>numero medio di classi derivate;</dd>
+<dt>AHH (average hierarchy height)</dt><dd>lunghezza media delle catene di derivazione.</dd>
+</dl>
+<p><em>ANDC</em> misura l'ampiezza media degli alberi di derivazione: valori bassi di questo parametro denotano gerarchie &ldquo;strette&rdquo;, che si sviluppano prevalentemente in verticale, mentre valori alti caratterizzano gerarchie &ldquo;larghe&rdquo;, che si sviluppano prevalentemente in orizzontale.</p>
+<p><em>AHH</em> misura la profondit&agrave; media degli alberi di derivazione: valori bassi denotano gerarchie che si sviluppano su pochi livelli, viceversa, valori alti caratterizzano gerarchie piuttosto &ldquo;alte&rdquo; che si sviluppano cio&eagrave; su molti livelli.</p>
+<p>Valori bassi di entrambi gli indici denotano l'assenza di strutture gerarchiche significative: il sistema &egrave; composto per la maggior parte di classi autonome.</p>
+<h3>La parte di sinistra: <em>system size &amp; complexity</em></h3>
+<p>La parte di sinistra della piramide riporta cinque indici relativi alla dimensione del codice e della sua complessit&agrave;:</p>
+<dl>
+<dt>NOP (number of packages)</dt><dd>numero di componenti del sistema (in C++ coincide col numero di <span class="code">namespaces</span> definiti);</dd>
+<dt>NOC (number of classes)</dt><dd>numero di classi del sistema (in C++ coincide con il numero delle <span class="code">class</span> e delle <span class="code">struct</span>);</dd>
+<dt>NOM (number of methods)</dt><dd>numero totale dei metodi definiti (in C++ comprende anche le funzioni globali);</dd>
+<dt>LOC (lines of code)</dt><dd>numero di linee di codice;</dd>
+<dt>CYCLO (cyclomatic complexity index)</dt><dd>somma delle complessit&agrave; attribuite ai metodi del sistema.</dd>
+</dl>
+<p>L'analisi della dimensione e della complessit&agrave; del codice avviene sulla base dei rapporti di queste metriche:</p>
+<dl>
+<dt>NOC/NOP (high-level structuring)</dt><dd>misura la granularit&agrave; dei componenti: valori bassi denotano la presenza di componenti &ldquo;poveri&rdquo;, contenenti cio&egrave; poche classi, mentre valori alti sono caratteristici di sistemi con componenti troppo &ldquo;ricchi&rdquo;;</dd>
+<dt>NOM/NOC (class structuring)</dt><dd>misura il livello di distribuzione delle attivit&agrave; del sistema tra le classi: valori bassi denotano la presenza di classi &ldquo;stupide&rdquo;, prive cio&egrave; di un numero adeguato di metodi, mentre valori alti indicano classi con troppe responsabilit&agrave;;</dd>
+<dt>LOC/NOM (operation structuring)</dt><dd>misura il grado di distribuzione delle funzionalit&agrave; del sistema tra i metodi; valori alti denotano la presenza di metodi particolarmente &ldquo;lunghi&rdquo;, composti cio&egrave; da un numero eccessivo di operazioni, valori bassi sono invece associabili a metodi particolarmente &ldquo;brevi&rdquo;;</dd>
+<dt>CYCLO/LOC (intrinsic operation complexity)</dt><dd>misura la complessit&agrave; media di un'operazione: valori bassi denotano la presenza di metodi &ldquo;semplici&rdquo;, tendenzialmente lineari, mentre valori alti caratterizzano metodi con un numero eccessivo di istruzioni condizionali.</dd>
+</dl>
+<h3>La parte di destra: <em>system coupling</em></h3>
+<p>La parte di destra della piramide riporta due indici relativi all'accoppiamento dei componenti del sistema:</p>
+<dl>
+<dt>CALLS</dt><dd>numero di chiamate distinte effettuate (nel contesto di un singolo metodo, pi&ugrave; chiamate alla stessa funzione conta come una);</dd>
+<dt>FANOUT</dt><dd>numero di tipi distinti riferiti (nel contesto di un singolo metodo, pi&ugrave; riferimenti ad uno stesso tipo conta come uno).</dd>
+</dl>
+<p>L'analisi del grado di accoppiamento del sistema avviene sulla base dei rapporti di queste metriche:</p>
+<dl>
+<dt>CALLS/NOM (coupling intensity)</dt><dd>numero medie di chiamate effettuate durante l'esecuzione di un'operazione; valori bassi denotano sistemi poco strutturati, viceversa alti valori sono caratteristici dei sistemi fortemente modulari, in cui le operazioni pi&ugrave; complesse sono realizzate per composizione di attivit&agrave; pi&ugrave; semplici;</dd>
+<dt>FANOUT/CALLS (coupling dispersion)</dt><dd>numero medio di classi coinvolte nell'esecuzione di un'operazione: valori bassi denotano sistemi &ldquo;coesi&rdquo;, nei quali cio&egrave; le funzionalit&agrave; sono realizzate da poche classi, valori alti sono invece caratteristici dei sistemi &ldquo;frammentati&rdquo;.</dd>
+</dl>
+<h2>Creazione del prospetto</h2>
+<p>Per generalit&agrave;, ho predisposto una <a href="files/overview-pyramid/templates/pyramid.xsl">trasformazione XSLT</a> che produce la piramide a partire da un file XML contenente le metriche di base. Segue un esempio di file XML sorgente:</p>
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;us-ascii&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;pyramid.xsl&quot;?&gt;
+&lt;pyramid tool=&quot;SourceMonitor&quot;&gt;
+ &lt;andc&gt;&lt;/andc&gt;
+ &lt;ahh&gt;&lt;/ahh&gt;
+ &lt;nop&gt;49&lt;/nop&gt;
+ &lt;noc&gt;1500&lt;/noc&gt;
+ &lt;nom&gt;7215&lt;/nom&gt;
+ &lt;loc&gt;186497&lt;/loc&gt;
+ &lt;cyclo&gt;14009&lt;/cyclo&gt;
+ &lt;calls&gt;34714&lt;/calls&gt;
+ &lt;fanout&gt;&lt;/fanout&gt;
+&lt;/pyramid&gt;
+</pre>
+<p>Il prospetto HTML prodotto dalla traformazione (cfr. <a href="files/overview-pyramid/example/pyramid.htm">esempio</a>) riporta, oltre alla piramide, i valori soglia applicati ai diversi indici della piramide (sezione <em>Thresholds</em>), nonché delle indicazioni circa le possibili cause associate a valori fuori norma (sezione <em>Smells</em>).</p>
+<h2>Raccolta delle metriche</h2>
+<p>Ho condotto il primo esperimento di costruzione della piramide con una versione <em>beta</em> di SourceMonitor, la 3.4.6.301 (quelle precedenti hanno qualche problema nell'esportazione dei dati da linea di comando).</p>
+<p>La procedura si compone di due passi:</p>
+<ol>
+<li>esportazione delle metriche;</li>
+<li>analisi delle metriche e salvataggio degli aggregati su file XML.</li>
+</ol>
+<p>Ho sfruttato la capacit&agrave; di SourceMonitor di esportare le metriche di dettaglio del progetto e quelle di metodo su file CSV: ho perci&ograve; predisposto un file <a href="files/overview-pyramid/sourcemonitor_commands.xml"><em>batch per SourceMonitor</em></a> con i riferimenti alle cartelle del progetto software da analizzare e ho preparato uno <a href="files/overview-pyramid/pyramid.py">script <em>Python</em></a> per ricavare dai due file CSV le metriche necessarie alla costruzione della piramide. Ho infine automatizzato la procedura di esportazione e aggregazione delle metriche con un ulteriore file <a href="files/overview-pyramid/pyramid.cmd"><em>batch per Console</em></a>.</p>
+<h2>Conclusioni</h2>
+<p>Una volta copiati gli script <a href="files/overview-pyramid/pyramid.cmd"><span class="code">pyramid.cmd</span></a> e <a href="files/overview-pyramid/pyramid.py"><span class="code">pyramid.py</span></a> in una cartella dedicata, e aver salvato in una cartella denominata <span class="code">templates</span> i due file <a href="files/overview-pyramid/templates/pyramid.xsl"><span class="code">pyramid.xsl</span></a> e <a href="files/overview-pyramid/templates/pyramid.css"><span class="code">pyramid.css</span></a>, il prospetto va generato lanciando il comando:</p>
+<pre class="code">
+    pyramid.cmd &lt;sourcemonitor-command-file&gt; &lt;output-dir&gt;
+</pre>
+<p>ove <span class="code">&lt;sourcemonitor-command-file&gt;</span> &egrave; il percorso al file batch di SourceMonitor, mentre <span class="code">&lt;output-dir&gt;</span> &egrave; il nome della cartella dove il prospetto sar&agrave; salvato.</p>
+<p>Se la procedura si conclude senza errori, l'apertura del file <span class="code">&lt;output-dir&gt;\pyramid.xml</span> in un qualunque <em>browser</em> produrr&agrave; il prospetto atteso.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Girba, T., Lanza, M., Marinescu, R. &quot;Pragmatic Design Quality Assessment&quot;. <em>slideshare.net</em>. &lt;<a href="http://www.slideshare.net/girba/pragmatic-quality-assessment-tutorial-icse-2008">http://www.slideshare.net/girba/pragmatic-quality-assessment-tutorial-icse-2008</a>&gt;</li>
+<a name="ref-2"></a>
+<li>Lanza, M., Marinescu, R. <em>Object-Oriented Metrics in Practice</em>. Springer-Verlag Berlin Heidelberg, 2006.</li>
+<a name="ref-3"></a>
+<li>Pichler. M. &quot;Using the Overview Pyramid&quot;. <em>manuel-pichler.de</em>. &lt;<a href="http://manuel-pichler.de/archives/31-Using-the-Overview-Pyramid.html">http://manuel-pichler.de/archives/31-Using-the-Overview-Pyramid.html</a>&gt;</li>
+<a name="ref-4"></a>
+<li>VV.AA. &quot;Exploring Smells and Metrics&quot;. <em>Institut fur Informatik III &ndash; Universitat Bonn</em>. &lt;<a href="http://sewiki.iai.uni-bonn.de/research/cultivate/tutorial_exploring_smells_and_metrics">http://sewiki.iai.uni-bonn.de/research/cultivate/tutorial_exploring_smells_and_metrics</a>&gt;</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 03/01/2012</p>
+</body>
+</html>
