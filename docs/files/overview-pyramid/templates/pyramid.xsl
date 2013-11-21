@@ -388,7 +388,7 @@
    <dt>ANDC</dt><dd>average number of derived classes;</dd>
    <dt>AHH</dt><dd>average hierarchy height.</dd>
   </dl>
-  <h3>Left part: Size and Complexity</h3>
+  <h3>Left part: System Size and Complexity</h3>
   <h4>Direct metrics</h4>
   <dl>
    <dt>NOP</dt><dd>number of packages;</dd>
@@ -404,7 +404,7 @@
    <dt>LOC/NOM</dt><dd>average number of lines per method &#x2192; operation structuring, indicates how well the system's behaviuor is distributed over operations;</dd>
    <dt>CYCLO/LOC</dt><dd>average method complexity &#x2192; intrinsic operation complexity, indicates the expected complexity of an operation.</dd>
   </dl>
-  <h3>Right part: Coupling</h3>
+  <h3>Right part: System Coupling</h3>
   <h4>Direct metrics</h4>
   <dl>
    <dt>CALLS</dt><dd>number of calls;</dd>
