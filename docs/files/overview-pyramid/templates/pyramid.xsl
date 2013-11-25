@@ -50,7 +50,7 @@
   <h1>Overview Pyramid</h1>
   <p class="source">Source: <xsl:value-of select="@tool"/></p>
   <br/>
-  <table class="pyramid" cellpadding="0" cellspacing="0" boder="1">
+  <table class="pyramid" cellpadding="0" cellspacing="0">
    <tr>
     <td class="outer" colspan="4"></td>
     <td class="inheritance-label">ANDC</td>
