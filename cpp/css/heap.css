@@ -1,9 +1,7 @@
-span.event
-{
-	font-family: Consolas, Courier New, monospace;
+span.event {
+ font-family: Consolas, Courier New, monospace;
 }
 
-span.request-type
-{
-	font-family: Consolas, Courier New, monospace;
+span.request-type {
+ font-family: Consolas, Courier New, monospace;
 }

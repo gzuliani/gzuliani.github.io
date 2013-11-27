@@ -1,19 +1,16 @@
-h3
-{
-	border-top: 1px;
-	border-left: 0px;
-	border-bottom: 0px;
-	border-right: 0px;
-	border-style: solid;
-	margin-top: 7em;
-	padding-top: 1em;
+h3 {
+ border-top: 1px;
+ border-left: 0px;
+ border-bottom: 0px;
+ border-right: 0px;
+ border-style: solid;
+ margin-top: 3em;
+ padding-top: 1em;
 }
 
-img.snapshot
-{
+img.snapshot {
 }
 
-p.snapshot
-{
-	margin-left: 1em;
+p.snapshot {
+ margin-left: 1em;
 }
