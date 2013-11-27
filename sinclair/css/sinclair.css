@@ -1,62 +1,43 @@
-img.snapshot
-{
-	border-color: black;
-	border-width: 1;
-	border-style: solid;
+img.snapshot {
+ border-color: black;
+ border-width: 1;
+ border-style: solid;
 }
 
-li.input
-{
-	color: #800000;
-	font-style: italic;
+li.input {
+ color: #6c71c4;
+ font-style: italic;
 }
 
-li.output
-{
-	color: #000080;
-	font-style: italic;
+li.output {
+ color: #cb4b16;
+ font-style: italic;
 }
 
-p.snapshot
-{
-	margin-left: 1em;
+p.snapshot {
+ margin-left: 1em;
 }
 
-pre.code
-{
-	background-color: #e0e0e0;
-	border-color: black;
-	border-width: 1;
-	border-style: solid;
-	font-family: courier new, courier;
-	padding: 1em;
+table.code {
+ background: #eee8d5;
+ border: 1px solid #073642;
+ font-family: Consolas, Courier New, monospace;
+ font-size: .9em;
+ margin-left: 0em;
+ padding: 1em;
 }
 
-table.code
-{
-	background-color: #e0e0e0;
-	border-color: black;
-	border-width: 1;
-	border-style: solid;
-	font-family: courier new, courier;
-	font-size: 95%;
-	padding: 1em;
+td.label {
+ padding-right: 2em;
+ white-space: nowrap;
 }
 
-td.label
-{
-	padding-right: 2em;
-	white-space: nowrap;
+td.opcode {
+ padding-right: 2em;
+ white-space: nowrap;
 }
 
-td.opcode
-{
-	padding-right: 2em;
-	white-space: nowrap;
-}
-
-td.hex
-{
-	white-space: nowrap;
-	width: 99%;
+td.hex {
+ white-space: nowrap;
+ width: 99%;
 }

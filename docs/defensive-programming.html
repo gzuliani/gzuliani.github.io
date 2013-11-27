@@ -70,10 +70,10 @@
 <p>Un ultimo aspetto da considerare riguarda l'efficienza del codice preposto alla verifica delle precondizioni. Lakos propone la classificazione delle assert in funzione del peso computazionale richiesto per la verifica, per poter calibrare &ndash; per esempio per mezzo di macro &ndash; il livello di inefficienza rispetto alla sistematicit&agrave; delle verifiche. Lui suggerisce le seguenti classi di costo:</p>
 <table cellspacing="0">
 <tr><th>macro</th><th>costo CPU</th><th>note</th></tr>
-<tr><td><span class="code">ASSERT_OPT[IMIZE]</span></td><td class="centered">&lt;5%</td><td>sempre attive</td></tr>
-<tr><td><span class="code">ASSERT[_REGULAR]</span></td><td class="centered">5%&divide;20%</td><td></td></tr>
-<tr><td><span class="code">ASSERT_SAFE</span></td><td class="centered">&gt;20%</td><td>da usare nelle funzioni inline</td></tr>
-<tr><td><span class="code">ASSERT_SAFE2</span></td><td class="centered">&gt;100%</td><td>O(verifica) &gt; O(codice)</td></tr>
+<tr><td class="macro">ASSERT_OPT[IMIZE]</td><td class="cpu">&lt;5%</td><td>sempre attive</td></tr>
+<tr><td class="macro">ASSERT[_REGULAR]</td><td class="cpu">5%&divide;20%</td><td></td></tr>
+<tr><td class="macro">ASSERT_SAFE</td><td class="cpu">&gt;20%</td><td>da usare nelle funzioni inline</td></tr>
+<tr><td class="macro">ASSERT_SAFE2</td><td class="cpu">&gt;100%</td><td>O(verifica) &gt; O(codice)</td></tr>
 </table>
 <h2>Negative testing</h2>
 <p>&Egrave; il codice di test preposto alla verifica della correttezza delle <span class="code">ASSERT</span>. Deve attivarsi se e solo se le asserzioni sono attivate, e deve accertarsi che le segnalazioni arrivino dal componente sotto test e non da un suo subordinato.</p>

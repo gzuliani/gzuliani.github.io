@@ -1,10 +1,3 @@
-span.code
-{
-	font-family: Consolas, Courier New, monospace;
-	font-size: 90%;
-}
-
-span.path
-{
-	font-style: italic;
+span.path {
+ font-style: italic;
 }
