@@ -64,6 +64,12 @@ h4 {
  margin-bottom: 1em;
 }
 
+img {
+ margin-left: 3em;
+ margin-top: 2em;
+ margin-bottom: 2em;
+}
+
 ins {
  font-weight: bold;
  text-decoration: none;
@@ -155,6 +161,10 @@ td {
  padding-right: .5em;
 }
 
+td.centered {
+ text-align: center;
+}
+
 td.sub-header {
  border-bottom: 1px solid #073642;
  font-style: italic;
@@ -162,6 +172,8 @@ td.sub-header {
 
 th {
  border-bottom: 1px solid #073642;
+ padding-left: .5em;
+ padding-right: .5em;
 }
 
 th.main-header {

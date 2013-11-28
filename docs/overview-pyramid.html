@@ -8,7 +8,7 @@
 <h1>Overview Pyramid con SourceMonitor</h1>
 <h2>Introduzione</h2>
 <p>L'<em>Overview Pyramid</em> &egrave; una rappresentazione sintetica dello stato di un progetto software.</p>
-<img src="img/overview-pyramid/pyramid.png" alt="esempio di overview pyramid"/>
+<img src="img/overview-pyramid/pyramid-transparent.png" alt="esempio di overview pyramid">
 <p>La piramide &egrave; suddivisa in tre parti: il vertice, con le metriche relative alle gerarchie ereditarie, la parte di sinistra, con quelle associate alla dimensione e alla complessit&agrave; del codice, e la parte di destra, con quelle sull'accoppiamento del sistema.</p>
 <h3>Il vertice: <em>system inheritance</em></h3>
 <p>Il vertice della piramide mostra due indici relativi all'ereditariet&agrave;:</p>
@@ -47,7 +47,7 @@
 <dt>FANOUT/CALLS (coupling dispersion)</dt><dd>numero medio di classi coinvolte nell'esecuzione di un'operazione: valori bassi denotano sistemi &ldquo;coesi&rdquo;, nei quali cio&egrave; le funzionalit&agrave; sono realizzate da poche classi, valori alti sono invece caratteristici dei sistemi &ldquo;frammentati&rdquo;.</dd>
 </dl>
 <h2>Creazione del prospetto</h2>
-<p>Per generalit&agrave;, ho predisposto una <a href="files/overview-pyramid/templates/pyramid.xsl">trasformazione XSLT</a> che produce la piramide a partire da un file XML contenente le metriche di base. Segue un esempio di file XML sorgente:</p>
+<p>Per generalit&agrave;, ho predisposto una <a href="files/overview-pyramid-sm/templates/pyramid.xsl">trasformazione XSLT</a> che produce la piramide a partire da un file XML contenente le metriche di base. Segue un esempio di file XML sorgente:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;us-ascii&quot;?&gt;
 &lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;pyramid.xsl&quot;?&gt;
@@ -63,7 +63,7 @@
  &lt;fanout&gt;&lt;/fanout&gt;
 &lt;/pyramid&gt;
 </pre>
-<p>Il prospetto HTML prodotto dalla traformazione (cfr. <a href="files/overview-pyramid/example/pyramid.htm">esempio</a>) riporta, oltre alla piramide, i valori soglia applicati ai diversi indici della piramide (sezione <em>Thresholds</em>), nonché delle indicazioni circa le possibili cause associate a valori fuori norma (sezione <em>Smells</em>).</p>
+<p>Il prospetto HTML prodotto dalla traformazione (cfr. <a href="files/overview-pyramid-sm/example/pyramid.htm">esempio</a>) riporta, oltre alla piramide, i valori soglia applicati ai diversi indici della piramide (sezione <em>Thresholds</em>), nonché delle indicazioni circa le possibili cause associate a valori fuori norma (sezione <em>Smells</em>).</p>
 <h2>Raccolta delle metriche</h2>
 <p>Ho condotto il primo esperimento di costruzione della piramide con una versione <em>beta</em> di SourceMonitor, la 3.4.6.301 (quelle precedenti hanno qualche problema nell'esportazione dei dati da linea di comando).</p>
 <p>La procedura si compone di due passi:</p>
@@ -71,15 +71,17 @@
 <li>esportazione delle metriche;</li>
 <li>analisi delle metriche e salvataggio degli aggregati su file XML.</li>
 </ol>
-<p>Ho sfruttato la capacit&agrave; di SourceMonitor di esportare le metriche di dettaglio del progetto e quelle di metodo su file CSV: ho perci&ograve; predisposto un file <a href="files/overview-pyramid/sourcemonitor_commands.xml"><em>batch per SourceMonitor</em></a> con i riferimenti alle cartelle del progetto software da analizzare e ho preparato uno <a href="files/overview-pyramid/pyramid.py">script <em>Python</em></a> per ricavare dai due file CSV le metriche necessarie alla costruzione della piramide. Ho infine automatizzato la procedura di esportazione e aggregazione delle metriche con un ulteriore file <a href="files/overview-pyramid/pyramid.cmd"><em>batch per Console</em></a>.</p>
+<p>Ho sfruttato la capacit&agrave; di SourceMonitor di esportare le metriche di dettaglio del progetto e quelle di metodo su file CSV: ho perci&ograve; predisposto un file <a href="files/overview-pyramid-sm/sourcemonitor_commands.xml"><em>batch per SourceMonitor</em></a> con i riferimenti alle cartelle del progetto software da analizzare e ho preparato uno <a href="files/overview-pyramid-sm/pyramid.py">script <em>Python</em></a> per ricavare dai due file CSV le metriche necessarie alla costruzione della piramide. Ho infine automatizzato la procedura di esportazione e aggregazione delle metriche con un ulteriore file <a href="files/overview-pyramid-sm/pyramid.cmd"><em>batch per il prompt</em></a>.</p>
 <p class="note">Nota: SourceMonitor non determina tutte le metriche necessarie all'istanziazione degli indici della piramide (nella fattispecie: ANDC, AHH, NOP e FANOUT); per questo motivo, alcuni di essi sono marcati come <em>n/a &ndash; not available</em>. NOP viene stimato dallo script python, che assume essere equivalente al numero di cartelle in cui sono stati suddivisi i file sorgente.</p>
 <h2>Conclusioni</h2>
-<p>Una volta copiati gli script <a href="files/overview-pyramid/pyramid.cmd"><span class="code">pyramid.cmd</span></a> e <a href="files/overview-pyramid/pyramid.py"><span class="code">pyramid.py</span></a> in una cartella dedicata, e aver salvato in una cartella denominata <span class="code">templates</span> i due file <a href="files/overview-pyramid/templates/pyramid.xsl"><span class="code">pyramid.xsl</span></a> e <a href="files/overview-pyramid/templates/pyramid.css"><span class="code">pyramid.css</span></a>, il prospetto va generato lanciando il comando:</p>
+<p>Una volta copiati gli script <a href="files/overview-pyramid-sm/pyramid.cmd"><span class="code">pyramid.cmd</span></a> e <a href="files/overview-pyramid-sm/pyramid.py"><span class="code">pyramid.py</span></a> in una cartella dedicata, e aver salvato in una cartella denominata <span class="code">templates</span> i due file <a href="files/overview-pyramid-sm/templates/pyramid.xsl"><span class="code">pyramid.xsl</span></a> e <a href="files/overview-pyramid-sm/templates/pyramid.css"><span class="code">pyramid.css</span></a>, il prospetto va generato lanciando il comando:</p>
 <pre class="code">
     pyramid.cmd &lt;sourcemonitor-command-file&gt; &lt;output-dir&gt;
 </pre>
 <p>ove <span class="code">&lt;sourcemonitor-command-file&gt;</span> &egrave; il percorso al file batch di SourceMonitor, mentre <span class="code">&lt;output-dir&gt;</span> &egrave; il nome della cartella dove il prospetto sar&agrave; salvato.</p>
 <p>Se la procedura si conclude senza errori, l'apertura del file <span class="code">&lt;output-dir&gt;\pyramid.xml</span> in un qualunque <em>browser</em> produrr&agrave; il prospetto atteso.</p>
+<p class="update"><strong>Aggiornamento [28/11/2013]</strong>.</p>
+<p>Alla luce delle considerazioni fatte in <a href="overview-pyramid-cccc.html">Overview Pyramid con CCCC</a>, conviene valutare se inibire il conteggio delle linee vuote (cfr. comando <span class="code">ignore_blank_lines</span>). Poich&eacute; SourceMonitor determina pure il numero di istruzioni di cui &egrave; composto un metodo, &egrave; stata realizzata una nuova versione degli script (<a href="files/overview-pyramid-sm-stmt/pyramid.py">qui</a> quello Python, <a href="files/overview-pyramid-sm-stmt/pyramid.cmd">qui</a> quello per il prompt) che utilizzano questa stima come indice <em>LOC</em>. Per attivare questa modalit&agrave; &egrave; sufficiente invocare <span class="code">pyramid.cmd</span> specificando il flag <span class="code">--stmt</span> come ultima opzione da riga di comando.</p>
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
@@ -90,7 +92,9 @@
 <li>Pichler. M. &quot;Using the Overview Pyramid&quot;. <em>manuel-pichler.de</em>. &lt;<a href="http://manuel-pichler.de/archives/31-Using-the-Overview-Pyramid.html">http://manuel-pichler.de/archives/31-Using-the-Overview-Pyramid.html</a>&gt;</li>
 <a name="ref-4"></a>
 <li>VV.AA. &quot;Exploring Smells and Metrics&quot;. <em>Institut fur Informatik III &ndash; Universitat Bonn</em>. &lt;<a href="http://sewiki.iai.uni-bonn.de/research/cultivate/tutorial_exploring_smells_and_metrics">http://sewiki.iai.uni-bonn.de/research/cultivate/tutorial_exploring_smells_and_metrics</a>&gt;</li>
+<a name="ref-5"></a>
+<li>VV.AA. &quot;SourceMonitor&quot;. <em>Campwood Software</em>. &lt;<a href="http://www.campwoodsw.com/sourcemonitor.html">http://www.campwoodsw.com/sourcemonitor.html</a>&gt;</li>
 </ol>
-<p class="modification-notice">Pagina modificata il 03/01/2012</p>
+<p class="modification-notice">Pagina modificata il 27/11/2013</p>
 </body>
 </html>
