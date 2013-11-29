@@ -1,0 +1,375 @@
+<html>
+<head>
+<title>Toxicity Chart con SourceMonitor</title>
+<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='./css/toxicity.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#toxicity-chart">risorse</a> | toxicity</p>
+<h1>Toxicity Chart con SourceMonitor</h1>
+<p>Il <em>Toxicity Chart</em> &egrave; un istogramma a barre impilate che mette in evidenza i file sorgente pi&ugrave; problematici: ogni segmento &egrave; associato ad una metrica, ed &egrave; tanto pi&ugrave; lungo quanto pi&ugrave; fuori tolleranza &egrave; la relativa metrica.</p>
+<img src="img/toxicity-chart/chart-transparent.png" alt="esempio di toxicity chart">
+<p>Il Toxicity Chart nasce per i progetti Java<sup><a href="#ref-3">[3]</a></sup>, io ho cercato di adattare l'idea originale al C++.</p>
+<h2>Metriche</h2>
+<p>L'autore sfrutta l'<em>utility</em> <a href="http://checkstyle.sourceforge.net/">Checkstyle</a> per ricavare le misure di progetto; SourceMonitor (<a href="files/toxicity-chart/sourcemonitor_commands.xml">qui</a> un esempio di file di progetto) produce un insieme molto pi&ugrave; ristretto di metriche, riassunte nella seguente tabella di corrispondenza:</p>
+<table cellpadding="0" cellspacing="0">
+ <tr>
+  <th>Checkstyle</th>
+  <th>SourceMonitor</th>
+ </tr>
+ <tr>
+  <td>File Length</td>
+  <td class="centered">Lines</td>
+ </tr>
+ <tr>
+  <td>Class Fan-Out Complexity</td>
+  <td class="centered">Calls(!?)</td>
+ </tr>
+ <tr>
+  <td>Class Data Abstraction Coupling</td>
+  <td class="centered">n.d.</td>
+ </tr>
+ <tr>
+  <td>Anon Inner Length</td>
+  <td class="centered">n.d.</td>
+ </tr>
+ <tr>
+  <td>Method Length</td>
+  <td class="centered">Statements</td>
+ </tr>
+ <tr>
+  <td>Parameter Number</td>
+  <td class="centered">n.d.</td>
+ </tr>
+ <tr>
+  <td>Cyclomatic Complexity</td>
+  <td class="centered">Complexity</td>
+ </tr>
+ <tr>
+  <td>Nested If Depth</td>
+  <td class="centered">~Maximum Block Depth</td>
+ </tr>
+ <tr>
+  <td>Nested Try Depth</td>
+  <td class="centered">n.d.</td>
+ </tr>
+ <tr>
+  <td>Boolean Expression Complexity</td>
+  <td class="centered">n.d.</td>
+ </tr>
+ <tr>
+  <td>Missing Switch Default</td>
+  <td class="centered">n.d.</td>
+ </tr>
+</table>
+<h2>Implementazione</h2>
+<p>Il tasso di &ldquo;tossicit&agrave;&rdquo; di un file rispetto ad un particolare aspetto &ndash; metrica &ndash;  si determina sommando tutte le occorrenze al di sopra di una soglia predefinita, e normalizzando il risultato rispetto alla soglia stessa, per permettere la successiva aggregazione a livello di file.</p>
+<p class="note">Nota: il Toxicity Chart originale usa la classe come livello di aggregazione delle metriche; in questo caso si usa il file, perch&egrave; esso &egrave; il livello di granularit&agrave; utilizzato nei report di SourceMonitor. La differenza diventa marginale se il progetto C++ usa definire una classe per ogni file.</p>
+<h2>Soglie</h2>
+<p>Le soglie adottate dall'autore del Toxicity Chart sono le seguenti:</p>
+<table cellpadding="0" cellspacing="0">
+ <tr>
+  <th>Metrica</th>
+  <th>Soglia</th>
+ </tr>
+ <tr>
+  <td>File Length</td>
+  <td class="centered">500</td></tr>
+ <tr>
+  <td>Class Fan-Out Complexity</td>
+  <td class="centered">30</td></tr>
+ <tr>
+  <td>Class Data Abstraction Coupling</td>
+  <td class="centered">10</td></tr>
+ <tr>
+  <td>Anon Inner Length</td>
+  <td class="centered">35</td></tr>
+ <tr>
+  <td>Method Length</td>
+  <td class="centered">30</td></tr>
+ <tr>
+  <td>Parameter Number</td>
+  <td class="centered">6</td></tr>
+ <tr>
+  <td>Cyclomatic Complexity</td>
+  <td class="centered">10</td></tr>
+ <tr>
+  <td>Nested If Depth</td>
+  <td class="centered">3</td></tr>
+ <tr>
+  <td>Nested Try Depth</td>
+  <td class="centered">2</td></tr>
+ <tr>
+  <td>Boolean Expression Complexity</td>
+  <td class="centered">3</td></tr>
+ <tr>
+  <td>Missing Switch Default</td>
+  <td class="centered">1</td></tr>
+</table>
+<p>Volendo conformarsi a questi valori, le costanti che regolano il funzionamento dello script Python <a href="files/toxicity-chart/toxicity.py">toxicity.py</a> &ndash; che si occupa di deteminare le tossicit&agrave; a partire dai file CSV prodotti da SourceMonitor &ndash; vanno cos&igrave; impostate:</p>
+<pre class="code">
+ MAX_LINES = 500
+ MAX_STATEMENTS = 30
+ MAX_COMPLEXITY = 10
+ MAX_MAXIMUM_BLOCK_DEPTH = 3
+ MAX_CALLS = None
+</pre>
+<p>Bisogna tener conto che queste soglie sono significative nel contesto di Java; fortunatamente, in rete si trovano analoghe proposte specifiche per il C++:</p>
+<h3>ROS</h3>
+<p>Gli sviluppatori di <a href="http://wiki.ros.org/">ROS</a> hanno compilato una tabella comparativa<sup><a href="#ref-1">[1]</a></sup> delle soglie delle principali metriche C++ disponibili on-line (<em>HIS</em> indica l'&laquo;Hersteller Initiative Software &ndash; Manufacturer's software initiative&raquo;, <em>KTH</em> il &laquo;Royal Institute of Technology, Sweden&raquo;, <em>UoA</em> la &laquo;University of Akureyri in Iceland&raquo;):</p>
+<table cellpadding="0" cellspacing="0">
+ <tr>
+  <th>Metrica</th>
+  <th>Ente</th>
+  <th>Min</th>
+  <th>Max</th>
+ </tr>
+ <tr>
+  <td rowspan="4">Comment to code ratio</td>
+  <td>NASA</td>
+  <td class="centered">0.2</td>
+  <td class="centered">0.3</td>
+ </tr>
+ <tr>
+  <td>HIS</td>
+  <td class="centered">0.2</td>
+  <td class="centered">-</td>
+ </tr>
+ <tr>
+  <td>UoA</td>
+  <td class="centered">0.2</td>
+  <td class="centered">0.4</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">0.2</td>
+  <td class="centered">-</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="4">Cyclomatic complexity</td>
+  <td>NASA</td>
+  <td class="centered">1</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr>
+  <td>HIS</td>
+  <td class="centered">1</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr>
+  <td>KTH</td>
+  <td class="centered">1</td>
+  <td class="centered">15</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">15</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="4">Number of executable lines</td>
+  <td>NASA</td>
+  <td class="centered">1</td>
+  <td class="centered">50</td>
+ </tr>
+ <tr>
+  <td>HIS</td>
+  <td class="centered">1</td>
+  <td class="centered">50</td>
+ </tr>
+ <tr>
+  <td class="centered">HTK</td>
+  <td class="centered">1</td>
+  <td class="centered">70</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">70</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="3">Number of function calls</td>
+  <td>HIS</td>
+  <td class="centered">1</td>
+  <td class="centered">7</td>
+ </tr>
+ <tr>
+  <td>KTH</td>
+  <td class="centered">1</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="3">Maximum nesting of control structures</td>
+  <td>HIS</td>
+  <td class="centered">n/a</td>
+  <td class="centered">4</td>
+ </tr>
+ <tr>
+  <td>KTH</td>
+  <td class="centered">n/a</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">n/a</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="3">Estimated static path count</td>
+  <td>HIS</td>
+  <td class="centered">1</td>
+  <td class="centered">80</td>
+ </tr>
+ <tr>
+  <td>KTH</td>
+  <td class="centered">1</td>
+  <td class="centered">250</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">250</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="2">Coupling between objects</td>
+  <td>NASA</td>
+  <td class="centered"></td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">0</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="2">Number of immediate children</td>
+  <td>UoA</td>
+  <td class="centered">n/a</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">0</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="3">Weighted methods per class</td>
+  <td>NASA</td>
+  <td class="centered">n/a</td>
+  <td class="centered">100</td>
+ </tr>
+ <tr>
+  <td>UoA</td>
+  <td class="centered">1</td>
+  <td class="centered">50</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">100</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="3">Deepest level of inheritance</td>
+  <td>NASA</td>
+  <td class="centered">n/a</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>UoA</td>
+  <td class="centered">n/a</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">n/a</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr><td colspan="5" class="separator">&nbsp;</td></tr>
+ <tr>
+  <td rowspan="2">Number of methods available</td>
+  <td>NASA</td>
+  <td class="centered">1</td>
+  <td class="centered">20</td>
+ </tr>
+ <tr>
+  <td>ROS</td>
+  <td class="centered">1</td>
+  <td class="centered">20</td>
+ </tr>
+</table>
+<p>Segue un esempio di configurazione ROS-conforme:</p>
+<pre class="code">
+ MAX_LINES = 500
+ MAX_STATEMENTS = 70
+ MAX_COMPLEXITY = 15
+ MAX_MAXIMUM_BLOCK_DEPTH = 5
+ MAX_CALLS = 10
+</pre>
+<h3>Herbold, Grabowski e Waack</h3>
+<p>Nel loro studio riguardante la determinazione della sogliatura ottimale di un insieme di metriche, usano i seguenti valori di riferimento:</p>
+<table cellpadding="0" cellspacing="0">
+ <tr>
+  <th>Metrica</th>
+  <th>Soglia</th>
+ </tr>
+ <tr>
+  <td>Cyclomatic Complexity</td>
+  <td class="centered">10</td>
+ </tr>
+ <tr>
+  <td>Nested Block Depth</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>Number of Function Calls</td>
+  <td class="centered">5</td>
+ </tr>
+ <tr>
+  <td>Number of Statements</td>
+  <td class="centered">50</td>
+ </tr>
+</table>
+<p>Per adottare queste soglie &egrave; sufficiente modificare le costanti come segue:</p>
+<pre class="code">
+ MAX_LINES = 500
+ MAX_STATEMENTS = 50
+ MAX_COMPLEXITY = 10
+ MAX_MAXIMUM_BLOCK_DEPTH = 5
+ MAX_CALLS = 5
+</pre>
+<h2>Implementazione</h2>
+<p>L'implementazione attuale &egrave; configurata con le soglie pi&ugrave; tolleranti:</p>
+<pre class="code">
+MAX_LINES = 500
+MAX_STATEMENTS = 70
+MAX_COMPLEXITY = 15
+MAX_MAXIMUM_BLOCK_DEPTH = 5
+MAX_CALLS = 10
+</pre>
+<p>Lo script <a href="files/toxicity-chart/toxicity.cmd"><span class="code">toxicity.cmd</span></a> si occupa di lanciare SourceMonitor e conseguentemente la procedura Python in modo da ottenere il report XML finale in un unico passo. Una <a href="files/toxicity-chart/templates/toxicity.xsl">trasformazione XSLT</a> e un <a href="files/toxicity-chart/templates/toxicity.css">foglio di stile CSS</a> rendono il prospetto in forma di pagina HTML. Lo script  si aspetta di trovare questi due file nella cartella <span class="code">./templates</span>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>AA.VV. &quot;code_quality&quot;. <em>wiki.ros.org</em>. &lt;<a href="http://wiki.ros.org/code_quality">http://wiki.ros.org/code_quality</a>&gt;. Visitato il 29 Novembre 2013.</li>
+<a name="ref-2"></a>
+<li>Herbold, S., Grabowski, J., Waack, S. &quot;Calculation and optimization of thresholds for sets of software metrics&quot;. Empirical Software Engineering. December 2011, Volume 16, Issue 6, pp 812-841 &lt;<a href="http://link.springer.com/article/10.1007%2Fs10664-011-9162-z">http://link.springer.com/article/10.1007%2Fs10664-011-9162-z</a>&gt;. Visitato il 29 Novembre 2013.</li>
+<a name="ref-3"></a>
+<li>D&ouml;rnenburg, E. &quot;How toxic is your code?&quot;. <em>erik.doernenburg.com</em>. &lt;<a href="http://erik.doernenburg.com/2008/11/how-toxic-is-your-code/">http://erik.doernenburg.com/2008/11/how-toxic-is-your-code/</a>&gt;. Visitato il 28 Novembre 2013.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 28/11/2013</p>
+</body>
+</html>
