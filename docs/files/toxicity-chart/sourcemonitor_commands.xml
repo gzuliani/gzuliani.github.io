@@ -5,6 +5,7 @@
     <project_file>%PROJECT_FILE_PATH%</project_file>
     <project_language>C++</project_language>
     <modified_complexity>true</modified_complexity>
+    <ignore_blank_lines>true</ignore_blank_lines>
     <source_directory><!-- base directory --></source_directory>
     <source_subdirectory_list>
       <exclude_subdirectories>false</exclude_subdirectories>
@@ -12,7 +13,7 @@
       <source_subtree><!-- other source directory --></source_subtree>
     </source_subdirectory_list>
     <parse_utf8_files>True</parse_utf8_files>
-    <checkpoint_name>pyramid</checkpoint_name>
+    <checkpoint_name>toxicity</checkpoint_name>
     <show_measured_max_block_depth>True</show_measured_max_block_depth>
     <file_extensions>*.h,*.cpp</file_extensions>
     <include_subdirectories>false</include_subdirectories>
@@ -24,7 +25,7 @@
   </command>
   <command>
     <project_file>%PROJECT_FILE_PATH%</project_file>
-    <checkpoint_name>pyramid</checkpoint_name>
+    <checkpoint_name>toxicity</checkpoint_name>
     <export>
       <export_file>%METHOD_METRICS_CSV_FILE_PATH%</export_file>
       <export_type>6 (Export method metrics in CSV format)</export_type>

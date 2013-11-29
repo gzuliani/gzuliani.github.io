@@ -37,12 +37,13 @@ h4 {
 }
 
 p.source {
- font-size: 50%;
+ font-size: 66%;
  font-style: italic;
 }
 
 table {
  font-size: .75em;
+ margin-top: 1em;
 }
 
 tr {
