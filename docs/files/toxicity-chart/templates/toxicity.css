@@ -13,9 +13,18 @@ h1 {
  margin-bottom: 1em;
 }
 
-p.source {
- font-size: 66%;
+p.date {
+ font-size: 75%;
  font-style: italic;
+ margin-top: .25em;
+ margin-bottom: 0em;
+}
+
+p.tool {
+ font-size: 75%;
+ font-style: italic;
+ margin-top: .25em;
+ margin-bottom: 0em;
 }
 
 table.toxicity {

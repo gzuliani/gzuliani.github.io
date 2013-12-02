@@ -1,6 +1,8 @@
 import csv
+import datetime
 import optparse
 import os.path
+import xml.sax.saxutils
 
 file_stats = { }
 
@@ -63,6 +65,10 @@ if __name__ == '__main__':
         help='supply the value for the AHH metric')
     parser.add_option('', '--fanout', dest='fanout', default='',
         help='supply the value for the FANOUT metric')
+    parser.add_option('', '--name', dest='name', default='',
+        help='supply the project\'s name')
+    parser.add_option('', '--version', dest='version', default='',
+        help='supply the project\'s version number')
     parser.add_option('', '--xslt', dest='xslt', default='',
         help='link the specified stylesheet')
     (options, args) = parser.parse_args()
@@ -123,7 +129,16 @@ if __name__ == '__main__':
     print '<?xml version="1.0" encoding="us-ascii"?>'
     if options.xslt:
         print '<?xml-stylesheet type="text/xsl" href="%s"?>' % options.xslt
-    print '<pyramid tool="SourceMonitor">'
+    attrs = { }
+    attrs["tool"] = "SourceMonitor"
+    attrs["date"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S')
+    if options.name:
+        attrs["project-name"] = options.name
+    if options.version:
+        attrs["project-version"] = options.version
+    print '<pyramid %s>' % ' '.join(['%s=%s' % (
+        name, xml.sax.saxutils.quoteattr(value))
+            for name, value in attrs.items()])
     print ' <andc>%s</andc>' % options.andc
     print ' <ahh>%s</ahh>' % options.ahh
     print ' <nop>%s</nop>' % nop

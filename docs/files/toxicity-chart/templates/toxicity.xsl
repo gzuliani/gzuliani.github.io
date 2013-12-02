@@ -19,35 +19,57 @@
   </head>
   <body>
 
-  <h1>Toxicity chart</h1>
-  <p class="source">Source: <xsl:value-of select="@tool"/></p>
+   <h1>
+    <xsl:text>Toxicity Chart</xsl:text>
+    <xsl:if test="@project-name != ''">
+     <xsl:text> - </xsl:text>
+     <xsl:value-of select="@project-name"/>
+     <xsl:if test="@project-version != ''">
+      <xsl:text> v. </xsl:text>
+      <xsl:value-of select="@project-version"/>
+     </xsl:if>
+    </xsl:if>
+   </h1>
+   <xsl:if test="@date != ''">
+    <p class="date">
+     <xsl:text>Date: </xsl:text>
+     <xsl:value-of select="@date"/>
+    </p>
+   </xsl:if>
+   <xsl:if test="@tool != ''">
+    <p class="tool">
+     <xsl:text>Source: </xsl:text>
+     <xsl:value-of select="@tool"/>
+    </p>
+   </xsl:if>
 
-  <xsl:apply-templates select="files"/>
-  <br/>
+   <xsl:apply-templates select="files"/>
+   <br/>
 
-  <!-- legend -->
-  <br/>
-  <table class="legend" cellpadding="0" cellspacing="0">
-   <tr>
-    <td class="legend-caption">Legend:</td>
-     <xsl:for-each select="thresholds/threshold/@metric">
-      <xsl:element name="td">
-       <xsl:attribute name="class">
-        <xsl:value-of select="."/>
-       </xsl:attribute>
-      </xsl:element>
-      <td class="ratio-undef"></td>
-      <td class="legend">
-       <xsl:value-of select="translate(., '-', ' ')"/>
-      </td>
-     </xsl:for-each>
-   </tr>
-  </table>
+   <!-- legend -->
+   <br/>
+   <table class="legend" cellpadding="0" cellspacing="0">
+    <tr>
+     <td class="legend-caption">Legend:</td>
+      <xsl:for-each select="thresholds/threshold/@metric">
+       <xsl:element name="td">
+        <xsl:attribute name="class">
+         <xsl:value-of select="."/>
+        </xsl:attribute>
+       </xsl:element>
+       <td class="ratio-undef"></td>
+       <td class="legend">
+        <xsl:value-of select="translate(., '-', ' ')"/>
+       </td>
+      </xsl:for-each>
+    </tr>
+   </table>
 
-  <h2>Thresholds</h2>
-  <xsl:apply-templates select="thresholds"/>
+   <h2>Thresholds</h2>
+   <xsl:apply-templates select="thresholds"/>
+   <br/>
 
- </body>
+  </body>
  </html>
 </xsl:template>
 
