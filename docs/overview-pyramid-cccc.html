@@ -131,6 +131,12 @@ In the case of C++, the count is incremented for each of the following tokens: '
 <p>ove <span class="code">&lt;sourcemonitor-command-file&gt;</span> &egrave; il percorso al file batch di SourceMonitor, mentre <span class="code">&lt;output-dir&gt;</span> &egrave; il nome della cartella dove il prospetto sar&agrave; salvato.</p>
 <p>Se la procedura si conclude senza errori, l'apertura del file <span class="code">&lt;output-dir&gt;\pyramid.xml</span> in un qualunque <em>browser</em> produrr&agrave; il prospetto atteso.</p>
 -->
+<p class="update"><strong>Aggiornamento [02/12/2013]</strong></p>
+<p>Lo script di creazione del prospetto ora vuole anche il nome e il numero di versione del progetto software da inserire nel titolo del prospetto:</p>
+<pre class="code">
+Usage: pyramid.cmd &lt;project-name&gt; &lt;project-version&gt; &lt;output-dir&gt; &lt;source-dir&gt;+
+</pre>
+<p>Oltre all'indicazione dello strumento utilizzato per raccogliere le metriche, in testata ora viene riportata anche la data di creazione del prospetto stesso.</p>
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>

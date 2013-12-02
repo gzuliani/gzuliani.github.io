@@ -6,19 +6,26 @@ if not exist %PY% goto :py_not_found
 set CCCC="%ProgramFiles(x86)%\CCCC\cccc.exe"
 if not exist %CCCC% goto :bin_not_found
 
-set OUTPUT_DIR=%1
-if "%1" equ "" goto :usage
+set PROJECT_NAME=%~1
+if "%PROJECT_NAME%" equ "" goto :usage
+shift
 
-rd /s /q %OUTPUT_DIR% >nul 2>&1
-md %OUTPUT_DIR% >nul 2>&1
+set PROJECT_VERSION=%~1
+if "%PROJECT_VERSION%" equ "" goto :usage
+shift
+
+set OUTPUT_DIR=%~1
+if "%OUTPUT_DIR%" equ "" goto :usage
+shift
+
+rd /s /q "%OUTPUT_DIR%" >nul 2>&1
+md "%OUTPUT_DIR%" >nul 2>&1
 
 if "%2"=="" goto :usage
 
 rem estimating the number of packages as the subdirs of the main source dir
 set NOP=0
 for /d %%a in (%2\*) do set /a NOP=NOP+1
-
-shift
 
 echo scanning source files...
 set FILE_LIST=%TEMP%\cccc.lst
@@ -50,20 +57,20 @@ type %FILE_LIST% | %CCCC% --outdir=%CCCC_OUTPUT_DIR% --report_mask=por - >nul 2>
 del /q %FILE_LIST% >nul 2>&1
 
 echo building pyramid...
-%PY% pyramid.py %CCCC_OUTPUT_DIR%\cccc.xml --xslt pyramid.xsl --nop %NOP% > %OUTPUT_DIR%\pyramid.xml
+%PY% pyramid.py %CCCC_OUTPUT_DIR%\cccc.xml --xslt pyramid.xsl --nop %NOP% --name="%PROJECT_NAME%" --version="%PROJECT_VERSION%" > "%OUTPUT_DIR%\pyramid.xml"
 
-copy /y templates\* %OUTPUT_DIR% >nul 2>&1
+copy /y ..\templates\* "%OUTPUT_DIR%" >nul 2>&1
 
 echo cleaning up...
 rd /q /s %CCCC_OUTPUT_DIR% >nul 2>&1
 
-rem %OUTPUT_DIR%\pyramid.xml
+rem "%OUTPUT_DIR%\pyramid.xml"
 
 echo done.
 goto :eof
 
 :usage
-echo Usage: %~nx0 ^<output-dir^> ^<main-source-dir^> [^<source-dir^> ...]
+echo Usage: %~nx0 ^<project-name^> ^<project-version^> ^<output-dir^> ^<source-dir^>+
 exit /b 1
 
 :py_not_found

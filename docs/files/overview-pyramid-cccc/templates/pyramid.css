@@ -1,5 +1,23 @@
+/*
+colour.base03=#002b36
+colour.base02=#073642
+colour.base01=#586e75
+colour.base00=#657b83
+colour.base0=#839496
+colour.base1=#93a1a1
+colour.base2=#eee8d5
+colour.base3=#fdf6e3
+colour.yellow=#b58900
+colour.orange=#cb4b16
+colour.red=#dc322f
+colour.magenta=#d33682
+colour.violet=#6c71c4
+colour.blue=#268bd2
+colour.cyan=#2aa198
+colour.green=#859900
+*/
+
 body {
- background: #eee8d5;
  color: #586e75;
  font-family: Candara, Verdana, Arial, Sans Serif;
  margin-left: 0em;
@@ -36,14 +54,26 @@ h4 {
  margin-bottom: 1em;
 }
 
-p.source {
- font-size: 66%;
+p.date {
+ font-size: 75%;
  font-style: italic;
+ margin-top: .25em;
+ margin-bottom: 0em;
+}
+
+p.tool {
+ font-size: 75%;
+ font-style: italic;
+ margin-top: .25em;
+ margin-bottom: 0em;
 }
 
 table {
  font-size: .75em;
- margin-top: 1em;
+}
+
+table.pyramid {
+ margin-top: 2em;
 }
 
 tr {

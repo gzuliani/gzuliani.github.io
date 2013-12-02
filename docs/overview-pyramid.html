@@ -80,8 +80,19 @@
 </pre>
 <p>ove <span class="code">&lt;sourcemonitor-command-file&gt;</span> &egrave; il percorso al file batch di SourceMonitor, mentre <span class="code">&lt;output-dir&gt;</span> &egrave; il nome della cartella dove il prospetto sar&agrave; salvato.</p>
 <p>Se la procedura si conclude senza errori, l'apertura del file <span class="code">&lt;output-dir&gt;\pyramid.xml</span> in un qualunque <em>browser</em> produrr&agrave; il prospetto atteso.</p>
-<p class="update"><strong>Aggiornamento [28/11/2013]</strong>.</p>
+<p class="update"><strong>Aggiornamento [28/11/2013]</strong></p>
 <p>Alla luce delle considerazioni fatte in <a href="overview-pyramid-cccc.html">Overview Pyramid con CCCC</a>, conviene valutare se inibire il conteggio delle linee vuote (cfr. comando <span class="code">ignore_blank_lines</span>). Poich&eacute; SourceMonitor determina pure il numero di istruzioni di cui &egrave; composto un metodo, &egrave; stata realizzata una nuova versione degli script (<a href="files/overview-pyramid-sm-stmt/pyramid.py">qui</a> quello Python, <a href="files/overview-pyramid-sm-stmt/pyramid.cmd">qui</a> quello per il prompt) che utilizzano questa stima come indice <em>LOC</em>. Per attivare questa modalit&agrave; &egrave; sufficiente invocare <span class="code">pyramid.cmd</span> specificando il flag <span class="code">--stmt</span> come ultima opzione da riga di comando.</p>
+<p class="update"><strong>Aggiornamento [02/12/2013]</strong></p>
+<p>Aggiunta la possibilit&agrave; di specificare il nome e il numero di versione del progetto software da inserire nel titolo del prospetto:</p>
+<pre class="code">
+Usage: pyramid.cmd &lt;sourcemonitor-command-file&gt; &lt;output-dir&gt; [options]
+
+Options:
+  --stmt             replace the LOC value with the statement count
+  --name=NAME        supply the project&apos;s name
+  --version=VERSION  supply the project&apos;s version number
+</pre>
+<p>Oltre all'indicazione dello strumento utilizzato per raccogliere le metriche, in testata ora viene riportata anche la data di creazione del prospetto stesso.</p>
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>

@@ -1,5 +1,6 @@
 import collections
 import csv
+import datetime
 import optparse
 import os.path
 import xml.sax.saxutils
@@ -169,8 +170,16 @@ class Report(object):
     def use_sheet(self, sheet):
         print '<?xml-stylesheet type="text/xsl" href="%s"?>' % sheet
 
-    def start(self, tool):
-        print '<toxicity tool=%s>' % xml.sax.saxutils.quoteattr(tool)
+    def start(self, project_name=None, project_version=None, tool=None):
+        attrs = {
+            "project-name": project_name,
+            "project-version": project_version,
+            "tool": tool,
+            "date": datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'),
+        }
+        print '<toxicity %s>' % \
+            ' '.join(['%s=%s' % (name, xml.sax.saxutils.quoteattr(value))
+                for name, value in attrs.items() if value])
 
     def publish_thresholds(self, thresholds):
         print ' <thresholds>'
@@ -210,6 +219,10 @@ if __name__ == '__main__':
     parser = optparse.OptionParser(
         usage='usage: %prog <project-details-csv-file> ' \
               '<method-metrics-csv-file> [options]')
+    parser.add_option('', '--name', dest='name', default='',
+        help='supply the project\'s name')
+    parser.add_option('', '--version', dest='version', default='',
+        help='supply the project\'s version number')
     parser.add_option('', '--top', dest='top', default='-1',
         help='output the <TOP> worste files only')
     parser.add_option('', '--xslt', dest='xslt', default='',
@@ -253,7 +266,7 @@ if __name__ == '__main__':
     if options.xslt:
         report.use_sheet(options.xslt)
 
-    report.start('SourceMonitor')
+    report.start(options.name, options.version, 'SourceMonitor')
 
     report.publish_thresholds([
         ('lines', 'file', MAX_LINES),

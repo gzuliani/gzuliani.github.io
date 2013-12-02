@@ -1,3 +1,4 @@
+import datetime
 import optparse
 import xml.sax
 
@@ -56,9 +57,16 @@ if __name__ == '__main__':
 
     parser = optparse.OptionParser(
         usage='usage: %prog <cccc-xml-file>')
-    parser.add_option('', '--nop', dest='nop', default='')
-    parser.add_option('', '--calls', dest='calls', default='')
-    parser.add_option('', '--xslt', dest='xslt', default='')
+    parser.add_option('', '--nop', dest='nop', default='',
+        help='supply the value for the NOP metric')
+    parser.add_option('', '--calls', dest='calls', default='',
+        help='supply the value for the CALLS metric')
+    parser.add_option('', '--name', dest='name', default='',
+        help='supply the project\'s name')
+    parser.add_option('', '--version', dest='version', default='',
+        help='supply the project\'s version number')
+    parser.add_option('', '--xslt', dest='xslt', default='',
+        help='link the specified stylesheet')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -70,7 +78,16 @@ if __name__ == '__main__':
     print '<?xml version="1.0" encoding="us-ascii"?>'
     if options.xslt:
         print '<?xml-stylesheet type="text/xsl" href="%s"?>' % options.xslt
-    print '<pyramid tool="CCCC">'
+    attrs = { }
+    attrs["tool"] = "CCCC"
+    attrs["date"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S')
+    if options.name:
+        attrs["project-name"] = options.name
+    if options.version:
+        attrs["project-version"] = options.version
+    print '<pyramid %s>' % ' '.join(['%s=%s' % (
+        name, xml.sax.saxutils.quoteattr(value))
+            for name, value in attrs.items()])
     print ' <andc>%f</andc>' % metrics.andc
     print ' <ahh>%f</ahh>' % metrics.ahh
     print ' <nop>%s</nop>' % options.nop
