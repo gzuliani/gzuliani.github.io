@@ -10,6 +10,21 @@
 <p>Nel suo celebre &ldquo;Large-Scale C++ Software Design&rdquo;<a href="#ref-2"><sup>[2]</sup></a>, John Lakos presenta <em>idep</em>, un pacchetto per l'estrazione delle dipendenze di moduli C++. Queste note descrivono come le ho applicate per studiare le dipendenze di un progetto C++ di medie dimensioni.</p>
 <h2>Compilazione</h2>
 <p>Dopo aver scaricato i sorgenti da google code<a href="#ref-1"><sup>[1]</sup></a> (una copia locale &egrave; disponibile <a href="files/idep.zip">qui</a>) ed aver predisposto una soluzione in Visual Studio 2008, ho proceduto al build dei tre applicativi <em>adep</em>, <em>cdep</em> e <em>ldep</em>. Per permettere al compilatore di portare a termine con successo il suo compito &egrave; stato necessario specificare il tipo di ritorno &ndash; <span class="code">int</span> &ndash; delle tre funzioni <span class="code">main</span>, assente nella versione originale.</p>
+<p class="update">Aggiornamento [5/12/2013]</p>
+<p>La compilazione pu&ograve; avvenire utilizzando <em>CMake</em> in versione 2.6 o successiva: dopo aver scompattato i sorgenti e modificato le dichiarazioni <span class="code">main</span> dei tre applicativi, si deve aprire un <em>prompt di comandi</em> di Visual Studio 2008 all'interno della cartella dei sorgenti e immettere i seguenti comandi:</p>
+<pre class="code">
+mkdir build
+cd build
+cmake.exe -G "Visual Studio 9 2008" ..
+msbuild.exe idep.sln /t:Build /p:Configuration=Release
+</pre>
+<p>Gli eseguibili dei tre applicativi saranno disponibili nella cartella <span class="code">build/Release</span></p>
+<p>Affinch&eacute; le utility siano compilabili con Visual Studio 2012 &egrave; necessario apportare ulteriori modifiche:</p>
+<ul>
+<li><span class="code">idep_altab.cpp</span>: modificare tutte le occorrenze dell'identificatore &laquo;<span class="code">hash</span>&raquo; in &laquo;<span class="code">hash_</span>&raquo;;</li>
+<li><span class="code">idep_fdepitr.cpp</span>: modificare tutte le occorrenze dell'identificatore &laquo;<span class="code">OVERFLOW</span>&raquo; in &laquo;<span class="code">OVERFLOW_</span>&raquo;;</li>
+<li><span class="code">idep_nimap.cpp</span>: modificare tutte le occorrenze dell'identificatore &laquo;<span class="code">hash</span>&raquo; in &laquo;<span class="code">hash_</span>&raquo;.</li>
+</ul>
 <h2>Uso</h2>
 <p>Il progetto da analizzare &egrave; composto da una serie di librerie, i cui file di include si trovano nella cartella <span class="code">%PRJ_HOME%\include\lib-name</span>, i sorgenti in <span class="code">%PRJ_HOME%\src\lib\lib-name</span>. Ogni classe C++ &egrave; dichiarata in un omonimo file <span class="code">.h</span>, e definita nel relativo <span class="code">.cpp</span>. In alcuni rari casi, classi di supporto possono essere state definite e dichiarate all'interno di un file <span class="code">.cpp</span>.</p>
 <p>Le utility del pacchetto <em>idep</em> lavorano proprio su questo presupposto, con l'ulteriore assunto che la prima direttiva di inclusione del file sorgente si riferisca al relativo <span class="code">.h</span>. Il codice del progetto da analizzare non rispetta questo secondo vincolo &ndash; in genere il primo <span class="code">#include</span> &egrave; quello della libreria di base &ndash;, ma a ci&ograve; si pu&ograve; rimediare definendo un opportuno file di <em>alias</em> (cfr. applicativo <a href="#adep"><em>adep</em></a>).</p>
@@ -35,7 +50,7 @@ cdep -iinclude.txt -f%LIB_NAME%-files.txt > %LIB_NAME%.cdep
 <p>Il file <span class="code">%LIB_NAME%.cdep</span> raccoglie, per ogni file elencato in <span class="code">%LIB_NAME%-files.txt</span>, tutti i file <span class="code">.h</span> inclusi, direttamente o indirettamente. Poich&eacute; ho usato la convenzione, nelle direttive di inclusione, di usare percorsi unix-like, il file &egrave; pronto per essere utilizzato nelle fasi successive. In caso contrario, sarebbe necessario ripetere l'operazione di bonifica dei percorsi gi&agrave; effettuata per il file <span class="code">%LIB_NAME%-files.txt</span>.</p>
 <a name="adep"></a>
 <h3>adep</h3>
-<p>La seconda fase del processo di analisi consiste nell'individuazione dei componenti di libreria, e della loro associazione con i file che li implementano. Se avessi rispettato le due indicazioni di Lakos (nome dei file <span class="code">.h</span> e <span class="code">.cpp</span> uguale al nome del componente, prima direttiva di inclusione del file <span class="code">.cpp</span> che include l'omonimo file <span class="code">.g</span>), questo passo sarebbe superfluo. Non rispettando il mio codice la seconda delle due richieste, sono costretto a definire un file di <em>alias</em> che specifichi, per ogni componente, quali sono i file che concorrono alla sua definizione.</p>
+<p>La seconda fase del processo di analisi consiste nell'individuazione dei componenti di libreria, e della loro associazione con i file che li implementano. Se avessi rispettato le due indicazioni di Lakos (nome dei file <span class="code">.h</span> e <span class="code">.cpp</span> uguale al nome del componente, prima direttiva di inclusione del file <span class="code">.cpp</span> che include l'omonimo file <span class="code">.h</span>), questo passo sarebbe superfluo. Non rispettando il mio codice la seconda delle due richieste, sono costretto a definire un file di <em>alias</em> che specifichi, per ogni componente, quali sono i file che concorrono alla sua definizione.</p>
 <p>La definizione di un <em>alias</em> di un componente (una classe, al livello di granularit&agrave; attuale), pu&ograve; avvenire in due forme:</p>
 <pre class="code">
 [file: %LIB_NAME%.adep]
@@ -70,7 +85,7 @@ ldep -d%LIB_NAME%.cdep -a%LIB_NAME%.adep -U%PRJ_HOME%/include/%LIB_NAME% -U%PRJ_
 <p>Pi&ugrave; <em>NCCD</em> &egrave; prossimo all'unit&agrave;, pi&ugrave; vicina all'ottimo risulta l'organizzazione del software.</p>
 <h2>Automatismi</h2>
 <h3>Analisi di una libreria</h3>
-<p>Il seguente script effettua l'analisi della libreria specificata (ricordarsi di impostare la variabile d'ambiente %prjdir% ad un valore adeguato):</p>
+<p>Il seguente script effettua l'analisi della libreria specificata (ricordarsi di impostare la variabile d'ambiente <span class="code">%prjdir%</span> ad un valore adeguato):</p>
 <pre class="code">
 [file: idep-lib.cmd]
 
@@ -110,7 +125,7 @@ call :flushasunixpath &quot;[base] %incprjdir%&quot; %akafile%
 rem add an alias for every library
 for /d %%i in (%incprjdir%\*) do call :flushlibalias %%~pni %akafile%
 rem aliases for other special folders
-call :flushasunixpath &quot;[heap] %incprjdir%\support\heap&quot; %akafile%
+rem call :flushasunixpath &quot;[&lt;alias&gt;] &lt;dir&gt;&quot; %akafile%
 
 rem launch the analysis tools
 cdep -i%incfile% -f%srcfile% &gt;%depfile% 2&gt;nul
@@ -198,7 +213,7 @@ rem add an alias for every library
 for /d %%i in (%incdir%\*) do call :flushlibalias %%~pni %akafile%
 for /d %%i in (%srcdir%\*) do call :flushlibalias %%~pni %akafile%
 rem aliases for other special folders
-call :flushasunixpath &quot;[heap] %incprjdir%\support\heap&quot; %akafile%
+rem call :flushasunixpath &quot;[&lt;alias&gt;] &lt;dir&gt;&quot; %akafile%
 
 rem launch the analysis tools
 cdep -i%incfile% -f%srcfile% &gt;%depfile% 2&gt;nul
@@ -233,7 +248,58 @@ echo     -l    Long listing: provide non-redundant list of dependencies.
 echo     -L    Long listing: provide complete list of dependencies.
 goto :eof
 </pre>
-<p>L'uso di includere nei file <span class="code">.h</span> file appartenenti alla stessa libreria con la direttiva <span class="code">#include &quot;class.h&quot;</span> crea qualche problema a <em>cdep</em> quando differenti librerie contengono file con lo stesso nome; supponendo che <em>lib1</em> e <em>lib2</em> contengano entrambe una classe <em>C</em>, e che un'altra classe <em>C'</em> di <em>lib1</em> la includa con la direttiva <span class="code">#include &quot;C.h&quot;</span> &ndash; caso del tutto lecito e correttamente gestito dal compilatore C++ &ndash;, se la cartella di inclusione di <em>lib2</em> precede quella di <em>lib1</em> nel file <span class="code">include.txt</span>, <em>cdep</em> registrer&agrave; una dipendenza di <em>lib1</em>.C' nei confronti di <em>lib2</em>.C anzich&eacute; in quelli di <em>lib1</em>.C.</p>
+<p>L'uso di includere nei file <span class="code">.h</span> file appartenenti alla stessa libreria con la direttiva <span class="code">#include &quot;class.h&quot;</span> crea qualche problema a <em>cdep</em> quando differenti librerie definiscono oggetti omonimi. Supponendo che <em>lib1</em> e <em>lib2</em> contengano entrambe una classe <span class="code">Widget</span> (in due <span class="code">namespace</span> diversi, ad esempio), e che la classe <span class="code">Container</span> di <em>lib2</em> includa la &ldquo;compagna&rdquo; con la direttiva <span class="code">#include &quot;Widget.h&quot;</span>, se la cartella di inclusione di <em>lib1</em> precede quella di <em>lib2</em> nel file <span class="code">include.txt</span>, <em>cdep</em> registrer&agrave; una dipendenza di <span class="code">lib2::Container</span> nei confronti di <span class="code">lib1::Widget</span> anzich&eacute; in quelli di <span class="code">lib2::Widget</span>:</p>
+<pre class="code">
+[file: /temp/test/lib1/widget.h]
+namespace lib1 {
+
+struct Widget { };
+
+} // namespace lib1
+
+
+
+[file: /temp/test/lib2/widget.h]
+namespace lib2 {
+
+struct Widget { };
+
+} // namespace lib2
+
+
+
+[file: /temp/test/lib2/container.h]
+#include &quot;Widget.h&quot;
+
+namespace lib2 {
+
+struct Container { };
+
+} // namespace lib2
+
+
+
+[file include.txt]
+/temp/test/lib1
+/temp/test/lib2
+
+
+
+[file sources.txt]
+/temp/test/lib1/widget.h
+/temp/test/lib2/container.h
+/temp/test/lib2/widget.h
+</pre>
+<p>A fronte dei file sopra illustrati, il responso di <em>cdep</em> &egrave; chiaramente errato:</p>
+<pre class="code">
+cdep -iinclude.txt -fsources.txt
+/temp/test/lib1/widget.h
+
+/temp/test/lib2/container.h
+    <strong>/temp/test/lib1/Widget.h &lt;--- lib1: errore!</strong>
+
+/temp/test/lib2/widget.h
+</pre>
 <p>Molteplici solo le soluzioni al problema:</p>
 <ul>
 <li>evitare i casi di omonimia di classi;</li>
