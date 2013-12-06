@@ -1,3 +1,13 @@
+a:link, a:visited {
+ color: #268bd2;
+ text-decoration: underline;
+}
+
+a:active, a:hover {
+ color: #dc322f;
+ text-decoration: underline;
+}
+
 body {
  background: #eee8d5;
  color: #586e75;
@@ -155,4 +165,40 @@ td.threshold-level {
 td.threshold-value {
  padding-right: 1em;
  text-align: right;
+}
+
+table.details {
+}
+
+td.details-file-first {
+ border-bottom: 1px solid #586e75;
+ font-size: 1em;
+ padding-bottom: .5em;
+}
+
+td.details-file {
+ border-bottom: 1px solid #586e75;
+ font-size: 1em;
+ padding-top: 3em;
+ padding-bottom: .5em;
+}
+
+td.details-metric {
+ font-weight: bold;
+ padding-top: .5em;
+ text-align: left;
+}
+
+td.details-label {
+ font-style: italic;
+}
+
+td.details-value {
+ font-style: italic;
+ text-align: right;
+}
+
+td.top {
+ font-style: italic;
+ padding-top: 1em;
 }

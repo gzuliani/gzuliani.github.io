@@ -127,39 +127,71 @@ MAX_MAXIMUM_BLOCK_DEPTH = 5
 MAX_CALLS = 10
 
 
-class Toxicity(object):
+class Stats(object):
 
-    def __init__(self):
-        self._details = collections.defaultdict(float)
-
-    def lines(self, lines):
-        self.register_(lines, MAX_LINES, 'lines')
+    def __init__(self, path, lines):
+        self.path = path
+        self.lines = lines
+        self.complexity = { }
+        self.statements = { }
+        self.maximum_block_depth = { }
+        self.calls = { }
 
     def method(self, name, complexity, statements, maximum_block_depth, calls):
-        self.register_(complexity, MAX_COMPLEXITY, 'complexity')
-        self.register_(statements, MAX_STATEMENTS, 'statements')
-        self.register_(maximum_block_depth, MAX_MAXIMUM_BLOCK_DEPTH,
-            'maximum-block-depth')
-        self.register_(calls, MAX_CALLS, 'calls')
+        self.complexity[name] = complexity
+        self.statements[name] = statements
+        self.maximum_block_depth[name] = maximum_block_depth
+        self.calls[name] = calls
 
-    def sum(self):
-        return sum(self._details.values())
 
-    @property
-    def details(self):
-        return [(label, self._details[label]) for label in [
-            'lines',
-            'complexity',
-            'statements',
-            'maximum-block-depth',
-            'calls']]
+class Outlier(object):
 
-    def register_(self, data, threshold, label):
-        if not threshold:
-            return
-        data = float(data)
-        if data > threshold:
-            self._details[label] += data / threshold
+    def __init__(self, metric, value, threshold):
+        self.metric = metric
+        self.value = value
+        self.threshold = float(threshold)
+        if value > threshold:
+            self.score = value / self.threshold
+        else:
+            self.score = 0
+        self.has_details = False
+
+
+class NamedOutliers(dict):
+
+    def __init__(self, metric, items, threshold):
+        self.metric = metric
+        self.threshold = float(threshold)
+        self.details = {}
+        for name, value in items.items():
+            if value > threshold:
+                self.details[name] = value
+        self.score = sum(self.details.values()) / self.threshold
+        self.has_details = True
+
+
+class Toxicity(object):
+
+    def __init__(self, stats):
+        self.path = stats.path
+        self.outliers = []
+        if MAX_LINES:
+            self.outliers.append(
+                Outlier('lines', stats.lines, MAX_LINES))
+        if MAX_COMPLEXITY:
+            self.outliers.append(
+                NamedOutliers('complexity', stats.complexity, MAX_COMPLEXITY))
+        if MAX_STATEMENTS:
+            self.outliers.append(
+                NamedOutliers('statements', stats.statements, MAX_STATEMENTS))
+        if MAX_MAXIMUM_BLOCK_DEPTH:
+            self.outliers.append(
+                NamedOutliers('maximum-block-depth', stats.maximum_block_depth,
+                    MAX_MAXIMUM_BLOCK_DEPTH))
+        if MAX_CALLS:
+            self.outliers.append(
+                NamedOutliers('calls', stats.calls, MAX_CALLS))
+        self.score = sum([x.score for x in self.outliers])
 
 
 class Report(object):
@@ -181,31 +213,45 @@ class Report(object):
             ' '.join(['%s=%s' % (name, xml.sax.saxutils.quoteattr(value))
                 for name, value in attrs.items() if value])
 
-    def publish_thresholds(self, thresholds):
+    def add_thresholds(self, thresholds):
         print ' <thresholds>'
         for threshold in thresholds:
             metric, level, value = threshold
             if not value:
                 continue
             print '  <threshold metric=%s level=%s value=%s/>' % (
-                xml.sax.saxutils.quoteattr(str(metric)),
-                xml.sax.saxutils.quoteattr(str(level)),
-                xml.sax.saxutils.quoteattr(str(value)))
+               self._quote(metric), self._quote(level), self._quote(value))
         print ' </thresholds>'
 
     def start_chart(self):
         print ' <files>'
 
-    def add_file(self, path, toxicity, details):
+    def add_toxicity(self, toxicity):
         print ' <file path=%s toxicity=%s>' % (
-            xml.sax.saxutils.quoteattr(str(path)),
-            xml.sax.saxutils.quoteattr(str(toxicity)))
-        for name, value in details:
-            self._add_detail(name, value)
+           self._quote(toxicity.path),
+            self._quote(toxicity.score))
+        for outliers in toxicity.outliers:
+            self._add_outliers(outliers)
         print ' </file>'
 
-    def _add_detail(self, name, value):
-        print '  <%s>%s</%s>' % (name, value, name)
+    def _add_outliers(self, outliers):
+        tag = outliers.metric
+        toxicity = self._quote(outliers.score)
+        if outliers.has_details:
+            print '  <%s toxicity=%s>' % (tag, toxicity)
+            self._add_details(outliers.details)
+            print '  </%s>' % tag
+        else:
+            print '  <%s toxicity=%s value=%s/>' % (
+                tag, toxicity, self._quote(outliers.value))
+
+    def _add_details(self, details):
+        for name, value in details.items():
+            print '   <method name=%s value=%s/>' % (
+                self._quote(name), self._quote(value))
+
+    def _quote(self, value):
+        return xml.sax.saxutils.quoteattr(str(value))
 
     def end_chart(self):
         print ' </files>'
@@ -232,34 +278,39 @@ if __name__ == '__main__':
     if len(args) != 2:
         parser.error("incorrect number of arguments")
 
-    toxicities = collections.defaultdict(Toxicity)
+    stats = { }
 
-    # parse the project-details csv report
+    # scan the project-details csv report
     with open(args[0], 'rb') as project_file:
         recordset = csv.reader(project_file)
         for n, record in enumerate(recordset):
+            # skip headers
             if n < 1:
                 continue
             file_name = record[3]
-            #~ statements = record[5]
-            #~ classes_defined = int(record[8])
             if file_name == 'SUMMARY':
                 continue
-            toxicities[file_name].lines(record[4])
+            #~ statements = int(record[5])
+            #~ classes_defined = int(record[8])
+            lines = int(record[4])
+            stats[file_name] = Stats(file_name, lines)
 
-    # parse the project-details csv report
+    # scan the method-metrics csv report
     with open(args[1], 'rb') as project_file:
         recordset = csv.reader(project_file)
         for n, record in enumerate(recordset):
+            # skip headers
             if n < 1:
                 continue
-            name = record[4]
+            method_ = record[4]
             complexity = int(record[5].strip('*'))
             statements = int(record[6])
             maximum_block_depth = int(record[7])
             calls = int(record[8])
-            toxicities[record[3]].method(
-                name, complexity, statements, maximum_block_depth, calls)
+            stats[record[3]].method(
+                method_, complexity, statements, maximum_block_depth, calls)
+
+    toxicities = [Toxicity(s) for s in stats.values()]
 
     report = Report()
 
@@ -268,7 +319,7 @@ if __name__ == '__main__':
 
     report.start(options.name, options.version, 'SourceMonitor')
 
-    report.publish_thresholds([
+    report.add_thresholds([
         ('lines', 'file', MAX_LINES),
         ('complexity', 'method', MAX_COMPLEXITY),
         ('statements', 'method', MAX_STATEMENTS),
@@ -282,15 +333,14 @@ if __name__ == '__main__':
     else:
         toxicities_to_report = len(toxicities)
 
-    toxicities = sorted(toxicities.items(), key=lambda t: t[1].sum(), reverse=True)
+    toxicities = sorted(toxicities, key=lambda t: t.score, reverse=True)
 
     for i, toxicity in enumerate(toxicities):
         if i == toxicities_to_report:
             break
-        path, toxicity = toxicity
-        if toxicity.sum() == 0:
+        if toxicity.score == 0:
             break
-        report.add_file(path, toxicity.sum(), toxicity.details)
+        report.add_toxicity(toxicity)
 
     report.end_chart()
     report.end()
