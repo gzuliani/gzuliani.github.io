@@ -8,7 +8,7 @@
 <h1>Overview Pyramid con CCCC</h1>
 <h2>Introduzione</h2>
 <p>Poich&eacute; l'Overview Pyramid generata a partire dalle metriche prodotte da SourceMonitor manca di alcuni parametri (cfr. <a href="overview-pyramid.html">Overview Pyramid con SourceMonitor</a>), ho provato a verificare cosa si riesce ad ottenere con CCCC.</p>
-<img src="img/overview-pyramid-cccc/pyramid-transparent.png" alt="esempio di overview pyramid ottenuta da CCCC">
+<img src="img/overview-pyramid-cccc/pyramid.png" alt="esempio di overview pyramid ottenuta da CCCC">
 <h2>Implementazione</h2>
 <p>L'implementazione &egrave; simile a quella realizzata per SourceMonitor: uno <a href="files\overview-pyramid-cccc\pyramid.cmd">script</a> da linea di comando si occupa di prima di lanciare CCCC, quindi di avviare uno <a href="files\overview-pyramid-cccc\pyramid.py">script Python</a> che produce esattamente lo stesso file XML prodotto a partire dai file CSV di SourceMonitor, cos&igrave; da riutilizzare la <a href="files\overview-pyramid-cccc\templates\pyramid.xsl">trasformazione XSLT</a> e il <a href="files\overview-pyramid-cccc\templates\pyramid.css">foglio di stile</a> gi&agrave; disponibili.</p>
 <h2>Difformit&agrave;</h2>

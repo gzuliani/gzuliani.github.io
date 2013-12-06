@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html" encoding="utf-8" doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" omit-xml-declaration="yes"/>
 
-<xsl:variable name="max_toxicity">
+<xsl:variable name="max-toxicity">
  <xsl:for-each select="/toxicity/files/file/@toxicity">
   <xsl:sort data-type="number" order="descending"/>
   <xsl:if test="position()=1">
@@ -69,6 +69,10 @@
    <xsl:apply-templates select="thresholds"/>
    <br/>
 
+   <h2>Details</h2>
+    <xsl:apply-templates select="files" mode="details"/>
+   <br/>
+
   </body>
  </html>
 </xsl:template>
@@ -85,8 +89,24 @@
 
 <xsl:template match="file">
  <tr>
-  <td class="path"><xsl:value-of select="@path"/></td>
-  <td class="toxicity"><xsl:value-of select="floor(@toxicity * 100) div 100"/></td>
+  <td class="path">
+   <xsl:element name="a">
+    <xsl:attribute name="name">
+     <xsl:text>chart-</xsl:text>
+     <xsl:value-of select="position()"/>
+    </xsl:attribute>
+   </xsl:element>
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:text>#detail-</xsl:text>
+     <xsl:value-of select="position()"/>
+    </xsl:attribute>
+    <xsl:value-of select="@path"/>
+   </xsl:element>
+  </td>
+  <td class="toxicity">
+   <xsl:value-of select="format-number(@toxicity, '#.0')"/>
+  </td>
  </tr>
  <tr class="bar">
   <td>
@@ -97,13 +117,17 @@
 
 <xsl:template match="file/*">
  <xsl:element name="div">
-  <xsl:attribute name="title"><xsl:value-of select="local-name()"/><xsl:text>: </xsl:text><xsl:value-of select="floor(. * 100) div 100"/></xsl:attribute>
+  <xsl:attribute name="title">
+   <xsl:value-of select="local-name()"/>
+   <xsl:text>: </xsl:text>
+   <xsl:value-of select="format-number(@toxicity, '#.0')"/>
+  </xsl:attribute>
   <xsl:attribute name="class">
    <xsl:value-of select="local-name()"/>
   </xsl:attribute>
   <xsl:attribute name="style">
    <xsl:text>width:</xsl:text>
-   <xsl:value-of select=". * 100 div $max_toxicity"/>
+   <xsl:value-of select="@toxicity * 100 div $max-toxicity"/>
    <xsl:text>%</xsl:text>
   </xsl:attribute>
  </xsl:element>
@@ -126,6 +150,94 @@
    <td class="threshold-level"><xsl:value-of select="@level"/></td>
    <td class="threshold-value"><xsl:value-of select="@value"/></td>
   </tr>
+</xsl:template>
+
+<xsl:template match="files" mode="details">
+ <table cellpadding="0" cellspacing="0" class="details">
+  <xsl:apply-templates select="./*" mode="details"/>
+ </table>
+ <br/>
+</xsl:template>
+
+<xsl:template match="file" mode="details">
+ <tr>
+  <xsl:element name="td">
+   <xsl:attribute name="colspan">2</xsl:attribute>
+   <xsl:attribute name="class">
+    <xsl:choose>
+     <xsl:when test="position()=1">
+      <xsl:text>details-file-first</xsl:text>
+     </xsl:when>
+     <xsl:otherwise>
+      <xsl:text>details-file</xsl:text>
+     </xsl:otherwise>
+    </xsl:choose>
+   </xsl:attribute>
+   <xsl:element name="a">
+    <xsl:attribute name="name">
+     <xsl:text>detail-</xsl:text>
+     <xsl:value-of select="position()"/>
+    </xsl:attribute>
+   </xsl:element>
+    <xsl:value-of select="@path"/>
+  </xsl:element>
+ </tr>
+ <xsl:apply-templates select="./*" mode="details"/>
+ <tr>
+  <td class="top" colspan="2">
+   <xsl:element name="a">
+    <xsl:attribute name="href">
+     <xsl:text>#chart-</xsl:text>
+     <xsl:value-of select="position()"/>
+    </xsl:attribute>
+    <xsl:text>return to chart</xsl:text>
+   </xsl:element>
+  </td>
+ </tr>
+</xsl:template>
+
+<xsl:template match="file/*" mode="details">
+ <xsl:variable name="metric-name" select="local-name()" />
+ <xsl:choose>
+  <xsl:when test="count(./*)&gt;0">
+   <tr>
+    <td class="details-metric" colspan="2">
+     <xsl:value-of select="$metric-name"/>
+     <xsl:text> (max. </xsl:text>
+     <xsl:value-of select="/toxicity/thresholds/threshold[@metric=$metric-name]/@value"/>
+     <xsl:text>)</xsl:text>
+    </td>
+   </tr>
+   <xsl:apply-templates select="method" mode="details">
+    <xsl:sort select="@value" data-type="number" order="descending"></xsl:sort>
+   </xsl:apply-templates>
+  </xsl:when>
+  <xsl:when test="@toxicity&gt;0">
+   <tr>
+    <td class="details-metric">
+     <xsl:value-of select="$metric-name"/>
+     <xsl:text> (max. </xsl:text>
+     <xsl:value-of select="/toxicity/thresholds/threshold[@metric=$metric-name]/@value"/>
+     <xsl:text>)</xsl:text>
+    </td>
+    <td class="details-value">
+     <xsl:value-of select="@value"/>
+    </td>
+   </tr>
+  </xsl:when>
+ </xsl:choose>
+
+</xsl:template>
+
+<xsl:template match="method" mode="details">
+ <tr>
+  <td class="details-label">
+   <xsl:value-of select="@name"/>
+  </td>
+  <td class="details-value">
+   <xsl:value-of select="@value"/>
+  </td>
+ </tr>
 </xsl:template>
 
 </xsl:stylesheet>

@@ -8,7 +8,7 @@
 <p class="page-path"><a href="../index.html#toxicity-chart">risorse</a> | toxicity</p>
 <h1>Toxicity Chart con SourceMonitor</h1>
 <p>Il <em>Toxicity Chart</em> &egrave; un istogramma a barre impilate che mette in evidenza i file sorgente pi&ugrave; problematici: ogni segmento &egrave; associato ad una metrica, ed &egrave; tanto pi&ugrave; lungo quanto pi&ugrave; fuori tolleranza &egrave; la relativa metrica.</p>
-<img src="img/toxicity-chart/chart-transparent.png" alt="esempio di toxicity chart">
+<img src="img/toxicity-chart/chart.png" alt="esempio di toxicity chart">
 <p>Il Toxicity Chart nasce per i progetti Java<sup><a href="#ref-3">[3]</a></sup>, io ho cercato di adattare l'idea originale al C++.</p>
 <h2>Metriche</h2>
 <p>L'autore sfrutta l'<em>utility</em> <a href="http://checkstyle.sourceforge.net/">Checkstyle</a> per ricavare le misure di progetto; SourceMonitor (<a href="files/toxicity-chart/sourcemonitor_commands.xml">qui</a> un esempio di file di progetto) produce un insieme molto pi&ugrave; ristretto di metriche, riassunte nella seguente tabella di corrispondenza:</p>
@@ -361,6 +361,9 @@ MAX_MAXIMUM_BLOCK_DEPTH = 5
 MAX_CALLS = 10
 </pre>
 <p>Lo script <a href="files/toxicity-chart/toxicity.cmd"><span class="code">toxicity.cmd</span></a> si occupa di lanciare SourceMonitor e conseguentemente la procedura Python in modo da ottenere il report XML finale in un unico passo. Una <a href="files/toxicity-chart/templates/toxicity.xsl">trasformazione XSLT</a> e un <a href="files/toxicity-chart/templates/toxicity.css">foglio di stile CSS</a> rendono il prospetto in forma di pagina HTML. Lo script  si aspetta di trovare questi due file nella cartella <span class="code">./templates</span>.</p>
+<p class="update">Aggiornamento [6/12/2013]</p>
+<p>Aggiunta la sezione <em>Details</em> che riporta, per ogni file, le metriche fuori norma:</p>
+<img src="img/toxicity-chart/details.png" alt="dettagli">
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
@@ -370,6 +373,6 @@ MAX_CALLS = 10
 <a name="ref-3"></a>
 <li>D&ouml;rnenburg, E. &quot;How toxic is your code?&quot;. <em>erik.doernenburg.com</em>. &lt;<a href="http://erik.doernenburg.com/2008/11/how-toxic-is-your-code/">http://erik.doernenburg.com/2008/11/how-toxic-is-your-code/</a>&gt;. Visitato il 28 Novembre 2013.</li>
 </ol>
-<p class="modification-notice">Pagina modificata il 28/11/2013</p>
+<p class="modification-notice">Pagina modificata il 06/12/2013</p>
 </body>
 </html>
