@@ -5,7 +5,7 @@
 <xsl:variable name="max-toxicity">
  <xsl:for-each select="/toxicity/files/file/@toxicity">
   <xsl:sort data-type="number" order="descending"/>
-  <xsl:if test="position()=1">
+  <xsl:if test="position() = 1">
    <xsl:value-of select="."/>
   </xsl:if>
  </xsl:for-each>
@@ -165,7 +165,7 @@
    <xsl:attribute name="colspan">2</xsl:attribute>
    <xsl:attribute name="class">
     <xsl:choose>
-     <xsl:when test="position()=1">
+     <xsl:when test="position() = 1">
       <xsl:text>details-file-first</xsl:text>
      </xsl:when>
      <xsl:otherwise>
@@ -199,7 +199,7 @@
 <xsl:template match="file/*" mode="details">
  <xsl:variable name="metric-name" select="local-name()" />
  <xsl:choose>
-  <xsl:when test="count(./*)&gt;0">
+  <xsl:when test="count(./*) &gt; 0">
    <tr>
     <td class="details-metric" colspan="2">
      <xsl:value-of select="$metric-name"/>
@@ -212,7 +212,7 @@
     <xsl:sort select="@value" data-type="number" order="descending"></xsl:sort>
    </xsl:apply-templates>
   </xsl:when>
-  <xsl:when test="@toxicity&gt;0">
+  <xsl:when test="@toxicity &gt; 0">
    <tr>
     <td class="details-metric">
      <xsl:value-of select="$metric-name"/>
@@ -226,18 +226,27 @@
    </tr>
   </xsl:when>
  </xsl:choose>
-
 </xsl:template>
 
 <xsl:template match="method" mode="details">
- <tr>
+ <xsl:element name="tr">
+  <xsl:attribute name="class">
+   <xsl:choose>
+    <xsl:when test="position() mod 2=1">
+       <xsl:text>detail-even</xsl:text>
+    </xsl:when>
+    <xsl:otherwise>
+       <xsl:text>detail-odd</xsl:text>
+    </xsl:otherwise>
+   </xsl:choose>
+  </xsl:attribute>
   <td class="details-label">
    <xsl:value-of select="@name"/>
   </td>
   <td class="details-value">
    <xsl:value-of select="@value"/>
   </td>
- </tr>
+ </xsl:element>
 </xsl:template>
 
 </xsl:stylesheet>

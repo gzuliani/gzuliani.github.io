@@ -191,14 +191,29 @@ td.details-metric {
 
 td.details-label {
  font-style: italic;
+ padding: .1em;
 }
 
 td.details-value {
  font-style: italic;
+ padding: .1em;
  text-align: right;
 }
 
 td.top {
  font-style: italic;
  padding-top: 1em;
+}
+
+tr.detail-even {
+}
+
+tr.detail-odd {
+/* inverse
+ color: #eee8d5;
+ background: #586e75;
+*/
+/* light background
+ background: #fdf6e3;
+*/
 }
