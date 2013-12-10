@@ -41,7 +41,7 @@ int main() {
 </pre>
 <img src="img/colors-in-console/cout-vs-cerr.png"/>
 <h2>Implementazione</h2>
-<p>L'idea iniziale prevedeva la definizione di due oggetti &ndash; <span class="code">OutputConsole</span> e <span class="code">ErrorConsole</span> &ndash; indistinguibili <span class="code">cout</span> e <span class="code">cerr</span> rispettivamente. Alcuni esperimenti hanno dimostrato che la soluzione pi&ugrave; semplice consiste invece nell'<em>overloading</em> dell'operatore <span class="code">std::ostream::operator&lt;&lt;</span> (cfr. <a href="#ref-3">[3]</a> per le peculiarit&agrave; dell'API <span class="code">WriteConsole</span> rispetto alla ridirezione su file).</p>
+<p>L'idea iniziale prevedeva la definizione di due oggetti &ndash; <span class="code">OutputConsole</span> e <span class="code">ErrorConsole</span> &ndash; indistinguibili da <span class="code">cout</span> e <span class="code">cerr</span> rispettivamente. Alcuni esperimenti hanno dimostrato che la soluzione pi&ugrave; semplice consiste invece nell'<em>overloading</em> dell'operatore <span class="code">std::ostream::operator&lt;&lt;</span> (cfr. <a href="#ref-3">[3]</a> per le peculiarit&agrave; dell'API <span class="code">WriteConsole</span> rispetto alla ridirezione su file).</p>
 <p>Considerato l'obiettivo prefissato, i cambiamenti di colore comandati sui due flussi <span class="code">cout</span> e <span class="code">cerr</span> sono stati gestiti attraverso il solo dispositivo <span class="code">STD_OUTPUT_HANDLE</span>:</p>
 <pre class="code">
 #include &lt;iostream&gt;
