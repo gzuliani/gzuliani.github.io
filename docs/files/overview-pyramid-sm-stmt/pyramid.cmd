@@ -35,7 +35,7 @@ rd /s /q "%OUTPUT_DIR%" >nul 2>&1
 md "%OUTPUT_DIR%" >nul 2>&1
 
 echo building pyramid...
-%PY% pyramid.py %PROJECT_DETAILS_CSV_FILE_PATH% %METHOD_METRICS_CSV_FILE_PATH% --xslt pyramid.xsl %OPTIONS% > "%OUTPUT_DIR%\pyramid.xml"
+%PY% pyramid.py %PROJECT_DETAILS_CSV_FILE_PATH% %METHOD_METRICS_CSV_FILE_PATH% --xslt pyramid.xsl %OPTIONS% --out="%OUTPUT_DIR%\pyramid.xml"
 
 copy /y ..\templates\* "%OUTPUT_DIR%" >nul 2>&1
 
