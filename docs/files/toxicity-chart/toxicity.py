@@ -3,6 +3,7 @@ import csv
 import datetime
 import optparse
 import os.path
+import sys
 import xml.sax.saxutils
 
 # http://erik.doernenburg.com/2008/11/how-toxic-is-your-code/
@@ -196,68 +197,88 @@ class Toxicity(object):
 
 class Report(object):
 
-    def __init__(self):
-        print '<?xml version="1.0" encoding="us-ascii"?>'
+    def __init__(self, stream):
+        self._stream = stream
 
     def use_sheet(self, sheet):
-        print '<?xml-stylesheet type="text/xsl" href="%s"?>' % sheet
+        self._write('<?xml-stylesheet type="text/xsl" href="%s"?>' % sheet)
 
     def start(self, project_name=None, project_version=None, tool=None):
-        attrs = {
-            "project-name": project_name,
-            "project-version": project_version,
-            "tool": tool,
-            "date": datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'),
-        }
-        print '<toxicity %s>' % \
-            ' '.join(['%s=%s' % (name, xml.sax.saxutils.quoteattr(value))
-                for name, value in attrs.items() if value])
+        self._open(
+            'toxicity',
+            {
+                'project-name': project_name,
+                'project-version': project_version,
+                'tool': tool,
+                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'),
+            })
 
     def add_thresholds(self, thresholds):
-        print ' <thresholds>'
+        self._open('thresholds', {})
         for threshold in thresholds:
             metric, level, value = threshold
             if not value:
                 continue
-            print '  <threshold metric=%s level=%s value=%s/>' % (
-               self._quote(metric), self._quote(level), self._quote(value))
-        print ' </thresholds>'
+            self._open(
+                'threshold',
+                {
+                    'metric': metric,
+                    'level': level,
+                    'value': value
+                })
+            self._close('threshold')
+        self._close('thresholds')
 
     def start_chart(self):
-        print ' <files>'
+        self._open('files', {})
 
     def add_toxicity(self, toxicity):
-        print ' <file path=%s toxicity=%s>' % (
-           self._quote(toxicity.path),
-            self._quote(toxicity.score))
+        self._open(
+            'file',
+            {
+                'path': toxicity.path,
+                'toxicity': toxicity.score
+            })
         for outliers in toxicity.outliers:
             self._add_outliers(outliers)
-        print ' </file>'
+        self._close('file')
 
     def _add_outliers(self, outliers):
         tag = outliers.metric
-        toxicity = self._quote(outliers.score)
+        toxicity = outliers.score
         if outliers.has_details:
-            print '  <%s toxicity=%s>' % (tag, toxicity)
+            self._open(tag, {'toxicity': toxicity})
             self._add_details(outliers.details)
-            print '  </%s>' % tag
+            self._close(tag)
         else:
-            print '  <%s toxicity=%s value=%s/>' % (
-                tag, toxicity, self._quote(outliers.value))
+            self._open(tag, {'toxicity': toxicity, 'value': outliers.value})
+            self._close(tag)
 
     def _add_details(self, details):
         for name, value in details.items():
-            print '   <method name=%s value=%s/>' % (
-                self._quote(name), self._quote(value))
+            self._open('method', {'name': name, 'value': value})
+            self._close('method')
+
+    def end_chart(self):
+        self._close('files')
+
+    def end(self):
+        self._close('toxicity')
+
+    def _open(self, name, attrs):
+        self._write(
+            '<%s>' %
+            ' '.join([name] + ['%s=%s' % (name, self._quote(value))
+                    for name, value in attrs.items() if value is not None]))
+
+    def _close(self, name):
+        self._write('</%s>' % name)
+
+    def _write(self, data):
+        self._stream.write(data)
 
     def _quote(self, value):
         return xml.sax.saxutils.quoteattr(str(value))
-
-    def end_chart(self):
-        print ' </files>'
-
-    def end(self):
-        print '</toxicity>'
 
 
 if __name__ == '__main__':
@@ -273,6 +294,8 @@ if __name__ == '__main__':
         help='output the <TOP> worste files only')
     parser.add_option('', '--xslt', dest='xslt', default='',
         help='link the specified stylesheet')
+    parser.add_option('', '--out', dest='file', default='',
+        help='write to <FILE> instead of STDOUT')
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
@@ -312,7 +335,12 @@ if __name__ == '__main__':
 
     toxicities = [Toxicity(s) for s in stats.values()]
 
-    report = Report()
+    if options.file:
+        report_stream = open(options.file, 'w')
+    else:
+        report_stream = sys.stdout
+
+    report = Report(report_stream)
 
     if options.xslt:
         report.use_sheet(options.xslt)

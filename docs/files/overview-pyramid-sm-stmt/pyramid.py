@@ -2,6 +2,7 @@ import csv
 import datetime
 import optparse
 import os.path
+import sys
 import xml.sax.saxutils
 
 file_stats = { }
@@ -52,6 +53,48 @@ class StatsWithStmtAsLoc(Stats):
         self.loc = 0
 
 
+class XmlReport(object):
+
+    def __init__(self, stream):
+        self._stream = stream
+
+    def use_sheet(self, sheet):
+        self._write('<?xml-stylesheet type="text/xsl" href="%s"?>' % sheet)
+
+    def start(self, project_name=None, project_version=None, tool=None):
+        self._open(
+            'pyramid',
+            {   
+                'project-name': project_name,
+                'project-version': project_version,
+                'tool': tool,
+                'date': datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'),
+            })  
+
+    def metric(self, name, value):
+        self._open(name, {})
+        self._write(str(value))
+        self._close(name)
+
+    def end(self):
+        self._close('pyramid')
+
+    def _open(self, name, attrs):
+        self._write(
+            '<%s>' %
+            ' '.join([name] + ['%s=%s' % (name, self._quote(value))
+                    for name, value in attrs.items() if value is not None]))
+
+    def _close(self, name):
+        self._write('</%s>' % name)
+
+    def _write(self, data):
+        self._stream.write(data)
+
+    def _quote(self, value):
+        return xml.sax.saxutils.quoteattr(value)
+
+
 if __name__ == '__main__':
 
     parser = optparse.OptionParser(
@@ -71,6 +114,8 @@ if __name__ == '__main__':
         help='supply the project\'s version number')
     parser.add_option('', '--xslt', dest='xslt', default='',
         help='link the specified stylesheet')
+    parser.add_option('', '--out', dest='file', default='',
+        help='write to <FILE> instead of STDOUT')
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
@@ -126,26 +171,24 @@ if __name__ == '__main__':
 
     nop = len(folders)
 
-    print '<?xml version="1.0" encoding="us-ascii"?>'
+    if options.file:
+        report_stream = open(options.file, 'w')
+    else:
+        report_stream = sys.stdout
+
+    report = XmlReport(report_stream)
+
     if options.xslt:
-        print '<?xml-stylesheet type="text/xsl" href="%s"?>' % options.xslt
-    attrs = { }
-    attrs["tool"] = "SourceMonitor"
-    attrs["date"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S')
-    if options.name:
-        attrs["project-name"] = options.name
-    if options.version:
-        attrs["project-version"] = options.version
-    print '<pyramid %s>' % ' '.join(['%s=%s' % (
-        name, xml.sax.saxutils.quoteattr(value))
-            for name, value in attrs.items()])
-    print ' <andc>%s</andc>' % options.andc
-    print ' <ahh>%s</ahh>' % options.ahh
-    print ' <nop>%s</nop>' % nop
-    print ' <noc>%d</noc>' % noc
-    print ' <nom>%d</nom>' % nom
-    print ' <loc>%d</loc>' % loc
-    print ' <cyclo>%d</cyclo>' % cyclo
-    print ' <calls>%d</calls>' % calls
-    print ' <fanout>%s</fanout>' % options.fanout
-    print '</pyramid>'
+        report.use_sheet(options.xslt)
+
+    report.start(options.name, options.version, "SourceMonitor")
+    report.metric('andc', options.andc)
+    report.metric('ahh', options.ahh)
+    report.metric('nop', nop)
+    report.metric('noc', noc)
+    report.metric('nom', nom)
+    report.metric('loc', loc)
+    report.metric('cyclo', cyclo)
+    report.metric('calls', calls)
+    report.metric('fanout', options.fanout)
+    report.end()

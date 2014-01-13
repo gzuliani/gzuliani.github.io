@@ -35,7 +35,7 @@ rd /s /q "%OUTPUT_DIR%" >nul 2>&1
 md "%OUTPUT_DIR%" >nul 2>&1
 
 echo building toxicity chart...
-%PY% toxicity.py %PROJECT_DETAILS_CSV_FILE_PATH% %METHOD_METRICS_CSV_FILE_PATH% --xslt toxicity.xsl --top 25 %OPTIONS% > "%OUTPUT_DIR%\toxicity.xml"
+%PY% toxicity.py %PROJECT_DETAILS_CSV_FILE_PATH% %METHOD_METRICS_CSV_FILE_PATH% --xslt toxicity.xsl --top 25 %OPTIONS% --out="%OUTPUT_DIR%\toxicity.xml"
 
 copy /y templates\* "%OUTPUT_DIR%" >nul 2>&1
 
