@@ -13,23 +13,26 @@
 
 <xsl:template match="toxicity">
 
+ <xsl:variable name="title">
+  <xsl:text>Toxicity Chart</xsl:text>
+  <xsl:if test="@project-name != ''">
+   <xsl:text> - </xsl:text>
+   <xsl:value-of select="@project-name"/>
+   <xsl:if test="@project-version != ''">
+    <xsl:text> v. </xsl:text>
+    <xsl:value-of select="@project-version"/>
+   </xsl:if>
+  </xsl:if>
+ </xsl:variable>
+
  <html>
   <head>
+   <title><xsl:value-of select="$title"/></title>
    <link rel='stylesheet' type='text/css' href='toxicity.css'></link>
   </head>
   <body>
 
-   <h1>
-    <xsl:text>Toxicity Chart</xsl:text>
-    <xsl:if test="@project-name != ''">
-     <xsl:text> - </xsl:text>
-     <xsl:value-of select="@project-name"/>
-     <xsl:if test="@project-version != ''">
-      <xsl:text> v. </xsl:text>
-      <xsl:value-of select="@project-version"/>
-     </xsl:if>
-    </xsl:if>
-   </h1>
+   <h1><xsl:value-of select="$title"/></h1>
    <xsl:if test="@date != ''">
     <p class="date">
      <xsl:text>Date: </xsl:text>
