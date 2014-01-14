@@ -4,6 +4,18 @@
 
 <xsl:template match="pyramid">
 
+ <xsl:variable name="title">
+  <xsl:text>Overview Pyramid</xsl:text>
+  <xsl:if test="@project-name != ''">
+   <xsl:text> - </xsl:text>
+   <xsl:value-of select="@project-name"/>
+   <xsl:if test="@project-version != ''">
+    <xsl:text> v. </xsl:text>
+    <xsl:value-of select="@project-version"/>
+   </xsl:if>
+  </xsl:if>
+ </xsl:variable>
+
  <!-- metrics -->
  <xsl:variable name="andc"             select="andc"/>
  <xsl:variable name="ahh"              select="ahh"/>
@@ -43,21 +55,11 @@
 
  <html>
   <head>
+   <title><xsl:value-of select="$title"/></title>
    <link rel='stylesheet' type='text/css' href='pyramid.css'></link>
   </head>
   <body>
-
-   <h1>
-    <xsl:text>Overview Pyramid</xsl:text>
-    <xsl:if test="@project-name != ''">
-     <xsl:text> - </xsl:text>
-     <xsl:value-of select="@project-name"/>
-     <xsl:if test="@project-version != ''">
-      <xsl:text> v. </xsl:text>
-      <xsl:value-of select="@project-version"/>
-     </xsl:if>
-    </xsl:if>
-   </h1>
+   <h1><xsl:value-of select="$title"/></h1>
    <xsl:if test="@date != ''">
     <p class="date">
      <xsl:text>Date: </xsl:text>
