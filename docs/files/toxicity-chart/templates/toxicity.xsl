@@ -60,7 +60,6 @@
          <xsl:value-of select="."/>
         </xsl:attribute>
        </xsl:element>
-       <td class="ratio-undef"></td>
        <td class="legend">
         <xsl:value-of select="translate(., '-', ' ')"/>
        </td>
