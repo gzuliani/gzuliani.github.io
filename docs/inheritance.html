@@ -1,0 +1,379 @@
+<html>
+<head>
+<title>Polimorfismo senza ereditariet&agrave;</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#inheritance">risorse</a> | polimorfismo senza ereditariet&agrave;</p>
+<h1>Polimorfismo senza ereditariet&agrave;</h1>
+<p>Ho cercato di ricostruire i passaggi salienti di uno dei due interventi di Sean Parent a <em>Going Native 2013</em><sup>[<a href="#ref-1">1</a>]</sup>, e che &egrave; ben riassunto in questa sua citazione:</p>
+<blockquote>There are no polymorphic types, only a polymorphic use of similar types.</blockquote>
+<p>Parent sostiene che il polimorfismo ottenuto tramite l'ereditariet&agrave; presenta diversi svantaggi, in particolare il fatto di richiedere l'uso di puntatori, con tutte le conseguenze del caso: la necessit&agrave; di gestire il <em>life-time</em> degli oggetti puntati in primis, e i vari problemi legati alla condivisione di strutture di dati &ndash; regolamentazione dell'accesso concorrente, non-localit&agrave; dei dati, ecc. A questo proposito, Parent dice:</p>
+<blockquote>A shared pointer is as good as a global variable.</blockquote>
+<p>L'ereditariet&agrave; inoltre &egrave; intrusiva (pu&ograve; modificare la struttura interna dell'oggetto derivato) e introduce una dipendenza di compilazione dovuta all'inclusione di file.</p>
+<h2>shared_ptr</h2>
+<p>Una possibile soluzione &egrave; costituita da un'implementazione non intrusiva del polimorfismo dinamico per oggetti con <em>value semantics</em> (conta il contenuto di un oggetto, non la sua identit&agrave;).</p>
+<p>Intendo usare la tecnica illustrata da Parent &egrave; per definire delle <em>factory</em> di oggetti polimorfici che non ritornino puntatori, per non dover definire una politica di <em>ownership</em> che attribuisca la responsabilit&agrave; di distruggere l'oggetto o forzare l'uso di un particolare tipo di <em>smart pointer</em>:</p>
+<pre class="code">
+struct ObjectFactory {
+  virtual ??? CreateObject(&lt;params&gt;); // what should return?
+};
+</pre>
+<p>La situazione di partenza &egrave; il classico polimorfismo per ereditariet&agrave;:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+struct Object {
+  virtual std::string f() = 0;
+};
+
+struct A : Object {
+  virtual std::string f() {
+    return &quot;A&quot;;
+  };
+};
+
+struct B : Object {
+  virtual std::string f() {
+    return &quot;B&quot;;
+  };
+};
+
+struct Factory {
+  enum Type { e_a, e_b, };
+  static std::shared_ptr&lt;Object&gt; create(Type type) {
+    if (e_a == type)
+      return std::make_shared&lt;A&gt;();
+    else if (e_b == type)
+      return std::make_shared&lt;B&gt;();
+    throw &quot;wrong type&quot;;
+  }
+};
+
+TEST(&quot;factory&quot;) {
+  auto obj_a = Factory::create(Factory::e_a);
+  REQUIRE(obj_a-&gt;f() == &quot;A&quot;);
+
+  auto obj_b = Factory::create(Factory::e_b);
+  REQUIRE(obj_b-&gt;f() == &quot;B&quot;);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * factory: OK
+ * Ran 1 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Per svincolarsi dall'ereditariet&agrave; si definisce l'interfaccia polimorfica in modo implicito, alla stregua di una <em>policy</em>:</p>
+<pre class="code">
+/* implements the implicit interface:
+ *
+ *    std::string f() const
+ */
+struct A {
+  std::string f() <ins>const</ins> {
+    return &quot;A&quot;;
+  }
+};
+</pre>
+<p>L'interfaccia &egrave; stata resa costante, per enfatizzare la semantica del valore. Una prima implementazione, basata sul <em>pimpl</em>, &egrave; la seguente:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+struct A {
+  std::string f() const {
+    return &quot;A&quot;;
+  }
+};
+
+class Object {
+  std::shared_ptr&lt;const A&gt; pimpl_;
+public:
+  Object(A a) : pimpl_(std::make_shared&lt;A&gt;(a)) { }
+  std::string f() { return pimpl_-&gt;f(); }
+};
+
+struct Factory {
+  enum Type { e_a, e_b, };
+  static Object create(Type type) {
+    if (e_a == type)
+      return A();
+    throw &quot;wrong type&quot;;
+  }
+};
+
+TEST(&quot;factory&quot;) {
+  auto obj_a = Factory::create(Factory::e_a);
+  REQUIRE(obj_a.f() == &quot;A&quot;);
+}
+</pre>
+<p>In questo modo si &egrave; ottenuto il disaccoppiamento tra l'implementazione <span class="code">A</span> e l'interfaccia <span class="code">Object</span>.</p>
+<p class="note">Nota: <span class="code">shared_ptr&lt;const T&gt;</span> &egrave; assimilabile ad un valore perch&egrave; l'oggetto puntato non &egrave; accessibile attraverso nessun altro puntatore o referenza non costante.</p>
+<p>Le cose si complicano &ndash; a livello implementativo &ndash; quando entra in gioco una seconda implementazione:</p>
+<pre class="code">
+...
+
+<ins>struct B {
+  virtual std::string f() const {
+    return &quot;B&quot;;
+  };
+};</ins>
+
+...
+
+struct Factory {
+  enum Type { e_a, e_b, };
+  static Object create(Type type) {
+    if (e_a == type)
+      return A();
+<ins>    if (e_b == type)
+      return B();</ins>
+    throw &quot;wrong type&quot;;
+  }
+};
+...
+
+TEST(&quot;factory&quot;) {
+  auto obj_a = Factory::create(Factory::e_a);
+  REQUIRE(obj_a.f() == &quot;A&quot;);
+  <ins>auto obj_b = Factory::create(Factory::e_b);
+  REQUIRE(obj_b.f() == &quot;B&quot;);</ins>
+}
+</pre>
+<p>Non &egrave; sufficiente aggiungere un nuovo costruttore a <span class="code">Object</span>, poich&egrave; il membro <span class="code">pimpl_</span> non &egrave; comunque in grado di ospitare un oggetto di tipo <span class="code">B</span>. Non &egrave; nemmeno pensabile rendere <span class="code">Object</span> parametrico rispetto al tipo di oggetto interno, sarebbe troppo vincolante (non sarebbe ad esempio possibile definire un contenitore di <span class="code">Object</span> con implementazioni differenti):</p>
+<pre class="code">
+<ins>template &lt;typename T&gt;</ins>
+class Object {
+  std::shared_ptr&lt;const <ins>T</ins>&gt; pimpl_;
+  ...
+</pre>
+<p>Il problema del tipo parametrico si pu&ograve; facilmente risolvere con una tecnica di <em>type-erasure</em>, introducendo una classe base non parametrizzata, e specializzandola, questa volta s&igrave; parametricamente, per ognuna delle implementazioni; in letteratura, la classe base viene solitamente denotata col termine <em>concept</em>, le specializzazioni come <em>model</em>:</p>
+<pre class="code">
+class Object {
+...
+
+<ins>private:
+  struct Concept {
+    virtual ~Concept() { };
+    virtual std::string f() const = 0;
+  };</ins>
+...
+</pre>
+<p><span class="code">Concept</span>, dotata di distruttore virtuale in quanto classe base, esplicita l'interfaccia rimasta fin qui implicita per consentire a <span class="code">Object</span> di accedere alle implementazioni concrete:</p>
+<pre class="code">
+class Object {
+  <del>std::shared_ptr&lt;const A&gt; pimpl_;</del>
+...
+public:
+  <del>Object(A a) : pimpl_(std::make_shared&lt;A&gt;(a)) { }</del>
+  <ins>template &lt;typename T&gt;
+  Object(T obj) : pimpl_(std::make_shared&lt;Model&lt;T&gt;&gt;(obj)) { }</ins>
+  std::string f() { return pimpl_-&gt;f(); }
+...
+
+private:
+...
+
+  <ins>std::shared_ptr&lt;const Concept&gt; pimpl_;<ins>
+</pre>
+<p>Il modello &egrave; una semplice classe parametrica che inoltra le chiamate all'implementazione concreta:</p>
+<pre class="code">
+class Object {
+...
+
+private:
+...
+
+  <ins>template &lt;typename T&gt;
+  struct Model : Concept {
+    T obj_;
+    Model(T obj) : obj_(obj) { }
+    virtual std::string f() const { return obj_.f(); }
+  };</ins>
+...
+</pre>
+<p>Alcune chiamate a <span class="code">std::move</span> evitano delle inutili copie:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+struct A {
+  std::string f() const {
+    return &quot;A&quot;;
+  }
+};
+
+struct B {
+  std::string f() const {
+    return &quot;B&quot;;
+  };
+};
+
+class Object {
+public:
+  template &lt;typename T&gt;
+  Object(T obj) : pimpl_(std::make_shared&lt;Model&lt;T&gt;&gt;(<ins>std::move(</ins>obj<ins>)</ins>)) { }
+  std::string f() { return pimpl_-&gt;f(); }
+private:
+  struct Concept {
+    virtual ~Concept() { };
+    virtual std::string f() const = 0;
+  };
+  template &lt;typename T&gt;
+  struct Model : Concept {
+    T obj_;
+    Model(T obj) : obj_(<ins>std::move(</ins>obj<ins>)</ins>) { }
+    virtual std::string f() const { return obj_.f(); }
+  };
+  std::shared_ptr&lt;const Concept&gt; pimpl_;
+};
+
+struct Factory {
+  enum Type { e_a, e_b, };
+  static Object create(Type type) {
+    if (e_a == type)
+      return A();
+    if (e_b == type)
+      return B();
+    throw &quot;wrong type&quot;;
+  }
+};
+
+TEST(&quot;factory&quot;) {
+  auto obj_a = Factory::create(Factory::e_a);
+  REQUIRE(obj_a.f() == &quot;A&quot;);
+  auto obj_b = Factory::create(Factory::e_b);
+  REQUIRE(obj_b.f() == &quot;B&quot;);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * factory: OK
+ * Ran 1 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h2>unique_ptr</h2>
+<p>Come cambia l'implementazione di <span class="code">Object</span> nel caso in cui si volesse optare per l'uso del pi&ugrave; efficiente e meno intrusivo <span class="code">unique_ptr</span>?</p>
+<p><span class="code">shared_ptr</span> consente di copiare <span class="code">Object</span> tra loro:</p>
+<pre class="code">
+...
+
+TEST(&quot;factory&quot;) {
+  ...
+  <ins>obj_a = obj_b;
+  REQUIRE(obj_a.f() == &quot;B&quot;);</ins>
+}
+
+/* output:
+ *
+ * Test suite started...
+ * factory: OK
+ * Ran 1 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p><span class="code">unique_ptr</span>, essendo sprovvisto di costruttore di copia, no:</p>
+<pre class="code">
+...
+class Object {
+public:
+  template &lt;typename T&gt;
+  <del>Object(T obj) : pimpl_(std::make_shared&lt;Model&lt;T&gt;&gt;(std::move(obj))) { }</del>
+  <ins>Object(T obj) : pimpl_(new Model&lt;T&gt;(std::move(obj))) { }</ins>
+
+...
+  <del>std::shared_ptr&lt;const Concept&gt; pimpl_;</del>
+  <ins>std::unique_ptr&lt;const Concept&gt; pimpl_;</ins>
+};
+
+TEST(&quot;factory&quot;) {
+  ...
+  obj_a = obj_b; // &lt;- does not compile!
+  ...
+}
+</pre>
+<p>Per ovviare a ci&ograve; &egrave; necessario un <em>deep copy</em> di <span class="code">Model</span>, sia nel costruttore di copia che nell'operatore di assegnamento:</p>
+<pre class="code">
+...
+
+class Object {
+public:
+  template &lt;typename T&gt;
+  Object(T obj) : pimpl_(new Model&lt;T&gt;(std::move(obj))) { }
+  <ins>Object(const Object&amp; obj) : pimpl_(obj.pimpl_->clone_()) { }</ins>
+  <ins>Object&amp; operator=(const Object&amp; obj) {
+    Object tmp(obj);
+    *this = std::move(tmp);
+    return *this;
+  }</ins>
+  std::string f() { return pimpl_-&gt;f(); }
+private:
+  struct Concept {
+    virtual ~Concept() { };
+    <ins>virtual Concept* clone_() const = 0;</ins>
+    virtual std::string f() const = 0;
+  };
+  template &lt;typename T&gt;
+  struct Model : Concept {
+    T obj_;
+    Model(T obj) : obj_(std::move(obj)) { }
+    <ins>virtual Concept* clone_() const { return new Model(*this); }</ins>
+    virtual std::string f() const { return obj_.f(); }
+  };
+  std::unique_ptr&lt;const Concept&gt; pimpl_;
+};
+...
+</pre>
+<p>Avendo definito il costruttore di copia e l'operatore di assegnamento &egrave; bene definire gli analoghi <em>move constructor</em> e <em>move assignment operator</em>; in caso contrario, la chiamata all'operatore di assegnamento causerebbe uno <em>stack overflow</em>, essendo basato sul <em>move assignment operator</em> che il compilatore non genera in virt&ugrave; della definizione esplicita dell'<span class="code">operator=(const Object&amp;)</span>, e che verrebbe perci&ograve; risolto con una nuova chiamata all'operatore di assegnamento stesso:</p>
+<pre class="code">
+...
+
+class Object {
+public:
+  template &lt;typename T&gt;
+  Object(T obj) : pimpl_(new Model&lt;T&gt;(std::move(obj))) { }
+  Object(const Object&amp; obj) : pimpl_(obj.pimpl_->clone_()) { }
+  <ins>Object(Object&amp;&amp;) noexcept = default;</ins>
+  Object&amp; operator=(const Object&amp; obj) {
+    Object tmp(obj);
+    *this = std::move(tmp);
+    return *this;
+  }
+  <ins>Object&amp; operator=(Object&amp;&amp;) noexcept = default;</ins>
+  std::string f() { return pimpl_-&gt;f(); }
+private:
+  struct Concept {
+    virtual ~Concept() { };
+    <ins>virtual Concept* clone_() const = 0;</ins>
+    virtual std::string f() const = 0;
+  };
+  template &lt;typename T&gt;
+  struct Model : Concept {
+    T obj_;
+    Model(T obj) : obj_(std::move(obj)) { }
+    <ins>virtual Concept* clone_() const { return new Model(*this); }</ins>
+    virtual std::string f() const { return obj_.f(); }
+  };
+  std::unique_ptr&lt;const Concept&gt; pimpl_;
+};
+...
+
+/* output:
+ *
+ * Test suite started...
+ * factory: OK
+ * Ran 1 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Parent, S. &quot;Inheritance Is The Base Class of Evil&quot;. <em>Going Native 2013</em>. &lt;<a href="http://channel9.msdn.com/Events/GoingNative/2013/Inheritance-Is-The-Base-Class-of-Evil">http://channel9.msdn.com/Events/GoingNative/2013/Inheritance-Is-The-Base-Class-of-Evil</a>&gt;. Visitato il 24 Settembre 2013.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 30/01/2014</p>
+</body>
+</html>
