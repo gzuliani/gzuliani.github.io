@@ -8,7 +8,7 @@
 <h1>Good Unit Tests /6</h1>
 <p>Questa parte (la sesta; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a> e qui la <a href="gut-5.html">quinta</a>) mostra una possibile strutturazione del codice di test in un insieme di <span class="code">TEST</span> che costituiscono una <span class="code">TEST_SUITE</span>.</p>
 <h2>Introduzione</h2>
-<p>L'implementazione si ispira fortemente a quanto presentato da Henney: &egrave; facilmente individuabile la corrispondenza TEST_SUITE &harr; SPECIFICATION, TEST &harr; PROPOSITION &ndash; il concetto di DIVISON, che costituisce un'ulteriore suddivisione gerarchica di PROPOSITION, l'ho tralasciato di proposito. I concetti chiave sono due:</p>
+<p>L'implementazione si ispira fortemente a quanto presentato da Henney: &egrave; facilmente individuabile la corrispondenza TEST_SUITE &harr; SPECIFICATION, TEST &harr; PROPOSITION &ndash; il concetto di DIVISION, che costituisce un'ulteriore suddivisione gerarchica di PROPOSITION, l'ho tralasciato di proposito. I concetti chiave sono due:</p>
 <ul>
 	<li><span class="code">TEST_SUITE</span> &egrave; una funzione;</li>
 	<li>ogni <span class="code">TEST</span> &egrave; un blocco che pu&ograve; essere eseguito opzionalmente.</li>
@@ -16,11 +16,11 @@
 <pre class="code">
 TEST_SUITE {               &rarr;  void runTests(...) {
 
-  TEST(&quot;1st test name&quot;) {  &rarr;    if (...) {
+  TEST(&quot;1st test&quot;)      {  &rarr;    if (...) {
     // test code                    // test code
   }                             }
 
-  TEST(&quot;2nd test name&quot;) {  &rarr;    if (...) {
+  TEST(&quot;2nd test&quot;)      {  &rarr;    if (...) {
     // test code                   // test code
   }                             }
 
@@ -31,11 +31,11 @@ TEST_SUITE {               &rarr;  void runTests(...) {
 <pre class="code">
 void runTests(<ins>execution&amp; e</ins>) {
 
-  if (<ins>e.shouldRun("1st test name")</ins>) {
+  if (<ins>e.shouldRun("1st test")</ins>) {
     // test code
   }
 
-  if (<ins>e.shouldRun("2nd test name")</ins>) {
+  if (<ins>e.shouldRun("2nd test")</ins>) {
     // test code
   }
 
@@ -48,12 +48,12 @@ void runTests(execution&amp; e) {
 
   <ins>TestData someTestData;</ins>
 
-  if (e.shouldRun("1st test name")) {
+  if (e.shouldRun("1st test")) {
     <del>TestData someTestData;</del>
     // test code
   }
 
-  if (e.shouldRun("2nd test name")) {
+  if (e.shouldRun("2nd test")) {
     <del>TestData someTestData;</del>
     // test code
   }
