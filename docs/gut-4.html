@@ -66,7 +66,7 @@ struct Expression {
 // ...
 
 <ins>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const AreAlmostEqual&amp; aae) {
-  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &lt; 0.001&quot;;
+  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &gt;= 0.001&quot;;
   return os;
 }</ins>
 
@@ -77,10 +77,11 @@ TEST {
 
 /* output:
  *
- * arealmostequal.cpp(22) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &lt; 0.001
+ * arealmostequal.cpp(22) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &gt;= 0.001
  * ...
  */
 </pre>
+<p class="note">Nota: la serializzazione descrive la condizione di fallimento dell'operatore booleano: <span class="code">0.00159265 >= 0.001</span>!</p>
 <p>Questa soluzione ha lo svantaggio di richiedere obbligatoriamente la presenza dell'<span class="code">operator&lt;&lt;</span>; una possibile alternativa consiste nel definire una classe base <span class="code">Boolean</span> e il relativo <span class="code">operator&lt;&lt;</span>, e da essa derivare <span class="code">AreAlmostEqual</span>:</p>
 <pre class="code">
 // ...
@@ -115,13 +116,13 @@ struct AreAlmostEqual <ins>: public Boolean</ins> {
   }
   std::string toString() const {
     std::stringstream ss;
-    ss &lt;&lt; &quot;|&quot; &lt;&lt; d1_ &lt;&lt; &quot; - &quot; &lt;&lt; d2_ &lt;&lt; &quot;| &lt; 0.001&quot;;
+    ss &lt;&lt; &quot;|&quot; &lt;&lt; d1_ &lt;&lt; &quot; - &quot; &lt;&lt; d2_ &lt;&lt; &quot;| &gt;= 0.001&quot;;
     return ss.str();
   }</ins>
 };
 
 <del>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const AreAlmostEqual&amp; aae) {
-  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &lt; 0.001&quot;;
+  os &lt;&lt; &quot;|&quot; &lt;&lt; aae.d1_ &lt;&lt; &quot; - &quot; &lt;&lt; aae.d2_ &lt;&lt; &quot;| = &quot; &lt;&lt; std::fabs(aae.d1_ - aae.d2_) &lt;&lt; &quot; &gt;= 0.001&quot;;
   return os;
 }</del>
 
@@ -194,7 +195,7 @@ public:
 
 Boolean AreAlmostEqual(double d1, double d2) {
   double diff = std::fabs(d1 - d2);
-  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &lt; 0.001&quot;);
+  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &gt;= 0.001&quot;);
 }</ins>
 
 TEST {
@@ -204,7 +205,7 @@ TEST {
 
 /* output:
  *
- * arealmostequal.cpp(41) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &lt; 0.001
+ * arealmostequal.cpp(41) : AreAlmostEqual(pi, 3.14) evaluates to |3.14159 - 3.14| = 0.00159265 &gt;= 0.001
  * ...
  */
 </pre>
@@ -219,7 +220,7 @@ TEST {
 // current version
 Boolean AreAlmostEqual(double d1, double d2) {
   double diff = std::fabs(d1 - d2);
-  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &lt; 0.001&quot;);
+  return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &gt;= 0.001&quot;);
 }</ins>
 </pre>
 <h3>operator!</h3>
