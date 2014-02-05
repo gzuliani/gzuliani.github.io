@@ -75,6 +75,18 @@ bool compare(std::nullptr_t lhs, T* rhs) {
   ...
 </pre>
 <p>Al solito, trattandosi di puntatori, le <span class="code">assert</span> sono commentate, perch&eacute; i valori da essi assunti non sono stabili e la loro rappresentazione dipende dal compilatore.</p>
-<p class="modification-notice">Pagina modificata il 13/06/2013</p>
+<p class="update"><strong>Aggiornamento [05/02/2014]</strong>: sempre a proposito di puntatori, la versione 4.8.2 di MinGW emette il warning <em>&laquo;ISO C++ forbids comparison between pointer and integer&raquo;</em> in corrispondenza dei confronti tra puntatori e costante <span class="code">NULL</span>; sebbene l'uso di tale costante sia deprecata, per eliminare il messaggio basta fornire un'ulteriore specializzazione del metodo <span class="code">compare</span>:</p>
+<pre class="code">
+<ins>template&lt;Operator op, typename T&gt;
+bool compare(T* lhs, long long rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(lhs, reinterpret_cast&lt;T*&gt;(rhs));
+}
+
+template&lt;Operator op, typename T&gt;
+bool compare(long long lhs, T* rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(reinterpret_cast&lt;T*&gt;(lhs), rhs);
+}</ins>
+</pre>
+<p class="modification-notice">Pagina modificata il 04/02/2014</p>
 </body>
 </html>

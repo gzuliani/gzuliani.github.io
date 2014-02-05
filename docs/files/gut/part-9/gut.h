@@ -404,7 +404,17 @@ bool compare(T* lhs, int rhs) {
 }
 
 template<Operator op, typename T>
+bool compare(T* lhs, long long rhs) {
+	return ExprFactory<T*, T*, op>::logAndEvaluate(lhs, reinterpret_cast<T*>(rhs));
+}
+
+template<Operator op, typename T>
 bool compare(int lhs, T* rhs) {
+	return ExprFactory<T*, T*, op>::logAndEvaluate(reinterpret_cast<T*>(lhs), rhs);
+}
+
+template<Operator op, typename T>
+bool compare(long long lhs, T* rhs) {
 	return ExprFactory<T*, T*, op>::logAndEvaluate(reinterpret_cast<T*>(lhs), rhs);
 }
 
