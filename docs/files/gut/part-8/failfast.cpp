@@ -1,6 +1,6 @@
 #include "gut.h"
 
-ENABLE_FAILFAST
+GUT_ENABLE_FAILFAST
 
 TEST("fail-fast /1") {
 	CHECK(1 == 2);

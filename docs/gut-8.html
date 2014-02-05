@@ -801,12 +801,12 @@ class DefaultReport : public Report {
 <p>In caso d'errore invece:</p>
 <img src="img/gut-8/test-error.png"/>
 <h3>Revisione dell'attivazione dell'opzione <em>fail-fast</em></h3>
-<p>&Egrave; stata modificata la modalit&agrave; di attivazione dell'opzione <em>fail-fast</em>, introducendo la macro <span class="code">ENABLE_FAILFAST</span> che va specificata <strong>dopo</strong> l'inclusione del file <em>gut.h</em>:</p>
+<p>&Egrave; stata modificata la modalit&agrave; di attivazione dell'opzione <em>fail-fast</em>, introducendo la macro <span class="code">GUT_ENABLE_FAILFAST</span> che va specificata <strong>dopo</strong> l'inclusione del file <em>gut.h</em>:</p>
 <pre class="code">
 <del>#ifdef GUT_FAILFAST
 FailFast failFast_;
 #endif
-</del><ins>#define ENABLE_FAILFAST gut::FailFast failFast_;
+</del><ins>#define GUT_ENABLE_FAILFAST gut::FailFast failFast_;
 </ins>
 </pre>
 <p>Il programma d'esempio diventa:</p>
@@ -815,7 +815,7 @@ FailFast failFast_;
 </del>
 #include &quot;gut.h&quot;
 
-<ins>ENABLE_FAILFAST
+<ins>GUT_ENABLE_FAILFAST
 </ins>
 TEST(&quot;fail-fast /1&quot;) {
   CHECK(1 == 2);

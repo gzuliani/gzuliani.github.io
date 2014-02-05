@@ -544,7 +544,7 @@ public:
 
 bool FailFast::enabled_ = false;
 
-#define ENABLE_FAILFAST gut::FailFast failFast_;
+#define GUT_ENABLE_FAILFAST gut::FailFast failFast_;
 
 #define PICK_NAME(id_) e_ ## id_,
 #define PICK_LABEL(id_) #id_,
