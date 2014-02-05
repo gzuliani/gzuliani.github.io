@@ -1,0 +1,614 @@
+<html>
+<head>
+<title>Good Unit Tests /10</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-10">risorse</a> | good unit tests /10</p>
+<h1>Good Unit Tests /10</h1>
+<p>Questa parte (la decima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a> e qui la <a href="gut-9.html">nona</a>) &egrave; dedicata alla definizione di report polimorfici che non discendano dall'oggetto <span class="code">gut::Report</span> (cfr. <a href="inheritance.html">polimorfismo senza ereditariet&agrave;</a>).</p>
+<h2>Introduzione</h2>
+<p>Senza la derivazione dalla classe base, la definizione del report di test diventa:</p>
+<pre class="code">
+// test-gut.cpp
+...
+
+class TestReport<del> : public gut::Report</del> {
+  std::string&amp; failure_;
+  std::string&amp; eval_;
+  std::string&amp; info_;
+  std::string&amp; warn_;
+  // disabled!
+  TestReport(const TestReport&amp;);
+  TestReport&amp; operator=(const TestReport&amp;);
+public:
+  TestReport(
+    std::string&amp; failure,
+    std::string&amp; eval,
+    std::string&amp; info,
+    std::string&amp; warn)
+  : failure_(failure)
+  , eval_(eval)
+  , info_(info)
+  , warn_(warn) {
+  }
+<del>protected:</del>
+  <ins>void onStart() { }</ins>
+  <ins>void onEnd() { }</ins>
+  <ins>void onStartTest(const std::string&amp; /*name*/) { }</ins>
+  <ins>void onEndTest() { }</ins>
+  <del>virtual </del>void onFailure(const gut::Notice&amp; failure) { failure_ = failure.what(); }
+  <del>virtual </del>void onEval(const gut::Notice&amp; eval) { eval_ = eval.what(); }
+  <del>virtual </del>void onInfo(const gut::Notice&amp; info) { info_ = info.what(); }
+  <del>virtual </del>void onWarn(const gut::Notice&amp; warn) { warn_ = warn.what(); }
+  <ins>void onQuit() { }</ins>
+  <ins>int failedTestCount() { return -1; }</ins>
+};
+</pre>
+<p>L'interfaccia non &egrave; pi&ugrave; virtuale, ma implicita. In questo modo, qualunque oggetto pu&ograve; essere utilizzato come report, purch&eacute; implementi i seguenti metodi:</p>
+<pre class="code">
+  // implicit Report interface
+  void onStart();
+  void onEnd();
+  void onStartTest(const std::string&amp; name);
+  void onEndTest();
+  void onFailure(const Notice&amp; failure);
+  void onEval(const Notice&amp; eval);
+  void onInfo(const Notice&amp; info);
+  void onWarn(const Notice&amp; warn);
+  void onQuit();
+  int failedTestCount();
+</pre>
+<p>L'istanziazione del nuovo report di test cambia di conseguenza:</p>
+<pre class="code">
+...
+int main() {
+
+  std::string lastFailure;
+  std::string lastEval;
+  std::string lastInfo;
+  std::string lastWarn;
+  <del>gut::Report::set(</del>
+    <del>std::make_shared&lt;TestReport&gt;(</del>
+      <del>lastFailure, lastEval, lastInfo, lastWarn));</del>
+  <ins>gut::Report::set(TestReport(lastFailure, lastEval, lastInfo, lastWarn));</ins>
+  ...
+</pre>
+<h2>Implementazione</h2>
+<p><span class="code">Report</span> sta giocando tre ruoli distinti: definizione dell'interfaccia, contenitore del report concreto e riferimento centralizzato del <em>reporting</em>. Conviene separare le tre responsabilit&agrave;: a <span class="code">Concept</span> la definizione dell'interfaccia,  a <span class="code">Report</span> il contenimento, a <span class="code">theReport</span> il punto d'accesso:</p>
+<pre class="code">
+class Report {
+  <del>static std::shared_ptr&lt;Report&gt; report_;</del>
+<del>protected:</del>
+  <del>Clock clock_;</del>
+public:
+  <del>static void set(std::shared_ptr&lt;Report&gt; report) {</del>
+    <del>report_ = report;</del>
+  <ins>template&lt;class T&gt;</ins>
+  <ins>Report(T report) : report_ (std::make_shared&lt;Model&lt;T&gt;&gt;(std::move(report))) {</ins>
+  }
+  <del>static </del>void start() {
+    <del>if (report_)</del>
+      report_-&gt;onStart();
+  }
+  <del>static </del>void end() {
+    <del>if (report_)</del>
+      report_-&gt;onEnd();
+  }
+  <del>static </del>void startTest(const std::string&amp; name) {
+    <del>if (report_)</del>
+      report_-&gt;onStartTest(name);
+  }
+  <del>static </del>void endTest() {
+    <del>if (report_)</del>
+      report_-&gt;onEndTest();
+  }
+  <del>static </del>void failure(const Notice&amp; failure) {
+    <del>if (report_)</del>
+      report_-&gt;onFailure(failure);
+    if (FailFast::enabled())
+      throw AbortSuite();
+  }
+  <del>static </del>void eval(const Notice&amp; eval) {
+    <del>if (report_)</del>
+      report_-&gt;onEval(eval);
+  }
+  <del>static </del>void info(const Notice&amp; info) {
+    <del>if (report_)</del>
+      report_-&gt;onInfo(info);
+  }
+  <del>static </del>void warn(const Notice&amp; warn) {
+    <del>if (report_)</del>
+      report_-&gt;onWarn(warn);
+  }
+  <del>static </del>void quit() {
+    <del>if (report_)</del>
+      report_-&gt;onQuit();
+  }
+  <ins>int failedTestCount() { return report_->failedTestCount(); }</ins>
+<del>protected:</del>
+  <del>virtual void onStart() { }</del>
+  <del>virtual void onEnd() { }</del>
+  <del>virtual void onStartTest(const std::string&amp; /*name*/) { }</del>
+  <del>virtual void onEndTest() { }</del>
+  <del>virtual void onFailure(const Notice&amp; /*failure*/) { }</del>
+  <del>virtual void onEval(const Notice&amp; /*eval*/) { }</del>
+  <del>virtual void onInfo(const Notice&amp; /*info*/) { }</del>
+  <del>virtual void onWarn(const Notice&amp; /*warn*/) { }</del>
+  <del>virtual void onQuit() { }</del>
+
+<ins>private:
+  struct Concept {
+    virtual ~Concept() { }
+    virtual void onStart() = 0;
+    virtual void onEnd() = 0;
+    virtual void onStartTest(const std::string&amp; /*name*/) = 0;
+    virtual void onEndTest() = 0;
+    virtual void onFailure(const Notice&amp; /*failure*/) = 0;
+    virtual void onEval(const Notice&amp; /*eval*/) = 0;
+    virtual void onInfo(const Notice&amp; /*info*/) = 0;
+    virtual void onWarn(const Notice&amp; /*warn*/) = 0;
+    virtual void onQuit() = 0;
+    virtual int failedTestCount() = 0;
+  };</ins>
+
+  <ins>template&lt;class T&gt;
+  struct Model : public Concept {
+    T report_;
+    Model(T report) : report_(std::move(report)) { }
+    virtual void onStart() {
+      report_.onStart();
+    }
+    virtual void onEnd() {
+      report_.onEnd();
+    }
+    virtual void onStartTest(const std::string&amp; name) {
+      report_.onStartTest(name);
+    }
+    virtual void onEndTest() {
+      report_.onEndTest();
+    }
+    virtual void onFailure(const Notice&amp; failure) {
+      report_.onFailure(failure);
+    }
+    virtual void onEval(const Notice&amp; eval) {
+      report_.onEval(eval);
+    }
+    virtual void onInfo(const Notice&amp; info) {
+      report_.onInfo(info);
+    }
+    virtual void onWarn(const Notice&amp; warn) {
+      report_.onWarn(warn);
+    }
+    virtual void onQuit() {
+      report_.onQuit();
+    }
+    virtual int failedTestCount() {
+      return report_.failedTestCount();
+    }
+  };</ins>
+
+  <ins>std::shared_ptr&lt;Concept&gt; report_;</ins>
+};
+</pre>
+<p>L'accesso alle funzioni di reporting avviene attraverso una nuova interfaccia statica:</p>
+<pre class="code">
+<del>std::shared_ptr&lt;Report&gt; Report::report_;</del>
+
+<ins>class theReport {
+  static Report report_;
+public:
+  static void set(Report report) { report_ = report; }
+  static void start() { report_.start(); }
+  static void end() { report_.end(); }
+  static void startTest(const std::string&amp; name) { report_.startTest(name); }
+  static void endTest() { report_.endTest(); }
+  static void failure(const Notice&amp; failure) { report_.failure(failure); }
+  static void eval(const Notice&amp; eval) { report_.eval(eval); }
+  static void info(const Notice&amp; info) { report_.info(info); }
+  static void warn(const Notice&amp; warn) { report_.warn(warn); }
+  static void quit() { report_.quit(); }
+  static int failedTestCount() { return report_.failedTestCount(); }
+};</ins>
+</pre>
+<p>Il report di default non discende pi&ugrave; da <span class="code">Report</span>:</p>
+<pre class="code">
+class DefaultReport<del> : public Report</del> {
+  size_t tests_;
+  <del>size_t testFailures_;</del>
+  <ins>bool testFailed_;</ins>
+  size_t totalFailures_;
+  size_t failedTests_;
+  std::vector&lt;Notice&gt; log_;
+  <ins>Clock clock_;</ins>
+public:
+  <del>size_t</del> <ins>int</ins> failedTestCount() const {
+    return <ins>static_cast&lt;int&gt;(</ins>failedTests_<ins>)</ins>;
+  }
+  <del>DefaultReport() : tests_(0), testFailures_(0), totalFailures_(0), failedTests_(0) { }</del>
+<del>protected:</del>
+  <del>virtual </del>void onStart() {
+    <ins>tests_ = 0;</ins>
+    <ins>failedTests_ = 0;</ins>
+    std::cout &lt;&lt; &quot;Test suite started...&quot; &lt;&lt; std::endl;
+  }
+  <del>virtual </del>void onEnd() {
+    std::cout &lt;&lt; &quot;Ran &quot; &lt;&lt; tests_ &lt;&lt; &quot; test(s) in &quot; &lt;&lt; clock_.elapsedTime() &lt;&lt; &quot;s.&quot; &lt;&lt; std::endl;
+    if (failedTests_ == 0)
+      std::cout &lt;&lt; color::lime &lt;&lt; &quot;OK - all tests passed.&quot; &lt;&lt; color::reset &lt;&lt; std::endl;
+    else
+      std::cout &lt;&lt; color::red &lt;&lt; &quot;FAILED - &quot; &lt;&lt; totalFailures_ &lt;&lt; &quot; failure(s) in &quot; &lt;&lt; failedTests_ &lt;&lt; &quot; test(s).&quot; &lt;&lt; color::reset &lt;&lt; std::endl;
+  }
+  <del>virtual </del>void onStartTest(const std::string&amp; name) {
+    ++tests_;
+    <del>testFailures_ = 0;</del>
+    <ins>testFailed_ = false;</ins>
+    std::cout &lt;&lt; name &lt;&lt; &quot;: &quot;;
+  }
+  <del>virtual </del>void onEndTest() {
+    <del>if (testFailures_ == 0) {</del>
+    <ins>if (!testFailed_) {</ins>
+      std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;
+      flushLog(e_warning);
+    }
+    else
+      testFailed();
+    clear();
+  }
+  <del>virtual </del>void onFailure(const Notice&amp; failure) {
+    <del>if (testFailures_ == 0)</del>
+    <ins>if (!testFailed_)</ins>
+      std::cout &lt;&lt; &quot;FAILED&quot; &lt;&lt; std::endl;
+    log_.push_back(failure);
+    <del>++testFailures_;</del>
+    ++totalFailures_;
+    <ins>testFailed_ = true;</ins>
+  }
+  <del>virtual </del>void onEval(const Notice&amp; eval) {
+    log_.push_back(eval);
+  }
+  <del>virtual </del>void onInfo(const Notice&amp; info) {
+    log_.push_back(info);
+  }
+  <del>virtual </del>void onWarn(const Notice&amp; warn) {
+    log_.push_back(warn);
+  }
+  <del>virtual </del>void onQuit() {
+    testFailed();
+  }
+  void testFailed() {
+    ++failedTests_;
+    flushLog(e_info);
+  }
+  void flushLog(Level minLevel) {
+    for (auto notice : log_)
+      if (notice.level() &gt;= minLevel)
+        std::cout &lt;&lt; &quot; &quot; &lt;&lt; notice.toString() &lt;&lt; std::endl;
+  }
+  void clear() {
+    log_.clear();
+  }
+};
+
+<ins>Report theReport::report_ = Report(DefaultReport());</ins>
+...
+
+int runTests_() {
+  <del>auto report_ = std::make_shared&lt;gut::DefaultReport&gt;();</del>
+  <del>gut::Report::set(report_);</del>
+  ...
+  <del>return report_->failedTestCount();</del>
+  <ins>return gut::Report::failedTestCount();</ins>
+}
+</pre>
+<p>Una sostituzione globale delle chiamate <span class="code">gut::Report</span> in <span class="code">gut::theReport</span> nei file <span class="file-name">gut.h</span> e <span class="file-name">test-gut.cpp</span> conclude l'intervento.</p>
+<h2>TAP &ndash; Test Anything Protocol</h2>
+<p>Come esempio di report alternativo ho provato ad implementare <em>TAP</em><sup><a href="#ref-1">[1]</a></sup><sup><a href="#ref-2">[2]</a></sup>:</p>
+<pre class="code">
+// file gut-tap.h
+#ifndef GUT_TAP_H
+#define GUT_TAP_H
+
+namespace gut {
+
+class TapReport {
+  int tests_;
+  int failedTests_;
+  std::string testName_;
+  bool testFailed_;
+  std::vector&lt;gut::Notice&gt; log_;
+  bool quit_;
+public:
+  int failedTestCount() const { return failedTests_; }
+  void onStart() {
+    quit_ = false;
+    tests_ = 0;
+    failedTests_ = 0;
+  }
+  void onEnd() {
+    if (quit_)
+      return;
+    std::cout &lt;&lt; &quot;1..&quot; &lt;&lt; tests_ &lt;&lt; std::endl;
+    if (tests_ &gt; 0) {
+      float okRatio = (tests_ - failedTests_) * 100. / tests_;
+      std::cout
+        &lt;&lt; &quot;# failed &quot; &lt;&lt; failedTests_ &lt;&lt; &quot;/&quot; &lt;&lt; tests_ &lt;&lt; &quot; test(s), &quot;
+        &lt;&lt; std::fixed &lt;&lt; std::setprecision(1)
+        &lt;&lt; okRatio &lt;&lt; &quot;% ok&quot; &lt;&lt; std::endl;
+    }
+  }
+  void onStartTest(const std::string&amp; name) {
+    ++tests_;
+    testName_ = name;
+    testFailed_ = false;
+  }
+  void onEndTest() {
+    std::ostringstream oss;
+    if (testFailed_) {
+      ++failedTests_;
+      oss &lt;&lt; &quot;not &quot;;
+    }
+    oss &lt;&lt; &quot;ok &quot; &lt;&lt; tests_ &lt;&lt; &quot; - &quot; &lt;&lt; testName_;
+    for (const auto&amp; entry : log_) {
+      oss &lt;&lt; &quot;\n# &quot; &lt;&lt; entry.toString();
+    }
+    std::cout &lt;&lt; oss.str() &lt;&lt; std::endl;
+    log_.clear();
+  }
+  void onFailure(const gut::Notice&amp; failure) {
+    log_.push_back(failure);
+    testFailed_ = true;
+  }
+  void onEval(const gut::Notice&amp; eval) {
+    log_.push_back(eval);
+  }
+  void onInfo(const gut::Notice&amp; info) {
+    log_.push_back(info);
+  }
+  void onWarn(const gut::Notice&amp; warn) {
+    log_.push_back(warn);
+  }
+  void onQuit() {
+    quit_ = true;
+    std::ostringstream oss;
+    oss &lt;&lt; &quot;Bail out!&quot;;
+    std::cout &lt;&lt; oss.str() &lt;&lt; std::endl;
+  }
+};
+
+} // namespace gut
+
+#endif // GUT_TAP_H
+</pre>
+<p>Per attivare il report prescelto si sfrutta il costruttore di un oggetto statico:</p>
+<pre class="code">
+// file gut.h
+...
+
+<ins>#define GUT_ENABLE_REPORT(name_) \
+  static struct CustomReport { \
+    CustomReport() { gut::theReport::set(name_()); } \
+  } customReport_;</ins>
+...
+
+
+
+// file example.cpp
+...
+
+GUT_ENABLE_REPORT(gut::TapReport)
+...
+
+/* output:
+ *
+ * ok 1 - Initial list is empty
+ * ok 2 - Insertion to empty list is retained
+ * ok 3 - Distinct insertions are retained in stack order
+ * ok 4 - Duplicate insertions are moved to the front but not inserted
+ * ok 5 - Out of range indexing throws exception
+ * 1..5
+ * # failed 0/5 test(s), 100.0% ok
+ */
+</pre>
+<p>Per supportare al meglio il protocollo TAP &egrave; necessario estendere il framework di test.</p>
+<h3>Todo</h3>
+<p>TAP usa la direttiva <em>todo</em> per segnalare test incompleti, per quali &egrave; quindi previsto il fallimento. Un todo-test che non fallisce &egrave; candidato ad essere promosso al rango di test. Un modo per ottenere questo tipo di segnalazione consiste nel decorare il nome del test con la descrizione che accompagna la direttiva:</p>
+<pre class="code">
+// gut-tap.h
+...
+
+<ins>#define TODO(name_, desc_) \
+  TEST(name_ " # todo " desc_)</ins>
+
+
+
+// example.cpp
+...
+
+<ins>TODO(&quot;Empty strings are ignored&quot;, &quot;not yet implemented&quot;) {
+  RecentlyUsedList aList;
+  aList.insert(&quot;&quot;);
+
+  CHECK(aList.empty());
+}</ins>
+
+/* output:
+ *
+ * ...
+ * not ok 6 - Empty strings are ignored # todo not yet implemented
+ * # example.cpp(85) : [error] aList.empty() evaluates to false
+ * 1..6
+ * # failed 1/6 test(s), 83.3% ok
+ */
+</pre>
+<h3>Skip</h3>
+<p>La direttiva <em>skip</em> caratterizza i test che per qualche ragione non sono stati eseguiti; i test ignorati devono essere trattati alla stessa stregua dei test conclusi con successo. A tal scopo &egrave; stata definita la macro <span class="code">SKIP</span>. Essa introduce un test vuoto, destinato quindi al successo, inibendo nel contempo il test originale definendo una funzione ausiliaria di comodo, non statica &ndash; per evitare l'emissione di messaggi d'errore da parte del linker &ndash;, il cui scopo &egrave; di &ldquo;agganciare&rdquo; il codice di test e renderlo inoperativo:</p>
+<pre class="code">
+SKIP(name_, reason_) {                 <ins>TEST(name_ " # skipped, reason: " reason_) {</ins>
+  &lt;test body&gt;                    <ins>        // empty tesy</ins>
+}                                      <ins>}</ins>
+                             
+                                       <ins>void skip_ {</ins>
+                                         &lt;test body&gt;
+                                       }
+</pre>
+<p>L'implementazione &egrave; la seguente:</p>
+<pre class="code">
+// gut-tap.h
+...
+
+<ins>#define SKIP(name_, reason_) \
+  TEST(name_ &quot; # skipped, reason: &quot; reason_) { \
+  } \
+  void skip ## __LINE__()</ins>
+
+
+// example.cpp
+...
+
+<ins>SKIP(&quot;One trillion insertions are ok&quot;, &quot;too slow!&quot;) {
+  RecentlyUsedList aList;
+  for (int i = 0; i &lt; 1000000; ++i)
+    for (int j = 0; j &lt; 1000000; ++j)
+      for (int k = 0; k &lt; 1000000; ++k)
+        aList.insert(&quot;one&quot;);
+
+  CHECK(aList.size() == 1);
+  CHECK(aList[0] == &quot;one&quot;);
+}</ins>
+
+/* output:
+ *
+ * ...
+ * ok 7 - One trillion insertions are ok # skipped, reason: too slow!
+ * 1..7
+ * # failed 1/7 test(s), 85.7% ok
+ */
+</pre>
+<h3>Bail out</h3>
+<p><em>Bail out!</em> &egrave; un'indicacazione d'uscita anticipata ed inattesa dal test; l'eccezione <span class="code">AbortSuite</span> pu&ograve; essere utilizzata allo scopo:</p>
+<pre class="code">
+// gut-tap.h
+...
+
+<ins>#define BAIL_OUT \
+  do { \
+    throw gut::AbortSuite(); \
+  } while (0)</ins>
+
+
+
+// example.cpp
+...
+
+<ins>TEST(&quot;Write to a file&quot;) {
+  BAIL_OUT;
+}</ins>
+
+/* output:
+ *
+ * ...
+ * ok 7 - One trillion insertions are ok # skipped, reason: too slow!
+ * Bail out!
+ */
+</pre>
+<p>Per chiarezza, conviene corredare l'evento di una descrizione che ne dettagli la natura:</p>
+<pre class="code">
+TEST(&quot;Write to a file&quot;) {
+  BAIL_OUT<ins>(&quot;File system is read only.&quot;)</ins>;
+}
+</pre>
+<p>Con pochi interventi di aggiornamento si ottiene quando desiderato:</p>
+<pre class="code">
+// gut-tap.h
+...
+
+class TapReport {
+...
+  void onQuit(<ins>const std::string&amp; reason</ins>) {
+    quit_ = true;
+    std::ostringstream oss;
+    oss &lt;&lt; &quot;Bail out!&quot;;
+    <ins>if (!reason.empty ())
+      oss &lt;&lt; &quot; Reason: &quot; &lt;&lt; reason;</ins>
+    std::cout &lt;&lt; oss.str() &lt;&lt; std::endl;
+  }
+...
+
+#define BAIL_OUT<ins>(reason_)</ins> \
+  do { \
+    throw gut::AbortSuite(reason_); \
+  } while (0)
+
+
+
+// gut.h
+...
+
+<del>struct</del> <ins>class</ins> AbortSuite {
+  <ins>std::string reason_;
+public:
+  AbortSuite() { }
+  AbortSuite(const std::string&amp; reason) : reason_(reason) { }
+  const std::string&amp; reason() const { return reason_; }</ins>
+};
+...
+
+class Report {
+...
+  void quit(<ins>const std::string&amp; reason</ins>) { report_->onQuit(<ins>reason</ins>); }
+  ...
+private:
+  struct Concept {
+  ...
+    virtual void onQuit(<ins>const std::string&amp; /*reason*/</ins>) = 0;
+    ...
+  struct Model : public Concept {
+  ...
+    virtual void onQuit(<ins>const std::string&amp; reason</ins>) { report_.onQuit(<ins>reason</ins>); }
+    ...
+};
+...
+
+class theReport {
+...
+  static void quit(<ins>const std::string&amp; report</ins>) { report_.quit(<ins>report</ins>); }
+  ...
+};
+...
+
+class DefaultReport {
+...
+  void onQuit(<ins>const std::string&amp; /*reason*/</ins>) {
+    testFailed();
+  }
+  ...
+};
+...
+
+int runTests_() {
+...
+    } catch(const gut::AbortSuite&amp; <ins>e</ins>) {
+      gut::theReport::quit(<ins>e.reason()</ins>);
+    ...
+}
+</pre>
+<p>L'esecuzione del test d'esempio genera ora un messaggio pi&ugrave; dettagliato:</p>
+<pre class="code">
+/* output:
+ *
+ * ...
+ * ok 7 - One trillion insertions are ok # skipped, reason: too slow!
+ * Bail out! Reason: File system is read only.
+ */
+</pre>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>&quot;Test Anything Protocol&quot;. <em>wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Test_Anything_Protocol">http://en.wikipedia.org/wiki/Test_Anything_Protocol</a>&gt;. Visitato il 04 Febbraio 2014.</li>
+<a name="ref-2"></a>
+<li>&quot;Test::Harness::TAP&quot;. <em>metacpan.org</em>. &lt;<a href="https://metacpan.org/pod/release/PETDANCE/Test-Harness-2.64/lib/Test/Harness/TAP.pod">https://metacpan.org/pod/release/PETDANCE/Test-Harness-2.64/lib/Test/Harness/TAP.pod</a>&gt;. Visitato il 04 Febbraio 2014.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 04/02/2014</p>
+</body>
+</html>
