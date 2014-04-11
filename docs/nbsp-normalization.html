@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>&amp;nbsp; e normalizzazione della spaziatura</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#nbsp-normalization">risorse</a> | &amp;nbsp; e normalizzazione della spaziatura</p>
+<h1><span class="code">&amp;nbsp;</span> e normalizzazione della spaziatura</h1>
+<p><em>La normalizzazione della spaziatura dovrebbe collassare anche <span class="code">&amp;nbsp;</span>?</em></p>
+<h2>Definizioni</h2>
+<p>Per normalizzazione della spaziatura (sottinteso: di una stringa) si intende la sostituzione delle sequenze di più <em>caratteri di spaziatura</em> con il carattere ASCII <span class="code">0x20 (SPACE)</span>. Per <em>carattere di spaziatura</em>, invece, si intende<a href="#ref-3"><sup>[3]</sup></a>:</p>
+<blockquote>
+<p>&hellip;<strong>white space</strong> is any character or series of <strong>whitespace</strong> characters that represent horizontal or vertical space in typography.</p>
+</blockquote>
+<p>Esistono diversi tipi di caratteri di spaziatura, dal significato o dall'aspetto caratteristico<a href="#ref-2"><sup>[2]</sup></a>, e Unicode ne fornisce una classificazione esplicita<a href="#ref-7"><sup>[7]</sup></a>:</p>
+<pre class="code">
+# PropList-6.3.0.txt
+# Date: 2013-09-25, 18:58:50 GMT [MD]
+#
+# Unicode Character Database
+# Copyright (c) 1991-2013 Unicode, Inc.
+# For terms of use, see http://www.unicode.org/terms_of_use.html
+# For documentation, see http://www.unicode.org/reports/tr44/
+
+# ================================================
+
+0009..000D    ; White_Space # Cc   [5] &gt;control-0009&lt;..&gt;control-000D&lt;
+0020          ; White_Space # Zs       SPACE
+0085          ; White_Space # Cc       &gt;control-0085&lt;
+00A0          ; White_Space # Zs       NO-BREAK SPACE
+1680          ; White_Space # Zs       OGHAM SPACE MARK
+2000..200A    ; White_Space # Zs  [11] EN QUAD..HAIR SPACE
+2028          ; White_Space # Zl       LINE SEPARATOR
+2029          ; White_Space # Zp       PARAGRAPH SEPARATOR
+202F          ; White_Space # Zs       NARROW NO-BREAK SPACE
+205F          ; White_Space # Zs       MEDIUM MATHEMATICAL SPACE
+3000          ; White_Space # Zs       IDEOGRAPHIC SPACE
+...
+</pre>
+<p>L'esistenza di questa variet&agrave; di caratteri di spaziatura dovrebbe suggerire che forse <span class="code">&amp;nbsp;</span> non &egrave; l'unico caso speciale da considerare nell'implementazione di una procedura di normalizzazione della spaziatura.</p>
+<h2>Strumenti</h2>
+<p>Alcune piattaforme di sviluppo consentono di risalire almeno in parte alla natura del carattere di spaziatura; ad esempio, JAVA offre le seguenti funzioni<a href="#ref-5"><sup>[5]</sup></a><a href="#ref-6"><sup>[6]</sup></a>:</p>
+<blockquote>
+<dl>
+ <dt><span class="code">isSpaceChar</span></dt>
+ <dd>Determines if the specified character (Unicode code point) is a Unicode space character.</dd>
+ <dt><span class="code">isWhitespace</span></dt>
+ <dd>Determines if the specified character is white space according to Java.</dd>
+</dl>
+</blockquote>
+<p>Anche ICU mette a disoposizione diversi metodi per lo stesso scopo<a href="#ref-10"><sup>[10]</sup></a>:</p>
+<blockquote>
+<dl>
+ <dt><span class="code">u_isUWhiteSpace=UCHAR_WHITE_SPACE</span></dt>
+ <dd>Unicode White_Space property; most of general categories &ldquo;Z&rdquo; (separators) + most whitespace ISO controls (including no-break spaces, but excluding IS1..IS4 and ZWSP)</dd>
+    <dt><span class="code">u_isWhitespace</span></dt>
+    <dd>Java isWhitespace; Z + whitespace ISO controls but excluding no-break spaces</dd>
+    <dt><span class="code">u_isJavaSpaceChar</span></dt>
+    <dd>Java isSpaceChar; just Z (including no-break spaces)</dd>
+    <dt><span class="code">u_isspace</span></dt>
+    <dd>Z + whitespace ISO controls (including no-break spaces)</dd>
+    <dt><span class="code">u_isblank</span></dt>
+    <dd>&ldquo;horizontal spaces&rdquo; = TAB + Zs - ZWSP</dd>
+</dl>
+</blockquote>
+<h2>Normalizzazione e <span class="code">&amp;nbsp;</span></h2>
+<p>Il carattere <span class="code">&amp;nbsp;</span> corrisponde al <em>code point</em> Unicode <span class="code">U+00A0 (NO-BREAK SPACE)</span>, la cui definizione &egrave;<a href="#ref-1"><sup>[1]</sup></a>:</p>
+<blockquote>
+...a variant of the space character that prevents an automatic line break (line wrap) at its position. In certain formats (such as HTML), it also prevents the “collapsing” of multiple consecutive whitespace characters into a single space. The non-breaking space is also known as a <strong>hard space</strong> or <strong>fixed space</strong>&hellip;
+</blockquote>
+<p>Come spesso accade, la domanda iniziale non ha una risposta univoca: dipende dall'uso che si fa della stringa normalizzata. La risposta sar&agrave; <em>tendenzialmente</em> negativa se la stringa normalizzata viene visualizzata, dato che i caratteri <span class="code">NO-BREAK SPACE</span> e <span class="code">SPACE</span> causano impaginazioni diverse. D'altra parte, a volte pu&ograve; risultare comodo normalizzare anche questo carattere, per esempio per attivit&agrave; di analisi non collegate al processo di pubblicazione del testo (indicizzazione, ricerche <em>full text</em>, &hellip;).</p>
+<p>A titolo d'esempio, la definizione della funzione di normalizzazione degli spazi bianchi di <em>XPath</em>:<a href="#ref-11"><sup>[11]</sup></a>:</p>
+<blockquote>
+ <dl>
+  <dt><span class="code">string normalize-space(string?)</span></dt>
+  <dd>The normalize-space function returns the argument string with whitespace normalized by stripping leading and trailing whitespace and replacing sequences of whitespace characters by a single space. Whitespace characters are the same as those allowed by the S production in XML&hellip;</dd>
+ </dl>
+</blockquote>
+<p>La produzione cui si riferisce la definizione &egrave; la seguente<a href="#ref-12"><sup>[12]</sup></a>:</p>
+<pre class="code">
+[3] S ::= (#x20 | #x9 | #xD | #xA)+
+</pre>
+<p>La normalizzazione <em>XPath</em> opera dunque, per definizione, su un insieme molto ristretto di caratteri di spaziatura, che non contempla il carattere <span class="code">&amp;nbsp;</span>. Analogamente, nel trattamento dei file XAML, Microsoft dichiara di effettuare il &ldquo;collapsing&rdquo; dei soli caratteri di spaziatura <span class="code">U+0020 (SPACE)</span>, <span class="code">U+000A (LINE FEED)</span> e <span class="code">U+0009 (CHARACTER TABULATION)</span><a href="#ref-4"><sup>[4]</sup></a>. Questo a dimostrazione del fatto che non esiste una forma comunemente accettata di normalizzazione dei caratteri di spaziatura.</p>
+<h2 id="riferimenti">Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li><p><em>&ldquo;Non-breaking space&rdquo;</em>, wikipedia.com &mdash; <a href="http://en.wikipedia.org/wiki/Non-breaking_space">http://en.wikipedia.org/wiki/Non-breaking_space</a>, visitato il 10/04/2014</p></li>
+<a name="ref-2"></a>
+<li><p><em>&ldquo;Spaces in Unicode&rdquo;</em>, wikipedia.com &mdash; <a href="http://en.wikipedia.org/wiki/Space_%28punctuation%29#Spaces_in_Unicode">http://en.wikipedia.org/wiki/Space_%28punctuation%29#Spaces_in_Unicode</a>, visitato il 10/04/2014</p></li>
+<a name="ref-3"></a>
+<li><p><em>&ldquo;Whitespace character&rdquo;</em>, wikipedia.com &mdash; <a href="http://en.wikipedia.org/wiki/Whitespace_character">http://en.wikipedia.org/wiki/Whitespace_character</a>, visitato il 10/04/2014</p></li>
+<a name="ref-4"></a>
+<li><p><em>&ldquo;Collapsible Whitespace Characters&rdquo;</em>, MSDN &mdash; <a href="http://msdn.microsoft.com/en-us/library/ee177368.aspx">http://msdn.microsoft.com/en-us/library/ee177368.aspx</a>, visitato il 10/04/2014</p></li>
+<a name="ref-5"></a>
+<li><p><em>&ldquo;isSpaceChar&rdquo;</em>, JAVA Platform SE 7 Docs &mdash; <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isSpaceChar%28char%29">http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isSpaceChar%28char%29</a>, visitato il 10/04/2014</p></li>
+<a name="ref-6"></a>
+<li><p><em>&ldquo;isWhitespace&rdquo;</em>, JAVA Platform SE 7 Docs &mdash; <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isWhitespace%28char%29">http://docs.oracle.com/javase/7/docs/api/java/lang/Character.html#isWhitespace%28char%29</a>, visitato il 10/04/2014</p></li>
+<a name="ref-7"></a>
+<li><p><em>&ldquo;Unicode Character Database&rdquo;</em>, Unicode &mdash; <a href="http://unicode.org/Public/UNIDATA/PropList.txt">http://unicode.org/Public/UNIDATA/PropList.txt</a>, visitato il 10/04/2014</p></li>
+<a name="ref-8"></a>
+<li><p><em>&ldquo;Legacy Support for Space Character as Base for Combining Marks&rdquo;</em>, Unicode &mdash; <a href="http://www.unicode.org/reports/tr14/#LegacySpace">http://www.unicode.org/reports/tr14/#LegacySpace</a>, visitato il 10/04/2014</p></li>
+<a name="ref-9"></a>
+<li><p><em>&ldquo;The Unicode Standard Version 6.2 – Core Specification&rdquo;</em>, unicode.org &mdash; <a href="http://www.unicode.org/versions/Unicode6.2.0/ch04.pdf">http://www.unicode.org/versions/Unicode6.2.0/ch04.pdf</a>, visitato il 10/04/2014</p></li>
+<a name="ref-10"></a>
+<li><p><em>&ldquo;uchar.h File Reference&rdquo;</em>, unicode.org &mdash; <a href="http://www.icu-project.org/apiref/icu4c/uchar_8h.html">http://www.icu-project.org/apiref/icu4c/uchar_8h.html</a>, visitato l'11/04/2014</p></li>
+<a name="ref-11"></a>
+<li><p><em>&ldquo;XML Path Language (XPath) - Version 1.0&rdquo;</em>, W3C &mdash; <a href="http://www.w3.org/TR/xpath/">http://www.w3.org/TR/xpath/</a>, visitato il 10/04/2014</p></li>
+<a name="ref-12"></a>
+<li><p><em>&ldquo;Extensible Markup Language (XML) 1.0 (Fifth Edition) - Common Syntactic Constructs - White Space&rdquo;</em>, W3C &mdash; <a href="http://www.w3.org/TR/REC-xml/#NT-S">http://www.w3.org/TR/REC-xml/#NT-S</a>, visitato il 10/04/2014</p></li>
+</ol>
+<p class="modification-notice">Pagina modificata il 11/04/2014</p>
+</body>
+</html>
