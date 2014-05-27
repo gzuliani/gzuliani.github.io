@@ -1,0 +1,152 @@
+/*
+ * Solarized color scheme
+ *
+ * base03=#002b36
+ * base02=#073642
+ * base01=#586e75
+ * base00=#657b83
+ * base0=#839496
+ * base1=#93a1a1
+ * base2=#eee8d5
+ * base3=#fdf6e3
+ * yellow=#b58900
+ * orange=#cb4b16
+ * red=#dc322f
+ * magenta=#d33682
+ * violet=#6c71c4
+ * blue=#268bd2
+ * cyan=#2aa198
+ * green=#859900
+ */
+
+a:link, a:visited {
+ color: #268bd2;
+ text-decoration: underline;
+}
+
+a:active, a:hover {
+ color: #dc322f;
+ text-decoration: underline;
+}
+
+body {
+ background: #eee8d5;
+ color: #586e75;
+ font-family: Candara, Verdana, Arial, Sans Serif;
+ margin-left: 0em;
+ padding-left: 1.5em;
+}
+
+h1, h2 {
+ font-family: Cambria, Times New Roman, Times, Serif;
+ margin-bottom: 1em;
+}
+
+h1 {
+ font-size: 2em; 
+}
+
+h2 {
+ margin-top: 5em;
+ font-size: 1.5em;
+}
+
+h3 {
+ margin-top: 3em;
+ font-style: italic;
+ font-weight: normal;
+}
+
+img {
+ border: 1px #586e75 solid;
+}
+
+table {
+ margin-top: 2em;
+}
+
+th {
+ padding: .2em .5em .2em .5em;
+}
+
+td {
+ border-bottom: 1px #586e75 solid;
+ padding: .2em .5em .2em .5em;
+ vertical-align: middle;
+}
+
+td.rev {
+ border-bottom: 1px #586e75 solid;
+ text-align: right;
+}
+
+td.tag {
+ border-bottom: 1px #586e75 solid;
+ text-align: right;
+}
+
+td.count {
+ border-bottom: 1px #586e75 solid;
+ text-align: right;
+}
+
+td.percent {
+ border-bottom: 1px #586e75 solid;
+ text-align: right;
+}
+
+td.date {
+ border-bottom: 1px #586e75 solid;
+ text-align: right;
+ white-space: nowrap;
+}
+
+td.message {
+ border-bottom: 1px #586e75 solid;
+}
+
+p.summary {
+ font-size: .9em;
+ font-style: italic;
+ margin-top: 0em;
+ margin-bottom: 0em;
+}
+
+p.link {
+ font-size: .9em;
+ margin-top: 0em;
+ margin-bottom: 0em;
+}
+
+p.tag-cloud {
+ background: #fdf6e3;
+ border: 1px #586e75 solid;
+ margin-left: 3em;
+ padding: 1em;
+ width: 42em;
+ text-align: center;
+}
+
+span.tag5 {
+ color: #cb4b16;
+ font-size: 1.5em;
+}
+
+span.tag4 {
+ color: #b58900;
+ font-size: 1.3em;
+}
+
+span.tag3 {
+ font-size: 1em;
+}
+
+span.tag2 {
+ color: #657b83;
+ font-size: 1em;
+}
+
+span.tag1 {
+ color: #839496;
+ font-size: .75em;
+}
