@@ -1,0 +1,318 @@
+<html>
+<head>
+<title>StatHg</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/stat-hg.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#stat-hg">risorse</a> | StatHg</p>
+<h1>StatHg</h1>
+<p>StatHg &egrave; un insieme di script che analizzano un <em>repository</em> <a href="http://mercurial.selenic.com/">Mercurial</a> allo scopo di descrivere la dinamica dello sviluppo di un progetto software, alla stregua di quanto <a href="http://www.statsvn.org/">StatSVN</a> fa per <a href="http://subversion.apache.org/">Subversion</a>.</p>
+<p>Il processo si articola in tre fasi:</p>
+<ol>
+<li>analisi del repository Hg;</li>
+<li>raccolta delle statistiche;</li>
+<li>creazione dei prospetti.</li>
+</ol>
+<h2>Analisi del repository Hg</h2>
+<p>L'archivio viene analizzato per tutto l'arco della sua evoluzione, un <em>changeset</em> dopo l'altro; il numero di revisione dell'ultimo changeset viene determinato con il comando:</p>
+<pre class="code">
+hg log -l 1 --template "{rev}"
+</pre>
+<p>Di ogni changeset si raccolgono gli attributi principali con il comando:</p>
+<pre class="code">
+hg log -r %REV% --template "{rev}|{node|short}|{date|isodatesec}|{author}|{tags}|{desc}"
+</pre>
+<p>L'insieme dei file coinvolti nel changeset &egrave; ottenuto tramite il comando:</p>
+<pre class="code">
+hg status --change %REV%
+</pre>
+<p>Viene infine determinato il numero di righe modificate in ogni file, basandosi sulle indicazioni fornite dal comando:</p>
+<pre class="code">
+hg diff --change %REV% %PATH%
+</pre>
+<h3>Conteggi</h3>
+<p>Il conteggio del numero di linee aggiunte o eliminate avviene solo per alcuni file, selezionati secondo l'estensione:</p>
+<ul>
+<li>file di intestazione: <span class="code">*.h</span>, <span class="code">*.hpp</span>;</li>
+<li>file sorgenti C/C++: <span class="code">*.c</span>, <span class="code">*.cpp</span>;</li>
+<li>file di risorse: <span class="code">*.rc</span>, <span class="code">*.xrc</span>, <span class="code">*.def</span>;</li>
+<li>file sorgenti C#: <span class="code">*.cs</span>;</li>
+<li>file sorgenti Python: <span class="code">*.py</span>;</li>
+<li>makefile: <span class="code">*.mk</span>;</li>
+<li>script batch: <span class="code">*.cmd</span>;</li>
+<li>altri tipi di file: <span class="code">*.iss</span> (InnoSetup).</li>
+</ul>
+<p>I file di testo (<span class="code">*.txt</span>, <span class="code">*.md</span>, <span class="code">*.htm</span>, ...) non sono considerati perch&eacute; non necessariamente organizzati a linee, e comunque sostanzialmente ininfluenti &mdash; se non fonte di rumore &mdash; per le considerazioni sull'ampiezza della base di codice.</p>
+<h3>Schema</h3>
+<p>Lo schema dati &egrave; costituito da due entit&agrave;, <span class="code">changeset</span> e <span class="code">change</span>:</p>
+<pre class="code">
+                            +----------------------+
+    +--------------+        | change               |
+    | changeset    |        +----------------------+
+    +--------------+        | id           integer |
+    | id   integer |&lt;-------| changeset_id integer |
+    | node text    |        | action       text    |
+    | date text    |        | path         text    |
+    | user text    |        | ins_lines    integer |
+    | tag  text    |        | del_lines    integer |
+    | desc text    |        +----------------------+
+    +--------------+
+</pre>  
+<h4><span class="code">changeset</span></h4>
+<p>Rappresenta un changeset di Hg, ed &egrave; caratterizzato da:</p>
+<ul>
+<li><span class="code">id</span>: chiave primaria;</li>
+<li><span class="code">node</span>: identificativo univoco del changeset in Hg;</li>
+<li><span class="code">date</span>: data del changeset;</li>
+<li><span class="code">user</span>: nome del responsabile del changeset;</li>
+<li><span class="code">tag</span>: eventuale <em>tag</em> associato al changeset;</li>
+<li><span class="code">desc</span>: messaggio descrittivo.</li>
+</ul>
+<h4><span class="code">change</span></h4>
+<p>Rappresenta le modifiche effettuate ad un singolo file, ed &egrave; caratterizzato da:
+<ul>
+<li><span class="code">id</span>: chiave primaria;</li>
+<li><span class="code">changeset_id</span>: changeset di appartenenza;</li>
+<li><span class="code">action</span>: tipo di operazione effettuata sul file:
+<ul>
+<li><span class="code">A</span>: aggiunta;</li>
+<li><span class="code">M</span>: modifica;</li>
+<li><span class="code">R</span>: cancellazione;</li>
+</ul>
+</li>
+<li><span class="code">path</span>: percorso completo del file;</li>
+<li><span class="code">ins_lines</span>: numero di righe inserite nel file;</li>
+<li><span class="code">del_lines</span>: numero di righe eliminate dal file.</li>
+</ul>
+<h2>Raccolta delle statistiche</h2>
+<p>Segue l'elenco dei report generati da StatSVN e la <em>query</em> statHg associata.</p>
+<h3><em>Lines of Code</em> &ndash; numero di linee di codice per revisione</h3>
+<pre class="code">
+select
+ cs.id rev,
+ cs.date date,
+ cs.tag tag,
+ sum(c.ins_lines - c.del_lines) loc
+from
+ changeset cs
+ inner join change c on (c.changeset_id &lt;= cs.id)
+group by rev
+order by rev;
+</pre>
+<h3><em>Top 10 Authors</em> &ndash; sviluppatori con il maggior numero di linee</h3>
+<p class="note"><strong>Non disponibile.</strong> Il repository di riferimento &egrave; privato, quindi con un unico sviluppatore che ha in carico l'intera <em>code-base</em>.</p>
+<h3><em>Repository Tags</em> &ndash; numero di linee, numero di linee modificate per tag</h3>
+<pre class="code">
+select
+ tags.tagged_id, cs.tag, sum(c.ins_lines), sum(c.del_lines)
+from (
+ select
+  cs1.id id,
+  max(cs2.id) tagged_id
+ from
+  changeset cs1,
+  changeset cs2
+ where cs2.tag &lt;&gt; &apos;&apos; and cs2.id &lt;= cs1.id
+ group by cs1.id) tags
+left join changeset cs
+on tags.tagged_id = cs.id
+left join change c
+on c.changeset_id = tags.id
+group by tags.tagged_id, cs.tag
+having sum(c.ins_lines) &gt; 0 and sum(c.del_lines) &gt; 0;
+</pre>
+<p class="note"><strong>Nota</strong>: viene determinato solo il numero di linee modificate.</p>
+<h3><em>Directories</em> &ndash; numero di file, numero di linee per cartella</h3>
+<p class="note"><strong>Non disponibile.</strong> Ricavabile dall'analisi del <em>file-system</em>.</p>
+<h3><em>Developers</em> &ndash; numero di commit, numero di linee per sviluppatore</h3>
+<p class="note"><strong>Non disponibile.</strong> Il repository di riferimento &egrave; privato, quindi con un unico sviluppatore che ha in carico l'intera code-base.</p>
+<h3><em>Contributed Lines of Code</em> &ndash; linee di codice per sviluppatore</h3>
+<p class="note"><strong>Non disponibile.</strong> Il repository di riferimento &egrave; privato, quindi con un unico sviluppatore che ha in carico l'intera code-base.</p>
+<h3><em>Developer of the Month</em> &ndash; sviluppatore col il maggior numero di linee nel mese/anno</h3>
+<p class="note"><strong>Non disponibile.</strong> Il repository di riferimento &egrave; privato, quindi con un unico sviluppatore che ha in carico l'intera code-base.</p>
+<h3><em>Commit Activity</em> &ndash; commit del singolo sviluppatore nel tempo</h3>
+<p class="note"><strong>Non disponibile.</strong> Il repository di riferimento &egrave; privato, quindi con un unico sviluppatore che ha in carico l'intera code-base.</p>
+<h3><em>Author Activity</em> &ndash; percentuale modifiche/aggiunte per sviluppatore</h3>
+<pre class="code">
+select
+ cs.user,
+ sum(c.ins_lines) ins_lines,
+ sum(c.del_lines) del_lines
+from changeset cs, change c
+where c.changeset_id = cs.id
+group by cs.user;
+</pre>
+<h3><em>Activity by Hour of Day</em> &ndash; numero di commit per ora del giorno</h3>
+<pre class="code">
+select
+ strftime(&apos;%H&apos;, substr(date, 1, 16), substr(date, 18, 3) || &apos; hours&apos;) hour,
+ count(1)
+from changeset
+group by hour;
+</pre>
+<h3><em>Activity by Day of Week</em> &ndash; numero di commit per giorno della settimana</h3>
+<pre class="code">
+select
+ strftime('%w', substr(date, 1, 16), substr(date, 18, 3) || ' hours') day,
+ count(1)
+from changeset
+group by day;
+</pre>
+<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">0</span> = luned&igrave;, ...</p>
+<h3><em>Activity Punchcard</em> &ndash; numero di commit nel giorno/ora</h3>
+<pre class="code">
+select
+ strftime(&apos;%w&apos;, substr(date, 1, 16), substr(date, 18, 3) || &apos; hours&apos;) day,
+ strftime(&apos;%H&apos;, substr(date, 1, 16), substr(date, 18, 3) || &apos; hours&apos;) hour,
+ count(1) activity
+from changeset
+group by day, hour;
+</pre>
+<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">0</span> = luned&igrave;, ...</p>
+<h3><em>Commit Log</em> &ndash; elenco dei commit per mese/anno</h3>
+<pre class="code">
+select
+ id,
+ user,
+ date,
+ desc
+from changeset
+where substr(date, 1, 7) = &apos;%(year)s-%(month)s&apos;
+order by id desc;
+</pre>
+<p class="note"><strong>Nota</strong>: elenco dei commit dell'ultimo mese.</p>
+<p class="note"><strong>Nota</strong>: in alternativa si pu&ograve; fornire l'elenco degli ultimi <span class="code">N</span> commit.</p>
+<p class="todo">TODO: aggiungere il numero di linee aggiunte/rimosse, elencare i file del changeset.</p>
+<h3><em>File Count</em> &ndash; numero di file per revisione</h3>
+<pre class="code">
+select
+ cs.id rev,
+ cs.date date,
+ cs.tag tag,
+ sum(
+  case
+   when c.action=&apos;A&apos; then 1
+   when c.action=&apos;R&apos; then -1
+   else 0
+  end) file_count
+from
+ changeset cs
+ inner join change c on (c.changeset_id &lt;= cs.id)
+where ins_lines is not null
+group by rev
+order by rev;
+</pre>
+<h3><em>Average File Size</em> &ndash; LOC/file per revisione</h3>
+<pre class="code">
+select rev, date, tag, loc, file_count, loc * 1. / file_count
+from (
+ select
+   cs.id rev,
+   cs.date date,
+   cs.tag tag,
+   sum(c.ins_lines - c.del_lines) loc,
+    sum(
+     case
+      when c.action=&apos;A&apos; then 1
+      when c.action=&apos;R&apos; then -1
+      else 0
+     end) file_count
+  from
+   changeset cs
+   inner join change c on (c.changeset_id &lt;= cs.id)
+  where ins_lines is not null
+  group by rev)
+order by rev;
+</pre>
+<h3><em>File Types</em> &ndash; numero di file, numero di linee per tipo di file</h3>
+<p class="note"><strong>Non disponibile.</strong> Ricavabile dall'analisi del <em>file-system</em>.</p>
+<h3><em>Largest Files</em> &ndash; file col maggior numero di linee</h3>
+<p class="note"><strong>Non disponibile.</strong> Ricavabile dall'analisi del <em>file-system</em>.</p>
+<h3><em>Files With Most Revisions</em> &ndash; file col maggior numero di revisioni</h3>
+<pre class="code">
+select
+ path,
+ count(1) rev_count
+from change
+group by path
+having rev_count &gt;= 10
+order by rev_count desc
+limit 20;
+</pre>
+<h3><em>Lines of Code Per Directory</em> &ndash; linee di codice per directory</h3>
+<p class="todo">TODO</p>
+<h3><em>Directory Statistics</em> &ndash; numero di commit, numero di linee per directory</h3>
+<p class="todo">TODO</p>
+<h3><em>LOC and Churn</em> &ndash; numero di linee, numero di linee modificate per revisione</h3>
+<pre class="code">
+select
+ cs.id rev,
+ cs.date date,
+ cs.tag tag,
+ sum(min(c.ins_lines, c.del_lines)) modified,
+ sum(max(0, c.ins_lines - c.del_lines)) added,
+ sum(max(0, c.del_lines - c.ins_lines)) removed
+from changeset cs, change c
+where c.changeset_id = cs.id
+group by rev
+order by rev;
+</pre>
+<p class="note"><strong>Nota</strong>: <span class="code">ins_lines + del_lines = added + removed + 2 &times; modified</span>.</p>
+<h2>Creazione dei prospetti</h2>
+<p>Vengono generati due tipologie di prospetti, tabellari e grafici. I primi sono ottenuti a partire da una serializzazione in formato XML dei risultati della query associata per essere successivamente trasformati in HTML via XSLT, mentre quelli grafici sono ottenuti diagrammando i contenuti di un file CSV tramite <a href="http://www.gnuplot.info/">gnuplot</a>:</p>
+<img src="img/stat-hg/table.png"></img>
+<p class="illustration">Esempio di prospetto tabellare</p>
+<img src="img/stat-hg/graph.png"></img>
+<p class="illustration">Esempio di prospetto grafico</p>
+<h2>Implementazione</h2>
+<p>Uno <a href="files/stat-hg/statHg.cmd">script</a> <em>batch</em> si occupa di lanciare in successione le tre fasi della procedura:</p>
+<ul>
+<li><p><strong>analisi del repository Hg</strong>: lo script <a href="files/stat-hg/utils/build-db.py">build-db.py</a> raccoglie all'interno di un database <a href="http://www.sqlite.org/">sqlite</a> temporaneo i dati grezzi del repository ricavati dai comandi Hg sopra elencati;</p></li>
+<li><p><strong>raccolta delle statistiche</strong>: lo script <a href="files/stat-hg/utils/run-queries.py">run-queries.py</a> interroga il database e salva i risultati in file XML/CSV temporanei;</p></li>
+<li><p><strong>creazione dei prospetti</strong>: lo script <a href="files/stat-hg/utils/merge-reports.py">merge-reports.py</a> si occupa di compilare i prospetti XML parziali in un unico file XML, mentre i file CSV sono inoltrati a gnuplot per la generazione dei prospetti grafici (cfr. cartella degli script <a href="files/stat-hg/gp">gp</a>); il file XML, corredato dai file immagine dei prospetti grafici, da un'apposita trasformazione <a href="files/stat-hg/sheets/xslt/history.xsl">XML/HTML</a> e da un <a href="files/stat-hg/sheets/css/history.css">foglio di stile</a> dedicato viene infine salvato in una specifica cartella.</p></li>
+</ul>
+<p>La cancellazione dei file temporanei conclude la procedura.</p>
+<h2>Appendice</h2>
+<p>La scelta di usare un database sqlite consente con poca fatica di produrre il <em>tag-cloud</em> dei messaggi di commit, grazie all'estensione <a href="http://www.sqlite.org/fts3.html">FTS4</a> ed in particolare alla tabella virtuale <span class="code">fts4aux</span>:</p>
+<pre class="code">
+create virtual table tag_cloud using fts4(message);
+create virtual table tag_cloud_aux using fts4aux(tag_cloud);
+
+-- a tabella changeset gi&agrave; popolata!
+insert into tag_cloud select desc from changeset;
+</pre>
+<p>&Egrave; facile a questo punto determinare la frequenza relativa di tutti i termini indicizzati; per limitare i risultati alle parole chiave pi&ugrave; significative, vengono ignorati quelli costituiti da una sola lettera, quelli presenti una volta sola, oltre ai numeri e alle <em>stop-word</em> pi&ugrave; comuni:</p>
+<pre class="code">
+select
+ term,
+ sum(occurrences) as occurrences,
+ length(sum(occurrences)) score
+from tag_cloud_aux
+where
+ length(term) > 1
+ and cast(term as numeric) = '0'
+ and term not in (
+  'a', 'about', 'added', 'after', 'all', 'an', 'and', 'as', 
+  'by',
+  'changeset',
+  'does',
+  'for',
+  'in', 'into', 'is',
+  'of', 'on',
+  'new', 'not', 'now',
+  'some',
+  'tag', 'that', 'the', 'to', 'too',
+  'when', 'with')
+group by term
+having occurrences > 1
+order by occurrences desc;
+</pre>
+<p>Per agevolare la costruzione del tag-cloud, a ciascun termine viene assegnato un indice di importanza che corrisponde al numero di cifre di cui &egrave; composto il conteggio delle occorrenze: i termini che compaiono da due fino a nove volte sono di indice <span class="code">1</span>, quelli il cui numero &egrave; compreso tra dieci e novantanove sono di indice <span class="code">2</span> e cos&igrave; via. Definendo per ogni indice uno stile apposito, via via pi&ugrave; appariscente all'aumentare dell'indice, e assegnando ad ogni termine lo stile relativo all'indice, si ottiene il tag-cloud:</p>
+<img src="img/stat-hg/cloud.png"></img>
+<p class="illustration">Esempio di tag cloud</p>
+<br>
+<p class="note"><strong>Nota</strong>: le versioni 2.6 e 2.7 di Python per Windows non supportano l'estensione FTS4 di sqlite (vedere ad esempio la domanda n. <a href="http://stackoverflow.com/questions/3823659/how-to-setup-fts3-fts4-with-python2-7-on-windows">3823659</a> su Stack Overflow). Basta tuttavia sostituire la DLL &lt;PYTHON_INSTALL_DIR&gt;\DLLs\sqlite.dll con quella scaricabile dalla <a href="http://www.sqlite.org/download.html">pagina dei download</a> di sqlite.</p>
+<p class="modification-notice">Pagina modificata il 27/05/2014</p>
+</body>
+</html>
