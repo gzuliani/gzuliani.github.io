@@ -129,6 +129,7 @@
    <th>churn</th>
   </tr>
   <xsl:for-each select="data">
+   <xsl:sort select="prop[@name='rev']/@value" data-type="number" order="descending"/>
    <xsl:variable name="ins_lines" select="prop[@name='ins_lines']/@value"/>
    <xsl:variable name="del_lines" select="prop[@name='del_lines']/@value"/>
    <xsl:variable name="prev_ins_lines" select="sum(preceding-sibling::data/prop[@name='ins_lines']/@value)"/>
