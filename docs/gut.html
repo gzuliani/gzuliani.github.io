@@ -1,0 +1,395 @@
+<html>
+<head>
+<title>Good Unit Tests</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests</h1>
+<h2>Introduzione</h2>
+<p><em>gut</em> (acronimo di <em>Good Unit Tests</em>) &egrave; una piccola infrastruttura di test che sto sviluppando per il test di software C++ in ambiente Windows 32/64 bit con Visual Studio 2008/2012 e MinGW/GCC 4.8.2. Come molti che per una ragione o l'altra non hanno potuto avvalersi di una libreria di test, tutto ebbe inizio da un'<span class="code">assert</span>:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+
+// my first test case
+int main()
+{
+  int a = 0;
+  assert(a == 1); // boom!
+}
+</pre>
+<p>Ben presto una macro prese il posto della meno pratica <span class="code">assert</span>:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+#define TEST(test_) \
+  do { \
+    if (!(test_)) \
+      std::cerr &lt;&lt; __FILE__ &lt;&lt; &quot;(&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) : TEST error: &quot; &lt;&lt; #test_ &lt;&lt; std::endl; \
+  } while (0)
+
+// my first test case
+int main()
+{
+  int a = 0;
+  TEST(a == 1);
+}
+
+/* output:
+ *
+ * test.cpp(14) : TEST error: a == 1
+ */
+</pre>
+<p>Da questa forma molto primitiva, traendo ispirazione da ci&ograve; che si trovava sulla rete (l'analisi di Noel Llopis<a href="#rif-3"><sup>[3]</sup></a> in primis, ma in particolare l'intervento di Kevlin Henney a ACCU 2010<a href="#rif-2"><sup>[2]</sup></a> e la libreria catch<a href="#rif-4"><sup>[4]</sup></a>), <em>gut</em> nel tempo si &egrave; evoluta; negli appunti<a href="#rif-1"><sup>[1]</sup></a> ho tenuto traccia delle varie versioni che si sono succedute.</p>
+<h2>Esempi d'uso</h2>
+<p>La versione corrente di gut, lungi dall'essere completa, ha raggiunto, per le mie esigenze, un discreto grado di maturit&agrave;.</p>
+<h3>Test suite</h3>
+<p>Una <em>test suite</em> &egrave; un file <span class="code">*.cpp</span> contenente uno o pi&ugrave; <span class="code">TEST</span>:</p>
+<pre class="code">
+[file test.cpp]
+#include &quot;gut.h&quot;
+
+TEST(&quot;A test&quot;) {
+  // ...
+}
+
+TEST(&quot;A second test&quot;) {
+  // ...
+}
+
+/* output:
+ *
+ * Test suite started...
+ * A test: OK
+ * A second test: OK
+ * Ran 2 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Ogni test &egrave; caratterizzato da un nome, che viene riportato nel prospetto finale, corredato delle indicazioni riguardanti l'esito del test stesso, al momento uno tra <span class="code">OK</span> e <span class="code">FAILED</span>. L'ultima riga del prospetto fornisce l'esito finale dell'intera test suite.</p>
+<h3>Controlli</h3>
+<p>I test sono costituiti da istruzioni di <em>controllo</em>, che possono essere di tue tipi: <em>asserzioni</em>, il cui scopo &egrave; appurare la veridicit&agrave; di un'espressione booleana, e <em>catture</em>, che si occupano invece di verificare la presenza di eccezioni.</p>
+<h4>Asserzioni</h4>
+<p>Esistono due tipi di asserzioni: <span class="code">CHECK</span> e <span class="code">REQUIRE</span>. Entrambe si applicano ad una espressione booleana, ed entrambe causano il fallimento del test nel caso il valore di verit&agrave; sia <span class="code">false</span>; la seconda causa inoltre la terminazione anticipata del test corrente.</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+TEST(&quot;Assertions&quot;) {
+
+  int a = 1;
+  int b = 2;
+  int c = 3;
+
+  CHECK(a == 0);
+  REQUIRE(b == 3);
+  CHECK(c == 1); // won&apos;t be executed!
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Assertions: FAILED
+ *  test.cpp(9) : [error] a == 0 evaluates to 1 == 0
+ *  test.cpp(10) : [fatal] b == 3 evaluates to 2 == 3
+ * Ran 1 test(s) in 0s.
+ * FAILED - 2 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Per ogni asserzione fallita nel prospetto viene indicato, oltre alla sua posizione all'interno del codice sorgente, l'espressione originale e gli effettivi valori in gioco. In particolare, il fallimento dell'asserzione <span class="code">CHECK</span> viene riportato come <span class="code">error</span>, quello di <span class="code">REQUIRE</span> come <span class="code">fatal</span>, a sottolineare il fatto che l'esecuzione del test &egrave; stata interrotta in quel punto, per proseguire col successivo.</p>
+<p class="note">Preferire l'uso di <span class="code">CHECK</span> a <span class="code">REQUIRE</span>, per evidenziare fin da subito tutti i casi d'errore (<span class="code">REQUIRE</span> interrompe l'esecuzione del test in corrispodenza del primo). Limitare l'uso di <span class="code">REQUIRE</span> ai casi in cui non &egrave; possibile/conveniente proseguire nel test, come ad esempio nel caso non sia stato possibile acquisire una risorsa (es. per verificare l'effettiva apertura di un file):</p>
+<pre class="code">
+// ...
+
+TEST(&quot;CHECK vs. REQUIRE&quot;) {
+  std::ifstream file(&quot;file.txt&quot;);
+
+  CHECK(file.good());
+  // not sure if file is good
+
+  REQUIRE(file.good());
+  // if we got here, the file is certainly good!
+  // ...
+}
+</pre>
+<h4>Catture</h4>
+<p>Il controllo sulle eccezioni avviene tramite la macro <span class="code">THROWS</span>, che si applica all'espressione che ci si aspetta sollevi l'eccezione, assieme al tipo di eccezione attesa:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+TEST(&quot;Assertions&quot;) {
+
+  int a = 1;
+  int b = 2;
+  int c = 3;
+
+  CHECK(a == 0);
+  REQUIRE(b == 3);
+  CHECK(c == 1); // won&apos;t be executed!
+}
+
+<ins>void fnThatNotThrows() {
+}
+
+int fnThatThrowsARuntimeError() {
+  throw std::runtime_error(&quot;a runtime error&quot;);
+}
+
+int fnThatThrowsAnInt() {
+  throw 42;
+}
+
+TEST(&quot;Captures&quot;) {
+
+  THROWS(fnThatNotThrows(), std::runtime_error);
+  THROWS(fnThatThrowsARuntimeError(), std::logic_error);
+  THROWS(fnThatThrowsAnInt(), std::runtime_error);
+}</ins>
+
+/* output:
+ *
+ * Test suite started...
+ * Assertions: FAILED
+ *  test.cpp(9) : [error] a == 0 evaluates to 1 == 0
+ *  test.cpp(10) : [fatal] b == 3 evaluates to 2 == 3
+<ins> * Captures: FAILED
+ *  test.cpp(27) : [error] fnThatNotThrows() did not throw
+ *  test.cpp(28) : [error] fnThatThrowsARuntimeError() threw an unexpected exception "a runtime error"
+ *  test.cpp(29) : [error] fnThatThrowsAnInt() threw an unknown exception
+ * Ran 2 test(s) in 0s.
+ * FAILED - 5 failure(s) in 2 test(s).
+ */</ins>
+</pre>
+<p class="note">Il sollevamento di un'eccezione al di fuori della macro <span class="code">THROWS</span> causa il fallimento immediato del test, alla stregua di una <span class="code">REQUIRE</span> fallita, fornendo come posizione dell'errore, per forza di cose, un riferimento all'implementazione di gut di dubbia utilit&agrave;:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+TEST(&quot;Assertions&quot;) {
+
+  int a = 1;
+  int b = 2;
+  int c = 3;
+
+  CHECK(a == 0);
+  REQUIRE(b == 3);
+  CHECK(c == 1); // won&apos;t be executed!
+}
+
+void fnThatNotThrows() {
+}
+
+int fnThatThrowsARuntimeError() {
+  throw std::runtime_error(&quot;a runtime error&quot;);
+}
+
+int fnThatThrowsAnInt() {
+  throw 42;
+}
+
+TEST(&quot;Captures&quot;) {
+
+  THROWS(fnThatNotThrows(), std::runtime_error);
+  THROWS(fnThatThrowsARuntimeError(), std::logic_error);
+  THROWS(fnThatThrowsAnInt(), std::runtime_error);
+  <ins>CHECK(fnThatThrowsAnInt() == 0);
+  fnThatNotThrows(); // won&apos;t be executed!</ins>
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Assertions: FAILED
+ *  test.cpp(9) : [error] a == 0 evaluates to 1 == 0
+ *  test.cpp(10) : [fatal] b == 3 evaluates to 2 == 3
+ * Captures: FAILED
+ *  test.cpp(27) : [error] fnThatNotThrows() did not throw
+ *  test.cpp(28) : [error] fnThatThrowsARuntimeError() threw an unexpected exception "a runtime error"
+ *  test.cpp(29) : [error] fnThatThrowsAnInt() threw an unknown exception
+<ins> *  gut.h(907) : [fatal] unknown exception caught
+ * Ran 2 test(s) in 0s.
+ * FAILED - 6 failure(s) in 2 test(s).
+ */</ins>
+</pre>
+<h3>Esito del test</h3>
+<p>Il successo di un test &egrave; legato alla Il fallimento di un'asserzione o di una cattura causa il fallimento del test (oltre al gi&agrave; citato caso di un'eccezione inaspettata), che viene perci&ograve; classificato come <span class="code">FAILED</span>. Alla stessa stregua, il fallimento di un test causa a cascata il fallimento dell'intera test suite.</p>
+<h3>Esito della test suite</h3>
+<p>Una test suite viene considerata conclusa con successo (e conseguentemente marcata <span class="code">OK</span>) solo se tutti i test al suo interno si sono conclusi con successo; in caso contrario, viene classificata <span class="code">FAILED</span>.</p>
+<h2>Esempio</h2>
+<p>Quel che segue &egrave; un esempio di test suite per una lista <em>MRU &ndash; Most Recently Used</em> di stringhe. Il file rappresenta una sorta di specifica, per ogni aspetto del funzionamento richiesto &egrave; infatti stato predisposto un test apposito. I test condividono la stessa struttura: predisposizione dell'ambiente (il <em>given</em> del <a href="https://en.wikipedia.org/wiki/Behavior-driven_development">BDD &ndash; Behaviuor-driven development</a>, o il <em>setup</em> di xUnit), attivazione della funzionalit&agrave; (<em>when</em>/<em>exercise</em>) e verifica dell'effetto (<em>then</em>/<em>verify</em> &ndash; il <em>teardown</em> previsto da xUnit &egrave; qui implicito).</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+#include &quot;recently-used-list.h&quot;
+
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+TEST(&quot;Insertion to empty list is retained&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  aListWithOneElement.insert(&quot;one&quot;);
+
+  CHECK(!aListWithOneElement.empty());
+  CHECK(aListWithOneElement.size() == 1);
+  CHECK(aListWithOneElement[0] == &quot;one&quot;);
+}
+
+TEST(&quot;Distinct insertions are retained in stack order&quot;) {
+  RecentlyUsedList aListWithManyElements;
+  aListWithManyElements.insert(&quot;one&quot;);
+  aListWithManyElements.insert(&quot;two&quot;);
+  aListWithManyElements.insert(&quot;three&quot;);
+
+  CHECK(!aListWithManyElements.empty());
+  CHECK(aListWithManyElements.size() == 3);
+  CHECK(aListWithManyElements[0] == &quot;three&quot;);
+  CHECK(aListWithManyElements[1] == &quot;two&quot;);
+  CHECK(aListWithManyElements[2] == &quot;one&quot;);
+}
+
+TEST(&quot;Duplicate insertions are moved to the front but not inserted&quot;) {
+  RecentlyUsedList aListWithDuplicatedElements;
+  aListWithDuplicatedElements.insert(&quot;one&quot;);
+  aListWithDuplicatedElements.insert(&quot;two&quot;);
+  aListWithDuplicatedElements.insert(&quot;three&quot;);
+  aListWithDuplicatedElements.insert(&quot;two&quot;);
+
+  CHECK(!aListWithDuplicatedElements.empty());
+  CHECK(aListWithDuplicatedElements.size() == 3);
+  CHECK(aListWithDuplicatedElements[0] == &quot;two&quot;);
+  CHECK(aListWithDuplicatedElements[1] == &quot;three&quot;);
+  CHECK(aListWithDuplicatedElements[2] == &quot;one&quot;);
+}
+
+TEST(&quot;Out of range indexing throws exception&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  aListWithOneElement.insert(&quot;one&quot;);
+
+  THROWS(aListWithOneElement[1], std::out_of_range);
+}
+</pre>
+<h2>Opzioni e personalizzazioni</h2>
+<ul>
+<h3>Espressioni booleane complesse</h3>
+<p>A fronte del fallimento di un'espressione booleana non relazionale (che non coinvolga cio&eacute; un operatore tipo <span class="code">==</span>, <span class="code">&lt;</span>, <span class="code">&gt;=</span>, &hellip;) la macro <span class="code">CHECK</span> si limita a indicare la presenza di un inatteso <span class="code">false</span>:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+bool isOdd(int n) {
+  return n % 2 == 1;
+}
+
+TEST(&quot;Custom boolean expression&quot;) {
+  int i = 4;
+  CHECK(isOdd(i));
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Custom boolean expression: FAILED
+ *  prova.cpp(9) : [error] isOdd(i) evaluates to false   // could be more informative!
+ * Ran 1 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>&Egrave; possibile tuttavia ottenere informazioni pi&ugrave; dettagliate riscrivendo la funzione <span class="code">isOdd</span>, in questo modo:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+<del>bool isOdd(int n) {
+  return n % 2;
+}</del>
+
+<ins>gut::Boolean isOdd(int n) {
+  return gut::Boolean(n % 2 == 1, gut::TextFlow() &lt;&lt; n &lt;&lt; &quot; mod 2 != 0&quot;);
+}</ins>
+
+TEST(&quot;Custom boolean expression&quot;) {
+  int i = 4;
+  CHECK(isOdd(i));
+}
+
+/* output:
+ *
+ * Test suite started...
+ * Custom boolean expression: FAILED
+ <ins>*  prova.cpp(9) : [error] isOdd(i) evaluates to 4 mod 2 == 1</ins>
+ * Ran 1 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>In sostanza, anzich&eacute; ritornare un semplice <span class="code">bool</span>, la funzione restituisce un oggetto di tipo <span class="code">gut::Boolean</span> inizializzato con il valore di verit&agrave; originale, corredato dall'eventuale messaggio d'errore &ndash; che apparir&agrave; nel prospetto in caso il valore di ritorno sia <span class="code">false</span>. Il messaggio viene composto incrementalmente, serializzando le varie componenti in un oggetto temporaneo di tipo <span class="code">gut::TextFlow</span> tramite l'operatore <span class="code">&lt;&lt;</span>. Esempi pi&ugrave; complessi (<span class="code">AreAlmostEqual</span> per l'uguaglianza di numeri <em>floating-point</em>, <span class="code">AreTextFileEqual</span> che confronta due file di testo evidenziando la prima differenza trovata) sono riportati nella <a href="gut-4.html">quarta parte</a> degli appunti.</p>
+<h3>fail-fast</h3>
+<p>L'opzione <em>fail-fast</em> termina anticipatamente l'intera test suite in corrispondenza del primo errore. Per attivarla, &egrave; sufficiente definire la macro <span class="code">ENABLE_FAILFAST</span> immediatamente dopo la direttiva di inclusione di gut<a href="#rif-1.7"><sup>[1.7]</a>, <a href="#rif-1.8"><sup>[1.8]</a>.</p>
+<h3>Messaggi</h3>
+<p>&Egrave; possibile arricchire il prospetto finale di messaggi personalizzati tramite le macro <span class="code">EVAL</span>, <span class="code">INFO</span>, <span class="code">WARN</span> e <span class="code">FAIL</span>:</p>
+<ul>
+	<li><strong><span class="code">EVAL</span></strong>: visualizza il valore di un'espressione se il test fallisce;</li>
+	<li><strong><span class="code">INFO</span></strong>: visualizza un messaggio testuale libero se il test fallisce;</li>
+	<li><strong><span class="code">WARN</span></strong>: visualizza un messaggio testuale libero indipendentemente</dd> dall'esito del test;</li>
+	<li><strong><span class="code">FAIL</span></strong>: visualizza un messaggio testuale libero indipendentemente dall'esito del test e causa il fallimento dello stesso.</li>
+</ul>
+<h3>Prospetti</h3>
+<p>La <a href="gut-10.html">decima parte</a> degli appunti mostra come personalizzare il prospetto finale definendo un oggetto <span class="code">Report</span> dedicato.</p>
+</ul>
+<h2>Punti aperti</h2>
+<p>Alcune spunti per eventuali sviluppi futuri:</p>
+<ul>
+<li>segmentazione del codice di test (es. <span class="code">SECTIONS</span>);</li>
+<li>attivazione (opzionale) del debugger in corrispondenza di un fallimento;</li>
+<li><span class="code">THROWS</span> generica che non richiede di specificare il tipo di eccezione attesa;</li>
+<li><em>fixtures</em>, sebbene ci sia la tendenza a non supportarle, almeno nel contesto degli <em>unit-test</em><a href="#rif-5"><sup>[5]</sup></a><a href="#rif-6"><sup>[6]</sup></a>;</li>
+<li>selezione dei test da eseguire, per nome o <em>tag</em>;</li>
+<li>&hellip;</li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+	<a name="rif-1"></a>
+	<li>Gli appunti di <em>Good Unit Tests</em> tracciano l'evoluzione nel tempo dell'infrastruttura:
+	<ul>
+		<a name="rif-1.1"></a>
+		<li><a href="gut-1.html">parte 1</a>, <a href="gut-1-bis.html">parte 1 bis</a>: macro <span class="code">CHECK</span> e oggetto <span class="code">Capture</span> per la valutazione dell'espressione di test;</li>
+		<a name="rif-1.2"></a>
+		<li><a href="gut-2.html">parte 2</a>: macro <span class="code">THROW</span> per la verifica delle eccezioni;</li>
+		<a name="rif-1.3"></a>
+		<li><a href="gut-3.html">parte 3</a>: oggetto <span class="code">Report</span> per la visualizzazione degli errori;</li>
+		<a name="rif-1.4"></a>
+		<li><a href="gut-4.html">parte 4</a>: espressioni booleane <em>custom</em> (<span class="code">AreAlmostEqual</span> su valori <span class="code">float</span>/<span class="code">double</span>, <span class="code">AreTextFileEqual</span>, &hellip;);</li>
+		<a name="rif-1.5"></a>
+		<li><a href="gut-5.html">parte 5</a>: macro <span class="code">REQUIRE</span> per terminare anticipatamente il test in caso di errore;</li>
+		<a name="rif-1.6"></a>
+		<li><a href="gut-6.html">parte 6</a>: strutturazione del codice di test in <span class="code">TEST</span> e <span class="code">TEST_SUITE</span>;</li>
+		<a name="rif-1.7"></a>
+		<li><a href="gut-7.html">parte 7</a>: rivisitazione della struttura <span class="code">TEST</span>/<span class="code">TEST_SUITE</span>, opzione <em>fail-fast</em>;</li>
+		<a name="rif-1.8"></a>
+		<li><a href="gut-8.html">parte 8</a>: macro <span class="code">EVAL</span>, <span class="code">INFO</span>, <span class="code">WARN</span> e <span class="code">FAIL</span>, colori in console, revisione dell'opzione <em>fail-fast</em>;</li>
+		<a name="rif-1.9"></a>
+		<li><a href="gut-9.html">parte 9</a>: gestione dei confronti tra puntatori generici e <span class="code">nullptr</span>;</li>
+		<a name="rif-1.10"></a>
+		<li><a href="gut-10.html">parte 10</a>: reportistica personalizzata senza la necessit&agrave; di derivare da <span class="code">Report</span>.</li>
+	</ul>
+	</li>
+	<a name="rif-2"></a>
+	<li>Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
+	<a name="rif-3"></a>
+	<li>Llopis, N. &quot;Exploring the C++ Unit Testing Framework Jungle&quot;. <em>Games from Within</em>. &lt;<a href="http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle">http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle</a>&gt;. Visitato il 3 Luglio 2014.</li>
+	<a name="rif-4"></a>
+	<li>Nash, P. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 30 Giugno 2014.</li>
+	<a name="rif-5"></a>
+	<li>Newkirk, J. &quot;Announcing xUnit.net&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html">http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html</a>&gt;. Visitato il 30 Giugno 2014.</li>
+	<a name="rif-6"></a>
+	<li>Newkirk, J. &quot;Why you should not use SetUp and TearDown in NUnit&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html">http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html</a>&gt;. Visitato il 30 Giugno 2012.</li>
+</ol>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/current/colors.h">colors.h</a></li>
+	<li><a href="files/gut/current/gut.h">gut.h</a></li>
+	<li><a href="files/gut/current/gut-tap.h">gut-tap.h</a></li>
+	<li><a href="files/gut/current/test-gut.cpp">test-gut.cpp</a></li>
+	<li><a href="files/gut/current/example.cpp">example.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 03/07/2014</p>
+</body>
+</html>
