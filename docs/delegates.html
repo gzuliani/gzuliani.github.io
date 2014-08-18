@@ -1,0 +1,539 @@
+<html>
+<head>
+<title>Delegates</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#delegates">risorse</a> | delegates</p>
+<h1>Delegates</h1>
+<h2>Introduzione</h2>
+<p>Quel che segue &egrave; la cronaca di un tentativo di implementare i <em>delegate</em> in C++11. Con delegate intendo degli oggetti in grado di &ldquo;catturare&rdquo; una funzionalit&agrave; e di attivarla in un secondo tempo, specificando nel sito di chiamata i parametri sui quali operare. L'intenzione &egrave; di riuscire a catturare qualunque oggetto <em>callable</em>, nella fattispecie:</p>
+<ul>
+<li>funzioni (e metodi statici);</li>
+<li>metodi (funzioni membro);</li>
+<li>functors (intesi come <em>function object</em>);</li>
+<li>funzioni <em>lambda</em>.</li>
+</ul>
+<p>L'infrastruttura &egrave; stata sviluppata con il compilatore GCC 4.8.2 su Xubuntu 14.04 e MinGW 4.8.2 su Windows 7 x64, utilizzando su entrambe le piattaforme le opzioni <span class="code">-Wall -Wpedantic -std=c++11</span>.</p>
+<h2>Implementazione</h2>
+<p>Ecco alcuni esempi di funzionalit&agrave; che si intende catturare:</p>
+<pre class="code">
+// a free function
+int add(int a, int b) {
+  return a + b;
+}
+
+// a function member
+struct Math {
+  int add(int a, int b) {
+    return a + b;
+  }
+};
+
+// a function object
+struct AddOp {
+  int operator()(int a, int b) {
+    return a + b;
+  }
+};
+</pre>
+<p>Procediamo per gradi, affrontando inizialmente le funzioni semplici.</p>
+<h3>Funzioni (e metodi statici)</h3>
+<p>La funzionalit&agrave; &ldquo;dormiente&rdquo; &egrave; conservata all'interno di un oggetto <span class="code">std::function</span>, per la sua generalit&agrave; (&egrave; infatti in grado di gestire sia funzioni semplici, sia funzioni lambda); sempre per generalit&agrave;, questa volta rispetto al tipo degli argomenti del tipo del valore di ritorno della funzione originale, l'oggetto <span class="code">Delegate</span>, che ha la responsabilit&agrave; di catturare la funzionalit&agrave; e di attivarla al momento giusto, fa uso di <em>variadic templates</em> (<span class="code">R</span> rappresenta il tipo del valore di ritorno della funzione, <span class="code">Args</span> l'elenco dei tipi degli argomenti):</p>
+<pre class="code">
+#include &lt;cassert&gt;
+#include &lt;functional&gt;
+
+int add(int a, int b) {
+  return a + b;
+}
+
+struct Math {
+  static int add(int a, int b) {
+    return a + b;
+  }
+};
+
+template&lt;typename R, typename... Args&gt;
+class Delegate {
+  typedef std::function&lt;R(Args...)&gt; Fn; // function signature
+  Fn fn_;                               // function container
+public:
+  Delegate(Fn fn) : fn_(fn) { }
+  R operator()(Args... args) const {    // function activation
+    return fn_(args...);
+  }
+};
+
+int main() {
+
+  // wrapping a free function
+  auto addFn = Delegate&lt;int, int, int&gt;(add);
+  assert(addFn(1, 2) == 3);
+
+  // wrapping a static function member
+  auto staticAddFnMem = Delegate&lt;int, int, int&gt;(Math::add);
+  assert(staticAddFnMem(1, 2) == 3);
+
+  // bonus: delegates are copiable!
+  auto copyOfAddFn = addFn;
+  assert(copyOfAddFn(1, 2) == 3);
+
+  return 0;
+}
+</pre>
+<h3>Metodi (funzioni membro)</h3>
+<p>Per attivare una funzione membro serve anche un riferimento all'istanza dell'oggetto sul quale invocare il metodo, che dovr&agrave; ovviamente risultare valida all'atto della chiamata &mdash; responsabilit&agrave; demandata al programmatore: un nuovo oggetto di supporto, <span class="code">FnMemCall</span>, si occupa di conservare i riferimenti necessari e di attivare il metodo designato sull'oggetto corretto:</p>
+<pre class="code">
+template&lt;class T&gt;
+struct FnMemCall {
+  T* obj_;                     // instance object
+  typedef R (T::*Fn)(Args...); // function member signature
+  Fn fn_;                      // function member reference
+
+  // store object instance and function member for later
+  FnMemCall(T* obj, Fn fn) : obj_(obj), fn_(fn) { }
+
+  // invoke the function member on the given instance
+  R operator()(Args... args) const {
+    return (obj_-&gt;*fn_)(args...);
+  }
+};
+</pre>
+<p>Un nuovo costruttore di <span class="code">Delegate</span> istanzia l'<span class="code">FnMemCall</span> ausiliario e lo pone in <span class="code">fn_</span>, alla stregua di quanto gi&agrave; accade per le funzioni semplici:</p>
+<pre class="code">
+// ...
+
+struct Math {
+  static int add(int a, int b) {
+    return a + b;
+  }
+  <ins>int diff(int a, int b) {
+    return a - b;
+  }</ins>
+};
+
+// ...
+
+template&lt;typename R, typename... Args&gt;
+class Delegate {
+  typedef std::function&lt;R(Args...)&gt; Fn;
+  Fn fn_;
+  <ins>template&lt;class T&gt;
+  struct FnMemCall {
+    T* obj_;
+    typedef R (T::*Fn)(Args...);
+    Fn fn_;
+    FnMemCall(T* obj, Fn fn) : obj_(obj), fn_(fn) { }
+    R operator()(Args... args) const {
+      return (obj_-&gt;*fn_)(args...);
+    }
+  };</ins>
+public:
+  Delegate(Fn fn) : fn_(fn) { }
+  <ins>template&lt;class T&gt;
+  Delegate(T* obj, R (T::*fn)(Args...)) : fn_(FnMemCall&lt;T&gt;(obj, fn)) { }</ins>
+  R operator()(Args... args) const {
+    return fn_(args...);
+  }
+};
+
+int main() {
+  // ...
+
+  <ins>// wrapping a non-static function member
+  Math math;
+  auto diffFnMem = Delegate&lt;int, int, int&gt;(&amp;math, &amp;Math::diff);
+  assert(diffFnMem(3, 2) == 1);</ins>
+
+  return 0;
+}
+</pre>
+<h3>Oggetti funzione e funzioni lambda</h3>
+<p>Gli oggetti funzione possono essere trasformati in delegate applicando la tecnica dei metodi all'operatore <em>function-call</em> <span class="code">operator()</span>, ma la forma risulta piuttosto prolissa:</p>
+<pre class="code">
+// ...
+
+<ins>struct AddOp {
+  int operator()(int a, int b) {
+    return a + b;
+  }
+};</ins>
+
+int main() {
+  // ...
+
+  <ins>// wrapping a function object /1
+  AddOp addOp;
+  auto addOpAsFnMem = Delegate&lt;int, int, int&gt;(&amp;addOp, &amp;AddOp::operator());
+  assert(addOpAsFnMem(1, 2) == 3);</ins>
+
+  return 0;
+};
+</pre>
+<p>Grazie all'uso di un oggetto <span class="code">std::function</span>, gli oggetti funzione possono essere catturati con una forma pi&ugrave; compatta:</p>
+<pre class="code">
+int main() {
+  // ...
+
+  <ins>// wrapping a function object /2
+  auto addOpAsFnObj = Delegate&lt;int, int, int&gt;(addOp);
+  assert(addOpAsFnObj(1, 2) == 3);</ins>
+
+  return 0;
+};
+</pre>
+<p>Questa tecnica pu&ograve; essere applicata anche alle funzioni lambda, per la loro affinit&agrave; con gli oggetti funzione (essendo implementate come istanze di oggetti funzione anonimi con function-call operator <span class="code">const</span>):</p>
+<pre class="code">
+int main() {
+  // ...
+
+  <ins>// wrapping a lambda
+  auto add_ = [](int a, int b) { return a + b; };
+  auto lambda = Delegate&lt;int, int, int&gt;(add_);
+  assert(lambda(1, 2) == 3);</ins>
+
+  <ins>// wrapping a temporary lambda
+  auto lambda2 = Delegate&lt;int, int, int&gt;([](int a, int b) { return a + b; });
+  assert(lambda2(1, 2) == 3);</ins>
+
+  return 0;
+};
+</pre>
+<h2>Zucchero sintattico</h2>
+<p>Bello sarebbe poter evitare di specificare i tipi in gioco:</p>
+<pre class="code">
+int main() {
+  // ...
+
+  auto addFn = Delegate(add);
+  auto staticAddFnMem = Delegate(Math::add);
+  auto diffFnMem = Delegate(&amp;math, &amp;Math::diff);
+  auto addOpAsFnMem = Delegate(&amp;addOp, &amp;AddOp::operator());
+  auto addOpAsFnObj = Delegate(addOp);
+  auto lambda = Delegate(add_);
+  auto lambda2 = Delegate([](int a, int b) { return a + b; });
+  // ...
+
+  return 0;
+}
+</pre>
+<p>Poich&eacute; il <em>template argument deduction</em> non si applica alle classi template, ma solo alle funzioni, per elimiare la specifica dei tipi bisogna ricorrere ad una funzione template ausiliaria; per esempio, per attivare il template argument deduction per le funzioni e i metodi statici &egrave; sufficiente introdurre una nuova funzione <span class="code">make_delegate</span> cos&igrave; definita:</p>
+<pre class="code">
+// ...
+
+<ins>template&lt;typename R, typename... Args&gt;
+Delegate&lt;R, Args...&gt; make_delegate(R(*fn)(Args...)) {
+  return Delegate&lt;R, Args...&gt;(fn);
+}</ins>
+
+int main() {
+
+  // wrapping a free function
+  auto addFn = make_delegate(add);
+  assert(addFn(1, 2) == 3);
+
+  // wrapping a static function member
+  auto staticAddFnMem = make_delegate(Math::add);
+  assert(staticAddFnMem(1, 2) == 3);
+
+  return 0;
+}
+</pre>
+<p>Per i metodi non statici occorre passare a <span class="code">make_delegate</span> un riferimento all'istanza sulla quale invocare il metodo:</p>
+<pre class="code">
+// ...
+
+<ins>template&lt;class T, typename R, typename... Args&gt;
+Delegate&lt;R, Args...&gt; make_delegate(T* obj, R(T::*fn)(Args...)) {
+  return Delegate&lt;R, Args...&gt;(obj, fn);
+}</ins>
+
+int main() {
+
+  // wrapping a free function
+  auto addFn = make_delegate(add);
+  assert(addFn(1, 2) == 3);
+
+  // wrapping a static function member
+  auto staticAddFnMem = make_delegate(Math::add);
+  assert(staticAddFnMem(1, 2) == 3);
+
+  <ins>// wrapping a non-static function member
+  Math math;
+  auto diffFnMem = make_delegate(&amp;math, &amp;Math::diff);
+  assert(diffFnMem(3, 2) == 1);</ins>
+
+  return 0;
+}
+</pre>
+<p>Per le lambda e i function object il problema consiste nel recuperare la <em>signature</em> dell'operatore function-call:</p>
+<pre class="code">
+// ...
+
+<ins>template&lt;typename R, typename... Args&gt;
+Delegate&lt;R, Args...&gt; make_delegate(std::function&lt;R(Args...)&gt; fn) {
+  return Delegate&lt;R, Args...&gt;(fn);
+}</ins>
+
+int main() {
+  // ...
+
+  <ins>// wrapping a function object /2
+  AddOp addOp;
+  auto addOpAsFnObj = make_delegate(addOp); // compiler error!
+  assert(addOpAsFnObj(1, 2) == 3);</ins>
+
+  return 0;
+}
+</pre>
+<p>Il problema &egrave; risolvibile in due passi; introducendo dapprima un oggetto <em>traits</em> che ricava la signature dell'operatore function-call; in secondo luogo, definendo una funzione apposita, <span class="code">to_function</span>, che effettua un <em>cast</em> esplicito dell'oggetto funzione a <span class="code">std::function</span>, che il codice fin qui sviluppato &egrave; gi&agrave; in grado di trattare:</p>
+<pre class="code">
+// ...
+
+<ins>template&lt;class F&gt;
+struct function_traits;
+
+// function signature capture
+template&lt;class R, class... Args&gt;
+struct function_traits&lt;R(Args...)&gt; {
+  typedef R (*signature)(Args...);
+};
+
+// function-call operator signature capture
+template &lt;typename FnObj&gt;
+struct function_traits : public function_traits&lt;decltype(&amp;FnObj::operator())&gt; {
+};
+
+// non-static method signature capture
+template &lt;typename T, typename R, typename... Args&gt;
+struct function_traits&lt;R(T::*)(Args...)&gt; {
+  typedef std::function&lt;R(Args...)&gt; signature;
+};</ins>
+
+<ins>template &lt;typename FnObj&gt;
+typename function_traits&lt;FnObj&gt;::signature to_function (FnObj fnObj) {
+  return static_cast&lt;typename function_traits&lt;FnObj&gt;::signature&gt;(fnObj);
+}</ins>
+
+int main() {
+  // ...
+
+  // wrapping a function object /2
+  AddOp addOp;
+  auto addOpAsFnObj = make_delegate(<ins>to_function(</ins>addOp<ins>)</ins>);
+  assert(addOpAsFnObj(1, 2) == 3);
+
+  return 0;
+}
+</pre>
+<p class="note"><span class="code">to_function</span> prende <span class="code">fnObj</span> per valore anzich&eacute; per referenza perch&eacute; altrimenti le lambda passate per <em>r-value reference</em> non sarebbero supportate.</p>
+<p>La soluzione &egrave; vicina; le lambda tuttavia non sono ancora convertibili a delegate, nemmeno attraverso l'applicazione di <span class="code">to_function</span>, perch&eacute; l'infrastruttura non supporta gli <span class="code">operator() const</span>:</p>
+<pre class="code">
+// ...
+
+int main() {
+  // ...
+
+  <ins>// wrapping a lambda
+  auto add_ = [](int a, int b) { return a + b; };
+  auto lambda = make_delegate(to_function(add_)); // compiler error!
+  assert(lambda(1, 2) == 3);</ins>
+
+  return 0;
+}
+</pre>
+<p>Una nuova versione di <span class="code">make_delegate</span> che accetta un puntatore a un metodo <span class="code">const</span> risolve la questione:</p>
+<pre class="code">
+// ...
+
+<ins>template &lt;typename T, typename R, typename... Args&gt;
+struct function_traits&lt;R(T::*)(Args...) const&gt; {
+  typedef std::function&lt;R(Args...)&gt; signature;
+};</ins>
+
+int main() {
+  // ...
+
+  // wrapping a lambda
+  auto add_ = [](int a, int b) { return a + b; };
+  auto lambda = make_delegate(to_function(add_));
+  assert(lambda(1, 2) == 3);
+
+  return 0;
+}
+</pre>
+<p>Il problema del <span class="code">const</span> viene cos&igrave; risolto sull'operatore function call, ma permane sugli altri metodi:</p>
+<pre class="code">
+// ...
+
+struct Math {
+  static int add(int a, int b) {
+    return a + b;
+  }
+  int diff(int a, int b) {
+    return a - b;
+  }
+  <ins>int cdiff(int a, int b) const {
+    return a - b;
+  }</ins>
+};
+
+<ins>struct ConstAddOp {
+  int operator()(int a, int b) const {
+    return a + b;
+  }
+};</ins>
+
+int main() {
+  // ...
+
+  <ins>// wrapping a const function object
+  ConstAddOp constAddOp;
+  auto constAddOpAsFnObj = make_delegate(to_function(constAddOp));
+  assert(constAddOpAsFnObj(1, 2) == 3);</ins>
+
+  <ins>// wrapping a const non-static function member
+  auto cdiffFnMem = make_delegate(&amp;math, &amp;Math::cdiff); // compiler error!
+  assert(cdiffFnMem(3, 2) == 1);</ins>
+
+  return 0;
+}
+</pre>
+<p>Per rendere compilabile il codice sopra riportato &egrave; necessario intervenire in due punti, introducendo una nuova versione <span class="code">const</span> di <span class="code">make_delegate</span> operante sui metodi non statici, oltre che sulla classe <span class="code">Delegate</span>:</p>
+<pre class="code">
+// ...
+
+template&lt;typename R, typename... Args&gt;
+class Delegate {
+  // ...
+
+  <ins>template&lt;class T&gt;
+  struct ConstFnMemCall {
+    const T* obj_;
+    typedef R (T::*Fn)(Args...) const;
+    Fn fn_;
+    ConstFnMemCall(const T* obj, Fn fn) : obj_(obj), fn_(fn) { }
+    R operator()(Args... args) const {
+      return (obj_-&gt;*fn_)(args...);
+    }
+  };</ins>
+public:
+  // ...
+
+  <ins>template&lt;class T&gt;
+  Delegate(T* obj, R (T::*fn)(Args...) const) : fn_(ConstFnMemCall&lt;T&gt;(obj, fn)) { }</ins>
+  // ...
+
+};
+
+<ins>template&lt;class T, typename R, typename... Args&gt;
+Delegate&lt;R, Args...&gt; make_delegate(T* obj, R(T::*fn)(Args...) const) {
+  return Delegate&lt;R, Args...&gt;(obj, fn);
+}</ins>
+
+</pre>
+<p>&Egrave; possibile eliminare anche la chiamata esplicita a <span class="code">to_function</span>, inglobandola direttamente in <span class="code">make_delegate</span>, dopo averla modificata in modo da renderla applicabile anche ai puntatori a funzione:</p>
+<pre class="code">
+// ...
+
+<ins>// function pointer signature capture
+template&lt;class R, class... Args&gt;
+struct function_traits&lt;R(*)(Args...)&gt; : public function_traits&lt;R(Args...)&gt; {
+};</ins>
+
+<ins>template&lt;class Fn&gt;
+auto make_delegate(Fn fn) -&gt; decltype(make_delegate(to_function(fn))) {
+  return make_delegate(to_function(fn));
+}</ins>
+
+int main() {
+  auto addFn = make_delegate(add);
+  assert(addFn(1, 2) == 3);
+
+  // wrapping a static function member
+  auto staticAddFnMem = make_delegate(Math::add);
+  assert(staticAddFnMem(1, 2) == 3);
+
+  // wrapping a non-static function member
+  Math math;
+  auto diffFnMem = make_delegate(&amp;math, &amp;Math::diff);
+  assert(diffFnMem(3, 2) == 1);
+
+  // wrapping a function object /2
+  AddOp addOp;
+  auto addOpAsFnObj = make_delegate(to_function(addOp));
+  assert(addOpAsFnObj(1, 2) == 3);
+
+  // wrapping a lambda
+  auto add_ = [](int a, int b) { return a + b; };
+  auto lambda = make_delegate(<del>to_function(</del>add_<del>)</del>);
+  assert(lambda(1, 2) == 3);
+
+  // wrapping a temporary lambda
+  auto lambda2 = make_delegate(<del>to_function(</del>[](int a, int b) { return a + b; }<del>)</del>);
+  assert(lambda2(1, 2) == 3);
+
+  // wrapping a const function object
+  ConstAddOp constAddOp;
+  auto constAddOpAsFnObj = make_delegate(<del>to_function(</del>constAddOp<del>)</del>);
+  assert(constAddOpAsFnObj(1, 2) == 3);
+
+  // wrapping a const non-static function member
+  auto cdiffFnMem = make_delegate(&amp;math, &amp;Math::cdiff);
+  assert(cdiffFnMem(3, 2) == 1);
+}
+</pre>
+<h2>Limiti</h2>
+<p>Non ho ancora avuto modo di impiegare i delegate in progetti reali. Durante lo sviluppo, tuttavia, &egrave; emersa la necessit&agrave; di esplicitare i tipi in gioco nel momento in cui si intende catturare una funzione <em>overloaded</em>, cio&egrave; in tutti i casi di omonimia:</p>
+<pre class="code">
+// ...
+
+<ins>int overloaded(double /*x*/) {
+  return 0;
+}
+
+int overloaded(const std::string&amp; /*s*/) {
+  return 1;
+}
+</ins>
+
+int main() {
+  // ...
+
+  <ins>/* won't compile
+   * auto overloaded1 = make_delegate(f);
+   */
+
+  auto overloaded2 =
+    make_delegate(static_cast&lt;int (*)(double)&gt;(overloaded));
+  assert(overloaded2(3.14) == 0);
+
+  auto overloaded3 =
+    make_delegate(static_cast&lt;int (*)(const std::string&amp;)&gt;(overloaded));
+  assert(overloaded3(&quot;acme&quot;) == 1);</ins>
+
+  return 0;
+}
+</pre>
+<h2>Sorgenti</h2>
+<ul>
+<li><span class="code"><a href="files/delegates/delegates.h">delegates.h</a></span></li>
+<li><span class="code"><a href="files/delegates/delegates.cpp">delegates.cpp</a></span></li>
+</ul>
+<h2>Riferimenti</h2>
+<ul>
+<a name="ref-1"></a>
+<li><em>&ldquo;Function Traits&rdquo;</em>, Functional C++ &mdash; <a href="http://functionalcpp.wordpress.com/2013/08/05/function-traits/">http://functionalcpp.wordpress.com/2013/08/05/function-traits/</a>, visitato il 31/07/2014.</li>
+<a name="ref-2"></a>
+<li>Lodewijk, K. <em>&ldquo;Fun with functions&rdquo;</em>&mdash; <a href="http://www.dreamincode.net/forums/topic/264061-c11-fun-with-functions/">http://www.dreamincode.net/forums/topic/264061-c11-fun-with-functions/</a>, visitato il 31/07/2014.</li>
+<a name="ref-3"></a>
+<li>Mueller, O. <em>&ldquo;C++ Delegates On Steroids&rdquo;</em> &mdash; <a href="http://blog.coldflake.com/posts/2014-01-12-C%2B%2B-delegates-on-steroids.html">http://blog.coldflake.com/posts/2014-01-12-C%2B%2B-delegates-on-steroids.html</a>, visitato il 31/07/2014.</li>
+<a name="ref-4"></a>
+<li>meh, <em>&ldquo;C++11 lambda to function pointer or std::function&rdquo;</em> &mdash; <a href="http://meh.schizofreni.co/programming/magic/2013/01/23/function-pointer-from-lambda.html">http://meh.schizofreni.co/programming/magic/2013/01/23/function-pointer-from-lambda.html</a>, visitato il 31/07/2014.</li>
+<a name="ref-5"></a>
+<li>Ryazanov, S. <em>&ldquo;The Impossibly Fast C++ Delegates&rdquo;</em> &mdash; <a href="http://www.codeproject.com/Articles/11015/The-Impossibly-Fast-C-Delegates">http://www.codeproject.com/Articles/11015/The-Impossibly-Fast-C-Delegates</a>, visitato il 31/07/2014.</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 18/08/2014</p>
+</body>
+</html>
