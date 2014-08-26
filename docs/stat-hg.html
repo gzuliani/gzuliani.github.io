@@ -159,7 +159,7 @@ select
 from changeset
 group by day;
 </pre>
-<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">0</span> = luned&igrave;, ...</p>
+<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">1</span> = luned&igrave;, ...</p>
 <h3><em>Activity Punchcard</em> &ndash; numero di commit nel giorno/ora</h3>
 <pre class="code">
 select
@@ -169,7 +169,7 @@ select
 from changeset
 group by day, hour;
 </pre>
-<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">0</span> = luned&igrave;, ...</p>
+<p class="note"><strong>Nota</strong>: <span class="code">0</span> = domenica, <span class="code">1</span> = luned&igrave;, ...</p>
 <h3><em>Commit Log</em> &ndash; elenco dei commit per mese/anno</h3>
 <pre class="code">
 select
@@ -270,7 +270,7 @@ order by rev;
 <ul>
 <li><p><strong>analisi del repository Hg</strong>: lo script <a href="files/stat-hg/utils/build-db.py">build-db.py</a> raccoglie all'interno di un database <a href="http://www.sqlite.org/">sqlite</a> temporaneo i dati grezzi del repository ricavati dai comandi Hg sopra elencati;</p></li>
 <li><p><strong>raccolta delle statistiche</strong>: lo script <a href="files/stat-hg/utils/run-queries.py">run-queries.py</a> interroga il database e salva i risultati in file XML/CSV temporanei;</p></li>
-<li><p><strong>creazione dei prospetti</strong>: lo script <a href="files/stat-hg/utils/merge-reports.py">merge-reports.py</a> si occupa di compilare i prospetti XML parziali in un unico file XML, mentre i file CSV sono inoltrati a gnuplot per la generazione dei prospetti grafici (cfr. cartella degli script <a href="files/stat-hg/gp">gp</a>); il file XML, corredato dai file immagine dei prospetti grafici, da un'apposita trasformazione <a href="files/stat-hg/sheets/xslt/history.xsl">XML/HTML</a> e da un <a href="files/stat-hg/sheets/css/history.css">foglio di stile</a> dedicato viene infine salvato in una specifica cartella.</p></li>
+<li><p><strong>creazione dei prospetti</strong>: lo script <a href="files/stat-hg/utils/merge-reports.py">merge-reports.py</a> si occupa di compilare i prospetti XML parziali in un unico file XML, mentre i file CSV sono inoltrati a gnuplot per la generazione dei prospetti grafici (cfr. cartella degli script <a href="files/stat-hg/gp">gp</a>). Il file XML, corredato dai file immagine dei prospetti grafici, da un'apposita trasformazione <a href="files/stat-hg/sheets/xslt/history.xsl">XML/HTML</a> e da un <a href="files/stat-hg/sheets/css/history.css">foglio di stile</a> dedicato viene infine salvato in una specifica cartella.</p></li>
 </ul>
 <p>La cancellazione dei file temporanei conclude la procedura.</p>
 <h2>Appendice</h2>
