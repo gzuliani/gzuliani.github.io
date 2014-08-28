@@ -9,13 +9,12 @@
 <h1>ScopeGuard</h1>
 <h2>Definizioni</h2>
 <p>Un'operazione si definisce <em>exception-safe</em> se lascia l'oggetto (o gli oggetti) sul quale ha agito in uno stato consistente quando termina avendo sollevato un'eccezione. Non conta lo stato in cui l'oggetto si trova (pu&ograve; per esempio trattarsi di un particolare stato d'errore che richiede una esplicita cancellazione), ci&ograve; che importa &egrave; che si tratti di uno stato ben definito &ndash; condizione necessaria per scrivere il codice di gestione dell'eccezione.</p>
-<p>Un'operazione exception-safe pu&ograve; offrire le seguenti garanzie in fatto di eccezioni (classificazione di Abrahams<a href="#ref-1"><sup>[1]</sup></a>):
+<p>Un'operazione exception-safe pu&ograve; offrire le seguenti garanzie in fatto di eccezioni (classificazione di Abrahams<a href="#ref-1"><sup>[1]</sup></a>):</p>
 <ul>
  <li><em>basic guarantee</em>: le invarianti d'oggetto sono mantenute, nessuna risorsa viene persa;</li>
  <li><em>strong guarantee</em>: in caso di lancio di un'eccezione l'oggetto assume lo stato precedente alla chiamata;</li>
  <li><em>no-throw guarantee</em>: non verr&agrave; sollevata alcuna eccezione.</li>
 </ul>
-</p>
 <p class="note">Nota: un livello di garanzia che pu&ograve; essere offerto da operazioni non exception-safe &egrave; la cosiddetta <em>no leak guarantee</em>, che assicura la corretta gestione delle risorse, senza tuttavia dire nulla circa lo stato finale dell'oggetto.</p>
 <p>La garanzia basic assicura che l'oggetto, trovandosi in uno stato valido anche in seguito al sollevamento di un'eccezione, pu&ograve; ancora essere utilizzato. Tuttavia, il fatto che lo stato in cui si trova, per quanto valido, sia ignoto, a volte lo rende di fatto inutilizzabile:</p>
 <pre class="code">
@@ -38,12 +37,11 @@ for (size_t i = 0; i &lt; items; i++)
 <p>In alcune circostanze un'operazione fornisce garanzie diverse, in funzione di specifiche condizioni al contorno: la funzione di libreria <span class="code">vector&lt;T&gt;::erase</span>, ad esempio, di base fornisce una garanzia basic, che diventa no-throw se il costruttore di copia e l'operatore di assegnamento del tipo <span class="code">T</span> non sollevano eccezioni.</p>
 <h2>Implementazione</h2>
 <p>Scrivere codice exception-safe &egrave; particolarmente difficile. Gli strumenti che il C++ mette a disposizione per implementare operazioni exception-safe sono il costrutto <span class="code">try/catch</span> e il supporto per l'idioma <em>RAII &ndash; Resource Acquisition Is Initialization</em>.</p>
-<p>Le principali linee guida da seguire nella scrittura di codice exception-safe sono riassumibili nei seguenti punti:
+<p>Le principali linee guida da seguire nella scrittura di codice exception-safe sono riassumibili nei seguenti punti:</p>
 <ul>
  <li>non rilasciare un oggetto fintanto che il candidato sostituto non &egrave; stato allocato;</li>
  <li>assicurarsi di lasciare l'oggetto in uno stato consistente prima di sollevare un'eccezione.</li>
 </ul>
-</p>
 <p>Si consideri a titolo d'esempio la seguente funzione:</p>
 <pre class="code">
 void SetName(const std::string&amp; newName) {

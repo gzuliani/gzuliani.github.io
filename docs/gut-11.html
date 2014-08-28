@@ -1,0 +1,405 @@
+<html>
+<head>
+<title>Good Unit Tests /11</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-11">risorse</a> | good unit tests /11</p>
+<h1>Good Unit Tests /11</h1>
+<p>Questa parte (l'undicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a> e qui la <a href="gut-10.html">decima</a>) &egrave; dedicata allo sviluppo della parte di controllo delle eccezioni.</p>
+<h2>Eccezioni</h2>
+<p>La parte di <em>gut</em> dedicata al controllo delle eccezioni &egrave;  piuttosto rigida, essendo limitata alla sola direttiva <span class="code">THROWS</span>; si nota in particolare l'assenza di metodi per:</p>
+<ul>
+	<li>verificare che un'espressione sollevi un'eccezione qualunque &ndash; al momento &egrave; obbligatorio specificarne il tipo;</li>
+	<li>caratterizzare l'eccezione attesa non solo sulla base del tipo, ma anche del valore assunto da un attributo specifico (ad esempio il valore ritornato da <span class="code">what</span>);</li>
+	<li>assicurarsi che un'espressione <strong>non</strong> sollevi alcuna eccezione.</li>
+</ul>
+<p>A tal fine sono state definite tre nuove macro: <span class="code">THROWS_ANYTHING</span>, <span class="code">THROWS_WITH_MESSAGE</span> e <span class="code">THROWS_NOTHING</span>.</p>
+<h3>THROWS_ANYTHING</h3>
+<p>La macro <span class="code">THROWS_ANYTHING</span> consente di verificare che un'espressione solleva un qualche tipo di eccezione, indipendentemente dalla sua natura:</p>
+<pre class="code">
+// file example.cpp
+...
+
+TEST(&quot;Out of range indexing throws exception&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  aListWithOneElement.insert(&quot;one&quot;);
+
+  <del>THROWS(aListWithOneElement[1], std::out_of_range);</del>
+  <ins>THROWS_ANYTHING(aListWithOneElement[1]);</ins>
+}
+</pre>
+<p>L'implementazione &egrave; banale:</p>
+<pre class="code">
+// file gut.h
+...
+
+<ins>#define THROWS_ANYTHING(expr_) \
+  do { \
+    try { \
+      (void)(expr_); \
+      gut::theReport::failure(
+        gut::NoThrowFailure(#expr_, __FILE__, __LINE__)); \
+    } catch(...) { \
+    } \
+  } while (0)</ins>
+</pre>
+<pre class="code">
+// file test-gut.cpp
+...
+
+int main() {
+  ...
+
+  <ins>// test exceptions /2
+  THROWS_ANYTHING(fnThatNotThrows());
+  assert(lastFailure == &quot;[error] fnThatNotThrows() did not throw&quot;);</ins>
+
+  return 0;
+}
+</pre>
+<h3>THROWS_WITH_MESSAGE</h3>
+<p>A volte il verificare che un'espressione sollevi un particolare tipo di eccezione pu&ograve; non fornire il desiderato livello di dettaglio; la macro <span class="code">THROWS_WITH_MESSAGE</span> consente di specificare, oltre al tipo dell'eccezione attesa, anche la stringa associata, intendendo con ci&ograve; il valore di ritorno del metodo <span class="code">what</span>:</p>
+<pre class="code">
+// file example.cpp
+...
+
+TEST(&quot;Out of range indexing throws exception&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  aListWithOneElement.insert(&quot;one&quot;);
+
+  <del>THROWS(aListWithOneElement[1], std::out_of_range);</del>
+  <ins>THROWS_WITH_MESSAGE(aListWithOneElement[1], std::out_of_range, &quot;invalid subscript&quot;);</ins>
+}
+</pre>
+<p>Serve una tipologia di notifica dedicata, <span class="code">WrongExceptionMessageFailure</span>, il cui scopo &egrave; di costruire un messaggio d'errore adeguato per questo nuovo caso. La macro <span class="code">THROWS_WITH_MESSAGE</span> inoltra al <em>report</em> corrente una notifica di queste nel caso in cui il tipo di eccezione catturato &egrave; del tipo atteso, ma con un <em>what</em> non conforme:</p>
+<pre class="code">
+// file gut.h
+...
+
+struct WrongTypedExceptionFailure : public Error {
+  WrongTypedExceptionFailure(
+    const char* expression,
+    const std::exception&amp; exception,
+    const char* file,
+    int line) : Error(file, line) {
+      content()
+        &lt;&lt; expression
+        &lt;&lt; &quot; threw an unexpected exception <ins>with message </ins>\&quot;&quot;
+        &lt;&lt; exception.what()
+        &lt;&lt; &quot;\&quot;&quot;;
+  }
+};
+
+<ins>struct WrongExceptionMessageFailure : public Error {
+  WrongExceptionMessageFailure(
+    const char* expression,
+    const char* message,
+    const char* expected,
+    const char* file,
+    int line) : Error(file, line) {
+      content()
+        &lt;&lt; expression
+        &lt;&lt; &quot; threw an exception with wrong message (expected \&quot;&quot;
+        &lt;&lt; expected
+        &lt;&lt; &quot;\&quot;, got \&quot;&quot;
+        &lt;&lt; message
+        &lt;&lt; &quot;\&quot;)&quot;;
+  }
+};</ins>
+...
+
+<ins>#define THROWS_WITH_MESSAGE(expr_, exception_, what_) \
+  do { \
+    try { \
+      (void)(expr_); \
+      gut::theReport::failure(gut::NoThrowFailure(#expr_, __FILE__, __LINE__)); \
+    } catch(const exception_&amp; e_) { \
+      if (strcmp(e_.what(), static_cast&lt;const char*&gt;(what_)) != 0) \
+        gut::theReport::failure(
+          gut::WrongExceptionMessageFailure(#expr_, e_.what(), what_, __FILE__, __LINE__)); \
+    } catch(const std::exception&amp; e_) { \
+      gut::theReport::failure(
+        gut::WrongTypedExceptionFailure(#expr_, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::theReport::failure(
+        gut::WrongExceptionFailure(#expr_, __FILE__, __LINE__)); \
+    } \
+  } while (0)</ins>
+</pre>
+<pre class="code">
+// file test-gut.cpp
+...
+
+    THROWS(fnThatThrowsARuntimeError(), std::logic_error);
+    assert(lastFailure == &quot;[error] fnThatThrowsARuntimeError()&quot;
+                          &quot; threw an unexpected exception<ins> with message</ins>&quot;
+                          &quot; \&quot;a runtime error\&quot;&quot;);
+    ...
+
+  <ins>THROWS_WITH_MESSAGE(fnThatThrowsARuntimeError(), std::runtime_error, &quot;error&quot;);
+  assert(lastFailure == &quot;[error] fnThatThrowsARuntimeError()&quot;
+                        &quot; threw an exception with wrong message&quot;
+                        &quot; (expected \&quot;error\&quot;, got \&quot;a runtime error\&quot;)&quot;);</ins>
+</pre>
+<p class="note">Relativamente alla classe <span class="code">WrongTypedExceptionFailure</span>: con poca fatica si potrebbe riportare, nel messaggio d'errore, anche il tipo dell'eccezione attesa; non per&ograve; quello dell'eccezione catturata, che sarebbe ben pi&ugrave; interessante. Essendo il tipo dell'eccezione attesa comunque visibile nella clausola THROWS, tale implementazione al momento non trova giustificazione.</p>
+<h3>THROWS_NOTHING</h3>
+<p>Se viene sollevata un'eccezione inattesa, il test termina, e non &egrave; immediato determinare il punto d'origine. Vorrei allora assicurarmi che certe espressioni non sollevano eccezioni:</p>
+<pre class="code">
+// file example.cpp
+...
+
+TEST(&quot;Insertion to empty list is retained&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  <ins>THROWS_NOTHING(</ins>aListWithOneElement.insert(&quot;one&quot;)<ins>)</ins>;
+
+  CHECK(!aListWithOneElement.empty());
+  CHECK(aListWithOneElement.size() == 1);
+  CHECK(aListWithOneElement[0] == &quot;one&quot;);
+}
+</pre>
+<p>Giunti a questo punto, &egrave; necessario fare un p&ograve; di ordine, per evitare di commettere l'errore di utilizzare le notifiche <span class="code">UnexpectedExceptionFailure</span> e <span class="code">UnknownExceptionFailure</span> per i casi di &laquo;eccezione inattesa&raquo; &mdash; rispettivamente <span class="code">catch (const std::exception&amp;)</span> e <span class="code">catch (...)</span> &mdash; che la nuova macro dovr&agrave; gestire.</p>
+<p>Le due <span class="code">ExceptionFailure</span> citate sono attualmente utilizzate dal sistema per catturare le eccezioni inattese emesse dal codice di test; per quanto era stato <a href="gut-2.html">a suo tempo stabilito</a>, sono di tipo <span class="code">Fatal</span>, cos&igrave; da causare la sospensione del test in caso di attivazione.</p>
+<p>Per analogia con quanto avviene per le macro <span class="code">THROWS</span> gi&agrave; disponibili, <span class="code">THROWS_NOTHING</span> deve invece segnalare delle notifiche di tipo <span class="code">Error</span>, in modo da comunicare s&igrave; l'incongruenza, ma consentire la prosecuzione del test. Per questa ragione, le due notifiche esistenti mutano la loro natura <span class="code">Fatal</span> in <span class="code">Error</span>, per essere utilizzate dalla nuova macro; nel contempo si definiscono due nuove notifiche, <span class="code">FatalUnexpectedExceptionFailure</span> e <span class="code">FatalUnknownExceptionFailure</span> per assicurare la sospensione del test in caso di eccezioni inattese:</p>
+<pre class="code">
+// file gut.h
+...
+
+struct UnexpectedExceptionFailure : public <del>Fatal</del><ins>Error</ins> {
+  UnexpectedExceptionFailure(
+    const std::exception&amp; exception,
+    const char* file,
+    int line) : <del>Fatal</del><ins>Error</ins>(file, line) {
+      content()
+        &lt;&lt; &quot;unexpected exception <ins>with message </ins>\&quot;&quot;
+        &lt;&lt; exception.what()
+        &lt;&lt; &quot;\&quot; caught&quot;;
+  }
+};
+
+struct UnknownExceptionFailure : public <del>Fatal</del><ins>Error</ins> {
+  UnknownExceptionFailure(const char* file, int line) : <del>Fatal</del><ins>Error</ins>(file, line) {
+    content() &lt;&lt; &quot;unknown exception caught&quot;;
+  }
+};
+
+<ins>struct FatalUnexpectedExceptionFailure : public Fatal {
+  FatalUnexpectedExceptionFailure(
+    const std::exception&amp; exception,
+    const char* file,
+    int line) : Fatal(file, line) {
+      content()
+        &lt;&lt; &quot;unexpected exception with message \&quot;&quot;
+        &lt;&lt; exception.what()
+        &lt;&lt; &quot;\&quot; caught&quot;;
+  }</ins>
+};
+
+<ins>struct FatalUnknownExceptionFailure : public Fatal {
+  FatalUnknownExceptionFailure(const char* file, int line) : Fatal(file, line) {
+    content() &lt;&lt; &quot;unknown exception caught&quot;;
+  }
+};</ins>
+...
+
+<ins>#define THROWS_NOTHING(expr_) \
+  do { \
+    try { \
+      (void)(expr_); \
+    } catch(const std::exception&amp; e_) { \
+      gut::theReport::failure(
+        gut::UnexpectedExceptionFailure(e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::theReport::failure(
+        gut::UnknownExceptionFailure(__FILE__, __LINE__)); \
+    } \
+  } while (0)</ins>
+...
+
+int runTests_() {
+  ...
+    } catch(const std::exception&amp; e_) {
+      gut::theReport::failure(
+        gut::<ins>Fatal</ins>UnexpectedExceptionFailure(e_, __FILE__, __LINE__));
+    } catch(...) {
+      gut::theReport::failure(
+        gut::<ins>Fatal</ins>UnknownExceptionFailure(__FILE__, __LINE__));
+    }
+  ...
+}
+
+</pre>
+<pre class="code">
+// file test-gut.cpp
+...
+
+int main() {
+  ...
+
+  assert(lastFailure == &quot;[<del>fatal</del><ins>error</ins>] unexpected exception<ins> with message</ins> \&quot;a runtime error\&quot; caught&quot;);
+  ...
+
+
+  <ins>THROWS_NOTHING(fnThatThrowsARuntimeError());
+  assert(lastFailure == &quot;[error] unexpected exception with message \&quot;a runtime error\&quot; caught&quot;);</ins>
+
+  <ins>THROWS_NOTHING(fnThatThrowsAnInt());
+  assert(lastFailure == &quot;[error] unknown exception caught&quot;);</ins>
+
+  return 0;
+}
+</pre>
+<h2><span class="code">REQUIRE_THROWS</span></h2>
+<p>Le clausole <span class="code">THROWS</span> emettono delle notifiche d'errore, alla stessa stregua di <span class="code">CHECK</span>. Potrebbe risultare utile introdurre una nuova classe di clausole <span class="code">THROWS</span> che emettano delle notifiche di fallimento critico, esattamente come fa <span class="code">REQUIRE</span>. Si potrebbero distinguere dalle esistenti per il prefisso <span class="code">REQUIRE_</span>:</p>
+<pre class="code">
+// file gut.h
+...
+
+<ins>struct FatalNoThrowFailure : public Fatal {
+  FatalNoThrowFailure(const char* expression, const char* file, int line) : Fatal(file, line) {
+    content() &lt;&lt; expression &lt;&lt; &quot; did not throw&quot;;
+  }
+};</ins>
+...
+
+<ins>#define REQUIRE_THROWS_ANYTHING(expr_) \
+  do { \
+    bool threw_ = false; \
+    try { \
+      (void)(expr_); \
+    } catch(...) { \
+      threw_ = true; \
+    } \
+    if (!threw_) { \
+      gut::theReport::failure(
+        gut::FatalNoThrowFailure(#expr_, __FILE__, __LINE__)); \
+      throw gut::AbortTest(); \
+    } \
+  } while (0)<ins>
+</pre>
+<p class="todo">Le altre clausole <span class="code">THROWS</span> conviene fattorizzare un p&ograve; il codice:</p>
+<pre class="code">
+<ins>struct FatalWrongTypedExceptionFailure : public Fatal {
+  FatalWrongTypedExceptionFailure(
+    const char* expression,
+    const std::exception&amp; exception,
+    const char* file,
+    int line) : Fatal(file, line) {
+      content()
+        &lt;&lt; expression
+        &lt;&lt; &quot; threw an unexpected exception with message \&quot;&quot;
+        &lt;&lt; exception.what()
+        &lt;&lt; &quot;\&quot;&quot;;
+  }
+};</ins>
+
+<ins>struct FatalWrongExceptionFailure : public Fatal {
+  FatalWrongExceptionFailure(
+    const char* expression,
+    const char* file,
+    int line) : Fatal(file, line) {
+      content() &lt;&lt; expression &lt;&lt; &quot; threw an unknown exception&quot;;
+  }
+};</ins>
+
+#define REQUIRE_THROWS<ins>_</ins>(expr_, exception_<ins>, prefix_, abort_</ins>) \
+  do { \
+    <ins>bool catched_ = false; \</ins>
+    try { \
+      (void)(expr_); \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>NoThrowFailure(#expr_, __FILE__, __LINE__)); \
+    } catch(const exception_&amp;) { \
+      <ins>catched_ = true; \</ins>
+    } catch(const std::exception&amp; e_) { \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>WrongTypedExceptionFailure(#expr_, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>WrongExceptionFailure(#expr_, __FILE__, __LINE__)); \
+    } \
+    <ins>if (!catched_ &amp;&amp; abort_) \
+      throw gut::AbortTest(); \</ins>
+  } while (0)
+
+<ins>#define THROWS(expr_, exception_) \
+  THROWS_(expr_, exception_, , false)</ins>
+
+<ins>#define REQUIRE_THROWS(expr_, exception_) \
+  THROWS_(expr_, exception_, Fatal, true)</ins>
+</pre>
+<p>Per <span class="code">REQUIRE_THROWS_WITH_MESSAGE</span> si procede in maniera analoga:</p>
+<pre class="code">
+<ins>struct FatalWrongExceptionMessageFailure : public Fatal {
+  FatalWrongExceptionMessageFailure(
+    const char* expression,
+    const char* message,
+    const char* expected,
+    const char* file,
+    int line) : Fatal(file, line) {
+      content()
+        &lt;&lt; expression
+        &lt;&lt; &quot; threw an exception with wrong message (expected \&quot;&quot;
+        &lt;&lt; expected
+        &lt;&lt; &quot;\&quot;, got \&quot;&quot;
+        &lt;&lt; message
+        &lt;&lt; &quot;\&quot;)&quot;;
+  }
+};</ins>
+
+#define THROWS_WITH_MESSAGE<ins>_</ins>(expr_, exception_, what_<ins>, prefix_, abort_</ins>) \
+  do { \
+    <ins>bool catched_ = false; \</ins>
+    try { \
+      (void)(expr_); \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>NoThrowFailure(#expr_, __FILE__, __LINE__)); \
+    } catch(const exception_&amp; e_) { \
+      if (strcmp(e_.what(), static_cast&lt;const char*&gt;(what_)) != 0) \
+        gut::theReport::failure(
+          gut::<ins>prefix_ ## </ins>WrongExceptionMessageFailure(#expr_, e_.what(), what_, __FILE__, __LINE__)); \
+      <ins>else \
+      catched_ = true; \</ins>
+    } catch(const std::exception&amp; e_) { \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>WrongTypedExceptionFailure(#expr_, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::theReport::failure(
+        gut::<ins>prefix_ ## </ins>WrongExceptionFailure(#expr_, __FILE__, __LINE__)); \
+    } \
+    <ins>if (!catched_ &amp;&amp; abort_) \
+      throw gut::AbortTest(); \</ins>
+  } while (0)
+
+<ins>#define THROWS_WITH_MESSAGE(expr_, exception_, what_) \
+  THROWS_WITH_MESSAGE_(expr_, exception_, what_, , false)</ins>
+
+<ins>#define REQUIRE_THROWS_WITH_MESSAGE(expr_, exception_, what_) \
+  THROWS_WITH_MESSAGE_(expr_, exception_, what_, Fatal, true)</ins>
+</pre>
+<p>Infine, <span class="code">REQUIRE_THROWS_NOTHING</span>:</p>
+<pre class="code">
+<ins>#define REQUIRE_THROWS_NOTHING(expr_) \
+  do { \
+    bool threw_ = true; \
+    try { \
+      (void)(expr_); \
+      threw_ = false; \
+    } catch(const std::exception&amp; e_) { \
+      gut::theReport::failure(gut::FatalUnexpectedExceptionFailure(e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      gut::theReport::failure(gut::FatalUnknownExceptionFailure(__FILE__, __LINE__)); \
+    } \
+    if (threw_) \
+      throw gut::AbortTest(); \
+  } while (0)</ins>
+</pre>
+<p class="todo">TODO: Riflettere sulla possibilit&agrave; di unificare <span class="code">prefix_</span> e <span class="code">abort_</span>; la cosa probabimente impatta in modo significativo sulla gerarchia <span class="code">Notice</span>.</p>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-11/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-11/test-gut.cpp">test-gut.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 28/08/2014</p>
+</body>
+</html>
