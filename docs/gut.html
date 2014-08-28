@@ -112,7 +112,9 @@ TEST(&quot;CHECK vs. REQUIRE&quot;) {
 }
 </pre>
 <h4>Catture</h4>
-<p>Il controllo sulle eccezioni avviene tramite la macro <span class="code">THROWS</span>, che si applica all'espressione che ci si aspetta sollevi l'eccezione, assieme al tipo di eccezione attesa:</p>
+<p>Il controllo sulle eccezioni avviene tramite la famiglia di clausole che si applicano all'espressione che ci si aspetta sollevi l'eccezione; <span class="code">THROWS</span> ad esempio, verifica che venga sollevata un'eccezione di un tipo predefinito:</p>
+<ul>
+</ul>
 <pre class="code">
 #include &quot;gut.h&quot;
 
@@ -159,7 +161,14 @@ TEST(&quot;Captures&quot;) {
  * FAILED - 5 failure(s) in 2 test(s).
  */</ins>
 </pre>
-<p class="note">Il sollevamento di un'eccezione al di fuori della macro <span class="code">THROWS</span> causa il fallimento immediato del test, alla stregua di una <span class="code">REQUIRE</span> fallita, fornendo come posizione dell'errore, per forza di cose, un riferimento all'implementazione di gut di dubbia utilit&agrave;:</p>
+<p>Sono disponibili quattro modalit&argave; di cattura:</p>
+<ul>
+	<li><span class="code">THROWS(expr, type)</span> verifica che il codice di test solleva un'eccezione del tipo indicato;</li>
+	<li><span class="code">THROWS_WITH_MESSAGE(expr, type, what)</span> verifica che venga sollevata un'eccezione del tipo indicato e con attributo <span class="code">what()</span> identico a quello specificato;</li>
+	<li><span class="code">THROWS_ANYTHING(expr)</span> verifica che venga sollevata un'eccezione qualunque;</li>
+	<li><span class="code">THROWS_NOTHING(expr)</span> verifica che non venga sollevata alcuna eccezione.</li>
+</ul>
+<p class="note">Il sollevamento di un'eccezione al di fuori di una clausola <span class="code">THROWS</span> causa il fallimento immediato del test, alla stregua di una <span class="code">REQUIRE</span> fallita, fornendo come posizione dell'errore, per forza di cose, un riferimento all'implementazione di gut di dubbia utilit&agrave;:</p>
 <pre class="code">
 #include &quot;gut.h&quot;
 
@@ -209,6 +218,14 @@ TEST(&quot;Captures&quot;) {
  * FAILED - 6 failure(s) in 2 test(s).
  */</ins>
 </pre>
+<p>La natura delle macro <span class="code">THROWS</span> &egrave; affine all'asserzione <span class="code">CHECK</span>, nel senso che il loro fallimento non causa l'interruzione del test. &Egrave; disponibile una forma pi&ugrave; &ldquo;drastica&rdquo; delle stesse, che in caso d'errore sospendono l'esecuzione del test; si distinguono da quelle convenzionali per il prefisso <span class="code">REQUIRE_</span>, per analogia con l'omonima asserzione:</p>
+<ul>
+	<li><span class="code">REQUIRE_THROWS(expr, type)</span>;</li>
+	<li><span class="code">REQUIRE_THROWS_WITH_MESSAGE(expr, type, what)</span>;</li>
+	<li><span class="code">REQUIRE_THROWS_ANYTHING(expr)</span>;</li>
+	<li><span class="code">REQUIRE_THROWS_NOTHING(expr)</span>.</li>
+</ul>
+
 <h3>Esito del test</h3>
 <p>Il successo di un test &egrave; legato alla Il fallimento di un'asserzione o di una cattura causa il fallimento del test (oltre al gi&agrave; citato caso di un'eccezione inaspettata), che viene perci&ograve; classificato come <span class="code">FAILED</span>. Alla stessa stregua, il fallimento di un test causa a cascata il fallimento dell'intera test suite.</p>
 <h3>Esito della test suite</h3>
@@ -339,8 +356,7 @@ TEST(&quot;Custom boolean expression&quot;) {
 <ul>
 <li>segmentazione del codice di test (es. <span class="code">SECTIONS</span>);</li>
 <li>attivazione (opzionale) del debugger in corrispondenza di un fallimento;</li>
-<li><span class="code">THROWS</span> generica che non richiede di specificare il tipo di eccezione attesa;</li>
-<li><em>fixtures</em>, sebbene ci sia la tendenza a non supportarle, almeno nel contesto degli <em>unit-test</em><a href="#rif-5"><sup>[5]</sup></a><a href="#rif-6"><sup>[6]</sup></a>;</li>
+<li><em>fixtures</em>, sebbene si sta assistendo ad una tendenza a non supportarle, almeno nel contesto degli <em>unit-test</em><a href="#rif-5"><sup>[5]</sup></a><a href="#rif-6"><sup>[6]</sup></a>;</li>
 <li>selezione dei test da eseguire, per nome o <em>tag</em>;</li>
 <li>&hellip;</li>
 </ul>
@@ -368,7 +384,9 @@ TEST(&quot;Custom boolean expression&quot;) {
 		<a name="rif-1.9"></a>
 		<li><a href="gut-9.html">parte 9</a>: gestione dei confronti tra puntatori generici e <span class="code">nullptr</span>;</li>
 		<a name="rif-1.10"></a>
-		<li><a href="gut-10.html">parte 10</a>: reportistica personalizzata senza la necessit&agrave; di derivare da <span class="code">Report</span>.</li>
+		<li><a href="gut-10.html">parte 10</a>: reportistica personalizzata senza la necessit&agrave; di derivare da <span class="code">Report</span>;</li>
+		<a name="rif-1.11"></a>
+		<li><a href="gut-11.html">parte 11</a>: nuove macro di cattura (<span class="code">THROWS_*</span> e <span class="code">REQUIRE_THROWS_*</span>).</li>
 	</ul>
 	</li>
 	<a name="rif-2"></a>
@@ -390,6 +408,6 @@ TEST(&quot;Custom boolean expression&quot;) {
 	<li><a href="files/gut/current/test-gut.cpp">test-gut.cpp</a></li>
 	<li><a href="files/gut/current/example.cpp">example.cpp</a></li>
 </ul>
-<p class="modification-notice">Pagina modificata il 03/07/2014</p>
+<p class="modification-notice">Pagina modificata il 28/08/2014</p>
 </body>
 </html>

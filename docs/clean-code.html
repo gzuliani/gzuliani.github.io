@@ -10,13 +10,12 @@
 <p>A Handbook of Agile Software Craftsmanship</p>
 <p class="note">Una raccolta di alcuni interessanti spunti trovati nel libro, raggruppati per capitolo.</p>
 <h2>1. Clean Code</h2>
-<p>Il primo capitolo contiene la definizione di <span class="term">clean code</span> secondo l'esperienza dei maggiori esperti del settore; alcune di esse sono riportate qui di seguito:
+<p>Il primo capitolo contiene la definizione di <span class="term">clean code</span> secondo l'esperienza dei maggiori esperti del settore; alcune di esse sono riportate qui di seguito:</p>
  <ul>
   <li><q>I like my code to be elegant and efficient. The logic should be straightforward to make it hard for bugs to hide&hellip;</q> &ndash; Bjarne Stroustrup, inventor of C++;</li>
   <li><q>Clean Code always looks like it was written by someone who cares.</q> &ndash; Michael Feathers, author of Working Effectively with Legacy Code.</li>
   <li><q>You know you are working on clean code when each routine you read turns out to be pretty much what you expect&hellip;</q> &ndash; Ward Cunningham, inventor of Wiki;</li>
  </ul>
-</p>
 <p>Si argomenta sul paradosso che il codice sporco, risultato di un'attivit&agrave; frenetica di sviluppo volta ad accelarare i tempi di consegna, si rivela essere in realt&agrave; una &ndash; se non la principale &ndash; causa di ritardo. Viene quindi presentata la metafora della finestra rotta, la cui morale dovrebbe spronare a ripulire il codice ogni qualvolta se ne presenti la possibilit&agrave;, in particolare durante le fasi di <span class="term">refactoring</span>: anche la ripulitura del codice quindi, pu&ograve; essere effettuata in maniera incrementale.</p>
 <p>La regola dei boyscout viene cos&igrave; decinata: <q>lascia il codice pi&ugrave; pulito di come l'hai trovato</q>.</p>
 <h2>2. Meaningful names</h2>
@@ -140,12 +139,11 @@
  questo tipo di formattazione induce una suddivisione tra i tipi (a sinistra) e le variabili (a destra) anzich&eacute; l'associazione di ogni variabile col suo tipo.</p></li>
 </ul>
 <h2>6. Objects and Data Structures</h2>
-<p>Il sesto capitolo affronta la dicotomia oggetti/strutture, affermando che se l'interfaccia dei primi deve astrarre dall'implementazione, per le seconde ci&ograve; non vale, essendo dei semplici contenitori di dati. Seguono due considerazioni:
- <ul>
-  <li>preferire oggetti a strutture rende semplice aggiungere nuovi oggetti;</li>
-  <li>preferire strutture a oggetti rende semplice aggiungere nuove funzioni.</li>
- </ul>
-</p>
+<p>Il sesto capitolo affronta la dicotomia oggetti/strutture, affermando che se l'interfaccia dei primi deve astrarre dall'implementazione, per le seconde ci&ograve; non vale, essendo dei semplici contenitori di dati. Seguono due considerazioni:</p>
+<ul>
+ <li>preferire oggetti a strutture rende semplice aggiungere nuovi oggetti;</li>
+ <li>preferire strutture a oggetti rende semplice aggiungere nuove funzioni.</li>
+</ul>
 <p>La tesi viene suffragata considerando che l'introduzione di una nuova entit&agrave; all'interno di una gerarchia di classi si ottiene derivando la nuova entit&agrave; da una esistente ed implementandone le funzionalit&agrave; specifiche; nel caso di una gerarchia di strutture, &egrave; necessario intervenire su tutte le funzioni operanti sulle strutture esistenti, dovendo esse ora trattare anche la nuova casistica. Viceversa, l'introduzione di una nuova funzionalit&agrave; in una gerarchia di classi spesso si traduce nell'aggiornamento dell'interfaccia di gran parte delle classi esistenti; nel caso di strutture, normalmente &egrave; sufficiente implementare la nuova funzionalit&agrave; in un metodo globale.</p>
 <p>Limitatamente al dominio degli oggetti, viene citata la <span class="term">legge di Demeter</span>, e viene proposto un metodo per soddisfarla, che consiste nell'esporre parte della funzionalit&agrave; del contenuto nell'interfaccia del contenitore:
  <pre class="code">
@@ -170,12 +168,11 @@
 </ul>
 <h2>8. Boundaries</h2>
 <p>L'ottavo capitolo &egrave; dedicato alla gestione dei <em>confini</em> del proprio codice, ovvero come rendere il codice di nostra competenza robusto rispetto alla variabilit&agrave; e alla disponibilit&agrave; di librerie di terze parti o di codice sviluppato da altri colleghi. Il suggerimento principale &egrave; il ricorso al <span class="term">wrapping</span>.</p>
-<p>Librerie di terze parti:
- <ul>
-  <li>disaccoppiare il codice dalle API proprietarie per mezzo di wrappers;</li>
-  <li>se la documentazione fornita con la libreria non &egrave; sufficientemente affidabile, o se il suo comportamento non &egrave; stabile nelle versioni che si succedono, pu&ograve; risultare conveniente sviluppare unit test per determinarne il reale funzionamento (<span class="term">learning tests</span>).</li>
- </ul>
-</p>
+<p>Librerie di terze parti:</p>
+<ul>
+ <li>disaccoppiare il codice dalle API proprietarie per mezzo di wrappers;</li>
+ <li>se la documentazione fornita con la libreria non &egrave; sufficientemente affidabile, o se il suo comportamento non &egrave; stabile nelle versioni che si succedono, pu&ograve; risultare conveniente sviluppare unit test per determinarne il reale funzionamento (<span class="term">learning tests</span>).</li>
+</ul>
 <p>Relativamente al codice sviluppato da altri colleghi, qualora questo non sia ancora disponibile, si raccomanda l'uso di <span class="term">mock/stubs</span> per emulare le funzionalit&agrave; necessarie; questi potranno in seguito essere riutilizzati come <span class="term">adapter</span> dei componenti reali, quando diventeranno disponibili.</p>
 <h2>9. Unit Test</h2>
 <p>Il capitolo inizia enunciando le tre leggi del <span class="term">TDD</span>:
@@ -186,48 +183,44 @@
  </ol>
 </p>
 <p>Il TDD costringe lo sviluppatore a passare continuamente dallo scrivere codice di test &ndash; che fallisce &ndash; alla scrittura di codice di produzione &ndash; che fa passare il test. Il codice progredisce duqnue per piccoli passi, essendo la durata tipica di un ciclo di qualche minuto. Risulta perci&ograve; quasi impossibile ritrovarsi in situazioni inestricabili, dato che per definizione, se a un dato momento il test non passa, &egrave; sicuramente dovuto alle modifiche introdotte nell'ultima iterazione. Ci&ograve; regala una notevole serenit&agrave; al programmatore, che ha la certezza che, qualunque cosa sia successa, pochi <em>undo</em> ci ricondurranno ad una situazione stabile.</p>
-<p>Il codice di test va trattato come il codice di produzione. Cosa fa invece di un test case un <em>buon</em> test case?
+<p>Il codice di test va trattato come il codice di produzione. Cosa fa invece di un test case un <em>buon</em> test case?</p>
 <ul>
  <li>deve emergere chiaramente la struttura <span class="term">build-operate-check</span>;</li>
  <li>deve considerare un unico aspetto dell'oggetto in test;</li>
  <li>deve essere rapido, indipendente, ripetibile rispetto all'ambiente di esecuzione, auto-validante (deve fornire una chiara indicazione circa il successo o il fallimento);</li>
 </ul>
-</p>
 <p>La copertura del codice di produzione deve essere totale: deve essere testato tutto ci&ograve; che in linea di principio potrebbe fallire; non si devono trascurare nemmeno le funzionalit&agrave; pi&ugrave; banali (se non altro, &egrave; documentazione).</p>
 <h2>10. Classes</h2>
-<p>Oggetto di questo capitolo sono le classi; vengono rispolverati i pi&ugrave; importanti principi della progettazione object-oriented:
+<p>Oggetto di questo capitolo sono le classi; vengono rispolverati i pi&ugrave; importanti principi della progettazione object-oriented:</p>
 <ul>
-  <li><p><em>Single Responsibility Principle</em>: per una classe deve esistere un unica ragione perch&eacute; debba essere modificata;</li>
-  <li><em>Open/Close Principle</em>: una classe deve essere <strong>aperta</strong> alle estensioni, ma <strong>chiusa</strong> alle modifiche;</li>
-  <li><em>Dependency Inversion Principle</em>: si deve dipendere dalle astrazioni, non dai dettagli.</li>
- </ul>
-</p>
-<p>Non ci si deve spaventare di fronte ad una moltitudine di piccole (super-focalizzate) classi rispetto a poche, vaste classi: essendo le funzionalit&agrave; implementate le medesime, medesima &egrave; la quantit&agrave; di concetti da gestire e comprendere.</p>
-<p>Una classe deve essere coesa:
- <ul>
-  <li>deve possedere pochi membri fortemente correlati;</li>
-  <li>deve esporre pochi metodi che manipolano i membri (pi&ugrave; membri un metodo manipola, pi&ugrave; il metodo &egrave; coeso alla classe);
+ <li><p><em>Single Responsibility Principle</em>: per una classe deve esistere un unica ragione perch&eacute; debba essere modificata;</li>
+ <li><em>Open/Close Principle</em>: una classe deve essere <strong>aperta</strong> alle estensioni, ma <strong>chiusa</strong> alle modifiche;</li>
+ <li><em>Dependency Inversion Principle</em>: si deve dipendere dalle astrazioni, non dai dettagli.</li>
 </ul>
-</p>
+<p>Non ci si deve spaventare di fronte ad una moltitudine di piccole (super-focalizzate) classi rispetto a poche, vaste classi: essendo le funzionalit&agrave; implementate le medesime, medesima &egrave; la quantit&agrave; di concetti da gestire e comprendere.</p>
+<p>Una classe deve essere coesa:</p>
+<ul>
+ <li>deve possedere pochi membri fortemente correlati;</li>
+ <li>deve esporre pochi metodi che manipolano i membri (pi&ugrave; membri un metodo manipola, pi&ugrave; il metodo &egrave; coeso alla classe);
+</ul>
 <p>Un'osservazione interessante &egrave; la seguente: <q>favorire la coesione porta all'aumento del numero di classi</q>.</p>
 <h2>11. Systems</h2>
 <p>Il capitolo &egrave; molto <em>java-oriented</em>, essendo particolarmente focalizzato sull'AOP.</p>
-<p>Alcune osservazioni di carattere generale sono dedicate all'inizializzazione del <em>sistema</em> software, inteso come istanziazione degli oggetti principali. Vengono presentate tre differenti tecniche di start-up del sistema software:
- <ul>
-  <li>il <span class="code">main</span> decide cosa costruire, e quando;</li>
-  <li>il <span class="code">main</span> decide cosa costruire, il codice quando (&egrave; un esempio di <span class="term">lazy initialization</span>, realizzabile ad esempio per mezzo di oggetti <span class="term">factory</span>);</li>
-  <li>l'applicativo decide cosa costruire, quando (tramite <span class="term">dependency injection</span>).</li>
- </ul>
-</p>
+<p>Alcune osservazioni di carattere generale sono dedicate all'inizializzazione del <em>sistema</em> software, inteso come istanziazione degli oggetti principali. Vengono presentate tre differenti tecniche di start-up del sistema software:</p>
+<ul>
+ <li>il <span class="code">main</span> decide cosa costruire, e quando;</li>
+ <li>il <span class="code">main</span> decide cosa costruire, il codice quando (&egrave; un esempio di <span class="term">lazy initialization</span>, realizzabile ad esempio per mezzo di oggetti <span class="term">factory</span>);</li>
+ <li>l'applicativo decide cosa costruire, quando (tramite <span class="term">dependency injection</span>).</li>
+</ul>
 <h2>12. Emergence</h2>
-<p>Vengono descritte e commentate le regole del <span class="term">simple design</span>, riportate qui sotto nella loro forma originale:
- <ol>
-  <li>runs all the tests;</li>
-  <li>no duplication;</li>
-  <li>express developer intent;</li>
-  <li>minimizes the number of classes and methods.</li>
- </ol>
-una volta ottemperato alla prima regola, il refactoring consente di realizzare le successive.</p>
+<p>Vengono descritte e commentate le regole del <span class="term">simple design</span>, riportate qui sotto nella loro forma originale:</p>
+<ol>
+ <li>runs all the tests;</li>
+ <li>no duplication;</li>
+ <li>express developer intent;</li>
+ <li>minimizes the number of classes and methods.</li>
+</ol>
+<p>Una volta ottemperato alla prima regola, il refactoring consente di realizzare le successive.</p>
 <h2>Riferimenti</h2>
 <p>Martin, Robert C. <em>Clean Code: A Handbook of Agile Software Craftsmanship</em>. Prentice Hall, 2008.</p>
 <p class="modification-notice">Pagina modificata l'8/11/2011</p>
