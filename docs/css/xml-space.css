@@ -1,0 +1,24 @@
+p.illustration {
+ font-size: 75%;
+ margin-left: 3em;
+}
+
+span.doc-ignorable-space {
+ border: 1px dotted #93a1a1;
+}
+
+span.doc-space {
+ background: #fdf6e3;
+ border: 1px dotted #93a1a1;
+ color: #d33682;
+}
+
+span.dtd {
+ color: #2aa198;
+}
+
+span.xml-space {
+ background: #fdf6e3;
+ border: 1px dotted #93a1a1;
+ color: #268bd2;
+}
