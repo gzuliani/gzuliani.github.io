@@ -1,0 +1,149 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Spazi in XML</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/xml-space.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#xml-space">risorse</a> | spazi in xml</p>
+<h1>Spazi in XML</h1>
+<p>Gli spazi nei documenti XML sono soggetti ad un trattamento peculiare tale da produrre risultati a prima vista sorprendenti. Ciò dipende dal fatto che lo standard XML riconosce che a volte è conveniente fare uso di spaziature per evidenziare la struttura del documento:</p>
+<pre class="code">
+&lt;message id=&quot;42&quot; class=&quot;confidential&quot;&gt;Lorem ipsum &lt;emphasis type=&quot;important&quot;&gt;dol
+or&lt;/emphasis&gt; sit amet:&lt;list&gt;&lt;item&gt;consectetur adipiscing elit;&lt;/item&gt;&lt;item&gt;aene
+an quis ipsum et leo laoreet congue&lt;/item&gt;&lt;/list&gt;Fusce ultricies ut enim sit ame
+t viverra.&lt;/message&gt;
+</pre>
+<p class="illustration"><strong>Fig. 1</strong>: flusso testuale di un documento XML.</p>
+<pre class="code">
+&lt;message id=&quot;42&quot; class=&quot;confidential&quot;&gt;Lorem ipsum<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>&lt;emphasis type=&quot;important&quot;&gt;dolor&lt;/emphasis&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>sit amet:<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;list&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;item&gt;consectetur adipiscing elit;&lt;/item&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;item&gt;aenean quis ipsum et leo laoreet congue&lt;/item&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;/list&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>Fusce ultricies ut enim sit amet viverra.<span class="doc-space">&crarr;</span>
+&lt;/message&gt;
+</pre>
+<p class="illustration"><strong>Fig. 2</strong>: lo stesso documento, indentato.</p>
+<p>Le due versioni del documento sono differenti, ma il contenuto informativo è equivalente. XML si fa carico di individuare questo tipo di spaziature non significative, sotto certe condizioni.</p>
+<p class="note">La spaziatura alla quale si sta facendo riferimento è quella del documento, non quella quella prevista dalla sintassi XML: la prima si trova al di fuori dei <span class="term">tag</span> XML (indicata in rosso negli esempi), la seconda all'interno, evidenziata qui sotto in azzurro:</p>
+<pre class="code">
+&lt;message<span class="xml-space">&middot;</span>id=&quot;42&quot;<span class="xml-space">&middot;</span>class=&quot;confidential&quot;&gt;Lorem ipsum
+ &lt;emphasis<span class="xml-space">&middot;</span>type=&quot;important&quot;&gt;dolor&lt;/emphasis&gt;
+ sit amet:
+  &lt;list&gt;
+   &lt;item&gt;consectetur adipiscing elit;&lt;/item&gt;
+   &lt;item&gt;aenean quis ipsum et leo laoreet congue&lt;/item&gt;
+  &lt;/list&gt;
+ Fusce ultricies ut enim sit amet viverra.
+&lt;/message&gt;
+</pre>
+<p class="illustration"><strong>Fig. 3</strong>: spaziature richieste dalla sintassi XML.</p>
+<p>Riguardo alla gestione della spaziatura del documento, nello standard XML si legge:<a href="#ref-7.b"><sup>[7.b]</sup></a>:</p>
+<blockquote>An XML processor must always pass all characters in a document that are not markup through to the application.</blockquote>
+<p>In altre parole, &laquo;ciò che non è <em>markup</em> è un dato&raquo;, e di conseguenza sembrerebbe che nessun carattere che si trovi al di fuori dei tag venga trascurato, nemmeno gli spazi. In realtà, non è proprio così&hellip; Prima di proseguire, però, è bene stabilire con precisione cosa XML considera <span class="term">spazio</span>.</p>
+<h2>Caratteri di spaziatura</h2>
+<p>L'insieme dei caratteri di spaziatura contemplati da XML si deduce dalla definizione di <span class="term">White Space</span><a href="#ref-7.a"><sup>[7.a]</sup></a>:</p>
+<blockquote>
+<strong>S</strong> (white space) consists of one or more space (#x20) characters, carriage returns, line feeds, or tabs.</blockquote>
+<p>I caratteri di spaziatura riconosciuti sono quindi quattro:</p>
+<ul>
+<li><span class="code">CHARACTER TABULATION (U+0009)</span></li>
+<li><span class="code">LINE FEED (LF) (U+000A)</span></li>
+<li><span class="code">CARRIAGE RETURN (CR) (U+000D)</span></li>
+<li><span class="code">SPACE (U+0020)</span></li>
+</ul>
+<p>Altri caratteri di spaziatura, per esempio quelli così classificati in Unicode (<span class="code">NO-BREAK SPACE (U+00A0)</span>, <span class="code">WORD JOINER (U+2060)</span>, <span class="code">ZERO WIDTH NO-BREAK SPACE (U+FEFF)</span>, &hellip;) non sono considerati tali da XML.</p>
+<h2>Gestione delle spaziature</h2>
+<p>Contrariamente a quanto la lettura del paragrafo <a href="#ref-7.b">2.10 White Space Handling</a> dello standard XML potrebbe far supporre, non tutti i caratteri del documento vengono inoltrati all'applicazione: alcuni caratteri di spaziatura, in funzione del contesto o della funzione ricoperta, vengono sostituiti o rimossi.</p>
+<h3>Indicatore di fine riga</h3>
+<p>XML usa il carattere di <span class="code">LINE FEED</span> come indicatore di fine riga<a href="#ref-7.c"><sup>[7.c]</sup></a>, ed impone la sostituzione delle altre varianti esistenti presenti nel documento (<span class="code">CR</span> o <span class="code">CR&plus;FL</span>) con una istanza del carattere designato. Scopo della sostituzione è semplificare il lavoro dello sviluppatore dell'applicazione XML, che ha così la certezza di avere a che fare sempre e solo un tipo di indicatore di fine riga.</p>
+<h3>Normalizzazione degli attributi</h3>
+<p>In assenza di ulteriori specifiche, XML richiede la normalizzazione dei valori degli attributi che contempla, tra le altre cose, la sostituzione di tutti i caratteri di spaziatura con uno spazio<a href="#ref-7.e"><sup>[7.e]</sup></a>. Se il tipo dell'attributo è specificato, <strong>e non è <span class="code">CDATA</span></strong>, allora le sequenze di spazi collassano in un unico spazio, e gli evenuali spazi presenti in testa e in coda, rimossi (<span class="term">trimming</span>). In questo caso, l'effetto finale è equivalente all'applicazione della funzione XPath <span class="code">normalize-space</span>.</p>
+<p class="note">In assenza di dichiarazione esplicita, si assume che gli attributi siano di tipo <span class="code">CDATA</span>, perciò gli attributi di un documento XML privo di DTD non subiscono né collassamento nè trimming.</p>
+<h3>Spaziature <span class="term">ignorable</span></h3>
+<p>In assenza di DTD o Schema XML, tutte le spaziature del documento sono considerate significative, e di conseguenza vengono inoltrate così come sono all'applicazione &mdash; al netto degli indicatori di fine riga, tutti trasformati in <span class="code">LINE FEED</span>. Se invece è disponibile una definizione della struttura del documento XML, il <span class="code">parser</span> è in grado di distinguere le spaziature significative &ndash; da inoltrare all'applicazione &ndash; da quelle non significative (<span class="term">ignorable</span> secondo la terminologia SAX), applicando la semplice regola<a href="#ref-7.b"><sup>[7.b]</sup></a>:</p>
+<blockquote>A validating XML processor must also inform the application which of these characters constitute white space appearing in element content.</blockquote>
+<p>Con <span class="term">element content</span> si intende il contenuto di quegli elementi che contemplano, al loro interno, solo altri elementi, nessun testo, al più delle spaziature tra un elemento e il successivo<a href="#ref-7.d"><sup>[7.d]</sup></a>. Si tratta dunque delle spaziature presenti negli elementi che non prevedono contenuti <span class="code">#PCDATA</span>. Riconsideriamo il frammento XML indentato, questa volta corredato di DTD:</p>
+<pre class="code">
+<span class="dtd">&lt;!DOCTYPE message [</span>
+<span class="dtd">&lt;!ELEMENT message (#PCDATA|emphasis|list)*&gt;</span>
+<span class="dtd">&lt;!ELEMENT emphasis (#PCDATA)&gt;</span>
+<span class="dtd">&lt;!ELEMENT list (item+)&gt;</span>
+<span class="dtd">&lt;!ELEMENT item (#PCDATA)&gt;</span>
+<span class="dtd">]&gt;</span>
+&lt;message id=&quot;42&quot; class=&quot;confidential&quot;&gt;Lorem ipsum<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>&lt;emphasis type=&quot;important&quot;&gt;dolor&lt;/emphasis&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>sit amet:<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;list&gt;<span class="doc-ignorable-space">&crarr;</span>
+<span class="doc-ignorable-space">&middot;</span><span class="doc-ignorable-space">&middot;</span><span class="doc-ignorable-space">&middot;</span>&lt;item&gt;consectetur adipiscing elit;&lt;/item&gt;<span class="doc-ignorable-space">&crarr;</span>
+  &hellip;
+</pre>
+<p>L'elemento <span class="code">message</span> è una composizione di testo e nodi <span class="code">emphasis</span> e <span class="code">list</span> (<span class="term">mixed-content</span>). Non si può quindi escludere che le spaziature presenti all'interno del nodo &ndash; evidenziate in rosso &ndash; siano state inserite dall'autore del documento per una ragione diversa dall'indentazione: non potendo fare alcuna assunzione in merito, esse devono essere inoltrate all'applicazione alla stregua di tutti gli altri caratteri.</p>
+<p>L'elemento <span class="code">list</span>, invece, non prevede del testo al suo interno, ragion per cui si può ben concludere che le spaziature in esso presenti &ndash; indicate in grigio &ndash;, per quanto tollerate (nella definizione di <span class="term">element content</span> si parla di <em>&ldquo;child elements &hellip; optionally separated by white space&rdquo;</em>), non sono significative. Il parser XML in questo caso è tenuto <strong>comunque</strong> ad inoltrare le spaziature all'applicazione, ma deve in più indicarne la natura <span class="term">ignorable</span>:<a href="ref-7.b"><sup>[7.b]</sup></a></p>
+<blockquote>A validating XML processor MUST also inform the application which of these characters constitute white space appearing in element content.</blockquote>
+<p>La situazione è quasi paradossale: il parser <strong>deve</strong> inviare all'applicazione anche le spaziature ignorabili. L'ambiguità che caratterizza questo aspetto di XML è almeno in parte dovuta a queste scelte terminologiche non proprio felici. Una sintesi azzeccata circa la questione delle spaziature in XML si trova in &ldquo;Processing XML with Java&rdquo;<a href="#ref-2"><sup>[2]</sup></a>:</p>
+<blockquote>One of the more obscure parts of the XML 1.0 specification is the perhaps misleadingly named &laquo;ignorable white space&raquo;. This is white space that occurs between tags in places where the DTD does not allow mixed content.</blockquote>
+<h2>L'attributo <span class="code">xml:space</span></h2>
+<p>L'attributo speciale <span class="code">xml:space</span> viene usato per <strong>comunicare all'applicazione</strong> il trattamento richiesto per spaziature. L'attributo, che deve essere dichiarato prima di poter essere utilizzato, può assumere solo due valori: <span class="code">default</span> e <span class="code">preserve</span>. Il primo indica all'applicazione che è accettabile il trattamento predefinito delle spaziature, il secondo richiede la conservazione di tutti gli spazi.</p>
+<h3>default</span></h3>
+<p>Per &laquo;trattamento predefinito&raquo; si intende quello dell'applicazione, non quello dell'XML. È dunque compito dell'applicazione specificare come opera sulle spaziature nelle due modalità. Ad esempio, l'implementazione di <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/xml:space
+">SVG di Mozilla</a> è piuttosto chiara, in merito:</p>
+<blockquote>
+<dl>
+<dt>default</dt>
+<dd>The browser will remove all newline characters. Then it will convert all tab characters into space characters. Then, it will strip off all leading and trailing space characters. Then, all contiguous space characters will be consolidated.</dd>
+<dt>preserve</dt>
+<dd>The browser will will convert all newline and tab characters into space characters. Then, it will draw all space characters, including leading, trailing and multiple contiguous space characters. Thus, when drawn with xml:space="preserve", the string "a&nbsp;&nbsp;&nbsp;b" (three spaces between "a" and "b") will produce a larger separation between "a" and "b" than "a b" (one space between "a" and "b").</dd>
+</dl>
+</blockquote>
+<p>Per poter usare l'attributo <span class="code">xml:space</span> nell'elemento <span class="code">list</span> dell'esempio, è necessario dapprima dichiararne la presenza nella DTD:</p>
+<pre class="code">
+  &hellip;
+<span class="dtd">&lt;!ELEMENT list (item+)&gt;</span>
+<strong><span class="dtd">&lt;!ATTLIST list xml:space (default|preserve) &apos;default&apos;&gt;</span></strong>
+  &hellip;
+&lt;message id=&quot;42&quot; class=&quot;confidential&quot;&gt;Lorem ipsum<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>&lt;emphasis type=&quot;important&quot;&gt;dolor&lt;/emphasis&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span>sit amet:<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;list <strong>xml:space=&quot;preserve&quot;</strong>&gt;<span class="doc-space">&crarr;</span>
+<span class="doc-space">&middot;</span><span class="doc-space">&middot;</span><span class="doc-space">&middot;</span>&lt;item&gt;consectetur adipiscing elit;&lt;/item&gt;<span class="doc-space">&crarr;</span>
+  &hellip;
+</pre>
+<p>Poiché l'effetto di <span class="code">xml:space</span> si propaga automaticamente ai nodi discendenti, l'indicazione <span class="code">preserve</span> dell'esempio vale anche per i discendenti di <span class="code">list</span>. <strong>Va ribadito che la presenza dell'attributo non ha alcun effetto sul funzionamento del parser: è un'informazione il cui destinatario è l'applicazione, non il parser</strong>. D'altra parte, non ci si può attendere alcun effetto nemmeno da parte dell'applicazione, perché è sua facoltà recepire o ignorare le indicazioni ricevute circa la gestione delle spaziature<a href="ref-4"><sup>[4]</sup></a>:</p>
+<blockquote>The <span class="code">xml:space</span> attribute only matters if the software making use of the XML document recognizes it and acts upon it. This is often not the case.</blockquote>
+<h2 id="riferimenti">Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li>Bray, T. &ldquo;The Annotated XML Specification&rdquo;. <em>www.xml.com</em>. &lt;<a href="http://www.xml.com/axml/testaxml.htm">http://www.xml.com/axml/testaxml.htm</a>&gt;. Visitato il 12/09/2014.</li>
+<a name="ref-2"></a>
+<li>Harold, E. R. &ldquo;Ignorable White Space&rdquo;, <em>cafeconleche.org</em>. &lt;<a href="http://cafeconleche.org/books/xmljava/chapters/ch06s10.html">http://cafeconleche.org/books/xmljava/chapters/ch06s10.html</a>&gt;. Visitato l'11/09/2014.</li>
+<a name="ref-3"></a>
+<li>Page, S. &ldquo;White Space in XML Documents&rdquo;. <em>UsingXML</em>. &lt;<a href="http://www.usingxml.com/Basics/XmlSpace">http://www.usingxml.com/Basics/XmlSpace</a>&gt;. Visitato l'11/09/2014.</li>
+<a name="ref-4"></a>
+<li>Tverskov, J. &ldquo;Understanding xml:space&rdquo;. <em>www.xmlplease.com</em>. &lt;<a href="http://www.xmlplease.com/xml/xmlspace/">http://www.xmlplease.com/xml/xmlspace/</a>&gt;. Visitato l'11/09/2014.</li>
+<a name="ref-5"></a>
+<li>Wang, J. &ldquo;What You Need to Know About Whitespace in XML&rdquo;. <em>Oracle</em>. &lt;<a href="http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html">http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html</a>&gt;. Visitato l'11/09/2014.</li>
+<a name="ref-6"></a>
+<li>&ldquo;Canonical XML&rdquo;. <em>W3C Consortium</em>. &lt;<a href="http://www.w3.org/TR/xml-c14n">http://www.w3.org/TR/xml-c14n</a>&gt;. Visitato l'11/09/2014.</li>
+<li>&ldquo;Extensible Markup Language (XML)&rdquo;. <em>W3C Consortium</em>:
+<ol type="a">
+<a name="ref-7.a"></a>
+<li>&ldquo;White Space&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#NT-S">http://www.w3.org/TR/REC-xml/#NT-S</a>&gt;;</li>
+<a name="ref-7.b"></a>
+<li>&ldquo;2.10 White Space Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-white-space">http://www.w3.org/TR/xml/#sec-white-space</a>&gt;;</li>
+<a name="ref-7.c"></a>
+<li>&ldquo;2.11 End-of-Line Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-line-ends">http://www.w3.org/TR/xml/#sec-line-ends</a>&gt;;</li>
+<a name="ref-7.d"></a>
+<li>&ldquo;3.2.1 Element Content&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#dt-elemcontent">http://www.w3.org/TR/REC-xml/#dt-elemcontent</a>&gt;;</li>
+<a name="ref-7.e"></a>
+<li>&ldquo;3.3.3 Attribute-Value Normalization&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#AVNormalize">http://www.w3.org/TR/REC-xml/#AVNormalize</a>&gt;.</li>
+</ol> Visitati il 12/09/2014.</li>
+<li>&ldquo;White Space&rdquo;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/ms256097%28v=vs.110%29.aspx">http://msdn.microsoft.com/en-us/library/ms256097%28v=vs.110%29.aspx</a>&gt;. Visitato l'11/09/2014.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 12/09/2013</p>
+</body>
+</html>
