@@ -52,21 +52,12 @@
 </ul>
 <p class="note"><strong>Nota: </strong>la macro <span class="code">_USING_V110_SDK71_</span> va definita sia per i file C++ <strong>che per quelli delle risorse (*.rc)</strong>.</p>
 <p class="note"><strong>Nota: </strong>gli asterischi in <span class="code">LNKFLAGS</span> stanno ad indicare che l'impostazione del sotto-sistema corrisponde a quella originale del progetto, ciò che conta è la specifica addizionale della versione, <strong>che è diversa per le due piattaforme x86/x64</strong>.</p>
+<p>I binari preparati con l'SDK vecchio dipendono comunque dal nuovo <span class="term">run-time</span>, non ce n'è uno dedicato<a href="#ref-2"><sup>[2]</sup></a>:</p>
+<blockquote>The redist (runtime, e.g. msvcr110.dll) is the same for all platforms, no separate redist for XP.</blockquote>
+<p>La citazione si riferisce a Visual Studio 2012; per il Visual Studio 2013, il runtime C è msvcr120.dll, msvcp120.dll quello del C++.</p>
+<h2>Conclusioni</h2>
 <p>C'è qualche controindicazione a compilare binari in questa modalità? Sì, se si ha l'intenzione di farli girare su sistemi operativi più moderni<a href="#ref-2"><sup>[2]</sup></a>:</p>
 <blockquote>&hellip;if your application compiles and runs we cannot guarantee it will continue to do so in future releases and updates of Visual Studio.</blockquote>
-<!--
-
-
-Si usa il runtime normale:
-
-The redist (runtime, e.g. msvcr110.dll) is the same for all platforms, no separate redist for XP.  
-
-
-
-
-
-
--->
 <h2>Riferimenti</h2>
 <a name="ref-1"></a>
 <li>&ldquo;Visual C++ Compiler Flag for Visual Studio 2013 for Targeting XP&rdquo;. <em>StackOverflow.com</em>. &lt;<a href="http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp">http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp
