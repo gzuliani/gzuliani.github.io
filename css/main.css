@@ -23,45 +23,39 @@ body {
  color: #586e75;
  font-family: Candara, Verdana, Arial, Sans Serif;
  font-size: 120%;
- margin-left: 0em;
+ line-height: 1.4em;
+ margin: auto;
+ max-width: 42em;
  padding-left: 1.5em;
+ text-align: justify;
 }
 
 del {
 }
 
-h1 {
+h1, h2, h3, h4 {
  color: #b58900;
  font-family: Cambria, Times New Roman, Times, Serif;
- font-size: 1.5em; 
  margin-top: 2em;
  margin-bottom: 1em;
+}
+
+h1 {
+ font-size: 1.5em; 
 }
 
 h2 {
- color: #b58900;
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1.2em;
- margin-top: 2em;
- margin-bottom: 1em;
 }
 
 h3 {
- color: #b58900;
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1em;
- margin-top: 2em;
- margin-bottom: 1em;
 }
 
 h4 {
- color: #b58900;
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1em;
  font-style: italic;
  font-weight: normal;
- margin-top: 2em;
- margin-bottom: 1em;
 }
 
 img {
@@ -77,6 +71,9 @@ ins {
 
 li {
  margin-bottom: .3em;
+}
+
+li.ref {
 }
 
 ol {
@@ -136,8 +133,11 @@ pre.code {
  background: #eee8d5;
  border: 1px solid #073642;
  font-family: Consolas, Courier New, monospace;
- font-size: .9em;
+ font-size: .8em;
+ line-height: 1.2em;
+ overflow: auto; /* horizontal scrollbar */
  padding: 1em;
+ /* white-space: pre-wrap; */ /* line wrap */
 }
 
 span.code {

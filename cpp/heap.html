@@ -22,7 +22,6 @@
 <p>Le versioni overloaded degli operatori <span class="function">new</span>/<span class="function">delete</span> provvedono a notificare all'oggetto <span class="object">HeapTracer</span> le avvenute (de)allocazioni di memoria. &Egrave; responsabilit&agrave; dell'oggetto <span class="object">HeapTracer</span> mantenere traccia della sequenza di allocazioni e deallocazioni per poter, al termine del programma, verificare se esistono delle zone di memoria non deallocate.</p>
 <p>Grazie all'uso di alcune macro (che d'altra parte costituiscono la ragione della mancata gestione dei <em>placement new</em>), di ogni allocazione viene registrata dimensione, provenienza (nome del file e linea sorgente) e tipologia (scalare/vettoriale):</p>
 <pre class="code">
-
 #define new new(__FILE__, __LINE__)
 
 // operatore new "standard" (librerie esterne)
@@ -30,13 +29,11 @@ void* operator new(size_t size);
 
 // operatore new "custom" (librerie utente)
 void* operator new (size_t size, const char* file, int line);
-
 </pre>
 <p>In corrispondenza di ogni deallocazione, l'oggetto <span class="object">HeapTracer</span> verifica che la zona di memoria da liberare corrisponda ad una precedente allocazione, notificando in caso contrario un evento <span class="event">DoubleFree</span>; verifica quindi la corrispondenza di tipo, emettendo eventualmente una notifica di tipo <span class="event">TypeMismatch</span>. Se tutti i controlli hanno avuto esito positivo, procede con la deallocazione dell'area richiesta.</p>
 <h2>Uso della libreria</h2>
 <p>Per sottoporre una porzione di codice al controllo delle allocazioni &egrave; sufficiente includere il file <span class="file-name">Heap.h</span>. Come regola generale si pu&ograve; assumere che la direttiva di inclusione va inserita nei soli file di implementazione (.cpp), a seguire tutti gli altri:</p>
 <pre class="code">
-
 // file *.cpp
 #include &lt;...
 #include &lt;...
@@ -44,12 +41,10 @@ void* operator new (size_t size, const char* file, int line);
 #ifdef DEBUG
 #include &lt;Heap.h&gt;
 #endif
-
 </pre>
-<p class="warning">La mancata gestione del <em>placement new</em> rende nella pratica obbligatoria, nei programmi che fanno uso della libreria STL (che ricorre spesso a questo tipo di allocazione), l'inclusione del file <span class="file-name">Heap.h</span> <strong>dopo</strong> quelle relative ai file di STL.</p>
+<p class="note">La mancata gestione del <em>placement new</em> rende nella pratica obbligatoria, nei programmi che fanno uso della libreria STL (che ricorre spesso a questo tipo di allocazione), l'inclusione del file <span class="file-name">Heap.h</span> <strong>dopo</strong> quelle relative ai file di STL.</p>
 <p>L'allocazione dell'istanza dell'oggetto <span class="object">HeapTracer</span> di norma avviene nel file di implementazione principale:</p>
 <pre class="code">
-
 #ifdef DEBUG
 Heap::HeapTracer theHeapTracer_;
 #endif
@@ -70,7 +65,6 @@ int main ()
 #endif
 
 }
-
 </pre>
 <p>I file che costituiscono la libreria sono:</p>
 <ul>

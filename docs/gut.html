@@ -360,46 +360,6 @@ TEST(&quot;Custom boolean expression&quot;) {
 <li>selezione dei test da eseguire, per nome o <em>tag</em>;</li>
 <li>&hellip;</li>
 </ul>
-<h2>Riferimenti</h2>
-<ol>
-	<a name="rif-1"></a>
-	<li>Gli appunti di <em>Good Unit Tests</em> tracciano l'evoluzione nel tempo dell'infrastruttura:
-	<ul>
-		<a name="rif-1.1"></a>
-		<li><a href="gut-1.html">parte 1</a>, <a href="gut-1-bis.html">parte 1 bis</a>: macro <span class="code">CHECK</span> e oggetto <span class="code">Capture</span> per la valutazione dell'espressione di test;</li>
-		<a name="rif-1.2"></a>
-		<li><a href="gut-2.html">parte 2</a>: macro <span class="code">THROW</span> per la verifica delle eccezioni;</li>
-		<a name="rif-1.3"></a>
-		<li><a href="gut-3.html">parte 3</a>: oggetto <span class="code">Report</span> per la visualizzazione degli errori;</li>
-		<a name="rif-1.4"></a>
-		<li><a href="gut-4.html">parte 4</a>: espressioni booleane <em>custom</em> (<span class="code">AreAlmostEqual</span> su valori <span class="code">float</span>/<span class="code">double</span>, <span class="code">AreTextFileEqual</span>, &hellip;);</li>
-		<a name="rif-1.5"></a>
-		<li><a href="gut-5.html">parte 5</a>: macro <span class="code">REQUIRE</span> per terminare anticipatamente il test in caso di errore;</li>
-		<a name="rif-1.6"></a>
-		<li><a href="gut-6.html">parte 6</a>: strutturazione del codice di test in <span class="code">TEST</span> e <span class="code">TEST_SUITE</span>;</li>
-		<a name="rif-1.7"></a>
-		<li><a href="gut-7.html">parte 7</a>: rivisitazione della struttura <span class="code">TEST</span>/<span class="code">TEST_SUITE</span>, opzione <em>fail-fast</em>;</li>
-		<a name="rif-1.8"></a>
-		<li><a href="gut-8.html">parte 8</a>: macro <span class="code">EVAL</span>, <span class="code">INFO</span>, <span class="code">WARN</span> e <span class="code">FAIL</span>, colori in console, revisione dell'opzione <em>fail-fast</em>;</li>
-		<a name="rif-1.9"></a>
-		<li><a href="gut-9.html">parte 9</a>: gestione dei confronti tra puntatori generici e <span class="code">nullptr</span>;</li>
-		<a name="rif-1.10"></a>
-		<li><a href="gut-10.html">parte 10</a>: reportistica personalizzata senza la necessit&agrave; di derivare da <span class="code">Report</span>;</li>
-		<a name="rif-1.11"></a>
-		<li><a href="gut-11.html">parte 11</a>: nuove macro di cattura (<span class="code">THROWS_*</span> e <span class="code">REQUIRE_THROWS_*</span>).</li>
-	</ul>
-	</li>
-	<a name="rif-2"></a>
-	<li>Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
-	<a name="rif-3"></a>
-	<li>Llopis, N. &quot;Exploring the C++ Unit Testing Framework Jungle&quot;. <em>Games from Within</em>. &lt;<a href="http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle">http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle</a>&gt;. Visitato il 3 Luglio 2014.</li>
-	<a name="rif-4"></a>
-	<li>Nash, P. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 30 Giugno 2014.</li>
-	<a name="rif-5"></a>
-	<li>Newkirk, J. &quot;Announcing xUnit.net&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html">http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html</a>&gt;. Visitato il 30 Giugno 2014.</li>
-	<a name="rif-6"></a>
-	<li>Newkirk, J. &quot;Why you should not use SetUp and TearDown in NUnit&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html">http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html</a>&gt;. Visitato il 30 Giugno 2012.</li>
-</ol>
 <h2>Codice sorgente</h2>
 <ul>
 	<li><a href="files/gut/current/colors.h">colors.h</a></li>
@@ -408,6 +368,46 @@ TEST(&quot;Custom boolean expression&quot;) {
 	<li><a href="files/gut/current/test-gut.cpp">test-gut.cpp</a></li>
 	<li><a href="files/gut/current/example.cpp">example.cpp</a></li>
 </ul>
+<h2>Riferimenti</h2>
+<ol>
+	<a name="rif-1"></a>
+	<li class="ref">Gli appunti di <em>Good Unit Tests</em> tracciano l'evoluzione nel tempo dell'infrastruttura:
+	<ul>
+		<a name="rif-1.1"></a>
+		<li class="ref"><a href="gut-1.html">parte 1</a>, <a href="gut-1-bis.html">parte 1 bis</a>: macro <span class="code">CHECK</span> e oggetto <span class="code">Capture</span> per la valutazione dell'espressione di test;</li>
+		<a name="rif-1.2"></a>
+		<li class="ref"><a href="gut-2.html">parte 2</a>: macro <span class="code">THROW</span> per la verifica delle eccezioni;</li>
+		<a name="rif-1.3"></a>
+		<li class="ref"><a href="gut-3.html">parte 3</a>: oggetto <span class="code">Report</span> per la visualizzazione degli errori;</li>
+		<a name="rif-1.4"></a>
+		<li class="ref"><a href="gut-4.html">parte 4</a>: espressioni booleane <em>custom</em> (<span class="code">AreAlmostEqual</span> su valori <span class="code">float</span>/<span class="code">double</span>, <span class="code">AreTextFileEqual</span>, &hellip;);</li>
+		<a name="rif-1.5"></a>
+		<li class="ref"><a href="gut-5.html">parte 5</a>: macro <span class="code">REQUIRE</span> per terminare anticipatamente il test in caso di errore;</li>
+		<a name="rif-1.6"></a>
+		<li class="ref"><a href="gut-6.html">parte 6</a>: strutturazione del codice di test in <span class="code">TEST</span> e <span class="code">TEST_SUITE</span>;</li>
+		<a name="rif-1.7"></a>
+		<li class="ref"><a href="gut-7.html">parte 7</a>: rivisitazione della struttura <span class="code">TEST</span>/<span class="code">TEST_SUITE</span>, opzione <em>fail-fast</em>;</li>
+		<a name="rif-1.8"></a>
+		<li class="ref"><a href="gut-8.html">parte 8</a>: macro <span class="code">EVAL</span>, <span class="code">INFO</span>, <span class="code">WARN</span> e <span class="code">FAIL</span>, colori in console, revisione dell'opzione <em>fail-fast</em>;</li>
+		<a name="rif-1.9"></a>
+		<li class="ref"><a href="gut-9.html">parte 9</a>: gestione dei confronti tra puntatori generici e <span class="code">nullptr</span>;</li>
+		<a name="rif-1.10"></a>
+		<li class="ref"><a href="gut-10.html">parte 10</a>: reportistica personalizzata senza la necessit&agrave; di derivare da <span class="code">Report</span>;</li>
+		<a name="rif-1.11"></a>
+		<li class="ref"><a href="gut-11.html">parte 11</a>: nuove macro di cattura (<span class="code">THROWS_*</span> e <span class="code">REQUIRE_THROWS_*</span>).</li>
+	</ul>
+	</li>
+	<a name="rif-2"></a>
+	<li class="ref">Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
+	<a name="rif-3"></a>
+	<li class="ref">Llopis, N. &quot;Exploring the C++ Unit Testing Framework Jungle&quot;. <em>Games from Within</em>. &lt;<a href="http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle">http://gamesfromwithin.com/exploring-the-c-unit-testing-framework-jungle</a>&gt;. Visitato il 3 Luglio 2014.</li>
+	<a name="rif-4"></a>
+	<li class="ref">Nash, P. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 30 Giugno 2014.</li>
+	<a name="rif-5"></a>
+	<li class="ref">Newkirk, J. &quot;Announcing xUnit.net&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html">http://jamesnewkirk.typepad.com/posts/2007/09/announcing-xuni.html</a>&gt;. Visitato il 30 Giugno 2014.</li>
+	<a name="rif-6"></a>
+	<li class="ref">Newkirk, J. &quot;Why you should not use SetUp and TearDown in NUnit&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html">http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html</a>&gt;. Visitato il 30 Giugno 2012.</li>
+</ol>
 <p class="modification-notice">Pagina modificata il 28/08/2014</p>
 </body>
 </html>

@@ -69,7 +69,8 @@ path
 <h3>ldep</h3>
 <p>Il passo finale consiste nell'esaminare le dipendenze a link-time, con l'aiuto dell'utility <em>ldep</em>; poich&eacute; essa tende ad aggregare i file per cartelle, &egrave; necessario esplicitare la volont&agrave; di trattare i singoli file come componenti atomici con l'opzione <span class="code">-U</span>:</p>
 <pre class="code">
-ldep -d%LIB_NAME%.cdep -a%LIB_NAME%.adep -U%PRJ_HOME%/include/%LIB_NAME% -U%PRJ_HOME%/src/lib/%LIB_NAME%
+ldep -d%LIB_NAME%.cdep -a%LIB_NAME%.adep
+ -U%PRJ_HOME%/include/%LIB_NAME% -U%PRJ_HOME%/src/lib/%LIB_NAME%
 </pre>
 <p>Il programma fornisce un rapporto dettagliato delle dipendenze esistenti tra i componenti analizzati, e riassume lo stato globale della libreria in una manciata di parametri:</p>
 <dl>
@@ -310,9 +311,9 @@ cdep -iinclude.txt -fsources.txt
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
-<li>Gumz, M. &quot;idep&quot;. <em>google code</em>. &lt;<a href="http://code.google.com/p/idep/">http://code.google.com/p/idep/</a>&gt;. Visitato l'11 Gennaio 2012.</li>
+<li class="ref">Gumz, M. &quot;idep&quot;. <em>google code</em>. &lt;<a href="http://code.google.com/p/idep/">http://code.google.com/p/idep/</a>&gt;. Visitato l'11 Gennaio 2012.</li>
 <a name="ref-2"></a>
-<li>Lakos, J. <em>Large-Scale C++ Software Design</em>. Addison-Wesley Professional, 1996.</li>
+<li class="ref">Lakos, J. <em>Large-Scale C++ Software Design</em>. Addison-Wesley Professional, 1996.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 12/01/2012</p>
 </body>

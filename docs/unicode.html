@@ -2,6 +2,7 @@
 <head>
 <title>Da ASCII a Unicode</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/unicode.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#unicode">risorse</a> | unicode</p>
@@ -10,47 +11,38 @@
 <p>Un tipico esempio di <em>codifica</em>, risalente al 1967 e ancora in uso in ambiente informatico, &egrave; lo standard <em>ASCII</em> &ndash; <em>American Standard Code for Information Interchange</em>.</p>
 <h2 id="ascii">ASCII</h2>
 <p>La componente base di una codifica &egrave; il <em>set di caratteri</em>, ovvero l&rsquo;insieme dei simboli che si intende considerare. Il set di caratteri della codifica ASCII comprende tutte le lettere dell&rsquo;alfabeto inglese, maiuscole e minuscole, le dieci cifre decimali, i simboli di interpunzione pi&ugrave; altri simboli grafici, oltre ad alcuni caratteri di controllo, come ad esempio l&rsquo;a-capo. L&rsquo;altro aspetto che caratterizza una codifica &egrave; l&rsquo;<em>unit&agrave; di codifica</em>, ovvero l&rsquo;unit&agrave; atomica utilizzata per costruire le rappresentazioni dei caratteri; nel caso dell&rsquo;ASCII consiste di un pacchetto di 7 bit. Poich&eacute; l&rsquo;ASCII attribuisce ad ogni carattere un&rsquo;unica unit&agrave; di codifica, e che ad ogni unit&agrave; atomica &egrave; associato un carattere distinto, l&rsquo;alfabeto ASCII &egrave; composto esattamente da 128 caratteri, con codici che vanno da <span class="code">0000000</span> (0) fino a <span class="code">1111111</span> (127).</p>
-<pre>
-    +---------------------------------------------------------------------+
-    | B  \  6 -----------&gt;|  0  |  0  |  0  |  0  |  1  |  1  |  1  |  1  |
-    |  I  \   5 ---------&gt;|  0  |  0  |  1  |  1  |  0  |  0  |  1  |  1  |
-    |   T  \    4 -------&gt;|  0  |  1  |  0  |  1  |  0  |  1  |  0  |  1  |
-    |    S                |-----------------------------------------------|
-    |             COLUMN-&gt;|  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |
-    | 3 | 2 | 1 | 0 | ROW |     |     |     |     |     |     |     |     |
-    +---------------------+-----------------------------------------------+
-    | 0 | 0 | 0 | 0 |  0  | NUL | DLE | SP  |  0  |  @  |  P  |  `  |  p  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 0 | 0 | 1 |  1  | SOH | DC1 |  !  |  1  |  A  |  Q  |  a  |  q  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 0 | 1 | 0 |  2  | STX | DC2 |  "  |  2  |  B  |  R  |  b  |  r  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 0 | 1 | 1 |  3  | ETX | DC3 |  #  |  3  |  C  |  S  |  c  |  s  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 1 | 0 | 0 |  4  | EOT | DC4 |  $  |  4  |  D  |  T  |  d  |  t  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 1 | 0 | 1 |  5  | ENQ | NAK |  %  |  5  |  E  |  U  |  e  |  u  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 1 | 1 | 0 |  6  | ACK | SYN |  &amp;  |  6  |  F  |  V  |  f  |  v  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 0 | 1 | 1 | 1 |  7  | BEL | ETB |  '  |  7  |  G  |  W  |  g  |  w  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 0 | 0 | 0 |  8  | BS  | CAN |  (  |  8  |  H  |  X  |  h  |  x  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 0 | 0 | 1 |  9  | HT  | EM  |  )  |  9  |  I  |  Y  |  i  |  y  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 0 | 1 | 0 | 10  | LF  | SUB |  *  |  :  |  J  |  Z  |  j  |  z  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 0 | 1 | 1 | 11  | VT  | ESC |  +  |   ; |  K  |  [  |  k  |  {  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 1 | 0 | 0 | 12  | FF  | FS  |  ,  |  &lt;  |  L  |  \  |  l  |  |  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 1 | 0 | 1 | 13  | CR  | GS  |  -  |  =  |  M  |  ]  |  m  |  }  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 1 | 1 | 0 | 14  | SO  | RS  |  .  |  &gt;  |  N  |  ^  |  n  |  ~  |
-    |---|---|---|---|-----|-----|-----|-----|-----|-----|-----|-----|-----|
-    | 1 | 1 | 1 | 1 | 15  | SI  | US  |  /  |  ?  |  O  |  _  |  o  | DEL |
-    +---------------------+-----------------------------------------------+
+<table cellpadding="0" cellspacing="0" class="ascii">
+<tr><td class="ascii-bit-heading" colspan="4" rowspan="3">Bit Mask</td><td class="ascii-bit-heading">6</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td></tr>
+<tr><td class="ascii-bit-heading">5</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">1</td></tr>
+<tr><td class="ascii-bit-heading">4</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td></tr>
+<tr><td class="ascii-bit-heading" colspan="4">&nbsp;</td><td class="ascii-col-heading">Col&rarr;</td><td class="ascii-col">0</td><td class="ascii-col">1</td><td class="ascii-col">2</td><td class="ascii-col">3</td><td class="ascii-col">4</td><td class="ascii-col">5</td><td class="ascii-col">6</td><td class="ascii-col">7</td></tr>
+<tr><th class="ascii-bit-heading">3</th><th class="ascii-bit-heading">2</th><th class="ascii-bit-heading">1</th><th class="ascii-bit-heading">0</th><th>Row&darr;</th><th colspan="8">&nbsp;</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">0</td><td class="ascii-row">0</td><td class="ascii-char">NUL</td><td class="ascii-char">DLE</td><td class="ascii-char">SP</td><td class="ascii-char">0</td><td class="ascii-char">@</td><td class="ascii-char">P</td><td class="ascii-char">`</td><td class="ascii-char">p</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">1</td><td class="ascii-row">1</td><td class="ascii-char">SOH</td><td class="ascii-char">DC1</td><td class="ascii-char">!</td><td class="ascii-char">1</td><td class="ascii-char">A</td><td class="ascii-char">Q</td><td class="ascii-char">a</td><td class="ascii-char">q</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">0</td><td class="ascii-row">2</td><td class="ascii-char">STX</td><td class="ascii-char">DC2</td><td class="ascii-char">"</td><td class="ascii-char">2</td><td class="ascii-char">B</td><td class="ascii-char">R</td><td class="ascii-char">b</td><td class="ascii-char">r</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">1</td><td class="ascii-row">3</td><td class="ascii-char">ETX</td><td class="ascii-char">DC3</td><td class="ascii-char">#</td><td class="ascii-char">3</td><td class="ascii-char">C</td><td class="ascii-char">S</td><td class="ascii-char">c</td><td class="ascii-char">s</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">0</td><td class="ascii-row">4</td><td class="ascii-char">EOT</td><td class="ascii-char">DC4</td><td class="ascii-char">$</td><td class="ascii-char">4</td><td class="ascii-char">D</td><td class="ascii-char">T</td><td class="ascii-char">d</td><td class="ascii-char">t</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">1</td><td class="ascii-row">5</td><td class="ascii-char">ENQ</td><td class="ascii-char">NAK</td><td class="ascii-char">%</td><td class="ascii-char">5</td><td class="ascii-char">E</td><td class="ascii-char">U</td><td class="ascii-char">e</td><td class="ascii-char">u</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">0</td><td class="ascii-row">6</td><td class="ascii-char">ACK</td><td class="ascii-char">SYN</td><td class="ascii-char">&amp;</td><td class="ascii-char">6</td><td class="ascii-char">F</td><td class="ascii-char">V</td><td class="ascii-char">f</td><td class="ascii-char">v</td></tr>
+<tr><td class="ascii-bit-3">0</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">1</td><td class="ascii-row">7</td><td class="ascii-char">BEL</td><td class="ascii-char">ETB</td><td class="ascii-char">'</td><td class="ascii-char">7</td><td class="ascii-char">G</td><td class="ascii-char">W</td><td class="ascii-char">g</td><td class="ascii-char">w</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">0</td><td class="ascii-row">8</td><td class="ascii-char">BS</td><td class="ascii-char">CAN</td><td class="ascii-char">(</td><td class="ascii-char">8</td><td class="ascii-char">H</td><td class="ascii-char">X</td><td class="ascii-char">h</td><td class="ascii-char">x</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">1</td><td class="ascii-row">9</td><td class="ascii-char">HT</td><td class="ascii-char">EM</td><td class="ascii-char">)</td><td class="ascii-char">9</td><td class="ascii-char">I</td><td class="ascii-char">Y</td><td class="ascii-char">i</td><td class="ascii-char">y</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">0</td><td class="ascii-row">A</td><td class="ascii-char">LF</td><td class="ascii-char">SUB</td><td class="ascii-char">*</td><td class="ascii-char">:</td><td class="ascii-char">J</td><td class="ascii-char">Z</td><td class="ascii-char">j</td><td class="ascii-char">z</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">0</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">1</td><td class="ascii-row">B</td><td class="ascii-char">VT</td><td class="ascii-char">ESC</td><td class="ascii-char">+</td><td class="ascii-char">;</td><td class="ascii-char">K</td><td class="ascii-char">[</td><td class="ascii-char">k</td><td class="ascii-char">{</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">0</td><td class="ascii-row">C</td><td class="ascii-char">FF</td><td class="ascii-char">FS</td><td class="ascii-char">,</td><td class="ascii-char">&lt;</td><td class="ascii-char">L</td><td class="ascii-char">\</td><td class="ascii-char">l</td><td class="ascii-char"></td><td class="ascii-char"></td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">1</td><td class="ascii-row">D</td><td class="ascii-char">CR</td><td class="ascii-char">GS</td><td class="ascii-char">-</td><td class="ascii-char">=</td><td class="ascii-char">M</td><td class="ascii-char">]</td><td class="ascii-char">m</td><td class="ascii-char">}</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">0</td><td class="ascii-row">E</td><td class="ascii-char">SO</td><td class="ascii-char">RS</td><td class="ascii-char">.</td><td class="ascii-char">&gt;</td><td class="ascii-char">N</td><td class="ascii-char">^</td><td class="ascii-char">n</td><td class="ascii-char">~</td></tr>
+<tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">1</td><td class="ascii-row">F</td><td class="ascii-char">SI</td><td class="ascii-char">US</td><td class="ascii-char">/</td><td class="ascii-char">?</td><td class="ascii-char">O</td><td class="ascii-char">_</td><td class="ascii-char">o</td><td class="ascii-char">DEL</td></tr>
+</table>
+<p>&Egrave; immediato ricavare dalla tabella la configurazione di bit per la A maiuscola <span class="code">A</span>:</p>
+<pre class="code">
+A &rarr; col=4, row=1
+        &darr;      &darr;
+       <span class="bit-6">1</span><span class="bit-5">0</span><span class="bit-4">0</span>     &darr;
+        &darr;    <span class="bit-3">0</span><span class="bit-2">0</span><span class="bit-1">0</span><span class="bit-0">1</span>
+        &darr;      &darr;
+       100   0001 = 41
+  <span class="bit-pos">bit: 654   3210</span>
 </pre>
 <h2 id="dallascii-alle-code-page-oem">Dall&rsquo;ASCII alle <em>code page</em> (OEM)</h2>
 <p>Poich&eacute; i computer dell&rsquo;epoca erano basati su architetture a 8 bit, la memorizzazione di un carattere ASCII in un byte lasciava un bit inutilizzato. Diversi costruttori e sviluppatori di software utilizzarono il bit extra nei modi più disparati, per esempio per indicare un'enfasi &ndash; corsivo, grassetto, sottolineatura&hellip; &ndash;, per indicare il carattere finale di una parola, o per estendere la codifica, introducendo simboli non presenti nella codifica ASCII, come ad esempio le lettere accentate o quelle dell&rsquo;alfabeto greco o simboli grafici adatti a realizzare semplici sinottici.</p>
@@ -69,19 +61,17 @@
 <p>Agli inizi degli anni &lsquo;90 ebbe inizio un processo di unificazione delle due codifiche. Le attribuzioni dei codici della versione 6.1 di Unicode corrispondono perfettamente a quelle definite dallo standard ISO/IEC 10646:2012.</p>
 <h3 id="code-point">Code point e <em>piani</em></h3>
 <p>Ad ogni carattere Unicode assegna un <em>code point</em>, ovvero un valore numerico compreso tra <span class="code">0</span> e <span class="code">10FFFF</span> cui viene applicato il prefisso <span class="code">U+</span> (il code point della lettera A maiuscola &egrave; <span class="code">U+0041</span>). Non tutti i code point sono assegnati ad un carattere. La codifica &egrave; strutturata in <em>piani</em>, ognuno dei quali contiene 65536 caratteri. I piani definiti sono 16, e sono identificati dalle prime due cifre del codice esadecimale. I caratteri originali Unicode a 16 bit, i cui codici sono compresi tra <span class="code">0</span> e <span class="code">00FFFF</span>, costituiscono il <em>piano zero</em> o <em>BMP</em> &ndash; <em>Basic Multilingual Plan</em>. I piani successivi sono detti <em>piani estesi</em> o <em>piani surrogati</em>. Se i caratteri del piano zero sono rappresentabili con 16 bit, quelli dei piani estesi necessitano di almeno 24 bit. Codificare caratteri con sequenze di lunghezza diversa pu&ograve; essere problematico, come gi&agrave; visto. D&rsquo;altra parte, anche utilizzare pi&ugrave; bit del necessario per rappresentare i caratteri ha i suoi svantaggi.</p>
-<pre>
-    +-------+---------------+-------------------------------------+-------+
-    | Piano | Intervallo    | Descrizione                         | Abbr. |
-    +-------+---------------+-------------------------------------+-------+
-    |    00 | 000000-00FFFF | Basic Multilingual Plane            |  BMP  |
-    |    01 | 010000-01FFFF | Supplementary Multilingual Plane    |  SMP  |
-    |    02 | 020000-02FFFF | Supplementary Ideographic Plane     |  SIP  |
-    |    03 | 030000-03FFFF | Tertiary Ideographic Plane          |  TIP  |
-    | 04-13 | 040000-0DFFFF | non assegnati                       |   -   |
-    |    14 | 0E0000-0EFFFF | Supplementary Special-purpose Plane |  SSP  |
-    |    15 | 0F0000-0FFFFF | Supplementary Private Use Area-A    |   -   |
-    |    16 | 100000-10FFFF | Supplementary Private Use Area-B    |   -   |
-    +-------+---------------+-------------------------------------+-------+
+<table cellpadding="0" cellspacing="0">
+<tr><th>Piano</th><th>Intervallo</th><th>Descrizione</th><th>Abbreviazione</th></tr>
+<tr><td>00</td><td>000000-00FFFF</td><td>Basic Multilingual Plane</td><td>BMP</td></tr>
+<tr><td>01</td><td>010000-01FFFF</td><td>Supplementary Multilingual Plane</td><td>SMP</td></tr>
+<tr><td>02</td><td>020000-02FFFF</td><td>Supplementary Ideographic Plane</td><td>SIP</td></tr>
+<tr><td>03</td><td>030000-03FFFF</td><td>Tertiary Ideographic Plane</td><td>TIP</td></tr>
+<tr><td>04-13</td><td>040000-0DFFFF</td><td>non assegnati</td><td>-</td></tr>
+<tr><td>14</td><td>0E0000-0EFFFF  </td><td>Supplementary Special-purpose Plane</td><td>SSP</td></tr>
+<tr><td>15</td><td>0F0000-0FFFFF</td><td>Supplementary Private Use Area-A</td><td>-</td></tr>
+<tr><td>16</td><td>100000-10FFFF</td><td>Supplementary Private Use Area-B</td><td>-</td></tr>
+</table>
 </pre>
 <h3 id="caratteri">Caratteri</h3>
 <p>Il carattere in Unicode &egrave; un&rsquo;entit&agrave; astratta, indipendente dalla sua forma grafica (<em>glifo</em>); in questo senso, Unicode associa un code point alla <em>descrizione</em> di un carattere, senza entrare nel merito dell&rsquo;aspetto (corsivo, grassetto, con o senza le grazie, &hellip;). Ad esempio, il code point <span class="code">U+0041</span> &egrave; associato al carattere <em>LATIN CAPITAL LETTER A</em>, ed &egrave; solo per motivi di praticit&agrave; che nelle tabelle di codifica viene anche riportato un esempio di rappresentazione grafica del carattere.</p>
@@ -90,45 +80,45 @@
 <dl>
 <dt>equivalenza canonica</dt><dd>caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto e che sono graficamente indistinguibili; un esempio sono i caratteri ottenibili per composizione:
 <pre class="code">
-    U+00E8 - LATIN SMALL LETTER E WITH GRAVE..........&#x00e8;
+U+00E8 - LATIN SMALL LETTER E WITH GRAVE..........&#x00e8;
 
-    U+0300 - COMBINING GRAVE ACCENT...................&#x0300;&nbsp;
-    U+0065 - LATIN SMALL LETTER E.....................&#x0065;
+U+0300 - COMBINING GRAVE ACCENT...................&#x0300;&nbsp;
+U+0065 - LATIN SMALL LETTER E.....................&#x0065;
 
-    U+00E8 (&#x00e8;) &equiv; U+0300 U+0065 (&#x0300;&#x0065;)
+U+00E8 (&#x00e8;) &equiv; U+0300 U+0065 (&#x0300;&#x0065;)
 </pre>
 <p>Un caso di equivalenza canonica ternaria:</p>
 <pre class="code">
-    U+00C5 - LATIN CAPITAL LETTER A WITH RING ABOVE...&#x00c5;
+U+00C5 - LATIN CAPITAL LETTER A WITH RING ABOVE...&#x00c5;
 
-    U+030A - COMBINING RING ABOVE.....................&#x030a;&nbsp;
-    U+0041 - LATIN CAPITAL LETTER A...................&#x0041;
+U+030A - COMBINING RING ABOVE.....................&#x030a;&nbsp;
+U+0041 - LATIN CAPITAL LETTER A...................&#x0041;
 
-    U+212B - ANGSTROM SIGN............................&#x212b;
+U+212B - ANGSTROM SIGN............................&#x212b;
 
-    U+00C5 (&#x00c5;) &equiv; U+030A U+0041 (&#x030a;&#x0041;) &equiv; U+212B (&#x212b;)
+U+00C5 (&#x00c5;) &equiv; U+030A U+0041 (&#x030a;&#x0041;) &equiv; U+212B (&#x212b;)
 </pre>
 </dd>
 <dt>equivalenza di compatibilit&agrave;</dt><dd>caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto ma che si distinguono per forma o altre caratteristiche; sono comprese le varianti grafiche, gli apici, i pedici, le legature, &hellip;:
 <pre class="code">
-    U+2460 CIRCLED DIGIT ONE..........................&#x2460;
-    U+0031 DIGIT ONE..................................&#x0031;
+U+2460 CIRCLED DIGIT ONE..........................&#x2460;
+U+0031 DIGIT ONE..................................&#x0031;
 
-    U+2460 (&#x2460;) &sim; U+0031 (&#x0031;)
-
-
-    U+2083 - SUBSCRIPT THREE..........................&#x2083;
-    U+0033 - DIGIT THREE..............................&#x0033;
-
-    U+2083 (&#x2083;) &sim; U+0033 (&#x0033;)
+U+2460 (&#x2460;) &sim; U+0031 (&#x0031;)
 
 
-    U+FB01 - LATIN SMALL LIGATURE FI..................&#xfb01;
+U+2083 - SUBSCRIPT THREE..........................&#x2083;
+U+0033 - DIGIT THREE..............................&#x0033;
 
-    U+0066 - LATIN SMALL LETTER F.....................&#x0066;
-    U+0069 - LATIN SMALL LETTER I.....................&#x0069;
+U+2083 (&#x2083;) &sim; U+0033 (&#x0033;)
 
-    U+FB01 (&#xfb01;) &sim; U+0066 U+0069 (&#x0066;&#x0069;)
+
+U+FB01 - LATIN SMALL LIGATURE FI..................&#xfb01;
+
+U+0066 - LATIN SMALL LETTER F.....................&#x0066;
+U+0069 - LATIN SMALL LETTER I.....................&#x0069;
+
+U+FB01 (&#xfb01;) &sim; U+0066 U+0069 (&#x0066;&#x0069;)
 </pre></dd>
 </dl>
 <p>Poich&eacute; uno stesso carattere pu&ograve; assumere codifiche differenti, nasce il problema di stabilire, dati due testi Unicode, se questi sono uguali. A tal scopo sono state definite delle regole di normalizzazione delle rappresentazioni dei testi Unicode &ndash; <em>Unicode Normalization Forms<sup><a href="#ref-10">[10]</a></sup></em> &ndash; che si occupano di trasformare i testi originali in una forma primitiva comune, a partire dalla quale risulta pi&ugrave; semplice effettuare il confronto.</p>
@@ -140,81 +130,72 @@
 <li><p><em>UTF-32</em>: codifica multi-byte a lunghezza fissa con unit&agrave; di codifica a 32 bit; ogni carattere &egrave; rappresentato con una sequenza di 4 byte. Esiste nelle varianti <em>big endian</em> (<em>UTF-32BE</em>) e <em>little endian</em> (<em>UTF-32LE</em>).</p></li>
 </ul>
 <p>La tabella sottostante riporta il numero di byte necessario per rappresentare un code point nei vari formati:</p>
-<pre>
-    +---------------+----------------------------------------+-------+--------+--------+
-    | Intervallo    | Caratteri contenuti                    | UTF-8 | UTF-16 | UTF-32 |
-    +---------------+----------------------------------------+-------+--------+--------+
-    | 000000-00007F | Basic Latin                            |   1   |    2   |    4   |
-    | 000080-0007FF | Latin Extensions, Greek, Cyrillic, ... |   2   |    2   |    4   |
-    | 000800-00FFFF | Thai, Hiragana, Katakana, ...          |   3   |    2   |    4   |
-    | 010000-10FFFF | Cuneiform, Hieroglyphs, Private, ...   |   4   |    4   |    4   |
-    +---------------+----------------------------------------+-------+--------+--------+
-</pre>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Intervallo</th><th>Caratteri contenuti</th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr>
+<tr><td>000000-00007F</td><td>Basic Latin</td><td class="byte-count">1</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
+<tr><td>000080-0007FF</td><td>Latin Extensions, Greek, Cyrillic, &hellip;</td><td class="byte-count">2</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
+<tr><td>000800-00FFFF</td><td>Thai, Hiragana, Katakana, &hellip;</td><td class="byte-count">3</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
+<tr><td>010000-10FFFF</td><td>Cuneiform, Hieroglyphs, Private, &hellip;</td><td class="byte-count">4</td><td class="byte-count">4</td><td class="byte-count">4</td></tr>
+</table>
 <h4>Peculiarit&agrave; della codifica UTF-8</h4>
 <p>La codifica UTF-8 distribuisce i bit di un code-point in una sequenza di byte secondo lo schema seguente:</p>
-<pre>
-    +---------------+------+-------------------------------------+
-    | Intervallo    | Bits | Maschera                            |
-    +---------------+------+-------------------------------------+
-    | 000000-00007F |   7  | 0xxxxxxx                            |
-    | 000080-0007FF |  11  | 110xxxxx 10xxxxxx                   |
-    | 000800-00FFFF |  16  | 1110xxxx 10xxxxxx 10xxxxxx          |
-    | 010000-10FFFF |  21  | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx |
-    +---------------+------+-------------------------------------+
-</pre>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Intervallo</th><th>Bits</th><th>Maschera</th></tr>                          
+<tr><td>000000-00007F</td><td>7</td><td class="bit-mask">0xxxxxxx</td></tr>
+<tr><td>000080-0007FF</td><td>11</td><td>110xxxxx 10xxxxxx</td></tr>
+<tr><td>000800-00FFFF</td><td>16</td><td>1110xxxx 10xxxxxx 10xxxxxx</td></tr>
+<tr><td>010000-10FFFF</td><td>21</td><td>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</td></tr>
+</table>
 <p>La configurazione dei bit più significativi dei byte costituenti di una codifica UTF-8 assumono dunque un significato ben preciso:</p>
-<pre>
-    +----------+------------------------------------------------------+
-    | Bits     | Significato                                          |
-    +----------+------------------------------------------------------+
-    | 0xxxxxxx | Byte iniziale di una sequenza di lunghezza 1 (ASCII) |
-    | 10xxxxxx | Byte successivo al primo                             |
-    | 110xxxxx | Byte iniziale di una sequenza di lunghezza 2         |
-    | 1110xxxx | Byte iniziale di una sequenza di lunghezza 3         |
-    | 11110xxx | Byte iniziale di una sequenza di lunghezza 4         |
-    +----------+------------------------------------------------------+
-</pre>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Bits</th><th>Significato</th></tr>
+<tr><td>0xxxxxxx</td><td>Byte iniziale di una sequenza di lunghezza 1 (ASCII)</td></tr>
+<tr><td>10xxxxxx</td><td>Byte successivo al primo</td></tr>
+<tr><td>110xxxxx</td><td>Byte iniziale di una sequenza di lunghezza 2</td></tr>
+<tr><td>1110xxxx</td><td>Byte iniziale di una sequenza di lunghezza 3</td></tr>
+<tr><td>11110xxx</td><td>Byte iniziale di una sequenza di lunghezza 4</td></tr>
+</table>
 <p>Segue un esempio di codifica UTF-8:</p>
-<pre>
-    U+2135 - ALEF SYMBOL..............................&#x2135;
+<pre class="code">
+U+2135 - ALEF SYMBOL..............................&#x2135;
 
-    2135 &rarr; 0010 0001 0011 0101 
+2135 &rarr; 0010 0001 0011 0101 
 
-           0010 0001 0011 0101 &rarr; 0010   000100   110101
-                                  &darr;       &darr;        &darr;
-                             1110xxxx 10xxxxxx 10xxxxxx
-                                &darr;        &darr;        &darr;
-                             11100010 10000100 10110101
-                                &darr;        &darr;        &darr;
-                                E2       84       B5
+       0010 0001 0011 0101 &rarr; 0010   000100   110101
+                              &darr;       &darr;        &darr;
+                         1110xxxx 10xxxxxx 10xxxxxx
+                            &darr;        &darr;        &darr;
+                         11100010 10000100 10110101
+                            &darr;        &darr;        &darr;
+                            E2       84       B5
 
-    U+2135 &rarr; E2 84 B5
+U+2135 &rarr; E2 84 B5
 </pre>
 <h4>Peculiarit&agrave; della codifica UTF-16</h4>
 <p>La codifica UTF-16 fa uso di alcuni speciali code-point del Basic Multilingual Plan, denominati <em>surrogati</em>, per indirizzare i caratteri al di fuori del BMP stesso. I surrogati sono 2048 code-point che non corrispondono a nessun carattere, e si suddividono in <em>surrogati alti</em>, i cui codici vanno da <span class="code">U+D800</span> fino a <span class="code">U+DBFF</span>, e <em>surrogati bassi</em>, da <span class="code">U+DC00</span> a <span class="code">U+DFFF</span>. I surrogati appaiono sempre in coppia, nell'ordine alto/basso.</p>
 <p>La coppia di surrogati viene determinata sottraendo <span class="code">10000</span> dal code-point del carattere cos&igrave; da normalizzarlo nell'intervallo [<span class="code">0</span>, <span class="code">FFFFF</span>]; i venti bit rimanenti vengono equamente distribuiti nei dieci bit meno significativi del surrogato alto (<span class="code">D800</span>&div;<span class="code">DBFF</span> &harr; <span class="code">110110xxxxxxxxxx</span>) e quello basso (<span class="code">DC00</span>&div;<span class="code">DFFF</span> &harr; <span class="code">110111xxxxxxxxxx</span>):</p>
-<pre>
-    U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....&#x1D54A;
+<pre class="code">
+U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....&#x1D54A;
 
-    1D54A &rarr; 0001 1101 0101 0100 1010 -
-            0001 0000 0000 0000 0000
-            ========================
-            0000 1101 0101 0100 1010
-                 &darr;           &darr;
-             0000110101  0101001010
-                 &darr;           &darr;
-       110110xxxxxxxxxx      &darr;
-              &darr;              &darr;
-       1101100000110101      &darr;
-              &darr;              &darr;
-             D835            &darr;
-                   110111xxxxxxxxxx
-                          &darr;
-                   1101110101001010
-                          &darr;
-                         DD4A
+1D54A &rarr; 0001 1101 0101 0100 1010 -
+        0001 0000 0000 0000 0000
+        ========================
+        0000 1101 0101 0100 1010
+             &darr;           &darr;
+         0000110101  0101001010
+             &darr;           &darr;
+   110110xxxxxxxxxx      &darr;
+          &darr;              &darr;
+   1101100000110101      &darr;
+          &darr;              &darr;
+         D835            &darr;
+               110111xxxxxxxxxx
+                      &darr;
+               1101110101001010
+                      &darr;
+                     DD4A
 
-    U+1D54A &rarr; D835 DD4A
+U+1D54A &rarr; D835 DD4A
 </pre>
 <h3 id="formato-utf-e-ucs">Formato UTF e UCS</h3>
 <p>Anche l&rsquo;ISO/IEC 10646 specifica delle forme di codifica:</p>
@@ -225,21 +206,16 @@
 <h3 id="il-bom">Il BOM</h3>
 <p>Il <em>BOM</em> &ndash; <em>Byte order mark</em> &egrave; il carattere Unicode <span class="code">U+FEFF</span> quando utilizzato per specificare l&rsquo;<em>endianness</em> di una sequenza di caratteri Unicode. Tale carattere, denominato <em>&ldquo;zero width no-break space&rdquo;</em>, pu&ograve; occupare solo la prima posizione di una sequenza di caratteri Unicode e non ha altro effetto che quello di fornire un&rsquo;indicazione indiretta del tipo di ordinamento in uso &mdash; perdendo quindi il significato originale di &ldquo;zero width no-break space&rdquo;.</p>
 <p><em>Nota</em>: il vincolo di poter apparire solo in prima posizione &egrave; stato introdotto nella versione 3.2 di Unicode. Non &egrave; quindi escluso che si possa trovare anche in posizioni intermedie, dove di nuovo assume il significato di &ldquo;zero width no-break space&rdquo;. In questo contesto andrebbe sostituito dal carattere <span class="code">U+2060</span> <em>&ldquo;word joiner&rdquo;</em>.</p>
-<pre>
-    +----------+------------+--------------+
-    | Codifica | Endianness | BOM ammesso? |
-    +----------+------------+--------------+
-    | UTF-8    |      -     |      s&igrave;      |
-    +----------+------------+--------------+
-    | UTF-16   |      ?     |      s&igrave;      |
-    | UTF-16BE |     big    |      no      |
-    | UTF-16LE |    little  |      no      |
-    +----------+------------+--------------+
-    | UTF-32   |      ?     |      s&igrave;      |
-    | UTF-32BE |     big    |      no      |
-    | UTF-32LE |    little  |      no      |
-    +----------+------------+--------------+
-</pre>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Codifica</th><th>Endianness</th><th>BOM ammesso?</th></tr>
+<tr><td>UTF-8</td><td class="endianness">n/a</td><td class="bom">s&igrave;</td></tr>
+<tr><td>UTF-16</td><td class="endianness">?</td><td class="bom">s&igrave;</td></tr>
+<tr><td>UTF-16BE</td><td class="endianness">big</td><td class="bom">no</td></tr>
+<tr><td>UTF-16LE</td><td class="endianness">little</td><td class="bom">no</td></tr>
+<tr><td>UTF-32</td><td class="endianness">?</td><td class="bom">s&igrave;</td></tr>
+<tr><td>UTF-32BE</td><td class="endianness">big</td><td class="bom">no</td></tr>
+<tr><td>UTF-32LE</td><td class="endianness">little</td><td class="bom">no</td></tr>
+</table>
 <h4 id="il-bom-nellutf-8">Il BOM nell&rsquo;UTF-8</h4>
 <p>Utilizzando unit&agrave; di codifica a 8 byte, in linea di principio la presenza del BOM &egrave; superflua; alcuni software tuttavia la potrebbero richiedere. Il BOM in UTF-8 &egrave; rappresentato dalla sequenza <span class="code">EF BB BF</span>.</p>
 <h4 id="il-bom-nellutf-16">Il BOM nell&rsquo;UTF-16</h4>
@@ -250,23 +226,23 @@
 <h3>Mojibake</h3>
 <p>Il <em>mojibake</em> si verifica quando, a causa dell'adozione di una codifica errata, il testo non viene visualizzato correttamente. Ad esempio, la parola <em>caff&egrave;</em>, che corrisponde alla sequenza di code-point Unicode:</p>
 <pre class="code">
-    caff&egrave; &rarr; U+0063 U+0061 U+0066 U+0066 U+00E8
+caff&egrave; &rarr; U+0063 U+0061 U+0066 U+0066 U+00E8
 </pre>
 <p>se codificata in UTF-8 origina la sequenza di byte:</p>
 <pre class="code">
-    caff&egrave; &rarr; 63 61 66 66 C3 A8
+caff&egrave; &rarr; 63 61 66 66 C3 A8
 </pre>
 <p>Questa stessa sequenza, se decodificata in ISO-8859-1, d&agrave; luogo alla &ldquo;parola&rdquo;:</p>
 <pre class="code">
-    63 61 66 66 C3 A8 &rarr; caff&#xc3;&#xa8;
+63 61 66 66 C3 A8 &rarr; caff&#xc3;&#xa8;
 </pre>
 <p>Viceversa, la codifica ISO-8859-1 della parola originale corrisponde a:</p>
 <pre class="code">
-    caff&egrave; &rarr; 63 61 66 E8
+caff&egrave; &rarr; 63 61 66 E8
 </pre>
 <p>che decodificata in UTF-8 produce:</p>
 <pre class="code">
-    63 61 66 E8 &rarr; caff&#xfffd;
+63 61 66 E8 &rarr; caff&#xfffd;
 </pre>
 <p>Il carattere &#xfffd;, noto anche come <span class="code">REPLACEMENT CHARACTER</span>, &egrave; il simbolo convenzionalmente utilizzato da Unicode per segnalare la presenza di un code-point sconosciuto o non rappresentabile.</p>
 <h3>Curiosit&agrave;</h3>
@@ -281,9 +257,9 @@
 <strong>42</strong>
 </pre>
 <p>La consultazione delle tabelle Unicode risolve il mistero:</p>
-<pre>
-    U+09EA - BENGALI DIGIT FOUR.......................&#x09ea;
-    U+0B68 - ORIYA DIGIT TWO..........................&#x0b68;
+<pre class="code">
+U+09EA - BENGALI DIGIT FOUR.......................&#x09ea;
+U+0B68 - ORIYA DIGIT TWO..........................&#x0b68;
 </pre>
 <p class="update"><strong>Aggiornamento [28/05/2014]</strong></p>
 <p>Al <a href="http://cppnow.org">C++Now 2014</a> c'&egrave; stato un intervento di James McNellis intitolato &ldquo;Unicode in C++&rdquo;; le <a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/unic
@@ -291,29 +267,29 @@ ode-cpp.pdf?raw=true">slide</a> che ha preparato sono splendide, tanto che ne ho
 <h2 id="riferimenti">Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
-<li><p>Cimarosti, M. <em>&ldquo;Dodici anni di Unicode&rdquo;</em> &mdash; <a href="http://web.tiscali.it/marco.cimarosti/pro_graf.html">http://web.tiscali.it/marco.cimarosti/pro_graf.html</a>, visitato il 07/06/2013</p></li>
+<li class="ref"><p>Cimarosti, M. <em>&ldquo;Dodici anni di Unicode&rdquo;</em> &mdash; <a href="http://web.tiscali.it/marco.cimarosti/pro_graf.html">http://web.tiscali.it/marco.cimarosti/pro_graf.html</a>, visitato il 07/06/2013</p></li>
 <a name="ref-2"></a>
-<li><p>Kuhn, M. <em>&ldquo;UTF-8 and Unicode FAQ for Unix/Linux&rdquo;</em> &mdash; <a href="http://www.cl.cam.ac.uk/~mgk25/unicode.html">http://www.cl.cam.ac.uk/~mgk25/unicode.html</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p>Kuhn, M. <em>&ldquo;UTF-8 and Unicode FAQ for Unix/Linux&rdquo;</em> &mdash; <a href="http://www.cl.cam.ac.uk/~mgk25/unicode.html">http://www.cl.cam.ac.uk/~mgk25/unicode.html</a>, visitato il 05/06/2013</p></li>
 <a name="ref-3"></a>
-<li><p>Searle, S. <em>&ldquo;A Brief History of Character Codes&rdquo;</em> &mdash; <a href="http://tronweb.super-nova.co.jp/characcodehist.html">http://tronweb.super-nova.co.jp/characcodehist.html</a></p></li>
+<li class="ref"><p>Searle, S. <em>&ldquo;A Brief History of Character Codes&rdquo;</em> &mdash; <a href="http://tronweb.super-nova.co.jp/characcodehist.html">http://tronweb.super-nova.co.jp/characcodehist.html</a></p></li>
 <a name="ref-4"></a>
-<li><p>Spolsky, J. <em>&ldquo;The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)&rdquo;</em>, joelonsoftware.com &mdash; <a href="http://www.joelonsoftware.com/articles/Unicode.html">http://www.joelonsoftware.com/articles/Unicode.html</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p>Spolsky, J. <em>&ldquo;The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)&rdquo;</em>, joelonsoftware.com &mdash; <a href="http://www.joelonsoftware.com/articles/Unicode.html">http://www.joelonsoftware.com/articles/Unicode.html</a>, visitato il 05/06/2013</p></li>
 <a name="ref-5"></a>
-<li><p><em>&ldquo;A Technical Introduction&rdquo;</em>, The Unicode Consortium &mdash; <a href="http://www.unicode.org/standard/principles.html">http://www.unicode.org/standard/principles.html</a>, visitato il 07/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;A Technical Introduction&rdquo;</em>, The Unicode Consortium &mdash; <a href="http://www.unicode.org/standard/principles.html">http://www.unicode.org/standard/principles.html</a>, visitato il 07/06/2013</p></li>
 <a name="ref-6"></a>
-<li><p><em>&ldquo;ASCII format for Network Interchange&rdquo;</em> &mdash; <a href="http://tools.ietf.org/rfc/rfc20.txt">http://tools.ietf.org/rfc/rfc20.txt</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;ASCII format for Network Interchange&rdquo;</em> &mdash; <a href="http://tools.ietf.org/rfc/rfc20.txt">http://tools.ietf.org/rfc/rfc20.txt</a>, visitato il 05/06/2013</p></li>
 <a name="ref-7"></a>
-<li><p><em>&ldquo;Global Development Center&rsquo;s Glossary</em>&ldquo;, microsoft.com &mdash; <a href="http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a">http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;Global Development Center&rsquo;s Glossary</em>&ldquo;, microsoft.com &mdash; <a href="http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a">http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a</a>, visitato il 05/06/2013</p></li>
 <a name="ref-8"></a>
-<li><p><em>&ldquo;Microsoft OEM (DOS) Code Pages&rdquo;</em>, Character Sets And Code Pages At The Push Of A Button &mdash; <a href="http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a">http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;Microsoft OEM (DOS) Code Pages&rdquo;</em>, Character Sets And Code Pages At The Push Of A Button &mdash; <a href="http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a">http://msdn.microsoft.com/en-us/goglobal/bb964658.aspx#a</a>, visitato il 05/06/2013</p></li>
 <a name="ref-9"></a>
-<li><p><em>&ldquo;Windows-1252&rdquo;</em>, wikipedia.com &mdash; <a href="https://en.wikipedia.org/wiki/Windows-1252">https://en.wikipedia.org/wiki/Windows-1252</a>, visitato il 05/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;Windows-1252&rdquo;</em>, wikipedia.com &mdash; <a href="https://en.wikipedia.org/wiki/Windows-1252">https://en.wikipedia.org/wiki/Windows-1252</a>, visitato il 05/06/2013</p></li>
 <a name="ref-10"></a>
-<li><p><em>&ldquo;Unicode Standard Annex #15 - UNICODE NORMALIZATION FORMS&rdquo;</em>, The Unicode Consortium &mdash; <a href="http://unicode.org/reports/tr15/">http://unicode.org/reports/tr15/</a>, visitato il 07/06/2013</p></li>
+<li class="ref"><p><em>&ldquo;Unicode Standard Annex #15 - UNICODE NORMALIZATION FORMS&rdquo;</em>, The Unicode Consortium &mdash; <a href="http://unicode.org/reports/tr15/">http://unicode.org/reports/tr15/</a>, visitato il 07/06/2013</p></li>
 <a name="ref-11"></a>
-<li><p><em>&ldquo;UTF-8 encoding table and Unicode characters&rdquo;</em>, utf8-chartable.de &mdash; <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl">http://www.utf8-chartable.de/unicode-utf8-table.pl</a></p></li>
+<li class="ref"><p><em>&ldquo;UTF-8 encoding table and Unicode characters&rdquo;</em>, utf8-chartable.de &mdash; <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl">http://www.utf8-chartable.de/unicode-utf8-table.pl</a></p></li>
 <a name="ref-12"></a>
-<li><p><em>&ldquo;UTF-8 Sampler&rdquo;</em>, columbia.edu &mdash; <a href="http://www.columbia.edu/~fdc/utf8/">http://www.columbia.edu/~fdc/utf8/</a></p></li>
+<li class="ref"><p><em>&ldquo;UTF-8 Sampler&rdquo;</em>, columbia.edu &mdash; <a href="http://www.columbia.edu/~fdc/utf8/">http://www.columbia.edu/~fdc/utf8/</a></p></li>
 </ol>
 <p class="modification-notice">Pagina modificata il 03/07/2013</p>
 </body>

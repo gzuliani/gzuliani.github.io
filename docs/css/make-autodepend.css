@@ -1,0 +1,9 @@
+span.tool {
+ font-style: italic;
+}
+
+span.file {
+ font-family: Consolas, Courier New, monospace;
+ font-size: .9em;
+ font-weight: bold;
+}

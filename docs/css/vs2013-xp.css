@@ -1,0 +1,6 @@
+li.command {
+ font-family: Consolas, Courier New, monospace;
+ font-size: .9em;
+ text-align: left;
+ white-space: nowrap;
+}
