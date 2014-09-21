@@ -310,26 +310,6 @@ all: main.obj
 -include main.d
 </pre>
 <!--
-compilare e dipendenze in un passo solo:
-
-modificare lo script python in modo che anziché leggere il file riceva il risultato di /showIncludes
-sullo stdin, e mettere in coda lo script alla compilazione; passo comunque il nome del target allo
-script per evitare di diventar matto a parserizzare l'output:
-
-[makefile]
-$(warning Executing makefile...)
-
-all: main.obj
-
-%.obj: %.cpp
-	echo @cl /c /EHsc /nologo /showIncludes "$<" | C:\Python26\python.exe make-depend.py "$<" -i -o "$*.d"
-
--include main.d
-
-ORA IL FILE .D E' POSTERIORE AL FILE .OBJ!!!
-
-
-
 CASO REALE
 
 caratteristiche del progetto:
