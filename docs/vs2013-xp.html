@@ -11,7 +11,7 @@
 <p>La configurazione predefinita di Visual Studio 2013 Express for Windows Desktop genera binari che non sono compatibili con Windows XP. La ragione è che a partire da Visual Studio 2012 l'SDK di riferimento è quello di Windows 8, che non è conforme all'API di Windows XP:<a href="#ref-2"><sup>[2]</sup></a></p>
 <blockquote>&hellip;the Windows 8 SDK headers and libs may have removed deprecated Windows XP APIs with no mitigation.</blockquote>
 <p>L'esecuzione di un programma compilato con l'SDK 8 su Windows XP produce il messaggio d'errore:</p>
-<pre class="command">
+<pre class="code">
 &laquo;program.exe&raquo; is not a valid Win32 application.
 </pre>
 <p>Il Visual Studio 2012 Update 1 e il Visual Studio 2013 contengono, assieme al nuovo SDK, anche quello di Windows 7. Essendo quest'ultimo compatibile con Windows XP, è di nuovo possibile creare applicativi funzionanti anche su quel sistema operativo.</p>
