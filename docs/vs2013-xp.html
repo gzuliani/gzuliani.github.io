@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <title>Compilare per Windows XP con Visual Studio 2013 Express for Windows Desktop</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+<link href="css/vs2013-xp.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#vs2013-xp">risorse</a> | vs2013-xp</p>
@@ -11,7 +11,7 @@
 <p>La configurazione predefinita di Visual Studio 2013 Express for Windows Desktop genera binari che non sono compatibili con Windows XP. La ragione è che a partire da Visual Studio 2012 l'SDK di riferimento è quello di Windows 8, che non è conforme all'API di Windows XP:<a href="#ref-2"><sup>[2]</sup></a></p>
 <blockquote>&hellip;the Windows 8 SDK headers and libs may have removed deprecated Windows XP APIs with no mitigation.</blockquote>
 <p>L'esecuzione di un programma compilato con l'SDK 8 su Windows XP produce il messaggio d'errore:</p>
-<pre class="code">
+<pre class="command">
 &laquo;program.exe&raquo; is not a valid Win32 application.
 </pre>
 <p>Il Visual Studio 2012 Update 1 e il Visual Studio 2013 contengono, assieme al nuovo SDK, anche quello di Windows 7. Essendo quest'ultimo compatibile con Windows XP, è di nuovo possibile creare applicativi funzionanti anche su quel sistema operativo.</p>
@@ -20,14 +20,14 @@
  <li>aprire un <span class="term">Prompt dei comandi degli strumenti di VS2013</span>;</li>
  <li>attivare l'SDK di Windows 7 con i seguenti comandi:
   <ul>
-   <li><span class="code">set INCLUDE=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Include;%INCLUDE%</span></li>
-   <li><span class="code">set PATH=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Bin;%PATH%</span></li>
+   <li class="command">set INCLUDE=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Include;%INCLUDE%</li>
+   <li class="command">set PATH=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Bin;%PATH%</li>
    <li>
     <p>definire la macro <span class="code">_USING_V110_SDK71_</span> per il compilatore C++ (cl.exe) e quello delle risorse (rc.exe);</p>
     <p>chi fa uso di makefile gestisce questo tipo di parametrizzazioni con le variabili d'ambiente:</p>
     <ul>
-     <li><span class="code">set CPPFLAGS=/D "_USING_V110_SDK71_"</span></li>
-     <li><span class="code">set RCPPFLAGS=/D "_USING_V110_SDK71_"</span></li>
+     <li class="command">set CPPFLAGS=/D "_USING_V110_SDK71_"</li>
+     <li class="command">set RCPPFLAGS=/D "_USING_V110_SDK71_"</li>
     </ul>
     <p>Alternativamente, si può agire direttamente sul comando di invocazione dei due compilatori.</p>
    </li>
@@ -37,14 +37,14 @@
   <ul>
    <li>32 bit (x86):
     <ul>
-     <li><span class="code">set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib;%LIB%</span></li>
-     <li><span class="code">set LNKFLAGS=/SUBSYSTEM:*******,5.01</span></li>
+     <li class="command">set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib;%LIB%</li>
+     <li class="command">set LNKFLAGS=/SUBSYSTEM:*******,5.01</li>
     </ul>
    </li>
    <li>64 bit (x64):
     <ul>
-     <li><span class="code">set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib\x64;%LIB%</span></li>
-     <li><span class="code">set LNKFLAGS=/SUBSYSTEM:*******,5.02</span></li>
+     <li class="command">set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib\x64;%LIB%</li>
+     <li class="command">set LNKFLAGS=/SUBSYSTEM:*******,5.02</li>
     </ul>
    </li>
   </ul>
@@ -60,12 +60,12 @@
 <blockquote>&hellip;if your application compiles and runs we cannot guarantee it will continue to do so in future releases and updates of Visual Studio.</blockquote>
 <h2>Riferimenti</h2>
 <a name="ref-1"></a>
-<li>&ldquo;Visual C++ Compiler Flag for Visual Studio 2013 for Targeting XP&rdquo;. <em>StackOverflow.com</em>. &lt;<a href="http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp">http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp
+<li class="ref">&ldquo;Visual C++ Compiler Flag for Visual Studio 2013 for Targeting XP&rdquo;. <em>StackOverflow.com</em>. &lt;<a href="http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp">http://stackoverflow.com/questions/23359943/visual-c-compiler-flag-for-visual-studio-2013-for-targeting-xp</a>&gt;. Visitato il 15/09/2014.</li>
 <a name="ref-2"></a>
-<li>&ldquo;Windows XP Targeting with C++ in Visual Studio 2012&rdquo;. <em>Visual C++ Team Blog</em>. &lt;<a href="http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx">http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx</a>&gt;. Visitato il 15/09/2014</li>
+<li class="ref">&ldquo;Windows XP Targeting with C++ in Visual Studio 2012&rdquo;. <em>Visual C++ Team Blog</em>. &lt;<a href="http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx">http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx</a>&gt;. Visitato il 15/09/2014.</li>
 </a>&gt;. Visitato il 15/09/2014</li>
 <a name="ref-3"></a>
-<li>&ldquo;/SUBSYSTEM (Specify Subsystem)&rdquo;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/fcc1zstk%28v=vs.110%29.aspx">http://msdn.microsoft.com/en-us/library/fcc1zstk%28v=vs.110%29.aspx</a>&gt;. Visitato il 15/09/2014</li>
+<li class="ref">&ldquo;/SUBSYSTEM (Specify Subsystem)&rdquo;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/fcc1zstk%28v=vs.110%29.aspx">http://msdn.microsoft.com/en-us/library/fcc1zstk%28v=vs.110%29.aspx</a>&gt;. Visitato il 15/09/2014.</li>
 <p class="modification-notice">Pagina modificata il 15/09/2014</p>
 </body>
 </html>
