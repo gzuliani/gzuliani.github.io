@@ -20,7 +20,7 @@
 #include &lt;iostream&gt;
 
 int main() {
-  std::cout &lt;&lt; &quot;Hello, World!&quot; &lt;&lt; std::endl;
+std::cout &lt;&lt; &quot;Hello, World!&quot; &lt;&lt; std::endl;
 }
 </pre>
 <pre class="code">
@@ -39,11 +39,10 @@ int main() {
 <pre class="code">
 [makefile]
 main.obj: main.cpp
-	@cl /c /EHsc /nologo main.cpp
+	@cl /I. /c /EHsc /nologo main.cpp
 </pre>
-<p>Supponendo che i file sorgente e il makefile siano salvati nella stessa cartella, la compilazione avviene invocando <span class="tool">make</span><a href="#ref-1"><sup>[1]</sup></a> da un <span class="tool">Prompt dei comandi degli strumenti di VS2013</span>:</p>
+<p>Supponendo che i file sorgente e il makefile siano salvati nella stessa cartella, la compilazione avviene invocando <span class="tool">make</span> da un <span class="tool">Prompt dei comandi degli strumenti di VS2013</span>:</p>
 <pre class="code">
-C:\&hellip;&gt;set INCLUDE=.\;%INCLUDE%
 C:\&hellip;&gt;make
 main.cpp
 </pre>
@@ -68,9 +67,9 @@ make: 'main.obj' is up to date.
 <pre class="code">
 [makefile]
 main.obj: main.cpp <ins>a.h b.h c.h</ins>
-	@cl /c /EHsc /nologo main.cpp
+	@cl /I. /c /EHsc /nologo main.cpp
 </pre>
-<p>Avendo esplicitato le dipendenze dai file <span class="file">*.h</span>, il file oggetto viene ricompilato anche in seguito alla modifica di uno qualunque di essi:</p>
+<p>Avendo esplicitato le dipendenze di <span class="file">main.cpp</span> dai file <span class="file">*.h</span>, il file oggetto ora viene ricompilato:</p>
 <pre class="code">
 C:\&hellip;&gt;make
 main.cpp
@@ -90,7 +89,7 @@ Note: including file: C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\&he
 </pre>
 <p>&Egrave; dunque possibile ottenere automaticamente l'elenco delle dipendenze di un file sorgente; resta da capire come utilizzare questa informazione per raggiungere l'obiettivo.</p>
 <h2>Generazione automatica dei prerequisiti</h2>
-<p>Nella sezione 4.14 del manuale di <span class="tool">make</span><a href="#ref-4"><sup>[4]</sup></a>, intitolata &ldquo;Generating Prerequisites Automatically&rdquo;, si legge:</p>
+<p>Nella sezione 4.14 del manuale di <span class="tool">make</span><a href="#ref-3"><sup>[3]</sup></a>, intitolata &ldquo;Generating Prerequisites Automatically&rdquo;, si legge:</p>
 <blockquote>The practice we recommend for automatic prerequisite generation is to have one makefile corresponding to each source file. For each source file name.c there is a makefile name.d which lists what files the object file name.o depends on. That way only the source files that have changed need to be rescanned to produce the new prerequisites.</blockquote>
 <p>La documentazione suggerisce quindi di introdurre un nuovo makefile, denominato <span class="file">main.d</span>, nel quale specificare le dipendenze del relativo file sorgente:</p>
 <pre class="code">
@@ -110,8 +109,9 @@ main.obj main.d : main.cpp a.h b.h c.h
 <ins>%.d: %.cpp
 	@make-d-file.cmd</ins>
 
-%.obj: %.cpp
-	@cl /c /EHsc /nologo &quot;$&lt;&quot;
+<del>main.obj: main.cpp a.h b.h c.h</del>
+<ins>%.obj: %.cpp</ins>
+	@cl /I. /c /EHsc /nologo &quot;$&lt;&quot;
 
 <ins>include main.d</ins>
 </pre>
@@ -121,7 +121,7 @@ C:\&hellip;&gt;rem modifica di c.h
 C:\&hellip;&gt;make
 main.cpp
 </pre>
-<p>Nel caso venga modificato l'albero delle inclusioni del file <span class="file">main.cpp</span>, per esempio per l'introduzione di una nuova direttiva <span class="code">#include</span> nel file <span class="file">a.h</span>, avendo <span class="tool">make</span> già letto &ndash; tramite l'istruzione <span class="code">include main.d</span> &ndash; l'elenco non aggiornato delle dipendenze dal makefile <span class="file">main.d</span>, c'è il rischio che il file oggetto non venga aggiornato? No: <span class="tool">make</span> rivaluta da capo il makefile principale se anche uno solo dei makefile inclusi risulta aggiornato (cfr. sezione 3.5 del manuale di <span class="tool">make</span><a href="#ref-4"><sup>[4]</sup></a>, intitolata &ldquo;How Makefiles Are Remade&rdquo;):</p>
+<p>Nel caso venga modificato l'albero delle inclusioni del file <span class="file">main.cpp</span>, per esempio per l'introduzione di una nuova direttiva <span class="code">#include</span> nel file <span class="file">a.h</span>, avendo <span class="tool">make</span> già letto &ndash; tramite l'istruzione <span class="code">include main.d</span> &ndash; l'elenco non aggiornato delle dipendenze dal makefile <span class="file">main.d</span>, c'è il rischio che il file oggetto non venga aggiornato? No: <span class="tool">make</span> rivaluta da capo il makefile principale se anche uno solo dei makefile inclusi risulta aggiornato (cfr. sezione 3.5 del manuale di <span class="tool">make</span><a href="#ref-3"><sup>[3]</sup></a>, intitolata &ldquo;How Makefiles Are Remade&rdquo;):</p>
 <blockquote>To this end, after reading in all makefiles, make will consider each as a goal target and attempt to update it. If a makefile has a rule which says how to update it (found either in that very makefile or in another one) or if an implicit rule applies to it (see Using Implicit Rules), it will be updated if necessary. After all makefiles have been checked, if any have actually been changed, make starts with a clean slate and reads all the makefiles over again. (It will also attempt to update each of them over again, but normally this will not change them again, since they are already up to date.)</blockquote>
 <p>Per verificare che l'aggiornamento del makefile delle dipendenze <span class="file">main.d</span> causa la rivalutazione dell'intero makefile è sufficiente inserire una chiamata <span class="code">$(warning&hellip; )</span>, dopo aver specificato come produrre il makefile ausiliario:</p>
 <pre class="code">
@@ -134,7 +134,7 @@ all: main.obj
 	@make-d-file.cmd
 
 %.obj: %.cpp
-	@cl /c /EHsc /nologo &quot;$&lt;&quot;
+	@cl /I. /c /EHsc /nologo &quot;$&lt;&quot;
 
 include main.d
 </pre>
@@ -161,16 +161,13 @@ make: Nothing to be done for &apos;all&apos;.
 <p>Infine, cosa ben più grave, in caso di cancellazione o rinomina di una dipendenza, <span class="tool">make</span> termina con un errore fatale:</p>
 <pre class="code">
 C:\&hellip;&gt;ren c.h c1.h
-C:\&hellip;&gt;rem modifica l&apos;#include in b.h di conseguenza
+C:\&hellip;&gt;rem modifica di b.h di conseguenza
+C:\&hellip;&gt;rem modifica di make-d-file.cmd di conseguenza
 C:\&hellip;&gt;make
 makefile:1: Running makefile...
 make: *** No rule to make target &apos;c.h&apos;, needed by &apos;main.d&apos;.  Stop.
 </pre>
-<p>Per uscire dall'<em>empasse</em> non resta che cancellare il file delle dipendenze e lanciare un nuovo <span class="tool">make</span>, dopo aver modificato di conseguenza il comando <span class="code">echo</span> che genera il file <span class="file">main.d</span>:</p>
-<pre class="code">
-[make-d-file]
-@echo main.obj main.d : main.cpp a.h b.h c<ins>1</ins>.h >main.d
-</pre>
+<p>Per uscire dall'<em>empasse</em> non c'è altro da fare cancellare il file delle dipendenze e rilanciare <span class="tool">make</span>:</p>
 <pre class="code">
 C:\&hellip;&gt;del main.d
 C:\&hellip;&gt;make
@@ -197,7 +194,7 @@ all: main.obj
 	@make-d-file.cmd</del>
 
 %.obj: %.cpp
-	@cl /c /EHsc /nologo &quot;$&lt;&quot;
+	@cl /I. /c /EHsc /nologo &quot;$&lt;&quot;
 	<ins>@make-d-file.cmd</ins>
 
 <ins>-</ins>include main.d
@@ -215,6 +212,11 @@ C:\&hellip;&gt;del main.d
 C:\&hellip;&gt;make
 makefile:1: Running makefile...
 make: Nothing to be done for &apos;all&apos;.
+
+C:\&hellip;&gt;del main.obj
+C:\&hellip;&gt;make
+makefile:1: Running makefile...
+main.cpp
 </pre>
 <p>Resta il problema dell'errore fatale nel caso uno dei prerequisiti di <span class="file">main.d</span> non sia reperibile:</p>
 <pre class="code">
@@ -225,18 +227,22 @@ C:\&hellip;&gt;make
 makefile:1: Running makefile...
 make: *** No rule to make target &apos;c1.h&apos;, needed by &apos;main.d&apos;.  Stop.
 </pre>
-<p>Anche questo problema è di facile soluzione, grazie ad una peculiarità di <span class="tool">make</span> (cfr. sezione 4.7 &ldquo;Rules without Recipes or Prerequisites&rdquo; del manuale<a href="#ref-4"><sup>[4]</sup></a>):</p>
+<p>Anche questo problema è di facile soluzione, grazie ad una peculiarità di <span class="tool">make</span> (cfr. sezione 4.7 &ldquo;Rules without Recipes or Prerequisites&rdquo; del manuale<a href="#ref-3"><sup>[3]</sup></a>):</p>
 <blockquote>If a rule has no prerequisites or recipe, and the target of the rule is a nonexistent file, then make imagines this target to have been updated whenever its rule is run. This implies that all targets depending on this one will always have their recipe run.</blockquote>
 <p>&Egrave; dunque sufficiente aggiungere, per ogni dipendenza, un <em>target</em> senza prerequisiti nè comandi:</p>
 <pre class="code">
 [make-d-file]
 @echo main.obj main.d: main.cpp a.h b.h c.h&gt;main.d
+<ins>@echo.&gt;&gt;main.d
 @echo a.h:&gt;&gt;main.d
+@echo.&gt;&gt;main.d
 @echo b.h:&gt;&gt;main.d
+@echo.&gt;&gt;main.d
 @echo c.h:&gt;&gt;main.d
+@echo.&gt;&gt;main.d</ins>
 </pre>
 <pre class="code">
-C:\&hellip;&gt;del main.obj
+C:\&hellip;&gt;del main.obj &amp; rem causa la creazione del nuovo main.d
 C:\&hellip;&gt;make
 makefile:1: Running makefile...
 main.cpp
@@ -248,6 +254,14 @@ C:\&hellip;&gt;make
 makefile:1: Running makefile...
 main.cpp
 </pre>
+<p class="note">Con questo ultimo passaggio è stata introdotta una sottile debolezza, che consiste nel fatto che in caso di perdita accidentale del file <span class="file">*.d</span>, le dipendenze non verranno rigenerate &ndash; e per tale motivo non saranno rispettate &ndash; fino alla prossima modifica del file sorgente:</p>
+<pre class="code">
+C:\&hellip;&gt;del main.d
+C:\&hellip;&gt;rem modifica di a.h -- dovrebbe causare la ricompilazione di main.obj
+C:\&hellip;&gt;make
+makefile:1: Running makefile...
+make: Nothing to be done for &apos;all&apos;.
+</pre>
 <h2>Generazione automatica del file delle dipendenze</h2>
 <p>Grazie al flag <span class="code">/showIncludes</span> è facile approntare uno script python che, ricevuto in ingresso l'<em>output</em> del compilatore, produce il file <span class="file">*.d</span> associato al sorgente in fase di compilazione:</p>
 <pre class="code">
@@ -258,16 +272,26 @@ import re
 import subprocess
 import sys
 
-INCLUDING_FILE = &quot;Nota: file incluso&quot; # warning, localized text!
-INCLUDING_FILE_LEN = len(INCLUDING_FILE)
+INCLUDE_MARK = &quot;Note: including file:&quot; # warning, localized text!
+INCLUDE_MARK_LEN = len(INCLUDE_MARK)
+
+SYS_INCLUDE_DIRS = [os.getenv(x) for x in [&apos;WindowsSdkDir&apos;, &apos;VCINSTALLDIR&apos;]]
 
 def to_unix_path(path):
     return path.replace(&quot;\\&quot;, &quot;/&quot;).replace(&quot; &quot;, &quot;\\ &quot;)
+
+def is_sys_include(path):
+    for dir in SYS_INCLUDE_DIRS:
+        if path.startswith(dir):
+            return True
+    return False
 
 if __name__ == &quot;__main__&quot;:
 
     parser = optparse.OptionParser(
         usage=&quot;usage: %prog &lt;object&gt; &lt;source&gt; [options]&quot;)
+    parser.add_option(&quot;-a&quot;, &quot;&quot;, dest=&quot;list_all_header_files&quot;,
+        action=&quot;store_true&quot;, help=&quot;list system header files too&quot;)
     parser.add_option(&quot;-o&quot;, &quot;&quot;, dest=&quot;file&quot;, default=&quot;&quot;,
         help=&quot;write to &lt;FILE&gt; instead of STDOUT&quot;)
     (options, args) = parser.parse_args()
@@ -280,8 +304,10 @@ if __name__ == &quot;__main__&quot;:
 
     paths = []
     for line in sys.stdin:
-        if line.startswith(INCLUDING_FILE):
-            paths.append(to_unix_path(line[INCLUDING_FILE_LEN:].strip()))
+        if line.startswith(INCLUDE_MARK):
+            path = line[INCLUDE_MARK_LEN:].strip()
+            if options.list_all_header_files or not is_sys_include(path):
+                paths.append(to_unix_path(path))
         else:
             sys.stdout.write(line)
 
@@ -295,7 +321,7 @@ if __name__ == &quot;__main__&quot;:
         output.write(&quot; \\\n\t%s&quot; % path)
     output.write(&quot;\n\n&quot;)
     for path in paths:
-        output.write(&quot;%s :\n&quot; % path)
+        output.write(&quot;%s :\n\n&quot; % path)
 </pre>
 <p>Il makefile diventa:</p>
 <pre class="code">
@@ -304,47 +330,12 @@ $(warning Executing makefile...)
 all: main.obj
 
 %.obj: %.cpp
-	@cl /c /EHsc /nologo <ins>/showIncludes</ins> &quot;$&lt;&quot; <ins>/Fo:&quot;$@&quot; | %PYTHON% make-d-file.py &quot;$@&quot; &quot;$&lt;&quot; -o &quot;$*.d&quot;</ins>
+	@cl /I. /c /EHsc /nologo <ins>/showIncludes</ins> &quot;$&lt;&quot; <ins>| %PYTHON% make-d-file.py &quot;$@&quot; &quot;$&lt;&quot; -o &quot;$*.d&quot;</ins>
 	<del>@make-d-file.cmd</del>
 
 -include main.d
 </pre>
 <!--
-CASO REALE
-
-caratteristiche del progetto:
-albero delle directory
-INCLUDE non "sporcata", contiene solo quelle di default (quella di progetto passata via /I):
-per come funziona /showIncludes, che riporta il path assoluto, lo script deve togliere
-il prefisso dal file.
-
-Es. cartella di include: C:\MyProject
-file di include in C:\MyProject\a.h
-allora, se sono in C:\MyProject,  cl /showIncludes /IC:\MyProject ritorna "C:\MyProject\a.h"
-se faccio (equivalente!) cl /showIncludes /I. -> ".\a.h"
-se faccio (equivalente!) cl /showIncludes /I.\ -> ".\a.h"
-se faccio (equivalente!) cl /showIncludes /I..\MyProject -> "..\MyProject\a.h"
-
-allora passo tutte le /I allo script che in caso di match le toglie;
-di più, così evito le dipendenze da quelle di sistema (%INCLUDE%)!!!
-
-[makefile]
-$(warning Executing makefile...)
-
-all: main.obj
-
-includedir=.
-
-%.obj: %.cpp
-	@cl /c /I$(includedir) /EHsc /nologo /showIncludes "$<" | C:\Python26\python.exe make-depend.py "$<" -s -i $(includedir) -o "$*.d"
-
--include main.d
-
-
-
-
-
-
 e per strutture di cartelle più complicate? regge la cosa?
 es.
 
@@ -370,7 +361,6 @@ build/%.obj: src/%.cpp
 
 -include main.d
 
-
 bisogna passare esplicitamente:
 1) target (build/main.obj)
 2) path completo al sorgente (src/main.cpp)
@@ -386,21 +376,6 @@ per il resto, passando il parametro -i corretto, i .h sono già a posto.
 
 
 
-e se per sbaglio cancello il file .d?
-l'invocazione del make non lo ricostruisce, col risultato che finché non
-modifico il cpp, le dipendenze non vengono rigenerate: cambio un .h e il cpp
-non viene ricompilato...
-
-devo forzare la ricompilazione dei file senza *.d
-com'è adesso non posso far dipendere l'obj dal .d, perché essendo il .d più giovane,
-make ricreerebbe l'obj ogni volta. se vogliamo seguire questa strada,
-bisogna creare *prima* il .d, poi il .obj:
-
-
-
-
-
-
 
 DOVE METTO I FILE .d? in una cartella apposta, fuori versionamento
 
@@ -409,16 +384,14 @@ DOVE METTO I FILE .d? in una cartella apposta, fuori versionamento
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
-<li>Lavavej, S. T. &ldquo;MinGW Distro&rdquo;. <em>nuwen.net</em>. &lt;<a href="http://nuwen.net/mingw.html">http://nuwen.net/mingw.html</a>&gt;. Visitato il 18/09/2014.</li>
-<a name="ref-2"></a>
 <li>McPeak, S. &ldquo;Autodependencies with GNU make&rdquo;. <em>scottmcpeak.com</em>. &lt;<a href="http://scottmcpeak.com/autodepend/autodepend.html">http://scottmcpeak.com/autodepend/autodepend.html</a>&gt;. Visitato il 18/09/2014.</li>
+<a name="ref-2"></a>
+<li>Smith, P. D. &ldquo;Advanced Auto-Dependency Generation&rdquo;. <em>mad-scientist.net</em>. &lt;<a href="http://mad-scientist.net/make/autodep.html">http://mad-scientist.net/make/autodep.html</a>&gt;. Visitato il 18/09/2014.</li>
 <a name="ref-3"></a>
-<li>&ldquo;Advanced Auto-Dependency Generation&rdquo;. <em>mad-scientist.net</em>. &lt;<a href="http://mad-scientist.net/make/autodep.html">http://mad-scientist.net/make/autodep.html</a>&gt;. Visitato il 18/09/2014.</li>
-<a name="ref-4"></a>
 <li>&ldquo;GNU `make'&rdquo;. <em>GNU Operating System</em>. &lt;<a href="http://www.gnu.org/software/make/manual/make.html">http://www.gnu.org/software/make/manual/make.html</a>&gt;. Visitato il 18/09/2014.</li>
-<a name="ref-5"></a>
+<a name="ref-4"></a>
 <li>&ldquo;How to Get Dependencies from /showIncludes&rdquo;. <em>The Conifer Systems Blog</em>. &lt;<a href="http://www.conifersystems.com/2008/10/09/dependencies-from-showincludes/">http://www.conifersystems.com/2008/10/09/dependencies-from-showincludes/</a>&gt;. Visitato il 18/09/2014.</li>
-<a name="ref-6"></a>
+<a name="ref-5"></a>
 <li>&ldquo;Solving the Dependency Problem in Software Build&rdquo;. <em>Electric Cloud</em>. &lt;<a href="http://electric-cloud.com/wp-content/uploads/2014/06/Solving-the-Dep-Prob-Sftw-Blds.pdf">http://electric-cloud.com/wp-content/uploads/2014/06/Solving-the-Dep-Prob-Sftw-Blds.pdf</a>&gt;. Visitato il 18/09/2014.</li>
 <a name="ref-7"></a>
 <li>&ldquo;/showIncludes (List Include Files)&rdquo;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/hdkef6tk.aspx">http://msdn.microsoft.com/en-us/library/hdkef6tk.aspx</a>&gt;. Visitato il 18/09/2014.</li>
