@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>Good Unit Tests /12</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-12">risorse</a> | good unit tests /12</p>
+<h1>Good Unit Tests /12</h1>
+<p>Questa parte (la dodicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a> e qui l'<a href="gut-11.html">undicesima</a>) descrive un piccolo refactoring.</p>
+<p>Analizzando il codice sorgente mi sono reso conto che la classe <span class="code">Expression</span>, oltre a definire la strategia di <span class="code">logAndEvaluate</span>, si occupa della gestione delle espressioni unarie. Conviene separare le due responsabilità, introducendo una nuova classe, <span class="code">UnaryExpression</span>:</p>
+<pre class="code">
+// file gut.h
+// ...
+
+struct Expression {
+  static std::string last;
+  virtual ~Expression() { }
+  virtual bool evaluate() const = 0;
+  virtual std::string toString() const = 0;
+<del>  template &lt;typename T&gt;
+  static bool logAndEvaluate(const T&amp; value) {
+    if (HasOperatorString&lt;T&gt;::response)
+      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value).str();
+    else
+      Expression::last = gut::toString(static_cast&lt;bool&gt;(value));
+    return static_cast&lt;bool&gt;(value);
+  }</del>
+  bool logAndEvaluate() {
+    Expression::last = toString();
+    return evaluate();
+  }
+};
+
+std::string Expression::last;
+
+<ins>template&lt;typename T&gt;
+class UnaryExpression : public Expression {
+protected:
+  const T&amp; value_;
+public:
+  UnaryExpression(const T&amp; value) : value_(value) { }
+  virtual bool evaluate() const {
+    return static_cast&lt;bool&gt;(value_);
+  }
+  virtual std::string toString() const {
+    if (HasOperatorString&lt;T&gt;::response)
+      return StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value_).str();
+    else
+      return gut::toString(static_cast&lt;bool&gt;(value_));
+  }
+};</ins>
+
+// ...
+
+template&lt;typename T&gt;
+class Term {
+  // ...
+
+  operator bool() const {
+    <del>return Expression::logAndEvaluate(lhs_);</del>
+    <ins>return UnaryExpression&lt;T&gt;(lhs_).logAndEvaluate();</ins>
+  }
+  // ...
+
+};
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-12/gut.h">gut.h</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 07/10/2014</p>
+</body>
+</html>
