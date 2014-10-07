@@ -169,7 +169,7 @@ TEST {
  */
 </pre>
 <h2>operator bool</h2>
-<p>L'ambiguit&agrave; su <span class="code">operator&lt;&lt;</span> si presenta quando un oggetto convertibile a <span class="code">bool</span> viene citato in una direttiva CHECK o REQUIRE. Il caso tuttavia &egrave; tutt'altro che raro: &egrave; infatti probabile che di un oggetto dalla spiccata natura &ldquo;booleana&rdquo; si voglia verificare il valore di verit&agrave;:</p>
+<p>L'ambiguit&agrave; su <span class="code">operator&lt;&lt;</span> si presenta quando un oggetto convertibile a <span class="code">bool</span> viene citato in una direttiva CHECK o REQUIRE, in virt&ugrave; del fatto che i valori booleani sono implicitamente convertibili a intero:</p>
 <pre class="code">
 class InputTextFile {
   std::ifstream is_;
@@ -186,7 +186,30 @@ TEST {
   CHECK(file); // does not compile!
 }
 </pre>
-<p>Una soluzione poco pratica consiste nel forzare la conversione:</p>
+<pre class="code">
+// MinGW 4.8.2 error message
+
+gut.h: In instantiation of &apos;std::string gut::toString(const T&amp;)&hellip;
+gut.h:150:41:   required from &apos;static bool gut::Expression::logAndEvaluate(const T&amp;)&hellip;
+gut.h:383:41:   required from &apos;gut::Term&lt;T&gt;::operator bool() const&hellip;
+test-InputTextFile.cpp:27:1:   required from here
+gut.h:87:23: error: ambiguous overload for &apos;operator&lt;&lt;&apos;&hellip;
+  os &lt;&lt; std::boolalpha &lt;&lt; value;
+                       ^
+gut.h:87:23: note: candidates are:
+d:\mingw\include\c++\4.8.2\ostream:166:7: note:&hellip;
+       operator&lt;&lt;(long __n)
+       ^
+d:\mingw\include\c++\4.8.2\ostream:170:7: note:&hellip;
+       operator&lt;&lt;(unsigned long __n)
+       ^
+d:\mingw\include\c++\4.8.2\ostream:174:7: note:&hellip;
+       operator&lt;&lt;(bool __n)
+       ^
+&hellip;
+</pre>
+<p></p>
+<p>Il caso tuttavia &egrave; tutt'altro che raro: &egrave; infatti probabile che di un oggetto dalla spiccata natura &ldquo;booleana&rdquo; si voglia verificare il valore di verit&agrave;. Una soluzione poco pratica consiste nel forzare la conversione:</p>
 <pre class="code">
 TEST {
   InputTextFile file(&quot;file1.txt&quot;);
@@ -256,7 +279,7 @@ TEST {
 <a name="appendice"></a>
 <h2>Appendice</h2>
 <h3>Verifica della presenza di un metodo</h3>
-<p>Nonostante le limitate caratteristiche introspettive del C++, &egrave; possibile determinare a <em>runtime</em> se un oggetto implementa un particolare metodo, sfruttando lo <em>SFINAE</em><sup><a href="#ref-3">[3]</a></sup>:</p>
+<p>Nonostante le limitate caratteristiche introspettive del C++, &egrave; possibile determinare a <em>runtime</em> se un oggetto implementa un particolare metodo, sfruttando lo <em>SFINAE</em><sup><a href="#ref-4">[4]</a></sup>:</p>
 <pre class="code">
 #include &lt;iostream&gt;
 #include &lt;string&gt;
@@ -405,10 +428,12 @@ int main() {
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
-<li class="ref">&quot;More C++ Idioms/Member Detector&quot;. <em>wikibooks</em>. &lt;<a href="http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector">http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+<li class="ref">Karlsson, B. &quot;The Safe Bool Idiom&quot;. <em>artima.com</em>. &lt;<a href="http://www.artima.com/cppsource/safebool.html">http://www.artima.com/cppsource/safebool.html</a>&gt;. Visitato il 16 Ottobre 2012.</li>
 <a name="ref-2"></a>
-<li class="ref">&quot;SFINAE to check for inherited member functions&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions">http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+<li class="ref">&quot;More C++ Idioms/Member Detector&quot;. <em>wikibooks</em>. &lt;<a href="http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector">http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Member_Detector</a>&gt;. Visitato il 16 Ottobre 2012.</li>
 <a name="ref-3"></a>
+<li class="ref">&quot;SFINAE to check for inherited member functions&quot;. <em>Stack Overflow</em>. &lt;<a href="http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions">http://stackoverflow.com/questions/1966362/sfinae-to-check-for-inherited-member-functions</a>&gt;. Visitato il 16 Ottobre 2012.</li>
+<a name="ref-4"></a>
 <li class="ref">&quot;Substitution failure is not an errors&quot;. <em>wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error">http://en.wikipedia.org/wiki/Substitution_failure_is_not_an_error</a>&gt;. Visitato il 16 Ottobre 2012.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 15/10/2012</p>
