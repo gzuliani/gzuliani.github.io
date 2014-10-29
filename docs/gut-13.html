@@ -1,0 +1,118 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /13</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-13">risorse</a> | good unit tests /13</p>
+<h1>Good Unit Tests /13</h1>
+<p>Questa parte (la tredicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a> e qui la <a href="gut-11.html">dodicesima</a>) descrive un piccolo refactoring della classe <span class="code">Boolean</span>.</p>
+<p>La serializzazione del messaggio che descrive la ragione del fallimento del test avviene per mezzo di un oggetto temporaneo <span class="code">TextFlow</span>:</p>
+<pre class="code">
+// file are-almost-equal.cpp
+
+#include &quot;gut.h&quot;
+#include &lt;cmath&gt;
+
+const double pi      = 3.141592653;
+const double epsilon = 0.001;
+
+gut::Boolean AreAlmostEqual(double d1, double d2) {
+  double diff = std::fabs(d1 - d2);
+  return gut::Boolean(
+    diff &lt; epsilon,
+    gut::TextFlow()
+      &lt;&lt; &quot;|&quot;
+      &lt;&lt; d1
+      &lt;&lt; &quot; - &quot;
+      &lt;&lt; d2
+      &lt;&lt; &quot;| = &quot;
+      &lt;&lt; diff
+      &lt;&lt; &quot; &gt;= &quot;
+      &lt;&lt; epsilon);
+}
+
+TEST(&quot;AreAlmostEqual&quot;) {
+  CHECK(AreAlmostEqual(pi, 3.14));
+  CHECK(AreAlmostEqual(pi, 3.141));
+}
+
+/* output:
+ *
+ * Test suite started...
+ * AreAlmostEqual: FAILED
+ *  are-almost-equal.cpp(12) : [error] AreAlmostEqual(pi, 3.14) evaluates to
+ *  |3.14159 - 3.14| = 0.00159265 &gt;= 0.001
+ * Ran 1 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>L'intenzione è di eliminare l'uso dell'oggetto <span class="code">TextFlow</span> e serializzare il messaggio direttamente in <span class="code">Boolean</span>:</p>
+<pre class="code">
+gut::Boolean AreAlmostEqual(double d1, double d2) {
+  double diff = std::fabs(d1 - d2);
+  <ins>return gut::Boolean(diff &lt; epsilon)
+    &lt;&lt; &quot;|&quot;
+    &lt;&lt; d1
+    &lt;&lt; &quot; - &quot;
+    &lt;&lt; d2
+    &lt;&lt; &quot;| = &quot;
+    &lt;&lt; diff
+    &lt;&lt; &quot; &gt;= &quot;
+    &lt;&lt; epsilon);</ins>
+}
+</pre>
+<p>La nuova forma è più chiara, oltre che più compatta. Il risultato è ottenuto integrando in <span class="code">Boolean</span> il comportamento di <span class="code">TextFlow</span>:</p>
+<pre class="code">
+// file gut.h
+// ...
+
+class Boolean {
+  bool value_;
+  <del>std::string repr_;</del>
+  <ins>mutable std::stringstream repr_;</ins>
+public:
+  Boolean(bool value) : value_(value)<del>, repr_(gut::toString(value))</del> { }
+  <del>Boolean(bool value, const std::string&amp; repr) : value_(value), repr_(repr) { }</del>
+  <ins>Boolean(const Boolean&amp; other) : value_(other.value_) {
+    repr_ &lt;&lt; other.repr_.rdbuf();
+  }</ins>
+  <ins>explicit</ins> operator bool() const {
+    return value_;
+  }
+  operator std::string() const {
+    <ins>if (!repr_.rdbuf()-&gt;in_avail())
+      repr_ &lt;&lt; std::boolalpha &lt;&lt; value_;</ins>
+    return repr_<ins>.str()</ins>;
+  }
+  <ins>template &lt;typename T&gt;
+  Boolean&amp; operator&lt;&lt;(const T&amp; item) {
+    repr_ &lt;&lt; item;
+    return *this;
+  }</ins>
+};
+
+<del>class TextFlow {
+  std::ostringstream oss_;
+public:
+  template &lt;typename T&gt;
+  TextFlow&amp; operator&lt;&lt;(const T&amp; item) {
+    oss_ &lt;&lt; item;
+    return *this;
+  }
+  operator std::string() const {
+    return oss_.str();
+  }
+};</del>
+
+// ...
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-13/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-13/are-almost-equal.cpp">are-almost-equal.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 07/10/2014</p>
+</body>
+</html>

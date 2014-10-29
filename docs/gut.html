@@ -320,7 +320,7 @@ TEST(&quot;Custom boolean expression&quot;) {
 }</del>
 
 <ins>gut::Boolean isOdd(int n) {
-  return gut::Boolean(n % 2 == 1, gut::TextFlow() &lt;&lt; n &lt;&lt; &quot; mod 2 != 0&quot;);
+  return gut::Boolean(n % 2 == 1) &lt;&lt; n &lt;&lt; &quot; mod 2 != 0&quot;;
 }</ins>
 
 TEST(&quot;Custom boolean expression&quot;) {
@@ -337,7 +337,7 @@ TEST(&quot;Custom boolean expression&quot;) {
  * FAILED - 1 failure(s) in 1 test(s).
  */
 </pre>
-<p>In sostanza, anzich&eacute; ritornare un semplice <span class="code">bool</span>, la funzione restituisce un oggetto di tipo <span class="code">gut::Boolean</span> inizializzato con il valore di verit&agrave; originale, corredato dall'eventuale messaggio d'errore &ndash; che apparir&agrave; nel prospetto in caso il valore di ritorno sia <span class="code">false</span>. Il messaggio viene composto incrementalmente, serializzando le varie componenti in un oggetto temporaneo di tipo <span class="code">gut::TextFlow</span> tramite l'operatore <span class="code">&lt;&lt;</span>. Esempi pi&ugrave; complessi (<span class="code">AreAlmostEqual</span> per l'uguaglianza di numeri <em>floating-point</em>, <span class="code">AreTextFileEqual</span> che confronta due file di testo evidenziando la prima differenza trovata) sono riportati nella <a href="gut-4.html">quarta parte</a> degli appunti.</p>
+<p>In sostanza, anzich&eacute; ritornare un semplice <span class="code">bool</span>, la funzione restituisce un oggetto di tipo <span class="code">gut::Boolean</span> inizializzato con il valore di verit&agrave; originale, corredato dall'eventuale messaggio d'errore &ndash; che apparir&agrave; nel prospetto in caso il valore di ritorno sia <span class="code">false</span>. Il messaggio viene composto incrementalmente, serializzando le varie componenti direttamente nell'oggetto <span class="code">Boolean</span> tornato. Esempi pi&ugrave; complessi (<span class="code">AreAlmostEqual</span> per l'uguaglianza di numeri <em>floating-point</em>, <span class="code">AreTextFileEqual</span> che confronta due file di testo evidenziando la prima differenza trovata) sono riportati nella <a href="gut-4.html">quarta parte</a> degli appunti (la <a href="gut-13.html">tredicesima parte</a> presenta un piccolo refactoring della classe <span class="code">Boolean</span> di cui gli esempi non tengono conto).</p>
 <h3>fail-fast</h3>
 <p>L'opzione <em>fail-fast</em> termina anticipatamente l'intera test suite in corrispondenza del primo errore. Per attivarla, &egrave; sufficiente definire la macro <span class="code">ENABLE_FAILFAST</span> immediatamente dopo la direttiva di inclusione di gut<a href="#rif-1.7"><sup>[1.7]</a>, <a href="#rif-1.8"><sup>[1.8]</a>.</p>
 <h3>Messaggi</h3>
@@ -398,6 +398,8 @@ TEST(&quot;Custom boolean expression&quot;) {
 		<li class="ref"><a href="gut-11.html">parte 11</a>: nuove macro di cattura (<span class="code">THROWS_*</span> e <span class="code">REQUIRE_THROWS_*</span>);</li>
 		<a name="rif-1.12"></a>
 		<li class="ref"><a href="gut-12.html">parte 12</a>: refactoring della gerarchia <span class="code">Expression</span>.</li>
+		<a name="rif-1.13"></a>
+		<li class="ref"><a href="gut-13.html">parte 13</a>: refactoring di <span class="code">Boolean</span>.</li>
 	</ul>
 	</li>
 	<a name="rif-2"></a>
@@ -411,6 +413,6 @@ TEST(&quot;Custom boolean expression&quot;) {
 	<a name="rif-6"></a>
 	<li class="ref">Newkirk, J. &quot;Why you should not use SetUp and TearDown in NUnit&quot;. <em>James Newkirk's blog</em>. &lt;<a href="http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html">http://jamesnewkirk.typepad.com/posts/2007/09/why-you-should-.html</a>&gt;. Visitato il 30 Giugno 2012.</li>
 </ol>
-<p class="modification-notice">Pagina modificata il 28/08/2014</p>
+<p class="modification-notice">Pagina modificata il 29/10/2014</p>
 </body>
 </html>
