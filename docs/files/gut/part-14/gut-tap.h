@@ -7,15 +7,15 @@ class TapReport {
     std::ostream& os_;
     int testCount_;
     std::string testName_;
-    std::vector<Notice> log_;
+    std::vector<std::string> log_;
     bool quit_;
 public:
     TapReport(std::ostream& os = std::cout) : os_(os) { }
-    void onStart() {
+    void start() {
         testCount_ = 0;
         quit_ = false;
     }
-    void onEnd(int tests, int failedTests, int /*failures*/, double /*duration*/) {
+    void end(int tests, int failedTests, int /*failures*/, double /*duration*/) {
         if (quit_)
             return;
         os_ << "1.." << tests << std::endl;
@@ -27,41 +27,41 @@ public:
                 << okRatio << "% ok" << std::endl;
         }
     }
-    void onStartTest(const std::string& name) {
+    void startTest(const std::string& name) {
         ++testCount_;
         testName_ = name;
     }
-    void onEndTest(bool failed, double /*duration*/) {
+    void endTest(bool failed, double /*duration*/) {
         std::ostringstream oss;
         if (failed) {
             oss << "not ";
         }
         oss << "ok " << testCount_ << " - " << testName_;
         for (const auto& entry : log_) {
-            oss << "\n# " << entry.toString();
+            oss << "\n# " << entry;
         }
         os_ << oss.str() << std::endl;
         log_.clear();
     }
-    void onFailure(const Notice& failure) {
-        log_.push_back(failure);
+    void failure(const char* file, int line, int /*level*/, const std::string& what) {
+        append(file, line, what);
     }
-    void onEval(const Notice& expr) {
-        log_.push_back(expr);
+    void info(const char* file, int line, int /*level*/, const std::string& what) {
+        append(file, line, what);
     }
-    void onInfo(const Notice& info) {
-        log_.push_back(info);
-    }
-    void onWarn(const Notice& warn) {
-        log_.push_back(warn);
-    }
-    void onQuit(const std::string& reason) {
+    void quit(const std::string& reason) {
         quit_ = true;
         std::ostringstream oss;
         oss << "Bail out!";
         if (!reason.empty ())
             oss << " Reason: " << reason;
         os_ << oss.str() << std::endl;
+    }
+protected:
+    void append(const char* file, int line, const std::string& what) {
+        std::ostringstream oss;
+        oss << file << "(" << line << ") : " << what;
+        log_.push_back(oss.str());
     }
 };
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "gut-tap.h"
-GUT_ENABLE_REPORT(gut::TapReport ())
+GUT_CUSTOM_REPORT(gut::TapReport())
 
 class RecentlyUsedList {
     std::vector<std::string> items_;
@@ -25,36 +25,6 @@ public:
         if (found != items_.end())
             items_.erase(found);
         items_.push_back(item);
-    }
-};
-
-struct MyReport {
-    void onStart() {
-        std::cout << "start\n";
-    }
-    void onEnd(int, int, int, double) {
-        std::cout << "end\n";
-    }
-    void onStartTest(const std::string& name) {
-        std::cout << "startTest " << name << "\n";
-    }
-    void onEndTest(bool, double) {
-        std::cout << "endTest" << "\n";
-    }
-    void onFailure(const gut::Notice& failure) {
-        std::cout << "failure " << failure << "\n";
-    }
-    void onEval(const gut::Notice& expr) {
-        std::cout << "eval " << expr << "\n";
-    }
-    void onInfo(const gut::Notice& info) {
-        std::cout << "info " << info << "\n";
-    }
-    void onWarn(const gut::Notice& warn) {
-        std::cout << "warn " << warn << "\n";
-    }
-    void onQuit(const std::string& reason) {
-        std::cout << "quit " << reason << "\n";
     }
 };
 
