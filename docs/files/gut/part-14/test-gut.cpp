@@ -22,7 +22,8 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Object& co) {
-    return os << "Object#" << co.GetId(); }
+    return os << "Object#" << co.GetId();
+}
 
 class NonCopiableObject {
     int id_;

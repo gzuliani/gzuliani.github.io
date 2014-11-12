@@ -40,7 +40,7 @@ int main()
  * test.cpp(14) : TEST error: a == 1
  */
 </pre>
-<p>Da questa forma molto primitiva, traendo ispirazione da ci&ograve; che si trovava sulla rete (l'analisi di Noel Llopis<a href="#rif-3"><sup>[3]</sup></a> in primis, ma in particolare l'intervento di Kevlin Henney a ACCU 2010<a href="#rif-2"><sup>[2]</sup></a> e la libreria catch<a href="#rif-4"><sup>[4]</sup></a>), <em>gut</em> nel tempo si &egrave; evoluta; negli appunti<a href="#rif-1"><sup>[1]</sup></a> ho tenuto traccia delle varie versioni che si sono succedute.</p>
+<p>Da questa forma molto primitiva, traendo ispirazione da ci&ograve; che si trovava sulla rete (l'analisi di Noel Llopis<a href="#rif-3"><sup>[3]</sup></a> in primis, ma in particolare l'intervento di Kevlin Henney a ACCU 2010<a href="#rif-2"><sup>[2]</sup></a> e la libreria catch<a href="#rif-4"><sup>[4]</sup></a>), gut nel tempo si &egrave; evoluta; negli appunti<a href="#rif-1"><sup>[1]</sup></a> ho tenuto traccia delle varie versioni che si sono succedute.</p>
 <h2>Esempi d'uso</h2>
 <p>La versione corrente di gut, lungi dall'essere completa, ha raggiunto, per le mie esigenze, un discreto grado di maturit&agrave;.</p>
 <h3>Test suite</h3>
@@ -349,7 +349,7 @@ TEST(&quot;Custom boolean expression&quot;) {
 	<li><strong><span class="code">FAIL</span></strong>: visualizza un messaggio testuale libero indipendentemente dall'esito del test e causa il fallimento dello stesso.</li>
 </ul>
 <h3>Prospetti</h3>
-<p>La <a href="gut-10.html">decima parte</a> degli appunti mostra come personalizzare il prospetto finale definendo un oggetto <span class="code">Report</span> dedicato.</p>
+<p>La <a href="gut-10.html">decima</a> e la <a href="gut-14.html">quattordicesima</a> parte degli appunti mostrano come personalizzare il prospetto finale definendo un oggetto <span class="code">Report</span> dedicato.</p>
 </ul>
 <h2>Punti aperti</h2>
 <p>Alcune spunti per eventuali sviluppi futuri:</p>
@@ -365,9 +365,10 @@ TEST(&quot;Custom boolean expression&quot;) {
 <ul>
 	<li><a href="files/gut/current/colors.h">colors.h</a></li>
 	<li><a href="files/gut/current/gut.h">gut.h</a></li>
-	<li><a href="files/gut/current/gut-tap.h">gut-tap.h</a></li>
 	<li><a href="files/gut/current/test-gut.cpp">test-gut.cpp</a></li>
 	<li><a href="files/gut/current/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/current/gut-tap.h">gut-tap.h</a></li>
+	<li><a href="files/gut/current/example-tap.cpp">example-tap.cpp</a></li>
 </ul>
 <h2>Riferimenti</h2>
 <ol>
@@ -375,7 +376,7 @@ TEST(&quot;Custom boolean expression&quot;) {
 	<li class="ref">Gli appunti di <em>Good Unit Tests</em> tracciano l'evoluzione nel tempo dell'infrastruttura:
 	<ul>
 		<a name="rif-1.1"></a>
-		<li class="ref"><a href="gut-1.html">parte 1</a>, <a href="gut-1-bis.html">parte 1 bis</a>: macro <span class="code">CHECK</span> e oggetto <span class="code">Capture</span> per la valutazione dell'espressione di test;</li>
+		<li class="ref"><a href="gut-1.html">parte 1</a>, <a href="gut-1-bis.html">parte 1 bis</a>: macro <span class="code">CHECK</span> e cattura dell'espressione;</li>
 		<a name="rif-1.2"></a>
 		<li class="ref"><a href="gut-2.html">parte 2</a>: macro <span class="code">THROW</span> per la verifica delle eccezioni;</li>
 		<a name="rif-1.3"></a>
@@ -400,6 +401,8 @@ TEST(&quot;Custom boolean expression&quot;) {
 		<li class="ref"><a href="gut-12.html">parte 12</a>: refactoring della gerarchia <span class="code">Expression</span>.</li>
 		<a name="rif-1.13"></a>
 		<li class="ref"><a href="gut-13.html">parte 13</a>: refactoring di <span class="code">Boolean</span>.</li>
+		<a name="rif-1.14"></a>
+		<li class="ref"><a href="gut-14.html">parte 14</a>: disaccoppiamento di <span class="code">Report</span> da gut.</li>
 	</ul>
 	</li>
 	<a name="rif-2"></a>

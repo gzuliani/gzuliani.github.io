@@ -3,9 +3,6 @@
 #include <stdexcept>
 #include <vector>
 
-#include "gut-tap.h"
-GUT_CUSTOM_REPORT(gut::TapReport())
-
 class RecentlyUsedList {
     std::vector<std::string> items_;
 public:
@@ -30,13 +27,15 @@ public:
 
 TEST("Initial list is empty") {
     RecentlyUsedList anEmptyList;
+
     CHECK(anEmptyList.empty());
     CHECK(anEmptyList.size() == 0);
 }
 
 TEST("Insertion to empty list is retained") {
     RecentlyUsedList aListWithOneElement;
-    THROWS_NOTHING(aListWithOneElement.insert("one"));
+    aListWithOneElement.insert("one");
+
     CHECK(!aListWithOneElement.empty());
     CHECK(aListWithOneElement.size() == 1);
     CHECK(aListWithOneElement[0] == "one");
@@ -61,6 +60,7 @@ TEST("Duplicate insertions are moved to the front but not inserted") {
     aListWithDuplicatedElements.insert("two");
     aListWithDuplicatedElements.insert("three");
     aListWithDuplicatedElements.insert("two");
+
     CHECK(!aListWithDuplicatedElements.empty());
     CHECK(aListWithDuplicatedElements.size() == 3);
     CHECK(aListWithDuplicatedElements[0] == "two");
@@ -71,5 +71,6 @@ TEST("Duplicate insertions are moved to the front but not inserted") {
 TEST("Out of range indexing throws exception") {
     RecentlyUsedList aListWithOneElement;
     aListWithOneElement.insert("one");
+
     THROWS(aListWithOneElement[1], std::out_of_range);
 }

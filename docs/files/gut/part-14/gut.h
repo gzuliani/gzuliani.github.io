@@ -854,7 +854,7 @@ class DefaultReport {
     std::vector<std::pair<int, std::string>> log_;
 public:
     DefaultReport(std::ostream& os = std::cout) : os_(os) { }
-    void start() { os_ << "Test suite started..." << std::endl;    }
+    void start() { os_ << "Test suite started..." << std::endl; }
     void end(int tests, int failedTests, int failures, double duration) {
         os_ << "Ran " << tests << " test(s) in " << std::fixed << std::setprecision(0) << duration * 1000. << " ms." << std::endl;
         if (failedTests == 0)
