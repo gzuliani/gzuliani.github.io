@@ -4,69 +4,64 @@
 namespace gut {
 
 class TapReport {
-    int tests_;
-    int failedTests_;
+    std::ostream& os_;
+    int testCount_;
     std::string testName_;
-    bool testFailed_;
-    std::vector<gut::Notice> log_;
+    std::vector<std::string> log_;
     bool quit_;
 public:
-    int failedTestCount() const { return failedTests_; }
-    void onStart() {
+    TapReport(std::ostream& os = std::cout) : os_(os) { }
+    void start() {
+        testCount_ = 0;
         quit_ = false;
-        tests_ = 0;
-        failedTests_ = 0;
     }
-    void onEnd() {
+    void end(int tests, int failedTests, int /*failures*/, double /*duration*/) {
         if (quit_)
             return;
-        std::cout << "1.." << tests_ << std::endl;
-        if (tests_ > 0) {
-            float okRatio = (tests_ - failedTests_) * 100. / tests_;
-            std::cout
-                << "# failed " << failedTests_ << "/" << tests_ << " test(s), "
+        os_ << "1.." << tests << std::endl;
+        if (tests > 0) {
+            float okRatio = (tests - failedTests) * 100. / tests;
+            os_
+                << "# failed " << failedTests << "/" << tests << " test(s), "
                 << std::fixed << std::setprecision(1)
                 << okRatio << "% ok" << std::endl;
         }
     }
-    void onStartTest(const std::string& name) {
-        ++tests_;
+    void startTest(const std::string& name) {
+        ++testCount_;
         testName_ = name;
-        testFailed_ = false;
     }
-    void onEndTest() {
+    void endTest(bool failed, double /*duration*/) {
         std::ostringstream oss;
-        if (testFailed_) {
-            ++failedTests_;
+        if (failed) {
             oss << "not ";
         }
-        oss << "ok " << tests_ << " - " << testName_;
+        oss << "ok " << testCount_ << " - " << testName_;
         for (const auto& entry : log_) {
-            oss << "\n# " << entry.toString();
+            oss << "\n# " << entry;
         }
-        std::cout << oss.str() << std::endl;
+        os_ << oss.str() << std::endl;
         log_.clear();
     }
-    void onFailure(const gut::Notice& failure) {
-        log_.push_back(failure);
-        testFailed_ = true;
+    void failure(const char* file, int line, int /*level*/, const std::string& what) {
+        append(file, line, what);
     }
-    void onEval(const gut::Notice& eval) {
-        log_.push_back(eval);
+    void info(const char* file, int line, int /*level*/, const std::string& what) {
+        append(file, line, what);
     }
-    void onInfo(const gut::Notice& info) {
-        log_.push_back(info);
-    }
-    void onWarn(const gut::Notice& warn) {
-        log_.push_back(warn);
-    }
-    void onQuit(const std::string& reason) {
+    void quit(const std::string& reason) {
         quit_ = true;
         std::ostringstream oss;
         oss << "Bail out!";
         if (!reason.empty ())
             oss << " Reason: " << reason;
-        std::cout << oss.str() << std::endl;
+        os_ << oss.str() << std::endl;
+    }
+protected:
+    void append(const char* file, int line, const std::string& what) {
+        std::ostringstream oss;
+        oss << file << "(" << line << ") : " << what;
+        log_.push_back(oss.str());
     }
 };
 
