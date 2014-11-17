@@ -424,7 +424,7 @@
    <dl>
     <dt>NOC/NOP</dt><dd>average number of classes per package &#x2192; high-level structuring, indicates if packages tend to be coarse or fine grained;</dd>
     <dt>NOM/NOC</dt><dd>average number of methods per class &#x2192; class structuring, indicates how operations are distributed over the system;</dd>
-    <dt>LOC/NOM</dt><dd>average number of lines per method &#x2192; operation structuring, indicates how well the system's behaviuor is distributed over operations;</dd>
+    <dt>LOC/NOM</dt><dd>average number of lines per method &#x2192; operation structuring, indicates how well the system's behaviour is distributed over operations;</dd>
     <dt>CYCLO/LOC</dt><dd>average method complexity &#x2192; intrinsic operation complexity, indicates the expected complexity of an operation.</dd>
    </dl>
    <h3>Right part: Coupling</h3>
