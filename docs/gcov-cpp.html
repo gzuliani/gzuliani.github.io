@@ -1,0 +1,291 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gcov e C++</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gcov-cpp">risorse</a> | gcov-cpp</p>
+<h1>Gcov e C++</h1>
+<h2>Introduzione</h2>
+<p><em>Gcov</em> è un'utilità che determina quante e quali righe di codice sorgente sono state eseguite a seguito di un'esecuzione di un programma compilato con <em>GCC</em>. Può quindi essere utilizzato per misurare il grado di copertura realizzato da uno unit-test rispetto all'implementazione dell'oggetto sotto test.</p>
+<h2>Compilazione del programma</h2>
+<p>L'esperimento è stato condotto su Windows 7 Pro SP1 x64 utilizzando il compilatore GCC della distribuzione MinGW v. 11.6<a href="#ref-7"><sup>[7]</sup></a>. I sorgenti in gioco sono tre: <span class="code">RecentlyUsedList.h</span> e <span class="code">RecentlyUsedList.cpp</span>, che definiscono l'implementazione dell'oggetto di cui si vuole verificare il funzionamento, e <span class="code">TestRecentlyUsedList.cpp</span>, che contiene il codice di test:</p>
+<pre class="code">
+[RecentlyUsedList.h]
+
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+class RecentlyUsedList {
+  std::vector&lt;std::string&gt; items_;
+public:
+  bool empty() const {
+    return items_.empty();
+  }
+  size_t size() const {
+    return items_.size();
+  }
+  std::string operator[](size_t index) const;
+
+  void insert(const std::string&amp; item);
+};
+</pre>
+<pre class="code">
+[RecentlyUsedList.cpp]
+
+#include &quot;RecentlyUsedList.h&quot;
+
+#include &lt;algorithm&gt;
+#include &lt;stdexcept&gt;
+
+std::string RecentlyUsedList::operator[](size_t index) const {
+  if (index &gt;= size())
+    throw std::out_of_range(&quot;invalid subscript&quot;);
+  return items_[size() - index - 1];
+}
+void RecentlyUsedList::insert(const std::string&amp; item) {
+  auto found = std::find(begin(items_), end(items_), item);
+  if (found != items_.end())
+    items_.erase(found);
+  items_.push_back(item);
+}
+</pre>
+<pre class="code">
+[TestRecentlyUsedList.cpp]
+
+#include &lt;gut.h&gt;
+#include &quot;RecentlyUsedList.h&quot;
+
+TEST(&quot;Initial list is empty&quot;) {
+  RecentlyUsedList anEmptyList;
+
+  CHECK(anEmptyList.empty());
+  CHECK(anEmptyList.size() == 0);
+}
+
+TEST(&quot;Insertion to empty list is retained&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  THROWS_NOTHING(aListWithOneElement.insert(&quot;one&quot;));
+
+  CHECK(!aListWithOneElement.empty());
+  CHECK(aListWithOneElement.size() == 1);
+  CHECK(aListWithOneElement[0] == &quot;one&quot;);
+}
+
+TEST(&quot;Distinct insertions are retained in stack order&quot;) {
+  RecentlyUsedList aListWithManyElements;
+  aListWithManyElements.insert(&quot;one&quot;);
+  aListWithManyElements.insert(&quot;two&quot;);
+  aListWithManyElements.insert(&quot;three&quot;);
+
+  CHECK(!aListWithManyElements.empty());
+  CHECK(aListWithManyElements.size() == 3);
+  CHECK(aListWithManyElements[0] == &quot;three&quot;);
+  REQUIRE(aListWithManyElements[1] == &quot;two&quot;);
+  CHECK(aListWithManyElements[2] == &quot;one&quot;);
+}
+
+TEST(&quot;Duplicate insertions are moved to the front but not inserted&quot;) {
+  RecentlyUsedList aListWithDuplicatedElements;
+  aListWithDuplicatedElements.insert(&quot;one&quot;);
+  aListWithDuplicatedElements.insert(&quot;two&quot;);
+  aListWithDuplicatedElements.insert(&quot;three&quot;);
+  aListWithDuplicatedElements.insert(&quot;two&quot;);
+
+  CHECK(!aListWithDuplicatedElements.empty());
+  CHECK(aListWithDuplicatedElements.size() == 3);
+  CHECK(aListWithDuplicatedElements[0] == &quot;two&quot;);
+  CHECK(aListWithDuplicatedElements[1] == &quot;three&quot;);
+  CHECK(aListWithDuplicatedElements[2] == &quot;one&quot;);
+}
+
+TEST(&quot;Out of range indexing throws exception&quot;) {
+  RecentlyUsedList aListWithOneElement;
+  aListWithOneElement.insert(&quot;one&quot;);
+
+  THROWS(aListWithOneElement[1], std::out_of_range);
+}
+</pre>
+<p>Il programma dev'essere compilato senza ottimizzazioni, in caso contrario il compilatore potrebbe emettere codice non conforme al sorgente, rendendo difficoltoso, se non impossibile, risalire alla riga di codice a partire dalle istruzioni macchina<a href="#ref-2"><sup>[2]</sup></a>:</p>
+<blockquote>You should compile your code without optimization if you plan to use gcov because the optimization, by combining some lines of code into one function, may not give you as much information as you need to look for `hot spots' where the code is using a great deal of computer time.</blockquote>
+<p>La compilazione convenzionale del programma di test avviene tramite il comando:</p>
+<pre class="code">
+C:\&hellip;&gt;g++ -O0 -Wall -Wextra -pedantic -std=c++11 -I%GUT_HOME%
+      TestRecentlyUsedList.cpp RecentlyUsedList.cpp -o TestRecentlyUsedList.exe</pre>
+<p>dove <span class="code">%GUT_HOME%</span> è una variabile d'ambiente che specifica la cartella di installazione del framework di test <a href="gut.html"><em>gut</em></a>. L'esecuzione del programma genera l'output atteso:</p>
+<pre class="code">
+C:\&hellip;&gt;TestRecentlyUsedList.exe
+Test suite started...
+Initial list is empty: OK
+Insertion to empty list is retained: OK
+Distinct insertions are retained in stack order: OK
+Duplicate insertions are moved to the front but not inserted: OK
+Out of range indexing throws exception: OK
+Ran 5 test(s) in 27 ms.
+OK - all tests passed.
+</pre>
+<p>Per rendere l'eseguibile compatibile con Gcov è necessario compilarlo specificando i flag <span class="code">-fprofile-arcs</span> e <span class="code">-ftest-coverage</span><a href="#ref-2"><sup>[2]</sup></a>:</p>
+<blockquote>When using gcov, you must first compile your program with two special GCC options: ‘-fprofile-arcs -ftest-coverage’. This tells the compiler to generate additional information needed by gcov (basically a flow graph of the program) and also includes additional code in the object files for generating the extra profiling information needed by gcov. These additional files are placed in the directory where the object file is located.</blockquote>
+<p>Il comando di compilazione diventa perciò:</p>
+<pre class="code">
+C:\&hellip;&gt;g++ -O0 -Wall -Wextra -pedantic -std=c++11 -I%GUT_HOME%
+      <strong>-fprofile-arcs</strong> <strong>-ftest-coverage</strong> TestRecentlyUsedList.cpp RecentlyUsedList.cpp
+      -o TestRecentlyUsedList.exe</pre>
+<p>La compilazione, oltre all'eseguibile, produce due file ausiliari, <span class="code">RecentlyUsedList.gcno</span> e <span class="code">TestRecentlyUsedList.gcno</span>, in virtù della presenza del flag <span class="code">-ftest-coverage</span>. Questi contengono l'informazione necessaria a Gcov per ricostruire il grafo dei <em>basic blocks</em><a href="#ref-1"><sup>[1]</sup></a> (sezioni di codice &ldquo;atomiche&rdquo;) e associarli alle corrispondenti righe di codice sorgente.</p>
+<p>Il test di copertura si svolge in due fasi: prima, si esegue il progamma:</p>
+<pre class="code">
+C:\&hellip;&gt;TestRecentlyUsedList.exe
+Test suite started...
+Initial list is empty: OK
+Insertion to empty list is retained: OK
+Distinct insertions are retained in stack order: OK
+Duplicate insertions are moved to the front but not inserted: OK
+Out of range indexing throws exception: OK
+Ran 5 test(s) in 7 ms.
+OK - all tests passed.
+</pre>
+<p>Durante l'esecuzione, il programma genera due ulteriori file ausiliari, anch'essi associati ai file sorgente, <span class="code">RecentlyUsedList.gcda</span> e <span class="code">TestRecentlyUsedList.gcda</span> rispettivamente. Questi sono generati per ogni unità di traduzione compilata con il flag <span class="code">-fprofile-arcs</span>, e contengono alcune statistiche sull'esecuzione del codice, come ad esempio il numero di transizioni effettuate tra i vari basic block, i tempi impiegati per completarli, e così via.</p>
+<p>Ottenuti i file <span class="code">*.gcno</span> e i relativi <span class="code">*.gcda</span>, è il momento di invocare Gcov. Sulla riga di comando vanno specificati i file da considerare per l'analisi, tipicamente tutti:</p>
+<pre class="code">
+C:\&hellip;&gt;gcov RecentlyUsedList.cpp TestRecentlyUsedList.cpp -r
+File &apos;RecentlyUsedList.cpp&apos;
+Lines executed:100.00% of 10
+Creating &apos;RecentlyUsedList.cpp.gcov&apos;
+
+File &apos;RecentlyUsedList.h&apos;
+Lines executed:100.00% of 5
+Creating &apos;RecentlyUsedList.h.gcov&apos;
+
+File &apos;TestRecentlyUsedList.cpp&apos;
+Lines executed:100.00% of 40
+Creating &apos;TestRecentlyUsedList.cpp.gcov&apos;
+
+Lines executed:100.00% of 55
+</pre>
+<p>L'opzione <span class="code">-r</span> indica a Gcov di considerare solo i sorgenti con percorso relativo, e di fatto serve ad escludere dall'analisi i file di inclusione di sistema.</p>
+<p>Dal prospetto si deduce che il test copre tutte le righe di implementazione dell'oggetto <span class="code">RecentlyUsedList</span>, avendo ottenuto una copertura del 100% su entrambi i file. Inoltre, anche il file di test è stato eseguito nella sua interezza. È importante includere anche il file di test nell'elenco dei file di Gcov: in caso contrario, del file di inclusione vengono considerate solo le righe di codice eseguite in seguito a chiamate provenienti dal file di implementazione <span class="code">RecentlyUsedList.cpp:</span></p>
+<pre class="code">
+C:\&hellip;&gt;gcov RecentlyUsedList.cpp -r
+File &apos;RecentlyUsedList.cpp&apos;
+Lines executed:100.00% of 10
+Creating &apos;RecentlyUsedList.cpp.gcov&apos;
+
+File &apos;RecentlyUsedList.h&apos;
+<strong>Lines executed:0.00% of 2               &lt;--- Wooops!</strong>
+Creating &apos;RecentlyUsedList.h.gcov&apos;
+</pre>
+<p>Aprendo il file <span class="code">RecentlyUsedList.h.gcov</span> si scopre quali sono le due righe che non sono state eseguite, ovvero quelle evidenziate dal marcatore <span class="code">#####</span>:</p>
+<pre class="code">
+[RecentlyUsedList.h.gcov]
+
+        -:    0:Source:RecentlyUsedList.h
+        -:    0:Graph:RecentlyUsedList.gcno
+        -:    0:Data:RecentlyUsedList.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include &lt;string&gt;
+        -:    2:#include &lt;vector&gt;
+        -:    3:
+        -:    4:class RecentlyUsedList {
+        -:    5:  std::vector&lt;std::string&gt; items_;
+        -:    6:public:
+        -:    7:  bool empty() const {
+        -:    8:    return items_.empty();
+        -:    9:  }
+<strong>    #####:   10:  size_t size() const {</strong>
+<strong>    #####:   11:    return items_.size();</strong>
+        -:   12:  }
+        -:   13:  std::string operator[](size_t index) const;
+        -:   14:
+        -:   15:  void insert(const std::string&amp; item);
+        -:   16:};
+</pre>
+<p>Ora, questo non sta ad indicare che la funzione <span class="code">size()</span> non è mai stata eseguita, ma che non è mai stata richiamata da uno dei file sorgente specificati nell'invocazione di Gcov.</p>
+<h3>Formato del file <span class="code">.gcov</span></h3>
+<p>Il formato dei file <span class="code">.gcov</span> è:</p>
+<pre class="code">
+execution_count:line_number:source line text
+</pre>
+<p><span class="code">execution_count</span> indica quante volte quella linea di codice è stata eseguita; è &ldquo;<span class="code">-</span>&rdquo; per le linee che non contengono codice, è &ldquo;<span class="code">#####</span>&rdquo; o &ldquo;<span class="code">====</span>&rdquo; per le righe di codice che non sono state eseguite, a seconda che siano raggiungibili attraverso dei percorsi convenzionali o specifici per la gestione di un'eccezione.</p>
+<h2>Branch count</h2>
+<p>Gcov è in grado di determinare quante volte sono stati eseguiti i blocchi di codice di istruzioni condizionali, e riportarne il conteggio &ndash; sotto forma di percentuale o in valore assoluto &ndash; nel prospetto finale. Tale metrica tuttavia a volte può risultare fourviante:</p>
+<pre class="code">
+C:\&hellip;&gt;gcov RecentlyUsedList.cpp -r -b -c
+File &apos;RecentlyUsedList.cpp&apos;
+Lines executed:100.00% of 10
+Branches executed:100.00% of 16
+Taken at least once:62.50% of 16
+Calls executed:85.71% of 21
+Creating &apos;RecentlyUsedList.cpp.gcov&apos;
+
+File &apos;RecentlyUsedList.h&apos;
+Lines executed:100.00% of 5
+No branches
+Calls executed:80.00% of 5
+Creating &apos;RecentlyUsedList.h.gcov&apos;
+
+File &apos;TestRecentlyUsedList.cpp&apos;
+Lines executed:100.00% of 40
+Branches executed:67.55% of 265
+Taken at least once:33.58% of 265
+Calls executed:49.45% of 275
+Creating &apos;TestRecentlyUsedList.cpp.gcov&apos;
+
+Lines executed:100.00% of 55
+</pre>
+<p>L'opzione <span class="code">-b</span> indica a Gcov di raccogliere anche le statistiche sull'esecuzione dei <em>branch</em> condizionali, mentre l'opzione <span class="code">-c</span> richiede di visualizzare i conteggi in assoluto anziché le percentuali.</p>
+<p>Come si può notare, i dati raccolti sembrano inconsistenti:</p>
+<pre class="code">
+File &apos;RecentlyUsedList.cpp&apos;
+<strong>Lines executed:100.00% of 10</strong>
+Branches executed:100.00% of 16
+<strong>Taken at least once:62.50% of 16    &lt;--- What?!</strong>
+...
+</pre>
+<p>Come può essere che, pur avendo eseguito tutte le linee di codice, non siano stati eseguiti tutti i blocchi condizionali? Il problema è che Gcov raccoglie le statistiche analizzando il codice oggetto, non quello sorgente. C'è quindi da considerare l'effetto della compilazione, chetalvolta  trasforma il codice in maniera non ovvia, tipicamente per ragioni di efficienza. Alcuni esempi che giustificano l'introduzione di istruzioni di salto condizionato &ldquo;extra&rdquo; sono:</p>
+<ul>
+<li>un <span class="code">if</span> nel distruttore per la deallocazione degli oggetti allocati dinamicamente<a href="#ref-5"><sup>[5]</sup></a>;</li>
+<li>il riordinamento dei <span class="code">case</span> di uno <span class="code">switch</span> per minimizzare il numero di confronti<a href="#ref-4"><sup>[4]</sup></a>;</li>
+<li>il codice di infrastruttura per la gestione delle eccezioni<a href="#ref-6"><sup>[6]</sup></a>;</li>
+<li>&hellip;</li>
+</ul>
+<h2>Gcovr</h2>
+<p>Sono disponibili diversi strumenti in grado di presentare i dati raccolti da Gcov in modo più fruibile rispetto quanto visto finora. Uno di questi è <em>Gcovr</em><a href="#ref-3"><sup>[3]</sup></a>, uno script Python che crea dei prospetti tabulari di immediata consultazione; a titolo d'esempio, un prospetto testuale ottenuto direttamente dalla linea di comando:</p>
+<pre class="code">
+C:\&hellip;&gt;gcovr.py -g -k -r .
+------------------------------------------------------------------------------
+                           GCC Code Coverage Report
+Directory: .
+------------------------------------------------------------------------------
+File                                       Lines    Exec  Cover   Missing
+------------------------------------------------------------------------------
+RecentlyUsedList.cpp                          10      10   100%
+RecentlyUsedList.h                             5       5   100%
+TestRecentlyUsedList.cpp                      40      40   100%
+------------------------------------------------------------------------------
+TOTAL                                         55      55   100%
+------------------------------------------------------------------------------
+</pre>
+<p>Gcovr è in grado di produrre lo stesso report anche in formato XML e HTML:</p>
+<p><img src="img/gcov-cpp/gcovr-small.png" alt="Esempio di report HTML generato da gcovr"></p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">&ldquo;Basic Blocks&rdquo;. <em>gcc.gnu.org</em>. &lt;<a href="https://gcc.gnu.org/onlinedocs/gccint/Basic-Blocks.html">https://gcc.gnu.org/onlinedocs/gccint/Basic-Blocks.html</a>&gt;. Visitato il 14 Novembre 2014.</li>
+<a name="ref-2"></a>
+<li class="ref">&ldquo;gcov &mdash; a Test Coverage Program&rdquo;. <em>gcc.gnu.org</em>. &lt;<a href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">https://gcc.gnu.org/onlinedocs/gcc/Gcov.html</a>&gt;. Visitato il 13 Novembre 2014.</li>
+<a name="ref-3"></a>
+<li class="ref">&ldquo;Gcovr&rdquo;. <em>gcovr.com</em>. &lt;<a href="http://gcovr.com/">http://gcovr.com/</a>&gt;. Visitato il 26 Novembre 2014.</li>
+<a name="ref-4"></a>
+<li>&ldquo;gcov and switch statements&rdquo;. <em>StackOverflow</em>. &lt;<a href="http://stackoverflow.com/questions/2813672/gcov-and-switch-statements">http://stackoverflow.com/questions/2813672/gcov-and-switch-statements</a>&gt;. Visitato il 27/11/2014.</li>
+<a name="ref-5"></a>
+<li>&ldquo;What is the branch in the destructor reported by gcov?&rdquo;. <em>StackOverflow</em>. &lt;<a href="http://stackoverflow.com/questions/7199360/what-is-the-branch-in-the-destructor-reported-by-gcov">http://stackoverflow.com/questions/7199360/what-is-the-branch-in-the-destructor-reported-by-gcov</a>&gt;. Visitato il 27/11/2014.</li>
+<a name="ref-6"></a>
+<li>&ldquo;Why gcc 4.1 + gcov reports 100% branch coverage and newer (4.4, 4.6, 4.8) reports 50% for &quot;p = new class;&quot; line?&rdquo;. <em>StackOverflow</em>. &lt;<a href="http://stackoverflow.com/questions/23219614/why-gcc-4-1-gcov-reports-100-branch-coverage-and-newer-4-4-4-6-4-8-report">http://stackoverflow.com/questions/23219614/why-gcc-4-1-gcov-reports-100-branch-coverage-and-newer-4-4-4-6-4-8-report</a>&gt;. Visitato il 27/11/2014.</li>
+<a name="ref-7"></a>
+<li class="ref">Lawavey, S. T. &ldquo;MinGW Distro&rdquo;. <em>nuwen.net</em>. &lt;<a href="http://nuwen.net/mingw.html">http://nuwen.net/mingw.html</a>&gt;. Visitato il 14 Novembre 2014.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 26/11/2014</p>
+</body>
+</html>
