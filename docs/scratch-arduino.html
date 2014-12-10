@@ -1,0 +1,99 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Scratch con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/scratch-arduino.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-arduino">risorse</a> | scratch con arduino</p>
+<h1>Scratch con Arduino</h1>
+<p>Il binomio Scratch/Arduino offre la possibilità di accedere alle porte di ingresso/uscita di una scheda Arduino dall’ambiente di programmazione Scratch. <strong>L’obiettivo non è programmare Arduino con Scratch, ma &ldquo;connettere&rdquo; Scratch al mondo reale attraverso Arduino.</strong> In questo senso, si parla anche di <span class="term">estensioni hardware</span> di Scratch. Stando a quanto offre la rete, le soluzioni più utilizzate sono due, <a href="http://s4a.cat/">S4A</a> e <a href="https://github.com/MrYsLab/s2a_fm">S2A_fm</a>.</p>
+<p class="note">Tutti gli esperimenti sono stati condotti su Xubuntu 14.04.</p>
+<h1>S4A</h1>
+<p>S4A è una versione modificata dell’ambiente 1.4 di Scratch. La versione provata è la 1.5, che può essere installata attraverso l’<em>Ubuntu Software Center</em>, oppure scaricando il <span class="term">package</span> debian all’indirizzo <a href="http://vps34736.ovh.net/S4A/S4A15.deb">http://vps34736.ovh.net/S4A/S4A15.deb</a>. Una volta scaricato, l’installazione avviene da terminale con la linea di comando:</p>
+<pre class="code">
+sudo dpkg -i S4A15.deb
+</pre>
+<p>S4A convive senza problemi con un’installazione di Scratch 2.0. Per quanto concerne la compatibilità con le versioni ufficiali di Scratch, S4A carica correttamente i progetti Scratch 1.4; i progetti salvati con S4A non sono invece riconosciuti da nessuna versione Scratch &mdash; non c’è <em>retro-compatibilità</em>.</p>
+<p>S4A consente l’accesso ad un sotto-insieme delle porte di Arduino, nella fattispecie:</p>
+<ul>
+<li>6 ingressi analogici (<span class="code">A0</span>, <span class="code">A1</span>, <span class="code">A2</span>, <span class="code">A3</span>, <span class="code">A4</span> e <span class="code">A5</span>);</li>
+<li>2 ingressi digitali (<span class="code">D2</span> e <span class="code">D3</span>);</li>
+<li>3 uscite analogiche PWM (<span class="code">D5</span>, <span class="code">D6</span> e <span class="code">D9</span>);</li>
+<li>3 uscite digitali (<span class="code">D10</span>, <span class="code">D11</span> e <span class="code">D13</span>);</li>
+<li>4 uscite per servomotori (<span class="code">D4</span>, <span class="code">D7</span>, <span class="code">D8</span> e <span class="code">D12</span>).</li>
+</ul>
+<p>S4A  è in grado di gestire tante schede Arduino quante sono le porte USB installate sul PC. L’accesso alle porte di ingresso/uscita di Arduino avviene per mezzo di una tipologia speciale di <span class="term">sprite</span>, i cosiddetti <span class="term">Arduino sprite</span>. Rispetto agli sprite convenzionali (comunque disponibili), gli sprite Arduino offrono una serie di comandi &ldquo;extra&rdquo; nell’area <em>Motion</em>/<em>Movimento</em>:</p>
+<ul>
+<li><span class="code">value of sensor &lt;SEN&gt;</span></li>
+<li><span class="code">sensor &lt;SEN&gt; pressed?</span></li>
+<li><span class="code">digital &lt;PORT&gt; on</span></li>
+<li><span class="code">digital &lt;PORT&gt; off</span></li>
+<li><span class="code">analog &lt;PORT&gt; value &lt;VAL&gt;</span></li>
+<li><span class="code">motor &lt;PORT&gt; direction &lt;DIR&gt;</span></li>
+<li><span class="code">motor &lt;PORT&gt; angle &lt;VAL&gt;</span></li>
+<li><span class="code">reset actuators</span></li>
+<li><span class="code">stop connection</span></li>
+<li><span class="code">resume connection</span></li>
+<li><span class="code">show board</span></li>
+<li><span class="code">hide board</span></li>
+<li><span class="code">board goto x: &lt;VAL&gt; y: &lt;VAL&gt;</span></li>
+</ul>
+<p>Affinch&eacute; la comunicazione possa avere luogo, è necessario installare su Arduino un <span class="term">firmware</span> apposito, che non è distribuito assieme all’applicazione, ma che è reperibile all’indirizzo <a href="http://vps34736.ovh.net/S4A/S4AFirmware15.ino">http://vps34736.ovh.net/S4A/S4AFirmware15.ino</a>. Lo <span class="term">sketch</span> va compilato e caricato all’interno della scheda, secondo le solite modalità:</p>
+<ul>
+<li>connettere la scheda Arduino a una presa USB;</li>
+<li>aprire il file <span class="code">S4AFirmware15.ino</span> nell’IDE di Arduino;</li>
+<li>selezionare la scheda corretta nel menu <em>Tools</em>/<em>Board</em>;</li>
+<li>selezionare la porta seriale corretta nel menu <em>Tools</em>/<em>Serial Port</em>;</li>
+<li>caricare il firmware sulla scheda con il comando <em>Tools</em>/<em>Upload</em>.</li>
+</ul>
+<p>Durante l’esecuzione di un programma, Scratch imposta i valori delle porte d’uscita della scheda Arduino e acquisisce lo stato delle porte d’ingresso a ciclo continuo, ogni 75ms, cioè all’incirca 13 volte al secondo.</p>
+<p class="note">S4A si basa sul <a href="http://wiki.scratch.mit.edu/wiki/Remote_Sensors_Protocol">Remote Sensor Protocol</a> di Scratch, dichiarato obsoleto.</p>
+<h2>S2A_fm</h2>
+<p>S2A_fm si integra con un’installazione esistente di Scratch 2.0: si tratta dunque di un’<a href="http://wiki.scratch.mit.edu/wiki/Scratch_Extension">estensione</a>, non di un ambiente Scratch alternativo. È sviluppato in <a href="https://www.python.org/">Python</a>. Oltre al <span class="term">run-time</span> del linguaggio (di cui è richiesta la versione 2.7 o superiore), necessita di alcune librerie aggiuntive, che nella configurazione minima risultano essere <a href="http://pyserial.sourceforge.net/">PySerial</a> e <a href="https://github.com/MrYsLab/PyMata">PyMata</a>.</p>
+<p>La versione dell’estensione in prova è la 1.5, ed è ottenibile clonando o scaricando il <span class="term">repository</span> git del progetto all’indirizzo <a href="https://github.com/MrYsLab/s2a_fm">https://github.com/MrYsLab/s2a_fm</a>.</p>
+<p>L’uso dell’estensione richiede l’avvio di un servizio apposito, che può essere effettuato in modalità manuale direttamente dalla riga di comando. È sufficiente aprire una finestra di terminale, portarsi nella cartella di principale di S2A_fm, e dare il comando:</p>
+<pre class="code">
+python s2a_fm.py /dev/ttyACM0
+</pre>
+<p>dove <span class="code">/dev/ttyACM0</span> rappresenta la porta seriale cui è connesso il cavo USB della scheda Arduino. Una volta che il server è partito, attendere l’apparizione del messaggio &laquo;<span class="code">Please start Scratch or Snap!</span>&raquo; prima di avviare Scratch.</p>
+<p>Dall’ambiente Scratch, aprire il progetto <span class="code">s2a_fm_base.sb2</span>, distribuito assieme all’estensione. Alternativamente, aprire il file di definizione dell’estensione <span class="code">s2a_fm.s2e</span> presente nella cartella <span class="code">ScratchFiles/ExtensionDescriptors</span> &mdash; o una delle sue versioni localizzate &mdash; con il comando <em>Import Experimental HTTP Extension</em> del menu <em>File</em> (aprire il menu tenendo premuto il tasto <span class="code">Shift</span>). Si ottiene così l’accesso alle funzionalità Arduino, grazie ai blocchi dell’area <em>More Blocks</em>/<em>Altri Blocchi</em>:</p>
+<ul>
+<li><span class="code">Enable/Disable Digital Pin &lt;PIN&gt; for...</span></li>
+<li><span class="code">Enable/Disable Analog Pin (A) &lt;PIN&gt; for Input</span></li>
+<li><span class="code">DigitalWrite Set Pin &lt;PIN&gt; to 0|1</span></li>
+<li><span class="code">AnalogWrite (PWM) Set Pin &lt;PIN&gt; to &lt;VAL&gt;</span></li>
+<li><span class="code">Play Tone on Pin: &lt;PIN&gt; HZ: &lt;VAL&gt; ms: &lt;VAL&gt;</span></li>
+<li><span class="code">Turn Tone Off for Pin: &lt;PIN&gt;</span></li>
+<li><span class="code">Move Servo on Pin &lt;PIN&gt; Deg: &lt;VAL&gt;</span></li>
+<li><span class="code">Read Digital Pin &lt;PIN&gt;</span></li>
+<li><span class="code">Read Analog Pin (A) &lt;PIN&gt;</span></li>
+<li><span class="code">Debugger On/Off</span></li>
+</ul>
+<p class="note">Subito dopo l’avvio di Scratch, verificare la presenza del messaggio &laquo;<span class="code">Scratch detected! Ready to rock and roll...</span>&rdquo; nel terminale, a conferma del fatto che il server ha &ldquo;agganciato&rdquo; Scratch.</p>
+<p>Anche S2A_fm richiede l’installazione del firmware <em>StandardFirmata</em>, incluso nell’ambiente di sviluppo di Arduino (menu <em>File &gt; Examples &gt; Firmata &gt; StandardFirmata</em>). Durante l’esecuzione di un programma, Scratch interroga il server S2A_fm utilizzando il protocollo HTTP. Il server si occupa di trasformare tali richieste nel formato Firmata riconosciuto da Arduino.</p>
+<p>L’arresto del server S2A_fm, <strong>che deve avvenire dopo la chiusura di Scratch</strong>, si ottiene premendo la combinazione di tasti <span class="code">Ctrl+C</span> nella finestra del terminale.</p>
+<h2>Esempio</h2>
+<p>Come banco di prova ho usato	un progetto minimale che consente di spostare uno sprite a destra e a sinistra con i tasti cursore; la pressione del tasto spazio fa apparire un fumetto:</p>
+<img src="img/scratch-arduino/scratch-plain.png">
+<p class="illustration">Il progetto iniziale, che fa uso della tastiera del PC.</p>
+<h3>Hardware</h3>
+<p>L’idea è di comandare lo spostamento dello sprite con un potenziometro, e di usare un pulsante per far apparire il fumetto. In aggiunta, un LED rosso segnala che lo sprite ha raggiunto il bordo dell’area di gioco. La circuiteria è essenziale: un potenziometro lineare da 10K&ohm; è connesso all’ingresso analogico <span class="code">A0</span>, un pulsante all’ingresso digitale <span class="code">D2</span> &ndash; con una resistenza di <span class="term">pull-down</span> da 10K&ohm; &ndash;, un LED all’uscita digitale <span class="code">D12</span>, con una resistenza per la limitazione della corrente da 470&ohm;. Il LED è connesso alla scheda attraverso l’anodo, in modo che si accenda quando l’uscita assume il valore logico <span class="code">1</span>.</p>
+<img src="img/scratch-arduino/wiring.png">
+<p class="illustration">Il cablaggio del circuito di prova.</p>
+<h3>S4A</h3>
+<p>L’unica particolarità del progetto S4A è la trasformazione lineare usata per passare dalla posizione del cursore del potenziometro, rappresentata da un valore analogico compreso tra <span class="code">0</span> e <span class="code">1023</span> &ndash; la lettura fornita da Arduino &ndash; alla corrispondente coordinata x, compresa tra <span class="code">-230</span> e <span class="code">+230</span> &ndash; posizione che deve essere assunta dallo sprite. Il resto del &ldquo;codice&rdquo; è di facile interpretazione:</p>
+<img src="img/scratch-arduino/scratch-s4a.png">
+<p class="illustration">Il progetto S4A &ndash; notare l’ambiente Scratch 1.4.</p>
+<p>La peculiarità di questa configurazione è la fitta comunicazione che si instaura tra Scratch e Arduino, che si può desumere dall’ininterrotto lampeggío degli indicatori <span class="code">TX</span>/<span class="code">RX</span> della scheda.</p>
+<p class="note">Caricare il firmware S4AFirmware15 sulla scheda prima di avviare il programma.</p>
+<h3>S2A</h3>
+<p>Il progetto S2A è molto simile a quello S4A; si differenzia da quest’ultimo per l’esplicita configurazione delle porte di ingresso/uscita della scheda Arduino che avviene all’inizio del programma:</p>
+<img src="img/scratch-arduino/scratch-s2a.png">
+<p class="illustration">Il progetto S2A.</p>
+<p>Operando in questa modalità, la quantità di dati trasferita tra Scratch e Arduino è notevolmente ridotta rispetto al caso precedente, come testimonia la minore attività degli indicatori <span class="code">TX</span>/<span class="code">RX</span>.</p>
+<p class="note">Caricare il firmware <span class="code">StandardFirmata</span> sulla scheda Arduino e avviare il server <span class="code">s2a_fm</span> prima di aprire Scratch e far partire il programma.</p>
+<p class="modification-notice">Pagina modificata il 10/12/2014</p>
+</body>
+</html>
