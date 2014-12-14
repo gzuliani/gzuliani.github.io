@@ -94,6 +94,16 @@ python s2a_fm.py /dev/ttyACM0
 <p class="illustration">Il progetto S2A.</p>
 <p>Operando in questa modalità, la quantità di dati trasferita tra Scratch e Arduino è notevolmente ridotta rispetto al caso precedente, come testimonia la minore attività degli indicatori <span class="code">TX</span>/<span class="code">RX</span>.</p>
 <p class="note">Caricare il firmware <span class="code">StandardFirmata</span> sulla scheda Arduino e avviare il server <span class="code">s2a_fm</span> prima di aprire Scratch e far partire il programma.</p>
-<p class="modification-notice">Pagina modificata il 10/12/2014</p>
+<p class="update"><strong>Aggiornamento [13/10/2014]</strong></p>
+<p>Dovesse risultare più comodo operare sui controlli dal lato della <span class="term">bread-board</span>, come mostrato nella figura sottostante, è necessario apportare una piccola modifica al progetto, perché in questo caso 	i comandi di spostamento sono invertiti: ruotando il potenziometro verso sinistra, lo sprite si muove verso destra, ruotandolo verso destra, lo sprite si sposta a sinistra.</p>
+<img src="img/scratch-arduino/circuit.png">
+<p class="illustration">Il circuito di comando, utilizzato dal lato della bread-board.</p>
+<p>Per ripristinare la direzionalità corretta, si può agire indifferentemente sul programma o sul circuito:</p>
+<ul>
+<li><strong>modifica al programma</strong>: invertire i termini della sottrazione nell’impostazione della coordinata x, scambiando di posizione i blocchi &laquo;<span class="code">Read Analog Pin (A) 0</span>&raquo; e &laquo;<span class="code">512</span>&raquo;;</li>
+<li><strong>modifica al circuito</strong>: invertire l’alimentazione del potenziometro, scambiando tra di loro i cavetti rosso e nero.</li>
+</ul>
+<p>Dalla cablatura in figura, si può desumere che si è optato per modificare il programma, perché l’alimentazione del potenziometro è quella originale.</p>
+<p class="modification-notice">Pagina modificata il 13/12/2014</p>
 </body>
 </html>
