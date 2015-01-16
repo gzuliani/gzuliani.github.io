@@ -39,7 +39,7 @@ struct Container {
   std::string f(int i) { return object_->f(i); }
 };
 
-Container può ospitare qualunque oggetto che implementi la policy iniziale!
+Container puo' ospitare qualunque oggetto che implementi la policy iniziale!
 */
 
 
