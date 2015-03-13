@@ -68,11 +68,11 @@ int main ()
 </pre>
 <p>I file che costituiscono la libreria sono:</p>
 <ul>
- <li><a href="src/heap/Heap.h"><span class="file-name">Heap.h</span></a>: file di intestazione di riferimento;</li>
- <li><a href="src/heap/Operators.h"><span class="file-name">Operators.h</span></a> e <a href="src/heap/Operators.cpp"><span class="file-name">Operators.cpp</span></a>: ridefinizione degli operatori di allocazione;</li>
- <li><a href="src/heap/HeapRequest.h"><span class="file-name">HeapRequest.h</span></a> e <a href="src/heap/HeapRequest.cpp"><span class="file-name">HeapRequest.cpp</span></a>: rappresenta una richiesta di allocazione;</li>
- <li><a href="src/heap/HeapRequests.h"><span class="file-name">HeapRequests.h</span></a> e <a href="src/heap/HeapRequests.cpp"><span class="file-name">HeapRequests.cpp</span></a>: rappresenta una sequenza di richieste di allocazione;</li>
- <li><a href="src/heap/HeapTracer.h"><span class="file-name">HeapTracer.h</span></a> e <a href="src/heap/HeapTracer.cpp"><span class="file-name">HeapTracer.cpp</span></a>: l'oggetto che registra le allocazioni.</li>
+ <li><a href="files/heap/Heap.h"><span class="file-name">Heap.h</span></a>: file di intestazione di riferimento;</li>
+ <li><a href="files/heap/Operators.h"><span class="file-name">Operators.h</span></a> e <a href="files/heap/Operators.cpp"><span class="file-name">Operators.cpp</span></a>: ridefinizione degli operatori di allocazione;</li>
+ <li><a href="files/heap/HeapRequest.h"><span class="file-name">HeapRequest.h</span></a> e <a href="files/heap/HeapRequest.cpp"><span class="file-name">HeapRequest.cpp</span></a>: rappresenta una richiesta di allocazione;</li>
+ <li><a href="files/heap/HeapRequests.h"><span class="file-name">HeapRequests.h</span></a> e <a href="files/heap/HeapRequests.cpp"><span class="file-name">HeapRequests.cpp</span></a>: rappresenta una sequenza di richieste di allocazione;</li>
+ <li><a href="files/heap/HeapTracer.h"><span class="file-name">HeapTracer.h</span></a> e <a href="files/heap/HeapTracer.cpp"><span class="file-name">HeapTracer.cpp</span></a>: l'oggetto che registra le allocazioni.</li>
 </ul>
 <h2>Note</h2>
 <p>Le allocazioni effettuate nei file non sottoposti al controllo di allocazione, cos&igrave; come quelle effettuate dalle liberie esterne - ed in genere ovunque la ridefinizione degli operatori non sia visibile - vengono registrate con provenienza &quot;sconosciuta&quot; e classificate come <span class="request-type">UnqualifiedRequest</span>.</p>
