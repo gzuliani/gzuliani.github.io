@@ -184,8 +184,8 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
 <p>L'oggetto <span class="object">Logger</span> si occupa infine del salvataggio dei dati raccolti; viene chiamato in causa all'uscita del programma dall'oggetto <span class="object">Tracer</span>.</p>
 <p>La liberia consiste di due file:</p>
 <ul>
- <li><a href="src/instrumentation/instrumentation.h"><span class="file-name">instrumentation.h</span></a></li>
- <li><a href="src/instrumentation/instrumentation.cpp"><span class="file-name">instrumentation.cpp</span></a></li>
+ <li><a href="files/instrumentation/instrumentation.h"><span class="file-name">instrumentation.h</span></a></li>
+ <li><a href="files/instrumentation/instrumentation.cpp"><span class="file-name">instrumentation.cpp</span></a></li>
 </ul>
 <h2>Uso della libreria <span class="library">instrumentation</span></h2>
 <p>Per attivare l'analisi con la libreria <span class="library">instrumentation</span>, procedere come segue:</p>
@@ -205,7 +205,7 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
  <li><span class="item">addr</span>: indirizzo della funzione chiamata;</li>
  <li><span class="item">elapsed</span>: durata totale dell'esecuzione, in secondi.</li>
 </ul>
-<p>A partire dalle statistiche contenute nel file <span class="file-name">instrumentation.log</span> si possono ricavare altri dati di interesse. Un esempio &egrave; costituito dallo script Python <a href="src/instrumentation/samples/instrumentation-stats.py"><span class="file-name">instrumentation-stats.py</span></a>, che determina i seguenti parametri:</p>
+<p>A partire dalle statistiche contenute nel file <span class="file-name">instrumentation.log</span> si possono ricavare altri dati di interesse. Un esempio &egrave; costituito dallo script Python <a href="files/instrumentation/samples/instrumentation-stats.py"><span class="file-name">instrumentation-stats.py</span></a>, che determina i seguenti parametri:</p>
 <ul>
  <li><span class="item">addr</span>: indirizzo della funzione chiamata;</li>
  <li><span class="item">name</span>: nome della funzione (solo con file .map);</li>
@@ -216,7 +216,7 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
  <li><span class="item">total</span>: tempo cumulativo di esecuzione.</li>
 </ul>
 <p>L'associazione indirizzo/nome (decorato) della funzione avviene tramite il file .map, associando il valore della colonna <span class="item">addr</span> dei file di log con la colonna <span class="item">Rva+Base</span> del file .map.</p>
-<p>Analizzando a titolo d'esempio il programma di prova <a href="src/instrumentation/samples/instrumentation-test.cpp"><span class="file-name">instrumentation-test.cpp</span></a>, la natura delle statistiche raccolte sar&agrave; del tipo:</p>
+<p>Analizzando a titolo d'esempio il programma di prova <a href="files/instrumentation/samples/instrumentation-test.cpp"><span class="file-name">instrumentation-test.cpp</span></a>, la natura delle statistiche raccolte sar&agrave; del tipo:</p>
 <pre>
 call parent addr     elapsed
 0    N/A    0041b0b0 1.206
