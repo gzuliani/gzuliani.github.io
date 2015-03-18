@@ -7,19 +7,19 @@
 <body>
 <p class="page-path"><a href="../index.html#btp">risorse</a> | btp</p>
 <h1>Object-oriented BTP</h1>
-<p>Ho assistito a questa lezione di progettazione <em>object-oriented</em> incrementale diversi anni fa (novembre 2008), e la considero un ottimo esempio di quanto possano essere sorprendenti, a posteriori, gli oggetti &ldquo;emersi&rdquo; dall'applicazione del TDD. Il merito ovviamente non è della metodologia in sè, ma delle scelte fatte durante la fase di <em>refactoring</em>.</p>
+<p>Ho assistito a questa lezione di progettazione <em>object-oriented</em> incrementale diversi anni fa (novembre 2008), e la considero un ottimo esempio di quanto possano essere sorprendenti, a posteriori, gli oggetti &ldquo;emersi&rdquo; dall’applicazione del TDD. Il merito ovviamente non è della metodologia in sè, ma delle scelte fatte durante la fase di <em>refactoring</em>.</p>
 <h2>Il problema</h2>
 <p>Trattandosi di progettazione <em>incrementale</em>, i requisiti sono stati presentati in sequenza. Qui ho cercato di ricostruire le prime quattro iterazioni.</p>
 <h3>Passo 1 &ndash; BTP</h3>
-<p>Il primo requisito richiedeva di determinare il prezzo di acquisto di un BTP &ndash; <em>Buono del tesoro poliennale</em>, noti il capitale, la cedola, l'interesse e il numero di anni alla scadenza. Si tratta, in sostanza, di implementare la formula del calcolo del prezzo del titolo riportata in<a href="#ref-2"><sup>[2]</sup></a>:</p>
+<p>Il primo requisito richiedeva di determinare il prezzo di acquisto di un BTP &ndash; <em>Buono del tesoro poliennale</em>, noti il capitale, la cedola, l’interesse e il numero di anni alla scadenza. Si tratta, in sostanza, di implementare la formula del calcolo del prezzo del titolo riportata in<a href="#ref-2"><sup>[2]</sup></a>:</p>
 <pre class="code">
 p = &Sum;<sub>t=1..T</sub> FF(t)/(1 + i)<sup>t</sup>
 </pre>
-<p>ove <span class="code">p</span> è il pràezzo, <span class="code">T</span> il numero di anni alla scadenza del titolo, <span class="code">FF(t)</span> i flussi finanziari futuri, <span class="code">i</span> l'interesse. Per <em>flussi finanziari futuri</em> si intendono le cedole non ancora rimborsate, rivalutate dell'interesse composto per gli anni che mancano alla scadenza, più il capitale (<span class="code">c</span> è il valore della cedola, <span class="code">C</span> quello del capitale):</p>
+<p>ove <span class="code">p</span> è il pràezzo, <span class="code">T</span> il numero di anni alla scadenza del titolo, <span class="code">FF(t)</span> i flussi finanziari futuri, <span class="code">i</span> l’interesse. Per <em>flussi finanziari futuri</em> si intendono le cedole non ancora rimborsate, rivalutate dell’interesse composto per gli anni che mancano alla scadenza, più il capitale (<span class="code">c</span> è il valore della cedola, <span class="code">C</span> quello del capitale):</p>
 <pre class="code">
 FF(t) = c (1 + i)<sup>t-1</sup> + c (1 + i)<sup>t-2</sup> + &hellip; + c (1 + i) + C
 </pre>
-<p class="note">A fronte dell'impegno del capitale <span class="code">C</span> per <span class="code">N</span> anni (la durata del titolo), si riceve un pagamento annuale <span class="code">c</span> (la cedola). Se a <span class="code">T</span> anni dalla scadenza si vende il titolo, il prezzo di vendita corrisponde alle cedole non ancora ricevute, più il capitale. A ciò si aggiungono gli interessi che ogni singola cedola avrebbe maturato nel periodo trascorso dal suo pagamento fino alla scadenza del titolo. La somma di tutti questi termini corrisponde al termine <span class="code">FF(t)</span>. L'espressione <span class="code">(1 + i)<sup>t</sup></span> a denominatore è il fattore di attualizzazione, che tiene conto che l'intero ammontare è corrisposto con <span class="code">T</span> anni di anticipo rispetto alla scadenza prevista.</p>
+<p class="note">A fronte dell’impegno del capitale <span class="code">C</span> per <span class="code">N</span> anni (la durata del titolo), si riceve un pagamento annuale <span class="code">c</span> (la cedola). Se a <span class="code">T</span> anni dalla scadenza si vende il titolo, il prezzo di vendita corrisponde alle cedole non ancora ricevute, più il capitale. A ciò si aggiungono gli interessi che ogni singola cedola avrebbe maturato nel periodo trascorso dal suo pagamento fino alla scadenza del titolo. La somma di tutti questi termini corrisponde al termine <span class="code">FF(t)</span>. L’espressione <span class="code">(1 + i)<sup>t</sup></span> a denominatore è il fattore di attualizzazione, che tiene conto che l’intero ammontare è corrisposto con <span class="code">T</span> anni di anticipo rispetto alla scadenza prevista.</p>
 <p>Complicazioni di dominio a parte (che in retrospettiva hanno giocato comunque un ruolo determinante, distraendo i partecipanti dallo scopo principale della lezione, ovvero il <em>design</em>), vengono forniti i seguenti dati per validare la procedura di calcolo del prezzo:</p>
 <pre class="code">
 capitale...........: 100
@@ -30,7 +30,7 @@ interesse..........: 15%
 
  -> prezzo: 85.73
 </pre>
-<p>L'implementazione è immediata:</p>
+<p>L’implementazione è immediata:</p>
 <pre class="code">
 #include &lt;cassert&gt;
 #include &lt;cmath&gt;
@@ -60,11 +60,11 @@ int main() {
 }
 </pre>
 <h3>Passo 2 - BTZ discreto</h3>
-<p>Il nuovo requisito richiede di determinare il prezzo di vendita di una diversa tipologia di titolo, il <em>BTZ discreto</em>, che utilizza la stessa logica di calcolo, che in più applica una correzione all'interesse per tener conto del tasso di inflazione &mu; e di un altro tasso finanziario, il <em>ribor</em>:</p>
+<p>Il nuovo requisito richiede di determinare il prezzo di vendita di una diversa tipologia di titolo, il <em>BTZ discreto</em>, che utilizza la stessa logica di calcolo, che in più applica una correzione all’interesse per tener conto del tasso di inflazione &mu; e di un altro tasso finanziario, il <em>ribor</em>:</p>
 <pre class="code">
 i &larr; i - (&mu; - ribor)
 </pre>
-<p>Anche in questo caso sono forniti dei dati per verificare la correttezza dell'implementazione:</p>
+<p>Anche in questo caso sono forniti dei dati per verificare la correttezza dell’implementazione:</p>
 <pre class="code">
 capitale...........: 100
 anno di scadenza...: 2011
@@ -118,7 +118,7 @@ ribor..............: 12%
 
  -> prezzo: 91.78
 </pre>
-<p>Prima di procedere con l'implementazione della nuova funzionalità, conviene estrarre dalla classe <span class="code">Btp</span> la responsabilità del calcolo dell'interesse composto:</p>
+<p>Prima di procedere con l’implementazione della nuova funzionalità, conviene estrarre dalla classe <span class="code">Btp</span> la responsabilità del calcolo dell’interesse composto:</p>
 <pre class="code">
 #include &lt;cassert&gt;
 #include &lt;cmath&gt;
@@ -172,7 +172,7 @@ int main() {
   return 0;
 }
 </pre>
-<p>A questo punto si introduce la nuova forma di deteminazione dell'interesse composto:</p>
+<p>A questo punto si introduce la nuova forma di deteminazione dell’interesse composto:</p>
 <pre class="code">
 // ...
 
@@ -227,7 +227,7 @@ int main() {
 }
 </pre>
 <h3>Passo 4 - BTP semestrale</h3>
-<p>Rispetto al BTP iniziale, questo tipo di titolo prevede due pagamenti all'anno, dall'importo pari alla metà del valore della cedola. I dati di validazione sono:</p>
+<p>Rispetto al BTP iniziale, questo tipo di titolo prevede due pagamenti all’anno, dall’importo pari alla metà del valore della cedola. I dati di validazione sono:</p>
 <pre class="code">
 capitale...........: 100
 anno di scadenza...: 2009
@@ -237,7 +237,7 @@ interesse..........: 10%
 
  -> prezzo: 100.42
 </pre>
-<p>Occorre introdurre un nuovo oggetto, <span class="code">Pagamenti</span>, che modella il numero di cedole staccate nell'anno:</p>
+<p>Occorre introdurre un nuovo oggetto, <span class="code">Pagamenti</span>, che modella il numero di cedole staccate nell’anno:</p>
 <pre class="code">
 // ...
 
@@ -310,7 +310,7 @@ int main() {
 }
 </pre>
 <h2>Conclusioni</h2>
-<p>Tralasciando gli aspetti legati al dominio &mdash; ignoro quanto il modello proposto rispecchi la realtà, ma di fatto ai fini dell'esercizio ciò è del tutto ininfluente &mdash;, è interessante notare che le diverse tipologie di titolo sono state definite per composizione, anziché per specializzazione, come inizialmente poteva essere lecito attendersi. L'uso di una relazione più debole<a href="#ref-3"><sup>[3]</sup></a> (<em>specializzazione</em> &Gt; <em>composizione</em> &Gt; <em>aggregazione</em> &Gt; <em>associazione</em>) riduce il grado di accoppiamento del sistema, aumentandone nel contempo la flessibilità; la separazione delle responsabilità lo rende più modulare e <em>testabile</em>.</p>
+<p>Tralasciando gli aspetti legati al dominio &mdash; ignoro quanto il modello proposto rispecchi la realtà, ma di fatto ai fini dell’esercizio ciò è del tutto ininfluente &mdash;, è interessante notare che le diverse tipologie di titolo sono state definite per composizione, anziché per specializzazione, come inizialmente poteva essere lecito attendersi. L’uso di una relazione più debole<a href="#ref-3"><sup>[3]</sup></a> (<em>specializzazione</em> &Gt; <em>composizione</em> &Gt; <em>aggregazione</em> &Gt; <em>associazione</em>) riduce il grado di accoppiamento del sistema, aumentandone nel contempo la flessibilità; la separazione delle responsabilità lo rende più modulare e <em>testabile</em>.</p>
 <h2>Sorgenti</h2>
 <ul>
 <li><a href="files/btp/btp.cpp">btp.cpp</a></li>
@@ -320,7 +320,7 @@ int main() {
 <a name="ref-1"></a>
 <li class="ref">&quot;Buono del tesoro poliennale&quot;. <em>Wikipedia</em>. &lt;<a href="http://it.wikipedia.org/wiki/Buono_del_tesoro_poliennale">http://it.wikipedia.org/wiki/Buono_del_tesoro_poliennale</a>&gt;. Visitato il 13 Marzo 2015.</li>
 <a name="ref-2"></a>
-<li class="ref">&quot;Obbligazione (finanza) &mdash; Prezzo di un'obbligazione&quot;. <em>Wikipedia</em>. &lt;<a href="http://it.wikipedia.org/wiki/Obbligazione_%28finanza%29#Prezzo_di_un.27obbligazione">http://it.wikipedia.org/wiki/Obbligazione_%28finanza%29#Prezzo_di_un.27obbligazione</a>&gt;. Visitato il 13 Marzo 2015.</li>
+<li class="ref">&quot;Obbligazione (finanza) &mdash; Prezzo di un’obbligazione&quot;. <em>Wikipedia</em>. &lt;<a href="http://it.wikipedia.org/wiki/Obbligazione_%28finanza%29#Prezzo_di_un.27obbligazione">http://it.wikipedia.org/wiki/Obbligazione_%28finanza%29#Prezzo_di_un.27obbligazione</a>&gt;. Visitato il 13 Marzo 2015.</li>
 <a name="ref-3"></a>
 <li class="ref">&quot;Composition over inheritance&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Composition_over_inheritance">http://en.wikipedia.org/wiki/Composition_over_inheritance</a>&gt;. Visitato il 18 Marzo 2015.</li>
 
