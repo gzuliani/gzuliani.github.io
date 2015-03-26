@@ -242,7 +242,7 @@ interesse..........: 10%
 // ...
 
 <ins>struct Pagamento {
-  int rateAnnuali;
+  const int rateAnnuali;
 public:
   Pagamento(int rateAnnuali_) : rateAnnuali(rateAnnuali_) { }
 };</ins>
@@ -276,7 +276,7 @@ class Titolo {
   const double capitale_;
   const double cedola_;
   const int scadenza_;
-  <ins>Pagamento pagamento_;</ins>
+  <ins>const Pagamento pagamento_;</ins>
 public:
   Titolo(double capitale, double cedola, int scadenza<ins>, Pagamento pagamento</ins>)
     : capitale_(capitale), cedola_(cedola),
