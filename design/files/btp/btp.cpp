@@ -2,7 +2,7 @@
 #include <cmath>
 
 struct Pagamento {
-  int rateAnnuali;
+  const int rateAnnuali;
 public:
   Pagamento(int rateAnnuali_) : rateAnnuali(rateAnnuali_) { }
 };
@@ -46,7 +46,7 @@ class Titolo {
   const double capitale_;
   const double cedola_;
   const int scadenza_;
-  Pagamento pagamento_;
+  const Pagamento pagamento_;
 public:
   Titolo(double capitale, double cedola, int scadenza, Pagamento pagamento)
     : capitale_(capitale), cedola_(cedola),
