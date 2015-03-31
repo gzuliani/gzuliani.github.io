@@ -1,0 +1,80 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Scratch 2.0 su Ubuntu</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-ubuntu">risorse</a> | 
+scratch su ubuntu</p>
+<h1>Scratch 2.0 su Ubuntu</h1>
+<p>L’editor <em>off-line</em> di Scratch 2.0 necessita di <em>Adobe AIR</em> per poter funzionare. Sfortunatamente, Adobe ha abbandonato lo sviluppo di AIR per Linux: la versione corrente installabile su Windows e Mac OS è la 17.0, l’ultima disponibile per Linux è la 2.0. A complicare la situazione, la versione per Linux non esiste nella variante a 64 bit. Di seguito sono descritte le procedure utilizzate per installare Scratch su una distribuzione Xubuntu 14.04 a 32 bit e su una Ubuntu Desktop (sempre 14.04) a 64 bit.</p>
+<h2>Installazione di Adobe AIR</h2>
+<p>Scaricare dalla rete il programma di installazione all’indirizzo <a href="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin">http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin</a>. Poiché l’installazione avviene dalla riga di comando, è necessario aprire la finestra del terminale. Per prima cosa, una volta raggiunta la cartella contenente l’installer, marcare il file come eseguibile:</p>
+<pre class="code">
+cd &hellip;
+chmod +x AdobeAIRInstaller.bin
+</pre>
+<p>Occorre a questo punto fare attenzione, perché la procedura di installazione si differenzia per i sistemi a 32 e 64 bit.</p>
+<p class="note">Per determinare la tipologia del proprio sistema operativo, eseguire il comando <span class="code">`uname -a`</span> nella finestra terminale. Se la risposta contiene l’indicazione <span class="code">`x86_64`</span> il sistema operativo è a 64 bit, in caso contrario è a 32 bit.</p>
+<h3>Installazione di Adobe AIR su Ubuntu Desktop 14.04 a 64 bit</h3>
+<p>Essendo Adobe AIR un software a 32 bit, <strong>solo nel caso si stia utilizzando un sistema operativo a 64 bit</strong> è necessario scaricare le librerie utilizzate dal software per la piattaforma <em>i386</em>:
+<pre class="code">
+sudo apt-get install libxt6:i386 libnspr4-0d:i386 libgtk2.0-0:i386
+    libstdc++6:i386 libnss3-1d:i386 lib32nss-mdns libxml2:i386 libxslt1.1:i386
+    libcanberra-gtk-module:i386 gtk2-engines-murrine:i386
+
+sudo apt-get install libgnome-keyring0:i386</pre>
+<p>Creare un collegamento temporaneo verso l’ultima libreria scaricata, per facilitare l’installazione di AIR. Il collegamento verrà rimosso ad installazione avvenuta:</p>
+<pre class="code">
+sudo ln -s /usr/lib/i386-linux-gnu/libgnome-keyring.so.0 /usr/lib/
+
+sudo ./AdobeAIRInstaller.bin
+
+rm /usr/lib/libgnome-keyring.so.0
+</pre>
+<h3>Installazione di Adobe AIR su Xubuntu 14.04 a 32 bit</h3>
+<p>In questo caso le librerie richieste da AIR dovrebbero essere già disponibili nel sistema nella variante corretta (32 bit). Se ne verifica la presenza con il comando:</p>
+<pre class="code">
+locate libgnome-keyring.so
+</pre>
+<p>Il responso sarà qualcosa di simile a:</p>
+<pre class="code">
+/usr/lib/i386-linux-gnu/libgnome-keyring.so.0
+/usr/lib/i386-linux-gnu/libgnome-keyring.so.0.2.0
+</pre>
+<p>Se la libreria non dovesse essere presente nel sistema, installarla con il comando:</p>
+<pre class="code">
+apt-get install libgnome-keyring0
+</pre>
+<p>Al termine dell’installazione, ripetere il comando <span class="code">locate</span> per determinarne la posizione.</p>
+<p>Procedere all’installazione di AIR con il comando:</p>
+<pre class="code">
+sudo LD_LIBRARY_PATH=<strong>/usr/lib/i386-linux-gnu</strong> ./AdobeAIRInstaller.bin
+</pre>
+<p>dove il percorso evidenziato corrisponde a quello fornito dal comando <span class="code">locate</span>.</p>
+<p>A questo punto, indipendentemente dall’architettura del sistema operativo, Adobe AIR è installato e si trova nella cartella <span class="code">/opt/Adobe AIR/Versions/1.0</span>.</p>
+<h2>Installazione dell’editor off-line di Scratch 2.0</h2>
+<p>Scaricare la versione più recente dell’editor dalla pagina dedicata (<a href="http://scratch.mit.edu/scratch2download/">http://scratch.mit.edu/scratch2download/</a>) e salvarlo in una cartella locale. Dalla finestra del terminale installare l’editor con il comando:</p>
+<pre class="code">
+sudo /opt/Adobe\ AIR/Versions/1.0/Adobe\ AIR\ Application\ Installer
+    /&hellip;/Scratch.air
+</pre>
+<p>avendo cura di specificare il <em>path assoluto</em> al file dell’installer.</p>
+<p>Al termine dell’installazione, assegnare all’utente corrente l’installazione di Scratch:</p>
+<pre class="code">
+sudo chown <i>utente</i>:<i>gruppo</i> -R /opt/Scratch\ 2
+</pre>
+<p>Quest’ultimo passaggio consente all’editor di applicare gli aggiornamenti senza richiedere l’avvio del programma con le credenziali di super-utente.</p>
+<p class="note">Per determinare il nome dell’utente corrente, usare il comando <span class="code">`whoami`</span>; per determinare i gruppi cui l’utente corrente appartiene con il comando <span class="code">`groups <i>nome</i>`</span>.</p>
+<h2>Riferimenti</h2>
+<ul>
+<li class="ref">&quot;Adobe AIR install problem, Ubuntu x64 14.04&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/481709/adobe-air-install-problem-ubuntu-x64-14-04">http://askubuntu.com/questions/481709/adobe-air-install-problem-ubuntu-x64-14-04</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<li class="ref">&quot;How can I install Adobe AIR?&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/87447/how-can-i-install-adobe-air">http://askubuntu.com/questions/87447/how-can-i-install-adobe-air</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<li class="ref">&quot;How do I check if I have a 32-bit or a 64-bit OS?&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/41332/how-do-i-check-if-i-have-a-32-bit-or-a-64-bit-os">http://askubuntu.com/questions/41332/how-do-i-check-if-i-have-a-32-bit-or-a-64-bit-os</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<li class="ref">&quot;Installing MIT Scratch 2.0 on Ubuntu Linux 32 bits&quot;. <em>Computação na Escola</em>. &lt;<a href="http://www.computacaonaescola.ufsc.br/?page_id=441&lang=en/">http://www.computacaonaescola.ufsc.br/?page_id=441&lang=en</a>&gt;. Visitato il 31 Marzo 2015.</li>
+<li class="ref">&quot;Scratch 2 Offline Editor&quot;. <em>scratch.mit.edu</em>. &lt;<a href="https://scratch.mit.edu/scratch2download/">https://scratch.mit.edu/scratch2download/</a>&gt;. Visitato il 31 Marzo 2015.</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 30/03/2015</p>
+</body>
+</html>
