@@ -8,7 +8,7 @@
 <p class="page-path"><a href="../index.html#scratch-ubuntu">risorse</a> | 
 scratch su ubuntu</p>
 <h1>Scratch 2.0 su Ubuntu</h1>
-<p>L’editor <em>off-line</em> di Scratch 2.0 necessita di <em>Adobe AIR</em> per poter funzionare. Sfortunatamente, Adobe ha abbandonato lo sviluppo di AIR per Linux: la versione corrente installabile su Windows e Mac OS è la 17.0, l’ultima disponibile per Linux è la 2.0. A complicare la situazione, la versione per Linux non esiste nella variante a 64 bit. Di seguito sono descritte le procedure utilizzate per installare Scratch su una distribuzione Xubuntu 14.04 a 32 bit e su una Ubuntu Desktop (sempre 14.04) a 64 bit.</p>
+<p>L’editor <em>off-line</em> di Scratch 2.0 necessita di <em>Adobe AIR</em> per poter funzionare. Sfortunatamente, Adobe ha abbandonato lo sviluppo di AIR per Linux: la versione corrente installabile su Windows e Mac OS è la 17.0, l’ultima disponibile per Linux è la 2.6. A complicare la situazione, la versione per Linux non esiste nella variante a 64 bit. Di seguito sono descritte le procedure utilizzate per installare Scratch su una distribuzione Xubuntu 14.04 a 32 bit e su una Ubuntu Desktop (sempre 14.04) a 64 bit.</p>
 <h2>Installazione di Adobe AIR</h2>
 <p>Scaricare dalla rete il programma di installazione all’indirizzo <a href="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin">http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin</a>. Poiché l’installazione avviene dalla riga di comando, è necessario aprire la finestra del terminale. Per prima cosa, una volta raggiunta la cartella contenente l’installer, marcare il file come eseguibile:</p>
 <pre class="code">
@@ -61,20 +61,31 @@ sudo /opt/Adobe\ AIR/Versions/1.0/Adobe\ AIR\ Application\ Installer
     /&hellip;/Scratch.air
 </pre>
 <p>avendo cura di specificare il <em>path assoluto</em> al file dell’installer.</p>
-<p>Al termine dell’installazione, assegnare all’utente corrente l’installazione di Scratch:</p>
-<pre class="code">
-sudo chown <i>utente</i>:<i>gruppo</i> -R /opt/Scratch\ 2
-</pre>
-<p>Quest’ultimo passaggio consente all’editor di applicare gli aggiornamenti senza richiedere l’avvio del programma con le credenziali di super-utente.</p>
-<p class="note">Per determinare il nome dell’utente corrente, usare il comando <span class="code">`whoami`</span>; per determinare i gruppi cui l’utente corrente appartiene con il comando <span class="code">`groups <i>nome</i>`</span>.</p>
+<p class="note">Qualora l’editor rilevi la disponibilità di una nuova versione e ne proponga l’installazione, conviene rifiutare, uscire da Scratch e riavviarlo come utente amministratore, pena il fallimento dell’aggiornamento<a href="#ref-3.en"><sup>[3]</sup></a>:</p>
+<blockquote>On Mac OS, to install an updated version of an application, the user needs adequate system privileges to install to the application directory. On Windows and Linux, a user needs administrative privileges. </blockquote>
 <h2>Riferimenti</h2>
-<ul>
+<h3>In inglese:</h3>
+<ol>
+<a name="ref-1.en"></a>
+<li class="ref">&quot;Adobe AIR Help / Install Adobe AIR 2 | 64-bit Linux&quot;. <em>helpx.adobe.com</em>. &lt;<a href="https://helpx.adobe.com/air/kb/install-air-2-64-bit.html">https://helpx.adobe.com/air/kb/install-air-2-64-bit.html</a>&gt;. Visitato il 2 Aprile 2015.</li>
+<a name="ref-2.en"></a>
 <li class="ref">&quot;Adobe AIR install problem, Ubuntu x64 14.04&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/481709/adobe-air-install-problem-ubuntu-x64-14-04">http://askubuntu.com/questions/481709/adobe-air-install-problem-ubuntu-x64-14-04</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<a name="ref-3.en"></a>
+<li class="ref">&quot;Distributing AIR packages for desktop computers | Installing and running an AIR application on the desktop&quot;. <em>help.adobe.com</em>. &lt;<a href="http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7fcb.html#WS5b3ccc516d4fbf351e63e3d118666ade46-7c8d">http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7fcb.html#WS5b3ccc516d4fbf351e63e3d118666ade46-7c8d</a>&gt;. Visitato il 2 Aprile 2015.</li>
+<a name="ref-4.en"></a>
 <li class="ref">&quot;How can I install Adobe AIR?&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/87447/how-can-i-install-adobe-air">http://askubuntu.com/questions/87447/how-can-i-install-adobe-air</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<a name="ref-5.en"></a>
 <li class="ref">&quot;How do I check if I have a 32-bit or a 64-bit OS?&quot;. <em>askubuntu.com</em>. &lt;<a href="http://askubuntu.com/questions/41332/how-do-i-check-if-i-have-a-32-bit-or-a-64-bit-os">http://askubuntu.com/questions/41332/how-do-i-check-if-i-have-a-32-bit-or-a-64-bit-os</a>&gt;. Visitato il 30 Marzo 2015.</li>
+<a name="ref-6.en"></a>
 <li class="ref">&quot;Installing MIT Scratch 2.0 on Ubuntu Linux 32 bits&quot;. <em>Computação na Escola</em>. &lt;<a href="http://www.computacaonaescola.ufsc.br/?page_id=441&lang=en/">http://www.computacaonaescola.ufsc.br/?page_id=441&lang=en</a>&gt;. Visitato il 31 Marzo 2015.</li>
+<a name="ref-7.en"></a>
 <li class="ref">&quot;Scratch 2 Offline Editor&quot;. <em>scratch.mit.edu</em>. &lt;<a href="https://scratch.mit.edu/scratch2download/">https://scratch.mit.edu/scratch2download/</a>&gt;. Visitato il 31 Marzo 2015.</li>
-</ul>
-<p class="modification-notice">Pagina modificata il 30/03/2015</p>
+</ol>
+<h3>In italiano:</h3>
+<ol>
+<a name="ref-1.it"></a>
+<li class="ref">&quot;Installazione di Adobe AIR&quot;. <em>help.adobe.com</em>. &lt;<a href="http://help.adobe.com/it_IT/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7fee.html">http://help.adobe.com/it_IT/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7fee.html</a>&gt;. Visitato il 2 Aprile 2015.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 02/04/2015</p>
 </body>
 </html>
