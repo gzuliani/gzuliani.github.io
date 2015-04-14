@@ -62,7 +62,10 @@ command.build.$(file.patterns.markdown)="$(markdown.rendering.file)"
 filter.markdown=Markdown (md markdown)|$(file.patterns.markdown)|
 command.name.21.$(file.patterns.markdown)=
 command.save.before.21.$(file.patterns.markdown)=2
-command.21.$(file.patterns.markdown)=$(python.scripts.dir)\markdown_py.bat -x extra -x del_ins -x meta -x sane_lists -x smartypants -x toc -x wikilinks -x xhtml_wrap(title="",css_url="markdown.css",js_url="") -f "$(markdown.rendering.file)" "$(FilePath)"
+command.21.$(file.patterns.markdown)=$(python.scripts.dir)\markdown_py.bat \
+-x extra -x del_ins -x meta -x sane_lists -x smartypants -x toc -x wikilinks \
+-x xhtml_wrap(title="",css_url="markdown.css",js_url="") \
+-f "$(markdown.rendering.file)" "$(FilePath)"
 user.shortcuts=Ctrl+3|1121|
 </code></pre>
 </li>
@@ -110,10 +113,10 @@ end
 <p>1) being a lua newby, the <code>pcall(Render)</code> call catches the <em>Editor pane is not accessible at this time</em> error that occours at SciTE startup;</p>
 <p>2) could not find a better method than <code>scite.MenuCommand(tonumber(props["markdown.rendering.command"]))</code> to fire the markdown rendering procedure.</p>
 </blockquote>
-<h2>Aggiornamento</h2>
+<p class="update"><strong>Aggiornamento [18/04/2013]</strong></p>
 <p>La versione 3.3.2 di Scite corregge un baco che causava una doppia chiamata <span class="code">OnSave</span>, al quale al tempo avevo rimediato ricorrendo a <span class="code">OnSavePointReached</span>. Ora &egrave; possibile avviare il <em>rendering</em> molto pi&ugrave; semplicemente:</p>
 <pre class="code">
-  [markdown.lua]
+[file: markdown.lua]
 
   function OnSave()
     if editor.LexerLanguage == "markdown" then
@@ -121,6 +124,70 @@ end
     end
   end
 </pre>
-<p class="modification-notice">Pagina modificata il 18/04/2013</p>
+<p class="update"><strong>Aggiornamento [13/04/2015]</strong></p>
+<p>L'attivazione della <em>live preview</em> dei file markdown su Ubuntu 14.04 ha richiesto alcuni adattamenti a causa di alcune modifiche che nel tempo sono state introdotte nell'estensione. L'ambiente nel quale è avvenuta l'installazione comprende:</p>
+<ul>
+<li>Ubuntu 14.04</li>
+<li>SciTE 3.3.5</li>
+<li>Python 2.7.6</li>
+</ul>
+<p>Sono stati installati i seguenti pacchetti (con <span class="code">pip</span>):</p>
+<ul>
+<li>Markdown &ndash; v. 2.6.1;</li>
+<li>mdx-cite &ndash; v. 1.0;</li>
+<li>mdx-del-ins &ndash; v. 1.0.</li>
+</ul>
+<p>Il pacchetto <span class="code">mdx_xhtml_wrap</span> va invece scaricato direttamente da github (nella versione 0.1):</p>
+<pre class="code">
+cd
+hg clone https://bitbucket.org/thinkstorm/xhtml_wrap
+cd xhtml_wrap
+sudo python setup.py install
+cd ..
+sudo rm -r xhtml_wrap
+</pre>
+<p>Non è necessario installare il pacchetto <span class="code">mdx_smartypants</span> perché se ne fa carico direttamente il pacchetto principale <span class="code">Markdown</span>, che offre altre interessanti estensioni come le note a piè pagina e le <em>definition lists</em>.</p>
+<p>A partire dalla versione 2.6, il pacchetto <span class="code">Markdown</span> non accetta più le configurazioni delle estensioni sulla riga di comando, che vanno invece passate su file YAML/JSON. La riga di comando diventa perciò:</p>
+<pre class="code">
+$(python.scripts.dir)/markdown_py -c $(SciteUserHome)/.scite/markdown_py.json &hellip;
+</pre>
+<p>La configurazione in formato json è:</p>
+<pre class="code">
+{
+    "xhtml_wrap": {
+        "configs": {
+            "css_url": "md.css",
+            "js_url": "",
+            "title": ""
+        }
+    }
+}
+</pre>
+<p>Il comando di caricamento del file html nel browser predefinito è diverso per le due piattaforme:</p>
+<pre class="code">
+...
+
+if PLAT_WIN
+    python=C:\Python26\pythonw.exe
+    markdown.script=$(python.home)\Scripts\markdown_py.bat
+    command.build.$(file.patterns.markdown)="$(markdown.rendering.file)"
+if PLAT_UNIX
+    python=/usr/bin/python
+    markdown.script=/usr/local/bin/markdown_py
+    command.build.$(file.patterns.markdown)=x-www-browser $(markdown.rendering.file) &amp;
+
+command.name.21.$(file.patterns.markdown)=
+command.save.before.21.$(file.patterns.markdown)=2
+command.21.$(file.patterns.markdown)=$(markdown.script) \
+-c $(SciteUserHome)/.scite/markdown_py.json -x mdx_del_ins -x mdx_cite \
+-x markdown.extensions.extra -x markdown.extensions.meta \
+-x markdown.extensions.sane_lists -x markdown.extensions.smarty \
+-x markdown.extensions.toc -x markdown.extensions.wikilinks \
+-f "$(markdown.rendering.file)" "$(FilePath)"
+user.shortcuts=Ctrl+3|1121|
+</pre>
+<p class="note"><strong>Nota 1:</strong> l'estensione <span class="code">markdown.extensions.toc</span> funziona solo con Python 2.7 e versioni successive: tale opzione va rimossa nel caso si usi una versione precedente.</p>
+<p class="note"><strong>Nota 2:</strong> le estensioni <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> generano un <span class="code">DeprecationWarning</span> che però non pregiudica la conversione.</p>
+<p class="modification-notice">Pagina modificata il 13/04/2015</p>
 </body>
 </html>
