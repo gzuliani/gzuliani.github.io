@@ -29,10 +29,10 @@ function RemoveEmptyLines()
     end
 end
 
-package.path = package.path..";"..props["SciteUserHome"].."\\.scite\\lua\\?.lua"
+package.path = package.path..";"..props["SciteUserHome"].."/.scite/lua/?.lua"
 require "snippets"
-require "wrap"
 require "ansi"
 require "javadoc"
 require "markdown"
+require "wrap"
 require "xml"

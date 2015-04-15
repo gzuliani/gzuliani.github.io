@@ -493,7 +493,7 @@ function list()
   local list, list_str = {}, ''
 
   local function add_snippets(snippets)
-    for s_name in pairs(snippets) do print (s_name) table.insert(list, s_name) end
+    for s_name in pairs(snippets) do print(s_name) table.insert(list, s_name) end
   end
 
   local snippets = _G.snippets
