@@ -217,7 +217,7 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
 </ul>
 <p>L'associazione indirizzo/nome (decorato) della funzione avviene tramite il file .map, associando il valore della colonna <span class="item">addr</span> dei file di log con la colonna <span class="item">Rva+Base</span> del file .map.</p>
 <p>Analizzando a titolo d'esempio il programma di prova <a href="files/instrumentation/samples/instrumentation-test.cpp"><span class="file-name">instrumentation-test.cpp</span></a>, la natura delle statistiche raccolte sar&agrave; del tipo:</p>
-<pre>
+<pre class="code">
 call parent addr     elapsed
 0    N/A    0041b0b0 1.206
 1    0      0041af50 0.082
@@ -240,7 +240,7 @@ call parent addr     elapsed
 18   17     0041b010 N/A
 </pre>
 <p>La rielaborazione delle stesse per mezzo dello script Python produce come risultato:</p>
-<pre>
+<pre class="code">
 addr      name    hits    exceptions      min     max     total
 0041aef0  inner   2       1               0.049   0.049   0.049
 0041af50  outer   2       0               0.082   0.705   0.787
