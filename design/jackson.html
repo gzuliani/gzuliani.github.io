@@ -25,26 +25,26 @@
 </ul>
 <h2>Requisiti e specifiche</h2>
 <p>I requisiti (<em>requirements</em>) definiscono il problema, asserendo fatti relativi a <em>phenomena</em> dell'<em>application domain</em>; l'implementazione (o <em>program</em>) definisce le modalit&agrave; operative della macchina, ed &egrave; per tale motivo di pertinenza del dominio <em>machine</em>; le specifiche (<em>specifications</em>) definiscono l'interfaccia tra il dominio applicativo e la macchina, e riguardano gli <em>shared phenomena</em> condivisi tra <em>application domain</em> e <em>machine</em>.</p>
-<p>In modo più formale:</p>
+<p>In modo pi&ugrave; formale:</p>
 <p>C, P &rarr; S (l'esecuzione del programma P sul computer C soddisfano la specifica S);</p>
 <p>D, S &rarr; R (le propriet&agrave; di dominio D, congiunte con le specifiche S  &ndash; effetto dell'esecuzione di P su C &ndash;, soddisfano i requisiti R).</p>
 <p>&Egrave; interessante soffermarsi sull'esempio citato dall'autore, riguardante un incidente aereo avvenuto a causa del mancato azionamento del sistema di retro-spinta durante un atterraggio in acquaplaning (l'areoplano fin&igrave; fuori pista); i requisiti erano:</p>
-<ol>
-<li>WHEEL-PULSES-ON iff WHEEL-TURNING;</li>
-<li>WHEEL-TURNING iff MOVING-ON-RUNWAY.</li>
-</ol>
-<p>WHEEL-TURNING e MOVING-ON-RUNWAY sono <em>phenomena</em> di <em>application domain</em>, mentre WHEEL-PULSES-ON è uno <em>shared phenomena</em> di <em>application domain</em> e <em>machine</em>.</p>
+<ul>
+<li><code>WHEEL-PULSES-ON</code> &hArr; <code>WHEEL-TURNING</code>;</li>
+<li><code>WHEEL-TURNING</code> &hArr; <code>MOVING-ON-RUNWAY</code>.</li>
+</ul>
+<p><code>WHEEL-TURNING</code> e <code>MOVING-ON-RUNWAY</code> sono <em>phenomena</em> di <em>application domain</em>, mentre <code>WHEEL-PULSES-ON</code> &egrave; uno <em>shared phenomena</em> di <em>application domain</em> e <em>machine</em>.</p>
 <p>Le specifiche per l'azionamento della retro-spinta erano:</p>
 <ul>
-<li>REVERSE-ENABLED iff WHEEL-PULSES-ON</li>
+<li><code>REVERSE-ENABLED</code> &hArr; <code>WHEEL-PULSES-ON</code></li>
 </ul>
-<p>REVERSE-ENABLED è lo <em>shared phenomena</em> che il sistema utilizza per comunicare al <em>application domain</em> per attivare il sistema di retro-spinta.</p>
+<p><code>REVERSE-ENABLED</code> &egrave; lo <em>shared phenomena</em> che il sistema utilizza per comunicare al <em>application domain</em> per attivare il sistema di retro-spinta.</p>
 <p>L'incidente &egrave; stato causato dall'errata interpretazione del dominio del problema, in particolare del secondo requisito, che non cattura la reale condizione di rullaggio: cos&igrave; come specificato infatti, in caso di acquaplaning si deve giungere alla conclusione che dato che le ruote non girano, l'areoplano non si trova sulla pista.</p>
 <p>L'analisi va quindi corretta, in primis modificando la specifica in:</p>
 <ul>
-<li>REVERSE-ENABLED iff MOVING-ON-RUNWAY,</li>
+<li><code>REVERSE-ENABLED</code> &hArr; <code>MOVING-ON-RUNWAY</code>,</li>
 </ul>
-<p>quindi individuare un nuovo <em>shared phenomena</em> che possa indicare a <em>machine</em> la condizione di MOVING-ON-RUNWAY, e modificare il programma P in modo da rispettare la nuova specifica.</p>
+<p>quindi individuare un nuovo <em>shared phenomena</em> che possa indicare a <em>machine</em> la condizione di <code>MOVING-ON-RUNWAY</code>, e modificare il programma P in modo da rispettare la nuova specifica.</p>
 <h2>Analisi</h2>
 <p>Le principali fasi dell'analisi comprendono:</p>
 <h3><em>problem</em> &rarr; <em>application domain</em> + <em>machine</em></h3>
@@ -59,7 +59,7 @@ rifarsi al "principle of domain relevance": qualunque cosa rilevante relativamen
 <p>Questa fase culmina con la realizzazione del <em>context diagram</em>, un diagramma che rappresenta il <em>problem context</em> come insieme di domini interdipendenti.</p>
 <!--
 2. application domain > domains
-gerarchie: più spesso nascondono reti stratificate (es. sistema di trasporti: non rami indipendenti strade/ferrovie/areoporti, ma grafi interconnessi: parcheggi per le stazioni/areoporti, intersezioni; i sistemi inoltre si vincolano reciprocamente)
+gerarchie: pi&ugrave; spesso nascondono reti stratificate (es. sistema di trasporti: non rami indipendenti strade/ferrovie/areoporti, ma grafi interconnessi: parcheggi per le stazioni/areoporti, intersezioni; i sistemi inoltre si vincolano reciprocamente)
 -->
 <!--
 shared phenomena:
@@ -99,7 +99,7 @@ jsp frame, simple control frame, simple is frame, workpieces frame
 <li><strong>close fitting frame</strong>: pi&ugrave; specifico &egrave; il <em>problem frame</em>, pi&ugrave; &egrave; probabile che il metodo sia efficace;</li>
 <li><strong>frame exploitation</strong>: il metodo sfrutta a fondo le caratteristiche intrinseche del <em>problem frame</em>?</li>
 <li><strong>deferred invention</strong>: pi&ugrave; &egrave; procrastinato il ricorso alla creativit&agrave;, meglio &egrave;;</li>
-<li><strong>beneficient difficulty</strong>: sono esplicitate le difficoltà e i punti deboli del metodo?</li>
+<li><strong>beneficient difficulty</strong>: sono esplicitate le difficolt&agrave; e i punti deboli del metodo?</li>
 </ul>
 <h2>Altro</h2>
 <h3>Modellazione del tempo</h3>
@@ -111,8 +111,8 @@ jsp frame, simple control frame, simple is frame, workpieces frame
 -->
 <!--
 <h3>Identit&agrave;</h3>
-identit&agrave;: esempio dei due appassionati di meccanica, ognuno con la propria auto equipaggiata del suo motore. Cominciano a scambiarsi alcuni componenti (es. carburatore, spinterogeno, ...). Che ne è dei due motori originali? Sono ancora riconoscibili? La Motorizzazione Civile risolve il problema eleggendo un componente a rappresentante (il blocco motore). Non risolve completamente il problema, ma a un livello sufficiente per gli scopi della motorizzazione.
-identit&agrave; non è equivalenza (qualche proprietà in comune), ma uguaglianza.
+identit&agrave;: esempio dei due appassionati di meccanica, ognuno con la propria auto equipaggiata del suo motore. Cominciano a scambiarsi alcuni componenti (es. carburatore, spinterogeno, ...). Che ne &egrave; dei due motori originali? Sono ancora riconoscibili? La Motorizzazione Civile risolve il problema eleggendo un componente a rappresentante (il blocco motore). Non risolve completamente il problema, ma a un livello sufficiente per gli scopi della motorizzazione.
+identit&agrave; non &egrave; equivalenza (qualche propriet&agrave; in comune), ma uguaglianza.
 -->
 <h2>Riferimenti</h2>
 <ol>
