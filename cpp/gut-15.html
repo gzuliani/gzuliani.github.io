@@ -1,0 +1,256 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /15</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut-14">risorse</a> | good unit tests /15</p>
+<h1>Good Unit Tests /15</h1>
+<p>Questa parte (la quindicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a> e qui la <a href="gut-14.html">quattordicesima</a>) risolve un problema relativo alla modalità <span class="code">GUT_ENABLE_FAILFAST</span> e introduce il supporto dei colori nella finestra del terminale di Linux &ndash; <em>Ubuntu 14.04 Desktop</em>.</p>
+<h2>Fix di <span class="code">GUT_ENABLE_FAILFAST</span></h2>
+<p>Durante la rifattorizzazione che ha originato le classi <span class="code">Listener</span>/<span class="code">Report</span> ha introdotto un problema piuttosto grave: abilitando l'opzione <em>fail-fast</em>, la test suite termina sì al primo errore, ma con successo. Il codice va così modificato:</p>
+<pre class="code">
+class Listener {
+  // ...
+  void quit(const std::string&amp; reason) { <del>report_-&gt;quit(reason); }</del>
+<ins>    ++failedTestCount_;
+    report_->quit(reason);
+  }</ins>
+  // ...
+};
+</pre>
+<h2>Colori nella console di Linux</h2>
+<p>La finestra del terminale di Linux supporta le sequenze ANSI<a href="#ref-2"><sup>[2]</sup></a>, ed è perciò sufficiente emettere i <em>codici escape</em> opportuni per cambiare il colore del testo. Trattandosi di fatto di caratteri <em>extra</em> che potrebbero rendere più difficoltoso un eventuale <em>parsing</em> del prospetto prodotto dall'oggetto <span class="code">Report</span>, conviene rendere opzionale la loro presenza. L'implementazione del controllo può avvenire con la stessa modalità con cui è stato realizzato il flag <span class="code">GUT_ENABLE_FAILFAST</span>:</p>
+<pre class="code">
+<ins>namespace gut {
+
+// static flag, initially reset; declare an instance to set it
+template&lt;class T&gt;
+class StaticFlag {
+  static bool flag_;
+public:
+  StaticFlag() {
+    flag_ = true;
+  }
+  static bool enabled() {
+    return flag_;
+  }
+};
+
+// enable/disable colors in console
+template&lt;class T&gt;
+bool StaticFlag&lt;T&gt;::flag_ = false;
+
+namespace color {
+
+struct ColorInConsole_ { };
+typedef StaticFlag&lt;ColorInConsole_&gt; ColorInConsole;
+
+#define GUT_ENABLE_COLORINCONSOLE gut::color::ColorInConsole colorInConsole_;
+
+} // namespace color
+
+} // namespace gut</ins>
+
+<del>#include &quot;colors.h&quot;</del>
+
+<ins>#ifdef _WIN32
+#include &quot;windows/colors.h&quot;
+#else
+#include &quot;linux/colors.h&quot;
+#endif</ins>
+
+// ...
+
+<del>class FailFast {
+  static bool enabled_;
+public:
+  FailFast() {
+    enabled_ = true;
+  }
+  static bool enabled() {
+    return enabled_;
+  }
+};
+
+bool FailFast::enabled_ = false;</del>
+
+<ins>struct FailFast_ { };
+typedef StaticFlag&lt;FailFast_&gt; FailFast;</ins>
+</pre>
+<p>L'implementazione dei due flag <span class="code">ColorInConsole</span> e <span class="code">FailFast</span> per mezzo di una classe generica comune e un tipo ausiliario vuoto che consente l'istanziazione differenziata del membro statico è nota come <em>tag dispatching</em><a href="#ref-1"><sup>[1]</sup></a><a href="#ref-3"><sup>[3]</sup></a>.</p>
+<p>Il supporto del testo colorato in Linux è banale:</p>
+<pre class="code">
+// file linux/colors.h
+<ins>#ifndef COLORS_H
+#define COLORS_H
+
+namespace gut {
+
+namespace color {
+
+std::ostream&amp; setForegroundColor(std::ostream&amp; os, const char* code) {
+  if (ColorInConsole::enabled())
+    os &lt;&lt; &quot;\x1b[&quot; &lt;&lt; code &lt;&lt; &quot;m&quot;;
+  return os;
+}
+
+std::ostream&amp; black(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;30&quot;);
+}
+
+std::ostream&amp; navy(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;34&quot;);
+}
+
+std::ostream&amp; green(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;32&quot;);
+}
+
+std::ostream&amp; teal(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;36&quot;);
+}
+
+std::ostream&amp; maroon(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;31&quot;);
+}
+
+std::ostream&amp; purple(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;35&quot;);
+}
+
+std::ostream&amp; olive(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;33&quot;);
+}
+
+std::ostream&amp; silver(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;37&quot;);
+}
+
+std::ostream&amp; gray(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;90&quot;);
+}
+
+std::ostream&amp; blue(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;94&quot;);
+}
+
+std::ostream&amp; lime(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;92&quot;);
+}
+
+std::ostream&amp; aqua(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;96&quot;);
+}
+
+std::ostream&amp; red(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;91&quot;);
+}
+
+std::ostream&amp; fuchsia(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;95&quot;);
+}
+
+std::ostream&amp; yellow(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;93&quot;);
+}
+
+std::ostream&amp; white(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;97&quot;);
+}
+
+std::ostream&amp; reset(std::ostream&amp; os) {
+  return setForegroundColor(os, &quot;0&quot;);
+}
+
+} // namespace color
+
+} // namespace gut
+
+#endif // COLORS_H</ins>
+</pre>
+<p>Anche l'implementazione dell'oggetto <span class="code">Console</span> per Windows va modificata in modo da colorare il testo solo quando richiesto:</p>
+<pre class="code">
+// file windows/colors.h (was: colors.h)
+
+// ...
+
+<ins>namespace gut {</ins>
+
+namespace color {
+
+class <ins>Windows</ins>Console_ {
+  HANDLE handle_;
+  WORD defaultAttrs_;
+  static const WORD mask_ =
+    FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE|FOREGROUND_INTENSITY;
+public:
+  <ins>Windows</ins>Console_()
+   : handle_(GetStdHandle(STD_OUTPUT_HANDLE))
+   , defaultAttrs_(getAttrs()) {
+  }
+  void setColor(WORD color) {
+    <ins>if (ColorInConsole::enabled())</ins>
+      SetConsoleTextAttribute(handle_, (getAttrs() &amp; ~mask_) | color);
+  }
+  void resetColors() {
+    <ins>if (ColorInConsole::enabled())</ins>
+      SetConsoleTextAttribute(handle_, defaultAttrs_);
+  }
+protected:
+  WORD getAttrs() {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(handle_, &amp;info);
+    return info.wAttributes;
+  }
+};
+
+<ins>Windows</ins>Console_&amp; theConsole() {
+  static <ins>Windows</ins>Console_ console;
+  return console;
+}
+
+// ...
+
+} // namespace color
+
+<ins>} // namespace gut</ins>
+
+#endif // COLORS_H
+</pre>
+<p>L'uso dei colori nella console è quindi normalmente disattivato; per attivarlo è necessario inserire la direttiva <span class="code">GUT_ENABLE_COLORINCONSOLE</span> all'inizio della test suite:</p>
+<pre class="code">
+// file example.cpp
+// ...
+
+<ins>GUT_ENABLE_COLORINCONSOLE</ins>
+
+TEST(&quot;Initial list is empty&quot;) {
+    RecentlyUsedList anEmptyList;
+
+    CHECK(anEmptyList.empty());
+    CHECK(anEmptyList.size() == 0);
+}
+
+// ...
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-15/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-15/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-15/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-15/windows/colors.h">windows/colors.h</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Schmidt, B. <em>&ldquo;Alternatives to Singletons and Global Variables&rdquo;</em>, Overload Journal #126 - April 2015 &mdash; &lt;<a href="http://accu.org/index.php/journals/2085">http://accu.org/index.php/journals/2085</a>&gt;, visitato il 29/04/2015.</li>
+<a name="ref-2"></a>
+<li class="ref"><em>&ldquo;ANSI escape code&rdquo;</em>, wikipedia.org &mdash; &lt;<a href="http://en.wikipedia.org/wiki/ANSI_escape_code">http://en.wikipedia.org/wiki/ANSI_escape_code</a>&gt;, visitato il 29/04/2015.</li>
+<a name="ref-3"></a>
+<li class="ref"><em>&ldquo;Generic Programming Techniques &ndash; Tag Dispatching&rdquo;</em>, boost.org &mdash; &lt;<a href="http://www.boost.org/community/generic_programming.html#tag_dispatching">http://www.boost.org/community/generic_programming.html#tag_dispatching</a>&gt;, visitato il 29/04/2015.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 29/04/2015</p>
+</body>
+</html>
