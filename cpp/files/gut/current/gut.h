@@ -20,7 +20,41 @@
 #include <time.h>
 #endif
 
-#include "colors.h"
+namespace gut {
+
+// static flag, initially reset; declare an instance to set it
+template<class T>
+class StaticFlag {
+    static bool flag_;
+public:
+    StaticFlag() {
+        flag_ = true;
+    }
+    static bool enabled() {
+        return flag_;
+    }
+};
+
+// enable/disable colors in console
+template<class T>
+bool StaticFlag<T>::flag_ = false;
+
+namespace color {
+
+struct ColorInConsole_ { };
+typedef StaticFlag<ColorInConsole_> ColorInConsole;
+
+#define GUT_ENABLE_COLORINCONSOLE gut::color::ColorInConsole colorInConsole_;
+
+} // namespace color
+
+} // namespace gut
+
+#ifdef _WIN32
+#include "windows/colors.h"
+#else
+#include "linux/colors.h"
+#endif
 
 #define INT_BASE Dec
 #define CHAR_BASE Hex
@@ -535,18 +569,8 @@ public:
     const std::string& reason() const { return reason_; }
 };
 
-class FailFast {
-    static bool enabled_;
-public:
-    FailFast() {
-        enabled_ = true;
-    }
-    static bool enabled() {
-        return enabled_;
-    }
-};
-
-bool FailFast::enabled_ = false;
+struct FailFast_ { };
+typedef StaticFlag<FailFast_> FailFast;
 
 #define GUT_ENABLE_FAILFAST gut::FailFast failFast_;
 
@@ -786,7 +810,7 @@ public:
     void end() {
         report_->end(
             testCount_,
-            failedTestCount_,   
+            failedTestCount_,
             totalFailureCount_,
             globalTimer_.elapsedTime());
     }
@@ -819,7 +843,10 @@ public:
             info.level(),
             info.what());
     }
-    void quit(const std::string& reason) { report_->quit(reason); }
+    void quit(const std::string& reason) {
+        ++failedTestCount_;
+        report_->quit(reason);
+    }
 private:
     struct Concept {
         virtual ~Concept() { }
