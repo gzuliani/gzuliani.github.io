@@ -154,15 +154,14 @@ $(python.scripts.dir)/markdown_py -c $(SciteUserHome)/.scite/markdown_py.json &h
 <p>La configurazione in formato json è:</p>
 <pre class="code">
 {
-    "xhtml_wrap": {
-        "configs": {
-            "css_url": "md.css",
-            "js_url": "",
-            "title": ""
-        }
+    "mdx_xhtml_wrap": {
+        "configs": [
+            ["title", ""],
+            ["css_url", "md.css"],
+            ["js_url", ""]
+        ]
     }
-}
-</pre>
+}</pre>
 <p>Il comando di caricamento del file html nel browser predefinito è diverso per le due piattaforme:</p>
 <pre class="code">
 ...
@@ -179,8 +178,8 @@ if PLAT_UNIX
 command.name.21.$(file.patterns.markdown)=
 command.save.before.21.$(file.patterns.markdown)=2
 command.21.$(file.patterns.markdown)=$(markdown.script) \
--c $(SciteUserHome)/.scite/markdown_py.json -x mdx_del_ins -x mdx_cite \
--x markdown.extensions.extra -x markdown.extensions.meta \
+-c $(SciteUserHome)/.scite/markdown_py.json -x mdx_xhtml_wrap -x mdx_del_ins
+-x mdx_cite -x markdown.extensions.extra -x markdown.extensions.meta \
 -x markdown.extensions.sane_lists -x markdown.extensions.smarty \
 -x markdown.extensions.toc -x markdown.extensions.wikilinks \
 -f "$(markdown.rendering.file)" "$(FilePath)"
