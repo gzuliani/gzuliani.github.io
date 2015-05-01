@@ -15,7 +15,7 @@ function GetEol()
     end
 end
 
-function GetWrapWidth()
+function GetLineLength()
     return tonumber(props["edge.column"])
 end
 
@@ -24,11 +24,11 @@ function WrapText(text, width)
     for i, line in pairs(SplitLines(text)) do
         wrappedLine = ""
         for token in string.gmatch(line, "[^%s]+") do
-            if string.len(token .. wrappedLine) > width then
+            if string.len(token..wrappedLine) > width then
                 wrappedText[#wrappedText + 1] = wrappedLine
-                wrappedLine = token .. " "
+                wrappedLine = token.." "
             else
-                wrappedLine = wrappedLine .. token .. " "
+                wrappedLine = wrappedLine..token.." "
             end
         end
         wrappedText[#wrappedText + 1] = string.gsub(wrappedLine, "%s$", "")
@@ -38,12 +38,12 @@ end
 
 function WrapSelText()
     local pos = editor.SelectionStart
-    editor:ReplaceSel(WrapText(editor:GetSelText(), GetWrapWidth()))
+    editor:ReplaceSel(WrapText(editor:GetSelText(), GetLineLength()))
     editor:GotoPos(pos)
 end
 
 function WrapAllText()
-    editor:SetText(WrapText(editor:GetText(), GetWrapWidth()))
+    editor:SetText(WrapText(editor:GetText(), GetLineLength()))
     editor:GotoPos(0)
 end
 

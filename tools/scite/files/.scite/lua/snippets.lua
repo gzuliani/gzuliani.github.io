@@ -141,7 +141,7 @@ module('modules.scite.snippets', package.seeall)
 --   Remember to reset the flag when you are finished!
 
 -- options
-local PLATFORM = 'windows'
+local PLATFORM = _G.PLATFORM
 local MARK_SNIPPET   = 4
 local SCOPES_ENABLED = true
 local FILE_IN, FILE_OUT, REDIRECT, RUBY_CMD, MARK_SNIPPET_COLOR
@@ -151,13 +151,14 @@ if PLATFORM == 'linux' then
   FILE_OUT = '/tmp/scite_output'
   REDIRECT = ' &> '
   RUBY_CMD = 'ruby '
+  PYTHON_CMD = props['python']..' '
   MARK_SNIPPET_COLOR = tonumber("0x4D9999")
 elseif PLATFORM == 'windows' then
   FILE_IN  = os.getenv('TEMP')..'\\scite_input.py'
   FILE_OUT = os.getenv('TEMP')..'\\scite_output.txt'
   REDIRECT = ' > '
   RUBY_CMD = 'ruby '
-  PYTHON_CMD = props['python'] .. ' '
+  PYTHON_CMD = props['python']..' '
   REDIRECT_STDERR = ' 2> '
   MARK_SNIPPET_COLOR = 5085593
 end
@@ -281,7 +282,7 @@ function insert(snippet_arg)
     editor:NewLine()
     local line = editor:LineFromPosition(editor.CurrentPos)
     snippet.end_marker = editor:MarkerAdd(line, MARK_SNIPPET)
-    editor:MarkerSetBack(MARK_SNIPPET, MARK_SNIPPET_COLOR)
+    --editor:MarkerSetBack(MARK_SNIPPET, MARK_SNIPPET_COLOR)
     _DEBUG('snippet:')
     if DEBUG then table.foreach(snippet, print) end
 
