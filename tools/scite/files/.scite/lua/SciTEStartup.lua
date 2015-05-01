@@ -6,6 +6,7 @@ function RGBToNum(r, g, b)
     return r + 256 * g + 65536 * b
 end
 
+-- set tooltip background color
 function OnClear()
     local value = props["colour.calltiphlt.fore"]
     if value ~= "" then
@@ -14,6 +15,7 @@ function OnClear()
     end
 end
 
+-- remove empty lines
 function RemoveEmptyLines()
     local text = editor:GetText()
     if #text == 0 then return end
@@ -30,9 +32,8 @@ function RemoveEmptyLines()
 end
 
 package.path = package.path..";"..props["SciteUserHome"].."/.scite/lua/?.lua"
-require "snippets"
 require "ansi"
-require "javadoc"
-require "markdown"
-require "wrap"
-require "xml"
+require "auto-completion"
+require "snippets"
+require "wrap-text"
+require "xml-escape"

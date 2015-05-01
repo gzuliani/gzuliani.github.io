@@ -1,3 +1,4 @@
+-- ansi/hex conversions
 function AnsiToHex(text, format)
     return string.gsub(text, ".", function(c) return string.format(format, c:byte(1)) end)
 end
@@ -11,7 +12,7 @@ function AnsiToHexSelection()
 end
 
 function AnsiToCHexStringSelection()
-    editor:ReplaceSel('"' .. AnsiToHex(editor:GetSelText(), "\\x%2x") .. '"')
+    editor:ReplaceSel('"'..AnsiToHex(editor:GetSelText(), "\\x%2x")..'"')
 end
 
 function HexToAnsiSelection()

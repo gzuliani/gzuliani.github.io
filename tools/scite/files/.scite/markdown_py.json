@@ -1,9 +1,9 @@
 {
     "mdx_xhtml_wrap": {
-        "configs": {
-            "css_url": "md.css",
-            "js_url": "",
-            "title": ""
-        }
+        "configs": [
+            ["title",   ""],
+            ["css_url", "md.css"],
+            ["js_url",  ""]
+        ]
     }
 }
