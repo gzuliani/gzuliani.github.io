@@ -7,6 +7,7 @@
 #undef GUT_HAS_CHRONO
 #endif
 
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <memory>
