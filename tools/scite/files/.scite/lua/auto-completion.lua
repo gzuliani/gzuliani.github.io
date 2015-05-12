@@ -10,21 +10,32 @@ function OnChar(ch)
     --
     -- brackets
     --
-    if ch == "(" then
-        editor:InsertText(-1, ")")
-    end
+--~     if ch == "(" then
+--~         editor:InsertText(-1, ")")
+--~     end
 
-    if ch == "[" then
-        editor:InsertText(-1, "]")
-    end
+--~     if ch == "[" then
+--~         editor:InsertText(-1, "]")
+--~     end
 
-    if ch == "{" then
-        editor:InsertText(-1, "}")
-    end
+--~     if ch == "{" then
+--~         editor:InsertText(-1, "}")
+--~     end
+
+    --
+    -- quotes
+    --
+--~     if ch == "\"" then
+--~         editor:InsertText(-1, "\"")
+--~     end
+--~     if ch == "\'" then
+--~         editor:InsertText(-1, "\'")
+--~     end
 
     --
     -- javadoc
     --
+    -- requires: indent.maintain.$(file.patterns.cpp)=0
     if ch == "\n" and editor.LexerLanguage == "cpp" then
 
         local mark = "/**"
@@ -38,7 +49,7 @@ function OnChar(ch)
         local prevLine = editor:GetLine(prevLineNum)
 
         if string.match(prevLine, "^%s*/%*%*") then
-            local start_, end_, indentation = string.find(prevLine, "^(%s*)")
+            local indentation = string.match(prevLine, "^(%s*)")
 
             local textToInsert = indentation.." * "
             local caretFinalPos = editor.CurrentPos + string.len(textToInsert)
