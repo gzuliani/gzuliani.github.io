@@ -35,7 +35,10 @@ function OnChar(ch)
     --
     -- javadoc
     --
-    -- requires: indent.maintain.$(file.patterns.cpp)=0
+    -- requires:
+    --  * indent.automatic=0
+    --  * indent.maintain.$(file.patterns.cpp)=0
+    --
     if ch == "\n" and editor.LexerLanguage == "cpp" then
 
         local mark = "/**"
