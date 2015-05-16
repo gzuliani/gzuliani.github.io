@@ -780,6 +780,7 @@ public:
     void start() {
         testCount_ = 0;
         failedTestCount_ = 0;
+        totalFailureCount_ = 0;
         globalTimer_.reset();
         report_->start();
     }
