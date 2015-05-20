@@ -187,6 +187,8 @@ user.shortcuts=Ctrl+3|1121|
 </pre>
 <p class="note"><strong>Nota 1:</strong> l'estensione <span class="code">markdown.extensions.toc</span> funziona solo con Python 2.7 e versioni successive: tale opzione va rimossa nel caso si usi una versione precedente.</p>
 <p class="note"><strong>Nota 2:</strong> le estensioni <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> generano un <span class="code">DeprecationWarning</span> che però non pregiudica la conversione.</p>
-<p class="modification-notice">Pagina modificata il 13/04/2015</p>
+<p class="update"><strong>Aggiornamento [20/05/2015]</strong></p>
+<p>Firefox ha qualche <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=673087">problema</a> a renderizzare pagine HTML codificate UTF-8 se questa non è esplicitamente dichiarata nell'apposito nodo <span class="code">meta</span>. Poiché l'estensione  <span class="code">mdx_xhtml_wrap</span> non lo fa, conviene, <strong>prima di installarla</strong>, applicare questa <a href="files/meta-charset.patch"><em>patch</em></a> (o, alternativamente, agire direttamente sui sorgenti già installati).</p>
+<p class="modification-notice">Pagina modificata il 20/05/2015</p>
 </body>
 </html>
