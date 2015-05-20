@@ -5,7 +5,7 @@ diff -r 57ce1a83ac53 mdx_xhtml_wrap.py
                  + "\t\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n\n"
                  + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n\n"
                  + "<head>\n"
-+                + "<meta charset=\"UTF-8\">\n"
++                + "<meta charset=\"UTF-8\"/>\n"
                  + (("<title>"
                      + self.markdown.xhtml_wrap_options["title"]
                      + "</title>\n")
