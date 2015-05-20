@@ -1,0 +1,11 @@
+diff -r 57ce1a83ac53 mdx_xhtml_wrap.py
+--- a/mdx_xhtml_wrap.py	Mon Apr 15 14:35:07 2013 -0700
++++ b/mdx_xhtml_wrap.py	Wed May 20 14:08:01 2015 +0200
+@@ -50,6 +50,7 @@
+                 + "\t\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n\n"
+                 + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n\n"
+                 + "<head>\n"
++                + "<meta charset=\"UTF-8\">\n"
+                 + (("<title>"
+                     + self.markdown.xhtml_wrap_options["title"]
+                     + "</title>\n")
