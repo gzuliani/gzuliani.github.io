@@ -189,12 +189,13 @@ class Safe {
 <p>L'oggetto temporaneo si pu&ograve; ottenere come valore di ritorno di una funzione ausiliaria:</p>
 <pre class="code">
 template &lt;class Object, typename Method, typename Param&gt;
-ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(Object&amp; object, Method method, const Param&amp; param) {
+ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(
+  Object&amp; object, Method method, const Param&amp; param) {
   return ScopeGuardForMethod1&lt;Object, Method, Param&lt;(object, method, param);
 }
 </pre>
 <p><span class="code">guard</span> pu&ograve; essere cos&igrave; istanziata pi&ugrave; agevolmente:</p>
-<pre>
+<pre class="code">
 class Safe {
   // ...
   void SetName(const std::string&amp; newName, bool fail) {
@@ -248,7 +249,8 @@ public:
 };
 
 template &lt;class Object, typename Method, typename Param&gt;
-ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(Object&amp; object, Method method, const Param&amp; param) {
+ScopeGuardForMethod1&lt;Object, Method, Param&gt; CreateGuard(
+  Object&amp; object, Method method, const Param&amp; param) {
   return ScopeGuardForMethod1&lt;Object, Method, Param&gt;(object, method, param);
 }
 </pre>
