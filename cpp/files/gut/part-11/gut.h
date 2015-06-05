@@ -167,13 +167,13 @@ class HasOperatorString {
     static yes& check_(...);
 
 public:
-    static const bool response = sizeof(yes) == sizeof(check_<Derived>(0));
+    static const bool value = sizeof(yes) == sizeof(check_<Derived>(0));
 };
 
 template<>
 class HasOperatorString<bool> {
 public:
-    static const bool response = false;
+    static const bool value = false;
 };
 
 template<typename T, bool HasOperatorString = true>
@@ -202,8 +202,8 @@ struct Expression {
     virtual std::string toString() const = 0;
     template <typename T>
     static bool logAndEvaluate(const T& value) {
-        if (HasOperatorString<T>::response)
-            Expression::last = StringRepr<T, HasOperatorString<T>::response>(value).str();
+        if (HasOperatorString<T>::value)
+            Expression::last = StringRepr<T, HasOperatorString<T>::value>(value).str();
         else
             Expression::last = gut::toString(static_cast<bool>(value));
         return static_cast<bool>(value);

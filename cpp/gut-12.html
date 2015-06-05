@@ -4,7 +4,7 @@
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<p class="page-path"><a href="../index.html#gut-12">risorse</a> | good unit tests /12</p>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
 <h1>Good Unit Tests /12</h1>
 <p>Questa parte (la dodicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a> e qui l'<a href="gut-11.html">undicesima</a>) descrive un piccolo refactoring.</p>
 <p>Analizzando il codice sorgente mi sono reso conto che la classe <span class="code">Expression</span>, oltre a definire la strategia di <span class="code">logAndEvaluate</span>, si occupa della gestione delle espressioni unarie. Conviene separare le due responsabilità, introducendo una nuova classe, <span class="code">UnaryExpression</span>:</p>
@@ -19,8 +19,8 @@ struct Expression {
   virtual std::string toString() const = 0;
 <del>  template &lt;typename T&gt;
   static bool logAndEvaluate(const T&amp; value) {
-    if (HasOperatorString&lt;T&gt;::response)
-      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value).str();
+    if (HasOperatorString&lt;T&gt;::value)
+      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::value&gt;(value).str();
     else
       Expression::last = gut::toString(static_cast&lt;bool&gt;(value));
     return static_cast&lt;bool&gt;(value);
@@ -43,8 +43,8 @@ public:
     return static_cast&lt;bool&gt;(value_);
   }
   virtual std::string toString() const {
-    if (HasOperatorString&lt;T&gt;::response)
-      return StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value_).str();
+    if (HasOperatorString&lt;T&gt;::value)
+      return StringRepr&lt;T, HasOperatorString&lt;T&gt;::value&gt;(value_).str();
     else
       return gut::toString(static_cast&lt;bool&gt;(value_));
   }

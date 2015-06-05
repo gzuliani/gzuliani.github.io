@@ -1,0 +1,207 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /16</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /16</h1>
+<p>Questa parte (la sedicesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a>, qui la <a href="gut-14.html">quattordicesima</a> e qui la <a href="gut-15.html">quindicesima</a>) risolve alcuni piccoli problemi riscontrati nell'uso della libreria con Visual Studio Express 2013, GCC 5.1 e Clang 3.6.</p>
+<h2>Fix di <span class="code">DefaultReport</span></h2>
+<p>È stata aggiunta l'inizializzazione del membro <span class="code">testAlreadyFailed_</span> dell'oggetto <span class="code">DefaultReport</span>:</p>
+<pre class="code">
+class DefaultReport {
+  std::ostream&amp; os_;
+  bool testAlreadyFailed_;
+  std::vector&lt;std::pair&lt;int, std::string&gt;&gt; log_;
+public:
+  DefaultReport(std::ostream&amp; os = std::cout)
+   : os_(os), <ins>testAlreadyFailed_(false)</ins> {}
+  ...
+};
+</pre>
+<h2>Operatori di assegnamento</h2>
+<p>Sono stati esplicitamente disattivati gli operatori di assegnamento delle classi non copiabili:</p>
+<pre class="code">
+...
+struct Expression {
+  ...
+  virtual ~Expression() {}
+  <ins>Expression&amp; operator=(const Expression&amp;) = delete;</ins>
+  ...
+};
+
+...
+template &lt;typename T&gt;
+class UnaryExpression : public Expression {
+  ...
+  UnaryExpression(const T&amp; value) : value_(value) {}
+  <ins>UnaryExpression&amp; operator=(const UnaryExpression&amp;) = delete;</ins>
+  ...
+};
+
+...
+template &lt;typename T, typename U&gt;
+class BinaryExpression : public Expression {
+  ...
+  BinaryExpression(const T&amp; lhs, const U&amp; rhs) : lhs_(lhs), rhs_(rhs) {}
+  <ins>BinaryExpression&amp; operator=(const BinaryExpression&amp;) = delete;</ins>
+  ...
+};
+
+...
+template &lt;typename T&gt;
+class Term {
+  ...
+  <ins>Term&amp; operator=(const Term&amp;) = delete;</ins>
+  template &lt;typename U&gt;
+  UNEXPECTED_ASSIGNMENT operator=(const U&amp;) const;
+  ...
+};
+
+...
+class DefaultReport {
+  ...
+public:
+  ...
+  <ins>DefaultReport&amp; operator=(const DefaultReport&amp;) = delete;</ins>
+  void start() { os_ &lt;&lt; &quot;Test suite started...&quot; &lt;&lt; std::endl; }
+  ...
+};
+</pre>
+<h2>La costante <span class="code">NULL</span> e 64 bit</h2>
+<p>È stato aggiunto il supporto per il confronto dei puntatori con <span class="code">NULL</span> per i sistemi nei quali la costante è un <span class="code">long</span> (tipicamente negli ambienti a 64 bit):</p>
+<pre class="code">
+...
+<ins>template &lt;Operator op, typename T&gt;
+bool compare(T* lhs, long rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(
+    lhs, reinterpret_cast&lt;T*&gt;(rhs));
+}</ins>
+
+<ins>template &lt;Operator op, typename T&gt;
+bool compare(long lhs, T* rhs) {
+  return ExprFactory&lt;T*, T*, op&gt;::logAndEvaluate(
+    reinterpret_cast&lt;T*&gt;(lhs), rhs);
+}</ins>
+</pre>
+<h2>Errore &ldquo;incomplete type OPERATION_NOT_SUPPORTED&rdquo;</h2>
+<p>Durante la compilazione dei programmi d'esempio, Clang 3.6 genera l'errore in oggetto; per eliminarlo senza rinunciare all'<em>hint</em> dato dalla presenza del nome nel messaggio d'errore, si è uniformata la forma del metodo <span class="code">logAndEvaluate</span> a quello degli operatori della classe <span class="code">Term</span>:</p>
+<pre class="code">
+...
+struct ExprFactory {
+  <del>static bool logAndEvaluate(const T&amp; /*lhs*/, const U&amp; /*rhs*/) {</del>
+  <del>  OPERATION_NOT_SUPPORTED dummy;</del>
+  <del>  return false;</del>
+  <del>}</del>
+  <ins>static OPERATION_NOT_SUPPORTED logAndEvaluate(const T&amp;, const U&amp;);</ins>
+};
+</pre>
+<h2>Confronto <span class="code">int</span>/<span class="code">unsigned long long</span></h2>
+<p>È stato aggiunto un esplicito operatore di confronto tra i due tipi interi in oggetto, per evitare l'emissione di un warning relativo a comparazioni tra valori numerici <em>signed/unsigned</em>:</p>
+<pre class="code">
+...
+<ins>template &lt;Operator op&gt;
+bool compare(int lhs, unsigned long long rhs) {
+  return compare&lt;op&gt;(static_cast&lt;unsigned long long&gt;(lhs), rhs);
+}</ins>
+
+<ins>template &lt;Operator op&gt;
+bool compare(unsigned long long lhs, int rhs) {
+  return compare&lt;op&gt;(lhs, static_cast&lt;unsigned long long&gt;(rhs));
+}</ins>
+</pre>
+<h2>Ridenominazione delle macro ausiliarie</h2>
+<p>È stato aggiunto il prefisso <span class="code">GUT_</span> a tutte le macro di supporto, per ridurre le probabilità <em>clashing</em>:</p>
+<pre class="code">
+...
+#define <ins>GUT_</ins>INT_BASE Dec
+#define <ins>GUT_</ins>CHAR_BASE Hex
+
+#define <del>CONCAT</del> <ins>GUT_CONCAT_</ins>(a, b) a ## b
+#define <del>CONCAT_</del> <ins>GUT_CONCAT</ins>(a, b) <del>CONCAT</del> <ins>GUT_CONCAT_</ins>(a, b)
+
+#define <ins>GUT_</ins>INT_TO_STRING  <del>CONCAT_</del> <ins>GUT_CONCAT</ins>(as, <ins>GUT_</ins>INT_BASE)
+#define <ins>GUT_</ins>CHAR_TO_STRING <del>CONCAT_</del> <ins>GUT_CONCAT</ins>(as, <ins>GUT_</ins>CHAR_BASE)
+
+...
+#define <ins>GUT_</ins>PICK_NAME(id_) e_ ## id_,
+#define <ins>GUT_</ins>PICK_LABEL(id_) #id_,
+
+#define <ins>GUT_</ins>LEVELS(lambda_) \
+  lambda_(info) \
+  lambda_(warning) \
+  lambda_(error) \
+  lambda_(fatal) \
+
+enum Level { <ins>GUT_</ins>LEVELS(<ins>GUT_</ins>PICK_NAME) };
+static std::string level_name[] = { <ins>GUT_</ins>LEVELS(<ins>GUT_</ins>PICK_LABEL) };
+
+...
+<del>#define MAKE_UNIQUE(name_) CONCAT_(name_, __LINE__)</del>
+<ins>#define GUT_ID(prefix_) GUT_CONCAT(prefix_, __LINE__)</ins>
+
+#define TEST(name_) \
+  static void <del>MAKE_UNIQUE</del> <ins>GUT_ID</ins>(test_)(); \
+  gut::Suite::add <del>MAKE_UNIQUE</del> <ins>GUT_ID</ins>(testAddition_)(
+    name_, &amp;<del>CONCAT_</del> <ins>GUT_CONCAT</ins>(test_, __LINE__)); \
+  static void <del>MAKE_UNIQUE</del> <ins>GUT_ID</ins>(test_)()
+</pre>
+<h2>Warning &ldquo;conditional expression is constant&rdquo;</h2>
+<p>Il Visual Studio Express 2013 emette alcuni warning C4127 spurii quando compila il sorgente al livello di warning 4 (<span class="code">/W4</span>); i messaggi possono essere inibiti puntualmente con un'istruzione <em>pragma</em>:</p>
+<pre class="code">
+template &lt;typename T&gt;
+class UnaryExpression : public Expression {
+  ...
+  virtual std::string toString() const {
+<ins>#ifdef _MSC_VER
+__pragma(warning(push))
+__pragma(warning(disable:4127))
+#endif</ins>
+    if (HasOperatorString&lt;T&gt;::value)
+<ins>#ifdef _MSC_VER
+__pragma(warning(pop))
+#endif</ins>
+      return StringRepr&lt;T, HasOperatorString&lt;T&gt;::value&gt;(value_).str();
+    else
+      return gut::toString(static_cast&lt;bool&gt;(value_));
+  }
+};
+
+...
+#define GUT_BEGIN \
+    do {
+
+#ifdef _MSC_VER
+
+#define GUT_END \
+__pragma(pack(push)) \
+__pragma(warning(disable:4127)) \
+    } while (0) \
+__pragma(pack(pop))
+
+#else
+
+#define GUT_END \
+    } while (0)
+
+#endif
+</pre>
+<p>Il costrutto <span class="code">do</span>/<span class="code">while</span> che caratterizza le macro di test è stato sostituito dall'accoppiata <span class="code">GUT_BEGIN</span>/<span class="code">GUT_END</span>; a titolo d'esempio, la macro <span class="code">CHECK</span> diventa:</p>
+<pre class="code">
+#define CHECK(expr_) \
+  <ins>GUT_BEGIN</ins> <del>do {</del> \
+    if (!(gut::Capture()-&gt;*expr_)) \
+      gut::theListener.failure(
+        gut::CheckFailure(
+          #expr_, gut::Expression::last, __FILE__, __LINE__)); \
+  <ins>GUT_END</ins> <del>} while (0)</del>
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-16/gut.h">gut.h</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 04/06/2015</p>
+</body>
+</html>

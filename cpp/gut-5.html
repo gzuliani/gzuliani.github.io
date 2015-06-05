@@ -4,7 +4,7 @@
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<p class="page-path"><a href="../index.html#gut-5">risorse</a> | good unit tests /5</p>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
 <h1>Good Unit Tests /5</h1>
 <p>Questa parte (la quinta; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a> e qui la <a href="gut-4.html">quarta</a>) affronta alcuni aspetti lasciati in sospeso nella terza parte.</p>
 <h2>Introduzione</h2>
@@ -223,8 +223,8 @@ struct Expression {
   template&lt;typename T&gt;
   static bool logAndEvaluate(const T&amp; value) {
     <del>Expression::last = gut::toString(value);</del>
-    <ins>if (HasOperatorString&lt;T&gt;::response)
-      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::response&gt;(value).str();
+    <ins>if (HasOperatorString&lt;T&gt;::value)
+      Expression::last = StringRepr&lt;T, HasOperatorString&lt;T&gt;::value&gt;(value).str();
     else
       Expression::last = gut::toString(static_cast&lt;bool&gt;(value));</ins>
     return static_cast&lt;bool&gt;(value);
@@ -300,7 +300,7 @@ class HasOperatorString {
   static no&amp; check(...);
 
 public:
-  static const bool response = sizeof(yes) == sizeof(check&lt;T&gt;(0));
+  static const bool value = sizeof(yes) == sizeof(check&lt;T&gt;(0));
 };
 
 struct Convertible {
@@ -318,9 +318,9 @@ struct NonConvertible {
 int main() {
 
   std::cout &lt;&lt; std::boolalpha;
-  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::value &lt;&lt; std::endl;
 
   return 0;
 }
@@ -332,7 +332,7 @@ int main() {
  * NonConvertible: false
 */
 </pre>
-<p>Tutto ha inizio dall'espressione <span class="code">HasOperatorString&lt;Convertible&gt;::response</span> che, effettuando la chiamata <span class="code">check&lt;T&gt;(0)</span>, obbliga il compilatore ad individuare il metodo pi&ugrave; adatto tra i due disponibili. Essendo la forma con l'ellissi la meno privilegiata, il compilatore verifica dapprima se il tipo <span class="code">T</span> &egrave; compatibile con la prima forma:</p>
+<p>Tutto ha inizio dall'espressione <span class="code">HasOperatorString&lt;Convertible&gt;::value</span> che, effettuando la chiamata <span class="code">check&lt;T&gt;(0)</span>, obbliga il compilatore ad individuare il metodo pi&ugrave; adatto tra i due disponibili. Essendo la forma con l'ellissi la meno privilegiata, il compilatore verifica dapprima se il tipo <span class="code">T</span> &egrave; compatibile con la prima forma:</p>
 <pre class="code">
   static yes&amp; check(Method&lt;std::string (U::*)() const, &amp;U::operator std::string&gt;*);
 </pre>
@@ -348,10 +348,10 @@ int main() {
 int main() {
 
   std::cout &lt;&lt; std::boolalpha;
-  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
-  <ins>std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::response &lt;&lt; std::endl;</ins>
+  std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::value &lt;&lt; std::endl;
+  <ins>std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::value &lt;&lt; std::endl;</ins>
 
   return 0;
 }
@@ -391,7 +391,7 @@ class HasOperatorString {
   static <ins>yes</ins>&amp; check(...);
 
 public:
-  static const bool response = sizeof(yes) == sizeof(check&lt;<ins>Derived</ins>&gt;(0));
+  static const bool value = sizeof(yes) == sizeof(check&lt;<ins>Derived</ins>&gt;(0));
 };
 
 // ...
@@ -399,10 +399,11 @@ public:
 int main() {
 
   std::cout &lt;&lt; std::boolalpha;
-  <del>std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::response &lt;&lt; std::endl;</del> // does not compile!
-  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::response &lt;&lt; std::endl;
-  std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::response &lt;&lt; std::endl;
+  // does not compile!
+  // std::cout &lt;&lt; &quot;int           : &quot; &lt;&lt; HasOperatorString&lt;int&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Convertible   : &quot; &lt;&lt; HasOperatorString&lt;Convertible&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;NonConvertible: &quot; &lt;&lt; HasOperatorString&lt;NonConvertible&gt;::value &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;Derived       : &quot; &lt;&lt; HasOperatorString&lt;Derived&gt;::value &lt;&lt; std::endl;
 
   return 0;
 }

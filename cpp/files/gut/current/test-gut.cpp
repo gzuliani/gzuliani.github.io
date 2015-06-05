@@ -11,8 +11,8 @@ bool f() {
 class Object {
     int m_id;
 public:
-    Object(int id) : m_id(id) { }
-    Object(const Object& co) : m_id(co.m_id) { }
+    Object(int id) : m_id(id) {}
+    Object(const Object& co) : m_id(co.m_id) {}
     Object& operator=(const Object& co) {
         m_id = co.m_id;
         return *this;
@@ -30,7 +30,7 @@ class NonCopiableObject {
     NonCopiableObject(const NonCopiableObject& co);
     NonCopiableObject& operator=(const NonCopiableObject& co);
 public:
-    NonCopiableObject(int id) : id_(id) { }
+    NonCopiableObject(int id) : id_(id) {}
     bool operator==(const NonCopiableObject& co) const { return id_ == co.id_; }
     int GetId() const { return id_; }
 };
@@ -42,8 +42,10 @@ std::ostream& operator<<(std::ostream& os, const NonCopiableObject& nco) {
 class NonSerializableObject {
     int m_id;
 public:
-    NonSerializableObject(int id) : m_id(id) { }
-    bool operator==(const NonSerializableObject& co) const { return m_id == co.m_id; }
+    NonSerializableObject(int id) : m_id(id) {}
+    bool operator==(const NonSerializableObject& co) const {
+        return m_id == co.m_id;
+    }
 };
 
 bool isOdd(int i) {
@@ -68,20 +70,32 @@ class TestReport {
     TestReport& operator=(const TestReport&);
 public:
     TestReport(std::string& failure, std::string& info)
-    : failure_(failure), info_(info) { }
-    void start() { }
-    void end(int /*tests*/, int /*failedTests*/, int /*failures*/, double /*duration*/) { }
-    void startTest(const std::string& /*name*/) { }
-    void endTest(bool /*failed*/, double /*duration*/) { }
-    void failure(const char* /*file*/, int /*line*/, int /*level*/, const std::string& what) { failure_ = what; }
-    virtual void info(const char* /*file*/, int /*line*/, int /*level*/, const std::string& what) { info_ = what; }
-    void quit(const std::string& /*reason*/) { }
+    : failure_(failure), info_(info) {}
+    void start() {}
+    void end(
+        int /*tests*/,
+        int /*failedTests*/,
+        int /*failures*/,
+        double /*duration*/) {}
+    void startTest(const std::string& /*name*/) {}
+    void endTest(bool /*failed*/, double /*duration*/) {}
+    void failure(
+        const char* /*file*/,
+        int /*line*/,
+        int /*level*/,
+        const std::string& what) { failure_ = what; }
+    virtual void info(
+        const char* /*file*/,
+        int /*line*/,
+        int /*level*/,
+        const std::string& what) { info_ = what; }
+    void quit(const std::string& /*reason*/) {}
 };
 
 class ConvertibleToBool {
     bool value_;
 public:
-    ConvertibleToBool(bool value) : value_(value) { }
+    ConvertibleToBool(bool value) : value_(value) {}
     operator bool() const {
         return value_;
     }
@@ -90,7 +104,7 @@ public:
 class ConvertibleToBoolAndString {
     bool value_;
 public:
-    ConvertibleToBoolAndString(bool value) : value_(value) { }
+    ConvertibleToBoolAndString(bool value) : value_(value) {}
     operator bool() const {
         return value_;
     }
@@ -99,9 +113,11 @@ public:
     }
 };
 
-class DerivedFromConvertibleToBoolAndString : public ConvertibleToBoolAndString {
+class DerivedFromConvertibleToBoolAndString
+ : public ConvertibleToBoolAndString {
 public:
-    DerivedFromConvertibleToBoolAndString(bool value) : ConvertibleToBoolAndString(value) { }
+    DerivedFromConvertibleToBoolAndString(bool value)
+     : ConvertibleToBoolAndString(value) {}
 };
 
 int main() {
