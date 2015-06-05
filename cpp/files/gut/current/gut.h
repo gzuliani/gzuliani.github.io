@@ -225,13 +225,13 @@ struct StringRepr<T, false> {
 struct Expression {
     static std::string last;
     virtual ~Expression() {}
+    Expression& operator=(const Expression&) = delete;
     virtual bool evaluate() const = 0;
     virtual std::string toString() const = 0;
     bool logAndEvaluate() {
         Expression::last = toString();
         return evaluate();
     }
-    Expression& operator=(const Expression&) = delete;
 };
 
 std::string Expression::last;
