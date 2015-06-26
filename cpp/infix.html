@@ -1,0 +1,217 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Operatori infissi in C++</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#infix">risorse</a> | operatori infissi in c++</p>
+<h1>Operatori infissi in C++</h1>
+<h2>Introduzione</h2>
+<p>In questo periodo al quotidiano lavoro in C++ si è affiancato qualche piccolo progetto Python. Ho assimilato la sintassi di questo linguaggio a tal punto che spesso e volentieri mi capita di &ldquo;pythonizzare&rdquo; il mio C++: oltre a dimenticarmi sistematicamente le parentesi graffe, mi capita per esempio di scrivere:</p>
+<pre class="code">
+  int i = 3;
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+  ...
+
+  if (i in numbers)
+    ...
+</pre>
+<p>Mi sono così chiesto se esiste il modo di rendere compilabile codice come questo.</p>
+<h2>Compilabilità</h2>
+<p>Il codice di partenza è il seguente:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+int main() {
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+
+  int i = 3;
+  if (i in numbers) // compiler error!
+    std::cout &lt;&lt; i &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; i &lt;&lt; &quot; not found\n&quot;;
+}
+</pre>
+<p>Una forma sintattica non troppo difforme da quella desiderata che con poca fatica si può rendere compilabile è la seguente:</p>
+<pre class="code">
+  if (i +in+ numbers)
+</pre>
+<p>Supponendo che <span class="code">in</span> sia un oggetto di un tipo opportuno, e tenendo conto dell'associatività dell'operatore <span class="code">+</span>, il valore dell'espressione viene determinato in tre passi:</p>
+<ol>
+<li>valutazione della sotto-espressione <span class="code">i + in</span>;
+<li>valutazione della sotto-espressione <span class="code">x + numbers</span>, dove <span class="code">x</span> rappresenta il risultato di <span class="code">i + in</span>;</li>
+<li><em>cast</em> implicito a <span class="code">bool</span> del risultato.</li>
+</ol>
+<p>Affinché tale espressione sia compilabile, è sufficiente che l'oggetto <span class="code">in</span> supporti:</p>
+<ul>
+<li><strong><span class="code">operator+(const T&amp;, in_operator&amp; op)</span></strong> per la valutazione della prima sotto-espressione;</li>
+<li><strong><span class="code">operator+(const T&amp;)</span></strong> per la valutazione della seconda sotto-espressione;</li>
+<li><strong><span class="code">operator bool()</span></strong> per la conversione finale.</li>
+</ul>
+<p>Ecco come si presenta il codice dopo le modifiche suggerite:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+<ins>struct in_operator {
+  operator bool() const { return false; }
+  template &lt;class T&gt; in_operator&amp; operator+(const T&amp;) { return *this; }
+} in;
+
+template &lt;class T&gt;
+in_operator&amp; operator+(const T&amp;, in_operator&amp; op) {
+  return op;
+}</ins>
+
+int main() {
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+
+  int i = 3;
+  if (i +in+ numbers)
+    std::cout &lt;&lt; i &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; i &lt;&lt; &quot; not found\n&quot;;
+}
+
+/* output:
+ *
+ * 3 not found
+ */
+</pre>
+<p>È evidente che il programma non funziona, però compila!</p>
+<h3>Eliminazione del <em>cast</em> implicito</h3>
+<p>Si può evitare la conversione implicita a <span class="code">bool</span> se si ha l'accortezza di ritornare il booleano atteso direttamente dall'<span class="code">operator+</span> membro:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+struct in_operator {
+  <del>operator bool() const { return false; }</del>
+  template &lt;class T&gt; <del>in_operator&amp;</del> <ins>bool</ins> operator+(const T&amp;) { return <del>*this</del> <ins>false</ins>; }
+} in;
+
+template &lt;class T&gt;
+in_operator&amp; operator+(const T&amp;, in_operator&amp; op) {
+  return op;
+}
+
+int main() {
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+
+  int i = 3;
+  if (i +in+ numbers)
+    std::cout &lt;&lt; i &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; i &lt;&lt; &quot; not found\n&quot;;
+}
+
+/* output:
+ *
+ * 3 not found
+ */
+</pre>
+<h2>Implementazione</h2>
+<h3>Cattura dell'operando di sinistra</h3>
+<p>Poiché è necessario conoscere il valore del primo termine nel contesto del secondo <span class="code">operator+</span> (onde ritornare il valore di verità corretto), è indispensabile &ldquo;catturarlo&rdquo;, e il modo più semplice per farlo è inglobarlo in un oggetto ausiliario <em>ad hoc</em> nella prima chiamata a <span class="code">operator+</span>, dov'è disponibile una sua referenza:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+<ins>#include &lt;algorithm&gt;</ins>
+
+struct in_operator {
+  <del>template &lt;class T&gt; bool operator+(const T&amp;) { return false; }</del>
+} in;
+
+<ins>template &lt;class T&gt;
+struct in_operator_impl {
+  const T&amp; lhs_;
+  in_operator_impl(const T&amp; lhs) : lhs_(lhs) {}
+  <ins>template &lt;class Sequence&gt;
+  bool operator+(const Sequence&amp; s) {
+    return std::find(std::begin(s), std::end(s), lhs_) != std::end(s);
+  }</ins>
+};</ins>
+
+<del>template &lt;class T&gt;
+in_operator&amp; operator+(const T&amp;, in_operator&amp; op) {
+  return op;
+}</del>
+
+<ins>template &lt;class T&gt;
+in_operator_impl&lt;T&gt; operator+(const T&amp; lhs, in_operator&amp;) {
+  return lhs;
+}</ins>
+
+int main() {
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+
+  int i = 3;
+  if (i +in+ numbers)
+    std::cout &lt;&lt; i &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; i &lt;&lt; &quot; not found\n&quot;;
+}
+
+/* output:
+ *
+ * 3 found
+ */
+</pre>
+<p>Il programma ora funziona: l'espressione <span class="code">i + in</span> dà origine ad un oggetto temporaneo di tipo <span class="code">in_operator_impl&lt;int&gt;</span> il quale, attraverso l'applicazione dell'<span class="code">operator+</span> membro invocato durante la valutazione della sotto-espressione <span class="code">x + numbers</span>, fornisce il risultato booleano atteso.</p>
+<h3>Zucchero sintattico</h3>
+<p>Ci sono almeno due aspetti discutibili nell'implementazione: la presenza dell'oggetto statico/globale <span class="code">in</span> e la sintassi dell'operatore, che non è ancora nella forma desiderata. Entrambi i problemi sono però facilmente risolvibili introducendo una macro che si occupa di inserire i due caratteri <span class="code">+</span> e che sostituisce l'oggetto statico con uno temporaneo:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+
+#include &lt;algorithm&gt;
+
+struct in_operator {} <del>in</del>;
+
+template &lt;class T&gt;
+struct in_operator_impl {
+  const T&amp; lhs_;
+  in_operator_impl(const T&amp; lhs) : lhs_(lhs) {}
+  template &lt;class Sequence&gt;
+  bool operator+(const Sequence&amp; s) {
+    return std::find(std::begin(s), std::end(s), lhs_) != std::end(s);
+  }
+};
+
+template &lt;class T&gt;
+<del>in_operator_impl&lt;T&gt; operator+(const T&amp; lhs, in_operator&amp;) {</del>
+<ins>in_operator_impl&lt;T&gt; operator+(const T&amp; lhs, in_operator&amp;&amp;) {</ins>
+  return lhs;
+}
+
+<ins>#define in +in_operator()+</ins>
+
+int main() {
+  std::vector&lt;int&gt; numbers { 1, 2, 3, 4, 5, };
+
+  int i = 3;
+  <del>if (i +in+ numbers)</del>
+  <ins>if (i in numbers)</ins>
+    std::cout &lt;&lt; i &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; i &lt;&lt; &quot; not found\n&quot;;
+
+  <ins>int j = 7;
+  if (j in numbers)
+    std::cout &lt;&lt; j &lt;&lt; &quot; found\n&quot;;
+  else
+    std::cout &lt;&lt; j &lt;&lt; &quot; not found\n&quot;;</ins>
+}
+
+/* output:
+ *
+ * 3 found
+ * 7 not found
+ */
+</pre>
+<p class="modification-notice">Pagina modificata il 26/06/2015</p>
+</body>
+</html>
