@@ -8,7 +8,7 @@
 <p class="page-path"><a href="../index.html#scratch-ubuntu">risorse</a> |
 scratch su ubuntu</p>
 <h1>Scratch 2.0 su Ubuntu</h1>
-<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall'uso di questi contenuti.</p>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
 <p>L’editor <em>off-line</em> di Scratch 2.0 necessita di <em>Adobe AIR</em> per poter funzionare. Sfortunatamente, Adobe ha abbandonato lo sviluppo di AIR per Linux: la versione corrente installabile su Windows e Mac OS è la 17.0, l’ultima disponibile per Linux è la 2.6. A complicare la situazione, la versione per Linux non esiste nella variante a 64 bit. Di seguito sono descritte le procedure utilizzate per installare Scratch su una distribuzione Xubuntu 14.04 a 32 bit e su una Ubuntu Desktop (sempre 14.04) a 64 bit.</p>
 <h2>Installazione di Adobe AIR</h2>
 <p>Scaricare dalla rete il programma di installazione all’indirizzo <a href="http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin">http://airdownload.adobe.com/air/lin/download/2.6/AdobeAIRInstaller.bin</a>. Poiché l’installazione avviene dalla riga di comando, è necessario aprire la finestra del terminale. Per prima cosa, una volta raggiunta la cartella contenente l’installer, marcare il file come eseguibile:</p>
@@ -56,7 +56,7 @@ sudo LD_LIBRARY_PATH=<strong>/usr/lib/i386-linux-gnu</strong> ./AdobeAIRInstalle
 <p>dove il percorso evidenziato corrisponde a quello fornito dal comando <span class="code">locate</span>.</p>
 <p>A questo punto, indipendentemente dall’architettura del sistema operativo, Adobe AIR è installato e si trova nella cartella <span class="code">/opt/Adobe AIR/Versions/1.0</span>.</p>
 <h2>Installazione dell’editor off-line di Scratch 2.0</h2>
-<p>Scaricare la versione più recente dell’editor dalla pagina dedicata (<a href="http://scratch.mit.edu/scratch2download/">http://scratch.mit.edu/scratch2download/</a> &mdash; <strong>v436</strong> al momento) e salvare il file <span class="code">*.air</span> in una cartella locale. Dalla finestra del terminale avviare l’installazione con il comando:</p>
+<p>Scaricare la versione più recente dell’editor dalla pagina dedicata (<a href="http://scratch.mit.edu/scratch2download/">http://scratch.mit.edu/scratch2download/</a> &mdash; <strong>v. 436</strong> al momento) e salvare il file <span class="code">*.air</span> in una cartella locale. Dalla finestra del terminale avviare l’installazione con il comando:</p>
 <pre class="code">
 sudo /opt/Adobe\ AIR/Versions/1.0/Adobe\ AIR\ Application\ Installer
     /&hellip;/Scratch.air
