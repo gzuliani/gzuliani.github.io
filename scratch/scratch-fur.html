@@ -1,0 +1,111 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Scratch 2.0 in friulano</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/scratch-fur.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-fur">risorse</a> |
+scratch in friulano</p>
+<h1>Scratch 2.0 in friulano</h1>
+<h2>Introduzione</h2>
+<p>Quel che segue è una breve descrizione di come si possa tradurre l&rsquo;interfaccia di <em>Scratch 2.0</em> sul proprio computer senza la necessità di collegarsi al sito preposto <a href="http://translate.scratch.mit.edu">translate.scratch.mit.edu</a>. Le prove sono state effettuate con la versione 439a di Scratch su Windows 7 SP1 64 bit e la versione 436 su Ubuntu 14.04 64 bit.</p>
+<h2>Selezione della lingua sorgente</h2>
+<p>Come primo passo è necessario recuperare il file che contiene i testi in lingua sorgente. I file di localizzazione si trovano nella sotto-cartella <code>locale</code> della cartella di installazione di Scratch (es. <code>/opt/Scratch 2/share/locale</code> su Ubuntu, <code>C:\Program Files (x86)\Scratch 2\locale</code> su Windows) e sono in formato <em>po</em> &ndash; <a href="https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html"><em>Portable Object</em></a>. Il nome del file corrisponde al codice ISO della lingua in cui è redatto; trovato quello più adatto, farne una copia in una cartella di lavoro (per esempio sul <em>Desktop</em>) e rinominarlo. Nel caso di una traduzione da italiano a friulano, copiare il file <code>it.po</code> e rinominarlo <code>fur.po</code>.</p>
+<h2>Traduzione dei testi</h2>
+<p>Essendo i file po dei file di testo dalla struttura piuttosto semplice, si può pensare di aprire il file appena copiato in un editor di testo e sostituire i testi in lingua sorgente con il corrispettivo nella lingua di traduzione. Tuttavia, se ciò è fattibile in Ubuntu (<em>GEdit</em> è adattissimo allo scopo) &ndash; pur con le accortezze del caso &ndash;, lo stesso non si può dire per Windows: nè il <em>Blocco note</em> nè <em>Writer</em> di <em>LibreOffice</em> sono in grado di trattare correttamente questo tipo di file (si tratta di testo UTF-8 senza BOM e con carattere di a-capo <span class="code">LF</span>).</p>
+<h3>Traduzione manuale del file po</h3>
+<p>Nel caso si scelga di modificare direttamente il file po con un editor di testo, si deve operare nel seguente modo, <strong>avendo cura di mantenere inalterata la codifica (UTF-8 senza BOM) e il carattere di a-capo (<span class="code">LF</span>)</strong>:</p>
+<ol>
+<li>
+<p>aggiornare la specifica della lingua di traduzione in testata al file, modificando la proprietà <code>Language</code>; continuando l&rsquo;esempio italiano/friulano,</p>
+<pre class="code">...
+"Language: it\n"
+...
+</pre>
+<p>diventa:</p>
+<pre class="code">
+...
+"Language: fur\n"
+...
+</pre>
+</li>
+<li>
+<p>tradurre i contenuti, sostituendo i testi in lingua sorgente delle righe che iniziano con il codice <code>msgstr</code> con il corrispondente nella lingua di traduzione; ad esempio:</p>
+<pre class="code">
+...
+
+msgid "move %n steps"
+msgstr "fai %n passi"
+
+...
+
+msgid "turn @turnLeft %n degrees"
+msgstr "ruota di @turnLeft %n gradi"
+
+msgid "turn @turnRight %n degrees"
+msgstr "ruota di @turnRight %n gradi"
+
+...
+</pre>
+<p>diventa:</p>
+<pre class="code">
+...
+
+msgid "move %n steps"
+msgstr "fâs %n pas"
+
+...
+
+msgid "turn @turnLeft %n degrees"
+msgstr "giriti di @turnLeft %n ponts"
+
+msgid "turn @turnRight %n degrees"
+msgstr "giriti di @turnRight %n ponts"
+
+...
+</pre>
+</li>
+</ol>
+<p><strong>Avvertenze:</strong></p>
+<ol>
+<li>
+<p>non modificare il testo <code>msgid</code>, di norma in inglese, ma solo quello <code>msgstr</code>;</p>
+</li>
+<li>
+<p>non modificare eventuali segnaposto presenti nel testo (es. <code>@turnLeft</code>, <code>%c</code>, <code>%n</code>, &hellip;);</p>
+</li>
+<li>
+<p>non serve modificare i testi <em>inutilizzati</em>, cioè quelli preceduti da un cancelletto (carattere <code>#</code>).</p>
+</li>
+</ol>
+<h3>Traduzione assistita del file po</h3>
+<p>Esistono diversi strumenti che consentono una traduzione più agevole dei file po, sia <em>on-line</em> che <em>off-line</em>. Uno di questi, gratuito, è <em>Poedit</em>.</p>
+<p>Una volta installato e avviato il programma, selezionare l&rsquo;opzione <em>Modifica una traduzione</em> e aprire il file <code>fur.po</code> da tradurre. Modificare la lingua di traduzione selezionando il comando <em>Proprietà</em> del menu <em>Catalogo</em>, quindi selezionare la lingua friulano nella casella combinata <em>Lingua</em> e confermare la scelta con <em>OK</em>:</p>
+<img src="img/scratch-fur/poedit-lang.png">
+<p class="illustration">Modifica della lingua di traduzione</p>
+<p>La traduzione avviene selezionando di volta in volta il contenuto da tradurre e inserendo la traduzione corretta nella casella <em>Traduzione</em>. <strong>La traduzione avviene dunque sostituendo il testo in lingua sorgente (italiano) con il corrispettivo nella lingua di traduzione (friulano). Il testo in lingua inglese non va modificato.</strong> Al salvataggio del file, il programma produce un file ausiliario con estensione <code>mo</code> che può essere cancellato.</p>
+<img src="img/scratch-fur/poedit.png">
+<p class="illustration">Traduzione di un testo italiano in friulano</p>
+<h2>Verifica della traduzione</h2>
+<p>Per verificare l&rsquo;efficacia della traduzione è necessario caricare il file po in Scratch. L&rsquo;operazione può essere effettuata più volte, anche se il file non è stato completamente tradotto: in questo modo si può procedere incrementalmente alla traduzione dell&rsquo;interfaccia del programma, controllando di volta in volta il lavoro svolto.</p>
+<ol>
+<li>avviare Scratch;</li>
+<li>
+aprire il menu di selezione della lingua (icona del mappamondo in alto a sinistra) tenendo premuto il tasto <code>Shift</code> per accedere alla versione estesa:<br>
+<img src="img/scratch-fur/scratch-menu.png">
+<p class="illustration">Versione estesa del menu di selezione della lingua</p>
+</li>
+<li>selezionare la voce <em>import translation file</em>;</li>
+<li>caricare il file <code>fur.po</code>.</li>
+</ol>
+<img src="img/scratch-fur/scratch-it.png">
+<p class="illustration">Interfaccia originale in italiano</p>
+<img src="img/scratch-fur/scratch-fur.png">
+<p class="illustration">Interfaccia tradotta (parzialmente) in friulano</p>
+<p><strong>Nota:</strong> le traduzioni così caricate vengono perse alla chiusura del programma o al primo cambio lingua; possono tuttavia essere ricaricate, ripetendo la procedura appena descritta.</p>
+<p>Una volta completata la traduzione del file conviene condividere il lavoro svolto con i responsabili della localizzazione di Scratch inviando loro il file po definitivo cosicché la nuova lingua di traduzione entri a far parte dell'elenco ufficiale di lingue supportate; per ciò, fare riferimento al <a href="http://translate.scratch.mit.edu">sito ufficiale</a>.</p>
+<p class="modification-notice">Pagina modificata il 27/08/2015</p>
+</body>
+</html>
