@@ -1,0 +1,20 @@
+img {
+ border: 1px solid #073642;
+ display: block;
+ margin-bottom: 0em;
+ margin-left: auto;
+ margin-right: auto;
+ margin-top: 2em;
+}
+
+li {
+ margin-bottom: 0em;
+}
+
+p.illustration {
+ font-size: 75%;
+ font-weight: bold;
+ margin-bottom: 2em;
+ margin-top: .2em;
+ text-align: center;
+}
