@@ -168,9 +168,9 @@ pre.code {
  font-family: Consolas, Courier New, monospace;
  font-size: .8em;
  line-height: 1.2em;
- overflow: auto; /* horizontal scrollbar */
  padding: 1em;
- /* white-space: pre-wrap; */ /* line wrap */
+ white-space: pre-wrap; /* line wrap */
+ width: 50em;
 }
 
 span.code {
