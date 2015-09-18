@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Arduino IDE su Ubuntu</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-on-ubuntu">risorse</a> | arduino con ubuntu</p>
+<h1>Arduino IDE su Ubuntu</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>L’IDE di Arduino si può installare su Ubuntu dall’<em>Ubuntu Software Center</em>, tuttavia la versione presente negli archivi ufficiali è piuttosto vecchia (1.0.5). Ho installato la versione più recente su Ubuntu 14.04 64 bit in questo modo:</p>
+<ul>
+<li>ho scaricato l’ultima versione disponibile dell’IDE dal <a href="https://www.arduino.cc/en/Main/Software">sito ufficiale</a> (nel mio caso <strong>arduino-1.6.5-r5-linux64.tar.xz)</strong>;</li>
+<li>ho scompattato il file e spostato il contenuto nella cartella <strong>opt</strong> da una finestra del terminale con i seguenti comandi:
+<pre class="code">
+cd
+cd Downloads
+tar -xpvf arduino-1.6.5-r5-linux64.tar.xz
+sudo mv arduino-1.6.5-r5 /opt
+</pre>
+</li>
+<li>l’IDE di Arduino si può già avviare con il comando:
+<pre class="code">
+/opt/arduino-1.6.5-r5/arduino
+</pre>
+</li>
+<li>per comodità ho creato uno <em>shortcut</em> aggiungendo un file di testo denominato <strong>arduino.dekstop</strong> sul <em>Desktop</em> il cui contenuto è:
+<pre class="code">
+[Desktop Entry]
+Type=Application
+Name=Arduino IDE
+GenericName=Integrated Development Environment
+Comment=An IDE for Arduino-compatible electronics prototyping platforms
+Exec=/opt/arduino-1.6.5-r5/arduino
+Icon=/opt/arduino-1.6.5-r5/lib/arduino.png
+Terminal=false
+Categories=Development;IDE;Electronics;
+MimeType=text/x-arduino
+Keywords=embedded electronics;electronics;avr;microcontroller;
+</pre>
+e rendendolo eseguibile con il comando:
+<pre class="code">
+chmod +x ~/Desktop/arduino.desktop
+</pre>
+</li>
+<li>ho infine concesso all’utente corrente i permessi per l’accesso alle porte USB con il comando:
+<pre class="code">
+sudo usermod -a -G dialout &laquo;nome-utente&raquo;
+</pre>
+Per rendere effettiva questa impostazione conviene chiudere la sessione corrente e/o riavviare il sistema operativo.
+</li>
+</ul>
+<p class="note">L’IDE di Arduino necessita del <em>runtime</em> di Java per funzionare correttamente. Se non è già presente nel sistema, lo si può installare con il comando <span class="code">sudo apt-get install openjdk-7-jre</span>.</p>
+<p class="modification-notice">Pagina modificata il 18/09/2015</p>
+</body>
+</html>
