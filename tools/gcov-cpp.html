@@ -243,7 +243,7 @@ Branches executed:100.00% of 16
 <strong>Taken at least once:62.50% of 16    &lt;--- What?!</strong>
 ...
 </pre>
-<p>Come può essere che, pur avendo eseguito tutte le linee di codice, non siano stati eseguiti tutti i blocchi condizionali? Il problema è che Gcov raccoglie le statistiche analizzando il codice oggetto, non quello sorgente. C'è quindi da considerare l'effetto della compilazione, chetalvolta  trasforma il codice in maniera non ovvia, tipicamente per ragioni di efficienza. Alcuni esempi che giustificano l'introduzione di istruzioni di salto condizionato &ldquo;extra&rdquo; sono:</p>
+<p>Come può essere che, pur avendo eseguito tutte le linee di codice, non siano stati eseguiti tutti i blocchi condizionali? Il problema è che Gcov raccoglie le statistiche analizzando il codice oggetto, non quello sorgente. C'è quindi da considerare l'effetto della compilazione, che talvolta  trasforma il codice in maniera non ovvia, tipicamente per ragioni di efficienza. Alcuni esempi che giustificano l'introduzione di istruzioni di salto condizionato &ldquo;extra&rdquo; sono:</p>
 <ul>
 <li>un <span class="code">if</span> nel distruttore per la deallocazione degli oggetti allocati dinamicamente<a href="#ref-5"><sup>[5]</sup></a>;</li>
 <li>il riordinamento dei <span class="code">case</span> di uno <span class="code">switch</span> per minimizzare il numero di confronti<a href="#ref-4"><sup>[4]</sup></a>;</li>
