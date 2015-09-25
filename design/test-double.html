@@ -2,41 +2,35 @@
 <head>
 <title>Test double</title>
 <link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/test-double.css'></link>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#test-double">risorse</a> | test double</p>
 <h1>Test double</h1>
 <p>Verificare un sistema software pu&ograve; risultare complicato quando si rende necessario accedere a risorse di difficile reperibilit&agrave;. Una possibile soluzione consiste nel sostituire tali risorse con oggetti temporanei che ne emulino il comportamento.</p>
-<p>Il test double (noto anche con il nome di <em>imposter</em>), &egrave; un artefatto che per convenienza sostituisce un componente utilizzato dal sistema sotto verifica.</p>
-<pre>
-                                                     +---------+
-  +-----------+                                      | D.O.C.  |
-  |   SetUp   |           +---------+           +---------+    |
-  +-----------+           |         |           |         |    |
-  | Excercise |           |         |           |         |    |
-  +-----------+ --------> |  S.U.T. | --------> |  T.D.O. |    |
-  |  Verify   |           |         |           |         |----+
-  +-----------+           |         |           |         |
-  | TearDown  |           +---------+           +---------+
-  +-----------+
-Testing framework
-  
-SUT = System under test
-TDO = Test double object
-DOC = Depended-on component
-</pre><p>Esistono diverse tipologie di test double:</p>
-<ul>
-<li><em>dummy object</em>: oggetto mai utilizzato, la cui presenza &egrave; tuttavia indispensabile per il completamento della verifica;</li>
-<li><em>test stub</em>: fornisce risposte cablate per causare particolari comportamenti del sistema sotto verifica, per i soli casi previsti dalle procedure di test;</li>
-<li><em>test spy</em>: stub che registra le chiamate effettuate dal sistema sotto verifica;</li>
-<li><em>fake object</em>: oggetto che sostituisce il componente originale per ragioni che esulano dalla verifica del buon funzionamento del sistema (per esempio per questioni di praticit&agrave; o di efficienza);</li>
-<li><em>mock object</em>: stub che verifica l'ordine e la natura delle chiamate effettuate dal sistema sotto verifica.</li>
-</ul>
-<p>La differenza tra test stub/spy e mock object &egrave; sostanziale: mentre i primi consentono di verificare lo <strong>stato</strong> del sistema (in virt&ugrave; del fatto che l'esito della verifica viene determinato solo al termine dell'interazione tra il sistema e il test double), i secondi ne verificano il <strong>funzionamento</strong>, essendo in grado di stabilire l'esito della verifica durante lo svolgimento dell'interazione stessa.</p>
+<p>Il <em>test double</em> (noto anche con il nome di <em>imposter</em>), &egrave; un artefatto che per convenienza sostituisce un componente utilizzato dal sistema sotto verifica.</p>
+<img src="files/test-double/test-double.png">
+<p>Esistono diverse tipologie di test double:</p>
+<h2>Dummy Object</h2>
+<p>Un oggetto <em>dummy</em> &egrave; un oggetto che non viene utilizzato, la cui presenza &egrave; tuttavia richiesta per il completamento della verifica; tipico il caso di un parametro di funzione che non viene chiamato in gioco durante il test la cui assenza causa per&ograve; un errore:</p>
+<img src="files/test-double/dummy.png">
+<h2>Test Stub</h2>
+<p>Uno <em>stub</em> fornisce risposte cablate per causare particolari comportamenti del sistema sotto verifica, per i soli casi previsti dalle procedure di test:</p>
+<img src="files/test-double/stub.png">
+<h2>Test Spy</h2>
+<p>&Egrave; uno stub che in pi&ugrave; registra le chiamate effettuate dall'oggetto sotto test per permettere di verificare a posteriori la corretta comunicazione con il componente originale:</p>
+<img src="files/test-double/spy.png">
+<h2>Fake object</h2>
+<p>&Egrave; un oggetto che sostituisce il componente originale per ragioni che esulano dalla verifica del buon funzionamento del sistema (per esempio per questioni di praticit&agrave; o di efficienza).</p>
+<h2>Mock Object</h2>
+<p>&Egrave; uno stub che verifica l'ordine e la natura delle chiamate effettuate dal sistema sotto verifica:</p>
+<img src="files/test-double/mock.png">
+<p class="note">La differenza tra test stub/spy e mock object &egrave; sostanziale: mentre i primi consentono di verificare lo <strong>stato</strong> del sistema (in virt&ugrave; del fatto che l'esito della verifica viene determinato solo al termine dell'interazione tra il sistema e il test double), i secondi ne verificano il <strong>funzionamento</strong>, essendo in grado di stabilire l'esito della verifica durante lo svolgimento dell'interazione stessa.</p>
 <h2>Riferimenti</h2>
 <ol>
 <li class="ref">Fowler, Martin. &quot;Mocks Aren't Stubs&quot;. <em>Martin Fowler</em>. &lt;<a href="http://martinfowler.com/articles/mocksArentStubs.html">http://martinfowler.com/articles/mocksArentStubs.html</a>&gt;. Visitato il 5 Ottobre 2011.</li>
 <li class="ref">Meszaros, Gerard. &quot;Test Double&quot;. <em>xUnit Patterns.com</em>. &lt;<a href="http://xunitpatterns.com/Test%20Double.html">http://xunitpatterns.com/Test%20Double.html</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<li class="ref">Wake, Billy. &quot;Fake and Mock Objects in Pictures&quot;. <em>xUnit Patterns.com</em>. &lt;<a href="http://xunitpatterns.com/Test%20Double.html">http://xunitpatterns.com/Test%20Double.html</a>&gt;. Visitato il 25 Settembre 2015.</li>
 </ol>
 <p class="modification-notice">Pagina modificata l'8/11/2011</p>
 </body>
