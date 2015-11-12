@@ -1,0 +1,952 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Coroutine in C</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#c-coroutines">risorse</a> | coroutine in c</p>
+<h1>Coroutine in C</h1>
+<h2>Introduzione</h2>
+<p>Una <em>coroutine</em> è una speciale <em>subroutine</em> che può momentaneamente sospendere l'esecuzione e riprenderla in un secondo momento; laddove una subroutine, quando invocata, ritorna solo una volta completata, una coroutine può uscire anticipatamente e continuare l'escuzione alla chiamata successiva, a partire dal punto esatto in cui era stata interrotta.</p>
+<p>Le coroutine consentono di realizzare una forma di concorrenza denominata <em>collaborative multitasking</em>, dove un processo &ndash; incarnato da una coroutine &ndash;, passa volontariamente il controllo al processo successivo prima di aver concluso il suo lavoro. Su architetture primitive, dove non è disponibile un sistema di multitasking <em>non-preemptive</em>, le coroutine possono rappresentare una valida alternativa al <em>single threading</em>.</p>
+<h2>Esempio</h2>
+<p>Supponiamo di disporre della seguente funzione, composta di tre sezioni distinte:</p>
+<pre class="code">
+void f() {
+  printf(&quot;avvio di f...\n&quot;);
+  ...
+  printf(&quot;fase 1 ok...\n&quot;);
+  ...
+  printf(&quot;fase 2 ok...\n&quot;);
+  ...
+  printf(&quot;fase 3 ok, finito!\n&quot;);
+}
+</pre>
+<p>Quando la funzione viene invocata, questa viene eseguita sequenzialmente, dall'inizio alla fine:</p>
+<pre class="code">
+<ins>#include &lt;stdio.h&gt;</ins>
+
+void f() {
+  ...
+}
+
+<ins>int main() {
+  f();
+}</ins>
+
+/* output:
+ *
+ * avvio di f...
+ * fase 1 ok...
+ * fase 2 ok...
+ * fase 3 ok, finito!
+ */
+</pre>
+<p>Ciò che si vorrebbe è interrompere l'esecuzione al termine di ogni fase e ripassare il controllo al chiamante; questi, quando lo riterrà opportuno, invocherà nuovamente la funzione, che proseguirà dal punto in cui era stata interrotta:</p>
+<pre class="code">
+<del>void</del> <ins>int</ins> f() {
+  printf(&quot;avvio di f...\n&quot;);
+  <ins>yield;</ins>
+  ...
+  printf(&quot;fase 1 ok...\n&quot;);
+  <ins>yield;</ins>
+  ...
+  printf(&quot;fase 2 ok...\n&quot;);
+  <ins>yield;</ins>
+  ...
+  printf(&quot;fase 3 ok, finito!\n&quot;);
+  <ins>return 0;</ins>
+}
+
+int main() {
+  <ins>while(</ins>f()<ins>) {
+    printf(&quot;*** main ***\n&quot;);
+  }</ins>
+}
+</pre>
+<p>Il costrutto <span class="code">yield</span> sospende momentaneamente l'esecuzione della funzione, segnalando al chiamante che la stessa non è ancora stata completata; in secondo luogo fa sì che, alla prossima chiamata, l'esecuzione della funzione non riprenda dall'inizio, ma dall'istruzione che lo segue.</p>
+<p>La sospensione dell'esecuzione si può ottenere con un'istruzione <span class="code">return 1</span> che, oltre a causare l'uscita anticipata, segnala che la funzione non è stata completata, secondo la convenzione per cui la funzione ritorna un valore non nullo fin tanto che non è terminata; il ripristino del corretto punto di esecuzione si ottiene con uno <span class="code">switch</span> che seleziona il frammento di codice da eseguire basandosi su una variabile statica che ne contiene l'indice:</p>
+<pre class="code">
+int f() {
+  <ins>static int cr_entry_point_ = 0;
+  switch (cr_entry_point_) {
+    case 0:</ins>
+      printf(&quot;avvio di f...\n&quot;);
+      <ins>return ++cr_entry_point_;
+    case 1:</ins>
+      printf(&quot;fase 1 ok...\n&quot;);
+      <ins>return ++cr_entry_point_;
+    case 2:</ins>
+      printf(&quot;fase 2 ok...\n&quot;);
+      <ins>return ++cr_entry_point_;
+    case 3:</ins>
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  <ins>}</ins>
+  return 0;
+}
+
+/* output:
+ *
+ * avvio di f...
+ * *** main ***
+ * fase 1 ok...
+ * *** main ***
+ * fase 2 ok...
+ * *** main ***
+ * fase 3 ok, finito!
+ */
+</pre>
+<p>Il risultato ottenuto evidenzia l'esecuzione parziale di <span class="code">f()</span>.</p>
+<h2>CR_YIELD &amp; Co.</h2>
+<p>Per ridurre il &ldquo;rumore&rdquo; causato dalle nuove istruzioni, che nulla hanno a che vedere col vero scopo di <span class="code">f()</span>, si procede per passi; dapprima si introduce un tipo esplicito a rappresentare lo stato della coroutine:</p>
+<pre class="code">
+<ins>typedef enum {
+  CR_TERMINATED = 0,
+  CR_SUSPENDED = 1,
+} cr_state;</ins>
+
+<del>int</del> <ins>cr_state</ins> f() {
+  static int cr_entry_point_ = 0;
+  switch (cr_entry_point_) {
+    case 0:
+      printf(&quot;avvio di f...\n&quot;);
+      <del>return ++cr_entry_point_;</del>
+      <ins>cr_entry_point_ = 1;
+      return CR_SUSPENDED;</ins>
+    case 1:
+      printf(&quot;fase 1 ok...\n&quot;);
+      <del>return ++cr_entry_point_;</del>
+      <ins>cr_entry_point_ = 2;
+      return CR_SUSPENDED;</ins>
+    case 2:
+      printf(&quot;fase 2 ok...\n&quot;);
+      <del>return ++cr_entry_point_;</del>
+      <ins>cr_entry_point_ = 3;
+      return CR_SUSPENDED;</ins>
+    case 3:
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  }
+  return <del>0</del> <ins>CR_TERMINATED</ins>;
+}
+</pre>
+<p>Si può notare, nei punti di sospensione, una sequenza di istruzioni ripetute:</p>
+<pre class="code">
+cr_state f() {
+  static int cr_entry_point_ = 0;
+  switch (cr_entry_point_) {
+    case 0:
+      printf(&quot;avvio di f...\n&quot;);
+      <ins>cr_entry_point_ = 1; return CR_SUSPENDED; case 1:</ins>    // &lt;---
+      printf(&quot;fase 1 ok...\n&quot;);
+      <ins>cr_entry_point_ = 2; return CR_SUSPENDED; case 2:</ins>    // &lt;---
+      printf(&quot;fase 2 ok...\n&quot;);
+      <ins>cr_entry_point_ = 3; return CR_SUSPENDED; case 3:</ins>    // &lt;---
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  }
+  return CR_TERMINATED;
+}
+</pre>
+<p>Il frammento evidenziato è un ottimo candidato per una macro, non fosse per l'indice numerico che assume valori via via crescenti; d'altra parte, nulla ci obbliga ad usare un contatore, dato che è sufficiente che ogni clausola <span class="code">case</span> ne usi uno univoco. Per questo scopo si può ad esempio usare il numero di linea del sorgente:</p>
+<pre class="code">
+  switch (cr_entry_point_) {
+    case 0:
+      printf(&quot;avvio di f...\n&quot;);
+      cr_entry_point_ = <del>1</del> <ins>__LINE__</ins>; return CR_SUSPENDED; case <del>1</del> <ins>__LINE__</ins>:
+      printf(&quot;fase 1 ok...\n&quot;);
+      cr_entry_point_ = <del>2</del> <ins>__LINE__</ins>; return CR_SUSPENDED; case <del>2</del> <ins>__LINE__</ins>:
+      printf(&quot;fase 2 ok...\n&quot;);
+      cr_entry_point_ = <del>3</del> <ins>__LINE__</ins>; return CR_SUSPENDED; case <del>3</del> <ins>__LINE__</ins>:
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  }
+</pre>
+<p>Ora le tre linee di codice sono identiche e possono essere sostituite da una macro:</p>
+<pre class="code">
+<ins>#define CR_YIELD \
+  cr_entry_point_ = __LINE__; return CR_SUSPENDED; case __LINE__:</ins>
+
+cr_state f() {
+  static int cr_entry_point_ = 0;
+  switch (cr_entry_point_) {
+    case 0:
+      printf(&quot;avvio di f...\n&quot;);
+      <del>cr_entry_point_ = __LINE__; return CR_SUSPENDED; case __LINE__:</del> <ins>CR_YIELD</ins>
+      printf(&quot;fase 1 ok...\n&quot;);
+      <del>cr_entry_point_ = __LINE__; return CR_SUSPENDED; case __LINE__:</del> <ins>CR_YIELD</ins>
+      printf(&quot;fase 2 ok...\n&quot;);
+      <del>cr_entry_point_ = __LINE__; return CR_SUSPENDED; case __LINE__:</del> <ins>CR_YIELD</ins>
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  }
+  return CR_TERMINATED;
+}
+</pre>
+<p>È possibile rendere obbligatorio il punto e virgola dopo l'istruzione <span class="code">CR_YIELD</span> con la solita tecnica del <span class="code">do</span>/<span class="code">while</span>, perché una clausola <span class="code">case</span> è ammessa anche all'interno di un <em>compound statement</em> (cfr. <a href="duffs-device.html">Duff’s Device</a>):</p>
+<pre class="code">
+#define CR_YIELD \
+  <ins>do { \</ins>
+    cr_entry_point_ = __LINE__; return CR_SUSPENDED; case __LINE__:<ins>; \
+  } while (0)</ins>
+
+cr_state f() {
+  static int cr_entry_point_ = 0;
+  switch (cr_entry_point_) {
+    case 0:
+      printf(&quot;avvio di f...\n&quot;);
+      CR_YIELD<ins>;</ins>
+      printf(&quot;fase 1 ok...\n&quot;);
+      CR_YIELD<ins>;</ins>
+      printf(&quot;fase 2 ok...\n&quot;);
+      CR_YIELD<ins>;</ins>
+      printf(&quot;fase 3 ok, finito!\n&quot;);
+  }
+  return CR_TERMINATED;
+}
+</pre>
+<p>Non rimane che mascherare preambolo e postambolo della funzione con altre due macro:</p>
+<pre class="code">
+<ins>#define CR_BEGIN(cr_name_) \
+  cr_state cr_name_() { \
+    static int cr_entry_point_ = 0; \
+    switch (cr_entry_point_) { \
+      case 0:</ins>
+
+<ins>#define CR_END \
+    } \
+    return CR_TERMINATED; \
+  }</ins>
+</pre>
+<p>La definizione della coroutine <span class="code">f</span> diventa:</p>
+<pre class="code">
+<ins>CR_BEGIN(f)</ins>
+  printf(&quot;avvio di f...\n&quot;);
+  CR_YIELD;
+  printf(&quot;fase 1 ok...\n&quot;);
+  CR_YIELD;
+  printf(&quot;fase 2 ok...\n&quot;);
+  CR_YIELD;
+  printf(&quot;fase 3 ok, finito!\n&quot;);
+<ins>CR_END</ins>
+</pre>
+<p>Resta un ultimo problema da affrontare: se la coroutine viene chiamata dopo che è terminata, viene eseguito nuovamente il codice che segue l'ultima istruzione <span class="code">CR_YIELD</span>:</p>
+<pre class="code">
+<ins>int main() {
+  for (int i = 0; i &lt; 7; ++i) {
+    f();
+    printf(&quot;*** main ***\n&quot;);
+  }
+}</ins>
+
+/* output:
+ *
+ * avvio di f...
+ * *** main ***
+ * fase 1 ok...
+ * *** main ***
+ * fase 2 ok...
+ * *** main ***
+ * fase 3 ok, finito!
+ * *** main ***
+ * fase 3 ok, finito!    &lt;--- !!!
+ * *** main ***
+ * fase 3 ok, finito!    &lt;--- !!!
+ * *** main ***
+ * fase 3 ok, finito!    &lt;--- !!!
+ * *** main ***
+ */
+</pre>
+<p>È allora necessario, prima di uscire definitivamente dalla coroutine, tenere traccia del fatto che la coroutine è stata completata, e tenerne debito conto nelle chiamate successive:</p>
+<pre class="code">
+#define CR_BEGIN(cr_name_) \
+  cr_state cr_name_() { \
+    static int cr_entry_point_ = 0; \
+    <ins>if (cr_entry_point_ == -1) \
+      return CR_TERMINATED; \</ins>
+    switch (cr_entry_point_) { \
+      case 0:
+
+#define CR_END \
+      <ins>cr_entry_point_ = -1; \</ins>
+    } \
+    return CR_TERMINATED; \
+  }
+
+/* output:
+ *
+ * avvio di f...
+ * *** main ***
+ * fase 1 ok...
+ * *** main ***
+ * fase 2 ok...
+ * *** main ***
+ * fase 3 ok, finito!
+ * *** main ***
+ * *** main ***
+ * *** main ***
+ */
+</pre>
+<p>Poiché la variabile statica <span class="code">cr_entry_point_</span> assume solo valori non negativi durante l'esecuzione della coroutine &ndash; <span class="code">0</span> all'inizio, <span class="code">__LINE__</span> crescenti nel prosieguo &ndash;, <span class="code">-1</span> è un valore sicuro da usare come valore <em>sentinella</em> per segnalare che la funzione è già stata completata.</p>
+<h2>Avvicendamento di coroutine</h2>
+<p>È relativamente semplice intercalare due o più coroutine: una volta dichiarate, è sufficiente invocarle nel <span class="code">while</span> del <span class="code">main</span>, che agisce come una sorta di <em>scheduler</em> (piuttosto sciocco, in realtà):</p>
+<pre class="code">
+<ins>CR_BEGIN(g)
+  printf(&quot;avvio di g...\n&quot;);
+  printf(&quot;5...\n&quot;);
+  CR_YIELD;
+  printf(&quot;4...\n&quot;);
+  printf(&quot;3...\n&quot;);
+  printf(&quot;2...\n&quot;);
+  CR_YIELD;
+  CR_YIELD;
+  printf(&quot;1...\n&quot;);
+  CR_YIELD;
+  printf(&quot;0!\n&quot;);
+CR_END</ins>
+
+int main() {
+  while (f()<ins> | g()</ins>)
+    ;
+}
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di g...
+ * 5...
+ * fase 1 ok...
+ * 4...
+ * 3...
+ * 2...
+ * fase 2 ok...
+ * fase 3 ok, finito!
+ * 1...
+ * 0!
+ */
+</pre>
+<p>Si noti l'uso dell'operatore <em>bit-wise or</em> `<span class="code">|</span>`, che a differenza di quello logico non è <em>corto-circuitato</em>, e di come in corrispondenza di ogni <span class="code">CR_YIELD</span> avviene uno <em>switch di contesto</em>.</p>
+<h2><span class="code">CR_YIELD</span> all'interno di <em>compound statements</em></h2>
+<p>È possibile inserire un'istruzione <span class="code">CR_YIELD</span> anche all'interno di cicli <span class="code">for</span>/<span class="code">while</span>, avendo l'accortezza di dichiarare <span class="code">static</span> tutte le variabili in gioco, per essere sicuri di ritrovarle correttamente istanziate al successivo rientro:</p>
+<pre class="code">
+CR_BEGIN(g)
+  printf(&quot;avvio di g...\n&quot;);
+  <ins>static int i = 0;
+  for (i = 0; i &lt; 5; ++i) {
+    printf(&quot;%d...\n&quot;, 5 - i);
+    CR_YIELD;
+  }</ins>
+  printf(&quot;0!\n&quot;);
+CR_END
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di g...
+ * 5...
+ * fase 1 ok...
+ * 4...
+ * fase 2 ok...
+ * 3...
+ * fase 3 ok, finito!
+ * 2...
+ * 1...
+ * 0!
+ */
+</pre>
+<p>Se correttamente configurati, gran parte dei compilatori emettono un <em>warning</em> qualora ci si dimentichi di dichiarare <span class="code">satic</span> la variabile di controllo del ciclo:</p>
+<pre class="code">
+CR_BEGIN(g)
+  printf(&quot;avvio di g...\n&quot;);
+  <del>static</del> int i = 0;
+  for (i = 0; i &lt; 5; ++i) {
+    printf(&quot;%d...\n&quot;, 5 - i);
+    CR_YIELD;
+  }
+  printf(&quot;0!\n&quot;);
+CR_END
+
+
+
+gcc 5.2.1 (-Wall)
+--------------------------------------------------------------------------------
+test.c:53:24: warning: ‘i’ may be used uninitialized in this function [-Wmaybe-u
+ninitialized]
+     for (i = 0; i &lt; 5; ++i) {
+                        ^
+
+clang 3.6.0 (-Wall)
+--------------------------------------------------------------------------------
+test.c:53:26: warning: variable &apos;i&apos; is uninitialized when used here
+      [-Wuninitialized]
+    for (i = 0; i &lt; 5; ++i) {
+                         ^
+test.c:52:5: note: variable &apos;i&apos; is declared here
+    int i = 0;
+    ^
+
+Visual C++ 19.0 (/W4)
+--------------------------------------------------------------------------------
+test.c(55): error C2360: initialization of &apos;i&apos; is skipped by &apos;case&apos; label
+test.c(52): note: see declaration of &apos;i&apos;
+</pre>
+<!--
+cosa succede se non c'è lo static:
+
+CR_BEGIN(g)
+    printf("avvio di g...\n");
+    for (int i = 0; i < 5; ++i) {
+        printf("%d...\n", 5 - i);
+        CR_YIELD;
+    }
+    printf("0!\n");
+CR_END
+
+il codice generato è:
+
+    cr_state g() {
+        static int cr_entry_point_ = 0;
+        if (cr_entry_point_ == -1)
+            return CR_TERMINATED;
+        switch (cr_entry_point_) {
+            case 0:
+			printf("avvio di g...\n");
+			for (int i = 0; i < 5; ++i) {
+				printf("%d...\n", 5 - i);
+				cr_entry_point_ = __LINE__;
+					return CR_SUSPENDED;
+				case __LINE__:; // <--- punto ingresso alla seconda chiamata
+			}
+			printf("0!\n");
+            cr_entry_point_ = -1;
+        }
+        return CR_TERMINATED;
+    }
+
+la prima volta, si entra con cr_entry_point_ = 0 e si entra nel for, dove viene inizializzata
+anche i; quindi si esce con CR_SUSPENDED, dopo aver settato cr_entry_point_ al valore del
+numero di linea x; quando si rientra, si rientra direttamente all'interno del for,
+subito prima della chiusura dello scope, e i risulta essere non inizializzata.
+-->
+<h2><span class="code">CR_RUN</span></h2>
+<p>Le macro <span class="code">CR_RUN_ANY</span> e <span class="code">CR_RUN_ALL</span> definiscono due semplici scheduler di coroutine che, rispettivamente, terminano il programma quando termina la prima/tutte le coroutine elencate:</p>
+<pre class="code">
+<ins>#define CR_RUN_ALL(...) \
+    typedef cr_state (*cr_coroutine_)(); \
+    cr_coroutine_ cr_pool_[] = { __VA_ARGS__, NULL }; \
+    int main() { \
+        int cr_all_terminated_ = 0; \
+        cr_coroutine_* cr_next_ = NULL; \
+        do { \
+            cr_all_terminated_ = 1; \
+            cr_next_ = cr_pool_; \
+            while (*cr_next_ != NULL) { \
+                if ((*cr_next_)() == CR_SUSPENDED) \
+                    cr_all_terminated_ = 0; \
+                ++cr_next_; \
+            } \
+        } while (!cr_all_terminated_); \
+    }</ins>
+
+<ins>#define CR_RUN_ANY(...) \
+    typedef cr_state (*cr_coroutine_)(); \
+    cr_coroutine_ cr_pool_[] = { __VA_ARGS__, NULL }; \
+    int main() { \
+        cr_coroutine_* cr_next_ = NULL; \
+        for (;;) { \
+            cr_next_ = cr_pool_; \
+            while (*cr_next_ != NULL) { \
+                if ((*cr_next_)() == CR_TERMINATED) \
+                    return 0; \
+                ++cr_next_; \
+            } \
+        } \
+    }</ins>
+
+<del>int main() {
+  while (f() | g())
+    ;
+}</del>
+
+<ins>CR_RUN_ALL(f, g)</ins>
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di g...
+ * 5...
+ * fase 1 ok...
+ * 4...
+ * fase 2 ok...
+ * 3...
+ * fase 3 ok, finito!
+ * 2...
+ * 1...
+ * 0!
+ */
+</pre>
+<p>L'uso delle due macro è alternativo alla definizione della funzione <span class="code">main</span>.</p>
+<p>Poiché i compilatori più diffusi verificano che le funzioni dichiarate <span class="code">static</span> vengano effettivamente invocate nell'unità di traduzione in cui sono state definite, si può sfruttare questa caratteristica per controllare che il <em>pool</em> di coroutine comprenda le tutte:</p>
+<pre class="code">
+#define CR_BEGIN(cr_name_) \
+  <ins>static</ins> cr_state cr_name_() { \
+    static int cr_entry_point_ = 0; \
+    if (cr_entry_point_ == -1) \
+      return CR_TERMINATED; \
+    switch (cr_entry_point_) { \
+      case 0:
+
+CR_RUN_ALL(f<del>, g</del>)
+
+
+
+gcc 5.2.1 (-Wall)
+--------------------------------------------------------------------------------
+test.c:86:10: warning: ‘g’ defined but not used [-Wunused-function]
+ CR_BEGIN(g)
+          ^
+test.c:31:21: note: in definition of macro ‘CR_BEGIN’
+     static cr_state cr_name_() { \
+
+clang 3.6.0 (-Wall)
+--------------------------------------------------------------------------------
+test.c:86:10: warning: unused function 'g' [-Wunused-function]
+CR_BEGIN(g)
+         ^
+test.c:31:21: note: expanded from macro 'CR_BEGIN'
+    static cr_state cr_name_() { \
+</pre>
+<h2><span class="code">CR_EXIT</span></h2>
+<p>Può a volte essere necessario terminare anzitempo una coroutine; la macro CR_EXIT serve allo scopo:</p>
+<pre class="code">
+<ins>#define CR_EXIT \
+  do { \
+    cr_entry_point_ = -1; \
+    return CR_TERMINATED; \
+  } while (0)</ins>
+
+<ins>CR_BEGIN(h)
+  printf(&quot;avvio di h...\n&quot;);
+  CR_EXIT;
+  printf(&quot;qui non ci si arrivera&apos; mai!\n&quot;);
+CR_END</ins>
+
+CR_RUN_ALL(f, g<ins>, h</ins>)
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di g...
+ * 5...
+ * avvio di h...
+ * fase 1 ok...
+ * 4...
+ * fase 2 ok...
+ * 3...
+ * fase 3 ok, finito!
+ * 2...
+ * 1...
+ * 0!
+ */
+</pre>
+<p>L'istruzione <span class="code">printf</span> che segue la <span class="code">CR_EXIT</span> nella coroutine <span class="code">h</span> non è stata eseguita.</p>
+<h2><span class="code">CR_YIELD_UNTIL</span>/<span class="code">CR_YIELD_WHILE</span></h2>
+<p>Spesso accade che l'avanzamento di una coroutine dipenda da una condizione booleana; a tal scopo si definiscono due specializzazioni di <span class="code">CR_YIELD</span>, una che attende che un'espressione booleana diventi <span class="code">true</span>, l'altra <span class="code">false</span>:</p>
+<pre class="code">
+<ins>#define CR_YIELD_WHILE(cr_flag_) \
+  do { \
+    cr_entry_point_ = __LINE__; \
+    case __LINE__:; \
+    if (cr_flag_) \
+      return CR_SUSPENDED; \
+  } while (0)</ins>
+
+<ins>#define CR_YIELD_UNTIL(cr_flag_) \
+  CR_YIELD_WHILE(!(cr_flag_))</ins>
+</pre>
+<p>A differenza dell'istruzione <span class="code">CR_YIELD</span> incondizionata, in <span class="code">CR_YIELD_WHILE</span> il punto di rientro precede l'istruzione di <span class="code">return</span>, dato che la condizione dev'essere rivalutata ad ogni successiva riattivazione della coroutine. La macro <span class="code">CR_YIELD_UNTIL</span> è definita come duale di <span class="code">CR_YIELD_WHILE</span>. Segue un esempio d'uso di <span class="code">CR_YIELD_WHILE</span>:</p>
+<pre class="code">
+int counter = 0;
+
+CR_BEGIN(increment)
+  while (counter++ &lt; 10) {
+    printf(&quot;%d...\n&quot;, counter);
+    CR_YIELD;
+  }
+CR_END
+
+CR_BEGIN(trigger)
+  printf(&quot;trigger pronto...\n&quot;);
+  CR_YIELD_WHILE(counter &lt; 7);
+  /* CR_YIELD_UNTIL(counter == 7); */
+  printf(&quot;trigger scattato!\n&quot;);
+CR_END
+
+CR_RUN_ANY(increment, trigger)
+
+/* output:
+ *
+ * 1...
+ * trigger pronto...
+ * 2...
+ * 3...
+ * 4...
+ * 5...
+ * 6...
+ * 7...
+ * trigger scattato!
+ */
+</pre>
+<h2>Coroutine rientranti</h2>
+<p>Una coroutine si dice <em>rientrante</em> se il suo codice può essere eseguito &ldquo;simultaneamente&rdquo; da thread diversi, senza che questi si influenzino a vicenda:</p>
+<pre class="code">
+<ins>CR_RUN_ALL(f, f)</ins>
+
+/* output:
+ *
+ * avvio di f...
+ * fase 1 ok...
+ * fase 2 ok...
+ * fase 3 ok, finito!
+ */
+</pre>
+<p><span class="code">f</span> è decisamente non-rientrante: anziché mostrare due esecuzioni concorrenti dello stesso codice, il risultato ottenuto è indistinguibile da quello prodotto in modalità <em>single-thread</em>. Ciò dipende dal fatto che le due incarnazioni di <span class="code">f</span> condividono il valore della variabile statica <span class="code">cr_entry_point_</span>, per cui ad ogni switch di contesto un thread prosegue dal punto in cui si è interrotto il precedente. Per rendere indipendenti le due esecuzioni, è necessario che ognuna di esse possieda un'istanza privata della variabile <span class="code">cr_entry_point_</span>:</p>
+<pre class="code">
+<ins>#define CR_BEGIN_REENTRANT(cr_name_) \
+  static cr_state cr_name_(int* cr_context) { \
+    if (cr_entry_point_ == -1) \
+      return CR_TERMINATED; \
+    switch (cr_entry_point_) { \
+      case 0:</ins>
+
+<ins>#define cr_entry_point_ (*cr_context)</ins>
+
+CR_BEGIN<ins>_REENTRANT</ins>(f)
+  printf("avvio di f...\n");
+  CR_YIELD;
+  printf("fase 1 ok...\n");
+  CR_YIELD;
+  printf("fase 2 ok...\n");
+  CR_YIELD;
+  printf("fase 3 ok, finito!\n");
+CR_END
+
+int main() {
+  <ins>int f1 = 0;
+  int f2 = 0;
+  while (f(&amp;f1) | f(&amp;f2))
+    ;</ins>
+}
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di f...
+ * fase 1 ok...
+ * fase 1 ok...
+ * fase 2 ok...
+ * fase 2 ok...
+ * fase 3 ok, finito!
+ * fase 3 ok, finito!
+ */
+</pre>
+<p>I due thread procedono ora paralleli, senza interferenze. Da notare che per consentire il riutilizzo delle macro precedentemente definite nel nuovo contesto <em>rientrante</em> si è fatto ricorso ad una brutale sostituzione della variabile <span class="code">cr_entry_point_</span> con l'espressione <span class="code">(*cr_context)</span>; tale sostituzione non rende più possibile la definizione di coroutine convenzionali:</p>
+<pre class="code">
+CR_BEGIN_REENTRANT(f)
+  ...
+CR_END
+
+<ins>CR_BEGIN(g)
+  printf(&quot;avvio di g...\n&quot;);
+  static int i = 0;
+  for (i = 0; i &lt; 5; ++i) {
+    printf(&quot;%d...\n&quot;, 5 - i);
+    CR_YIELD;
+  }
+  printf(&quot;0!\n&quot;);
+CR_END</ins>
+
+int main() {
+  int f1 = 0;
+  int f2 = 0;
+  while (f(&amp;f1) | f(&amp;f2) <ins>| g()</ins>)
+    ;
+}
+
+/* output:
+ *
+ * Segmentation fault (core dumped)
+ */
+</pre>
+<p>Per ovviare a questo problema si può introdurre la convenzione di definire dapprima le coroutine rientranti, quindi quelle convenzionali, avendo cura di disattivare tra le une e le altre la riscrittura della variabile <span class="code">cr_entry_point_</span>:</p>
+<pre class="code">
+CR_BEGIN_REENTRANT(f)
+  ...
+CR_END
+
+/*
+ * fin qui solo coroutine rientranti
+ */
+
+<ins>#undef cr_entry_point_</ins>
+
+/*
+ * da qui in poi solo coroutine non-rientranti
+ */
+
+CR_BEGIN(g)
+  ...
+CR_END
+
+int main() {
+  int f1 = 0;
+  int f2 = 0;
+  while (f(&amp;f1) | f(&amp;f2) | g())
+    ;
+}
+
+/* output:
+ *
+ * avvio di f...
+ * avvio di f...
+ * avvio di g...
+ * 5...
+ * fase 1 ok...
+ * fase 1 ok...
+ * 4...
+ * fase 2 ok...
+ * fase 2 ok...
+ * 3...
+ * fase 3 ok, finito!
+ * fase 3 ok, finito!
+ * 2...
+ * 1...
+ * 0!
+ */
+</pre>
+<p>Per rendere la direttiva <span class="code">#undef</span> più parlante, conviene rinominare la variabile <span class="code">cr_entry_point_</span> in <span class="code">cr_reentrancy_</span>. In alternativa, è possibile separare le definizioni per le coroutine non rientranti e quelle rientranti in due <em>header file</em> separati, e definire le coroutine convenzionali prima di includere il secondo header:</p>
+<pre class="code">
+<ins>#include &quot;coroutines.h&quot;</ins>
+
+/*
+ * definizione delle coroutine non rientranti
+ */
+
+CR_BEGIN(g)
+  ...
+CR_END
+
+...
+
+<ins>#include &quot;reentrant-coroutines.h&quot;</ins>
+
+/*
+ * definizione delle coroutine rientranti
+ */
+
+CR_BEGIN_REENTRANT(f)
+  ...
+CR_END
+
+...
+</pre>
+<h3>Contesti</h3>
+<p>Anziché utilizzare un intero per conservare il punto di rientro della coroutine, si può utilizzare una struttura dedicata, cui l'utente può eventualmente aggiungere delle variabili di comodo, se lo ritiene opportuno:</p>
+<pre class="code">
+#define CR_BEGIN_REENTRANT(cr_name_) \
+    static cr_state cr_name_(<del>int</del> <ins>cr_ ## cr_name_ ## _context</ins> * cr_context) { \
+        if (cr_reentrancy_ == -1) \
+            return CR_TERMINATED; \
+        switch (cr_reentrancy_) { \
+            case 0:
+
+#define cr_reentrancy_ (<del>*</del>cr_context<ins>-&gt;cr_entry_point_</ins>)
+
+<ins>typedef struct cr_f_context {
+  int cr_entry_point_;
+} cr_f_context;</ins>
+
+CR_BEGIN_REENTRANT(f)
+  ...
+CR_END
+
+<del>#undef cr_reentrancy_</del>
+
+<ins>typedef struct cr_g_context {
+  int i;
+  int cr_entry_point_;
+} cr_g_context;</ins>
+
+CR_BEGIN<ins>_REENTRANT</ins>(g)
+  printf(&quot;avvio di g...\n&quot;);
+  <del>static int i = 0;</del>
+  for (<ins>cr_context-&gt;</ins>i = 0; <ins>cr_context-&gt;</ins>i &lt; 5; ++<ins>cr_context-&gt;i</ins>) {
+  printf(&quot;%d...\n&quot;, 5 - <ins>cr_context-&gt;</ins>i);
+  CR_YIELD;
+  }
+  printf(&quot;0!\n&quot;);
+CR_END
+
+int main() {
+  <del>int f1 = 0;</del>
+  <del>int f2 = 0;</del>
+  <ins>cr_f_context f1 = { 0 };</ins>
+  <ins>cr_f_context f2 = { 0 };</ins>
+  <ins>cr_g_context g1 = { 0, 0 };</ins>
+  while (f(&amp;f1) | f(&amp;f2) | g(<ins>&amp;g1</ins>))
+    ;
+}
+</pre>
+<p>La definizione delle strutture di contesto può essere resa più compatta grazie ad alcune macro:</p>
+<pre class="code">
+#define CR_BEGIN_REENTRANT(cr_name_) \
+  <ins>typedef struct cr_ ## cr_name_ ## _context cr_ ## cr_name_ ## _context; \</ins>
+  static cr_state cr_name_(cr_ ## cr_name_ ## _context* cr_context) { \
+    if (cr_reentrancy_ == -1) \
+      return CR_TERMINATED; \
+    switch (cr_reentrancy_) { \
+      case 0:
+
+<ins>#define CR_CONTEXT_FOR(cr_name_) \
+  struct cr_ ## cr_name_ ## _context { \</ins>
+
+<ins>#define CR_END_CONTEXT \
+    int cr_entry_point_; \
+  };</ins>
+
+<ins>#define CR_EMPTY_CONTEXT_FOR(cr_name_) \
+  CR_CONTEXT_FOR(cr_name_) \
+  CR_END_CONTEXT</ins>
+
+
+
+<del>typedef struct cr_f_context {
+  int cr_entry_point_;
+} cr_f_context;</del>
+
+<ins>CR_EMPTY_CONTEXT_FOR(f)</ins>
+
+CR_BEGIN_REENTRANT(f)
+  ...
+CR_END
+
+<del>typedef struct cr_g_context {
+  int i;
+  int cr_entry_point_;
+} cr_g_context;</del>
+
+<ins>CR_CONTEXT_FOR(g)
+  int i;
+CR_END_CONTEXT</ins>
+
+CR_BEGIN_REENTRANT(g)
+  ...
+CR_END
+</pre>
+<p> Da notare che non è possibile definire pool contenenti coroutine rientranti con le macro <span class="code">CR_RUN_ALL</span>/<span class="code">CR_RUN_ANY</span>: l'allocazione del corretto numero e tipo di contesti, così come il lancio del corretto numero di istanze di coroutine è a carico all'utente.</p>
+<h2><span class="code">CR_YIELD_FOR</span></h2>
+<p>Avendo a disposizione una funzione che ritorna un'indicazione del passare del tempo (ad esempio il numero di millisecondi trascorsi da un certo istante del passato) è possibile definire una forma di <span class="code">CR_YIELD</span> che sospende l'esecuzione della coroutine per un certo intervallo di tempo:</p>
+<pre class="code">
+/* versione non rientrante */
+
+<ins>#define CR_YIELD_FOR(cr_interval_) \
+  do { \
+    static unsigned long cr_timer_ ## __LINE__; \
+    cr_timer_ ## __LINE__ = cr_elapsed_ms(); \
+    cr_entry_point_ = __LINE__; \
+    case __LINE__:; \
+    if (cr_elapsed_ms() - cr_timer_ ## __LINE__ &lt; cr_interval_) \
+      return CR_SUSPENDED; \
+  } while (0)</ins>
+</pre>
+<pre class="code">
+/* versione rientrante */
+
+#define CR_END_CONTEXT \
+    <ins>unsigned long timer_; \</ins>
+    int entry_point_; \
+  };
+
+<ins>#undef CR_YIELD_FOR</ins>
+
+<ins>#define CR_YIELD_FOR(cr_interval_) \
+  do { \
+    cr_context-&gt;timer_ = cr_elapsed_ms(); \
+    cr_entry_point_ = __LINE__; \
+    case __LINE__:; \
+    if (cr_elapsed_ms() - cr_context-&gt;timer_ &lt; cr_interval_) \
+      return CR_SUSPENDED; \
+  } while (0)</ins>
+</pre>
+<p>Un esempio di implementazione della funzione ausiliaria <span class="code">cr_elapsed_ms</span>:</p>
+<pre class="code">
+#include &lt;sys/timeb.h&gt; /* ftime */
+
+unsigned long cr_elapsed_ms() {
+  static struct timeb t;
+  ftime(&amp;t);
+  return (unsigned long)(t.time) * 1000 + t.millitm;
+}
+</pre>
+<h2>Riduzione del <em>busy-waiting</em> in <span class="code">CR_RUN_ALL</span>/<span class="code">CR_RUN_ANY</span></h2>
+<p>Nel caso la piattaforma in uso consenta la sospensione temporanea dei thread, è possibile ridurre l'impatto sul processore interrompendo momentaneamente lo scheduler, per esempio al termine del ciclo di attivazione delle coroutine registrate:</p>
+<pre class="code">
+#define CR_RUN_ALL<ins>_WITH_PAUSE</ins>(<ins>cr_period_, </ins>...) \
+  typedef cr_state (*cr_coroutine_)(); \
+  cr_coroutine_ cr_pool_[] = { __VA_ARGS__, NULL }; \
+  int main() { \
+    int cr_all_terminated_ = 0; \
+    cr_coroutine_* cr_next_ = NULL; \
+    <ins>unsigned long cr_start_ = 0; \
+    unsigned long cr_elapsed_ = 0; \</ins>
+    do { \
+      cr_all_terminated_ = 1; \
+      cr_next_ = cr_pool_; \
+      cr_start_ = cr_elapsed_ms(); \
+      while (*cr_next_ != NULL) { \
+        if ((*cr_next_)() == CR_SUSPENDED) \
+          cr_all_terminated_ = 0; \
+        ++cr_next_; \
+      } \
+      <ins>cr_elapsed_ = cr_elapsed_ms() - cr_start_; \
+      if (cr_elapsed_ &lt; cr_period_) \
+        cr_sleep_ms(cr_period_ - cr_elapsed_); \</ins>
+    } while (!cr_all_terminated_); \
+  }
+
+/* similmente per CR_RUN_ANY */
+</pre>
+<p>La sospensione temporanea dello scheduler può portare a notevoli risparmi energetici su sistemi <em>embedded</em> ed aumentare la reattività di sistemi multi-threading con scarse risorse computazionali. Segue infine un esempio di implementazione per <span class="code">cr_sleep_ms</span>:</p>
+<pre class="code">
+#ifdef __linux__
+#include &lt;unistd.h&gt; /* usleep */
+#endif
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include &lt;windows.h&gt; /* Sleep */
+#endif
+
+void cr_sleep_ms(unsigned long duration) {
+#ifdef __linux__
+  usleep(duration * 1000);
+#endif
+#ifdef _WIN32
+  Sleep(duration);
+#endif
+}
+</pre>
+<h2>Sorgenti</h2>
+<ul>
+<li><span class="code"><a href="files/c-coroutines/coroutine.h">coroutine.h</a></span></li>
+<li><span class="code"><a href="files/c-coroutines/reentrant.h">reentrant.h</a></span></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Kerr, K. &quot;Windows with C++ - Lightweight Cooperative Multitasking with C++&quot;. <em>MSDN Magazine</em>. &lt;<a href="http://msdn.microsoft.com/en-us/magazine/jj553509.aspx">http://msdn.microsoft.com/en-us/magazine/jj553509.aspx</a>&gt;. Visitato il 6 novembre 2015.</li>
+<a name="ref-2"></a>
+<li class="ref">Tatham, S. &quot;Coroutines in C&quot;. <em>chiark.greenend.org.uk</em>. &lt;<a href="http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html">http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html</a>&gt;. Visitato il 6 novembre 2015.</li>
+<a name="ref-3"></a>
+<li class="ref">Dunkels, A. &quot;How protothreads really work&quot;. <em>dunkels.com</em>. &lt;<a href="http://dunkels.com/adam/pt/expansion.html">http://dunkels.com/adam/pt/expansion.html</a>&gt;. Visitato il 6 novembre 2015.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 12/11/2015</p>
+</body>
+</html>
