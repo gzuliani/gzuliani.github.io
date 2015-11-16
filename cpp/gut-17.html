@@ -1,0 +1,193 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /17</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /17</h1>
+<p>Questa parte (la diciasettesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a>, qui la <a href="gut-14.html">quattordicesima</a>, qui la <a href="gut-15.html">quindicesima</a> e qui la <a href="gut-16.html">sedicesima</a>) risolve un piccolo problema riscontrato nell'uso degli enumerati con il compilatore GCC.</p>
+<h2>Introduzione</h2>
+<p>Un test che coinvolge degli enumerati convenzionali &ndash; non quelli <em>strong-typed</em> del C++11, per intenderci &ndash; quando compilato con GCC con il flag <span class="code">-Wsign-promo</span> emette un warning fastidioso:</p>
+<pre class="code">
+// test-gut.cpp
+...
+
+<ins>enum Level {
+  e_low,
+  e_medium,
+  e_high,
+};</ins>
+
+int main() {
+  ...
+
+  <ins>Level l = e_low;
+  CHECK(l != e_low);
+  assert(lastFailure == &quot;[error] l != e_low evaluates to 0 != 0&quot;);
+  CHECK(l == e_high);
+  assert(lastFailure == &quot;[error] l == e_high evaluates to 0 == 2&quot;);</ins>
+
+  return 0;
+}
+
+/* output: (GCC 5.2.0)
+ *
+ * In file included from test-gut.cpp:2:0:
+ * gut.h: In instantiation of &apos;std::__cxx11::string gut::toString(const T&amp;) [with T
+ *  = Level; std::__cxx11::string = std::__cxx11::basic_string&lt;char&gt;]&apos;:
+ * gut.h:273:29:   required from &apos;std::__cxx11::string gut::BinaryExpression&lt;T, U&gt;:
+ * :toString() const [with T = Level; U = Level; std::__cxx11::string = std::__cxx1
+ * 1::basic_string&lt;char&gt;]&apos;
+ * test-gut.cpp:598:1:   required from here
+ * gut.h:595:26: warning: passing &apos;Level&apos; chooses &apos;int&apos; over &apos;long unsigned int&apos; [-
+ * Wsign-promo]
+ *      os &lt;&lt; std::boolalpha &lt;&lt; value;
+ *                           ^
+ * ...
+ */
+</pre>
+<p>Il problema è dovuto alla serializzazione di una costante <span class="code">enum</span> in uno <span class="code">ostream</span>, il cui <em>overload resolution</em> causa una promozione del tipo intero sottostante l'enumerato a <em>signed integer</em>. Le soluzioni disponibili sono molteplici, ad esempio:</p>
+<ul>
+<li>definire l'operatore di ridirezione <span class="code">operator&lt;&lt;</span> per il tipo enumerato;</li>
+<li>ricorrere ad una <em>scoped enumeration</em>;</li>
+<li>inibire esplicitamente il warning.</li>
+</ul>
+<h3>Definire l'operatore di ridirezione <span class="code">operator&lt;&lt;</span> per il tipo enumerato</h3>
+<p>Il modo più immediato di risolvere il problema è quello di implementare l'operatore di ridirezione, in modo da evitare la risoluzione che genera il warning:</p>
+<pre class="code">
+enum Level {
+  e_low,
+  e_medium,
+  e_high,
+};
+
+<ins>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, Level level) {
+  os &lt;&lt; static_cast&lt;int&gt;(level);
+  return os;
+}</ins>
+</pre>
+<h3>Ricorrere ad una <em>scoped enumeration</em></h3>
+<p>L'ambiguità può essere eliminata utilizzando i nuovi tipi enumerati introdotti nel C++11, che non sono implicitamente convertibili a intero:</p>
+<pre class="code">
+enum <ins>class</ins> Level {
+  e_low,
+  e_medium,
+  e_high,
+};
+
+int main() {
+  ...
+
+  Level l = <ins>Level::</ins>e_low;
+  CHECK(l != <ins>Level::</ins>e_low);
+  assert(lastFailure == &quot;[error] l != <ins>Level::</ins>e_low evaluates to {?} != {?}&quot;);
+  CHECK(l == <ins>Level::</ins>e_high);
+  assert(lastFailure == &quot;[error] l == <ins>Level::</ins>e_high evaluates to {?} == {?}&quot;);
+
+  return 0;
+}
+</pre>
+<p>L'assenza del <em>cast</em> implicito ha una ricaduta negativa sulla rappresentazione delle costanti dell'enumerato: al loro posto compare ora il simbolo <span class="code">{?}</span>, ad indicare che la libreria non ha modo di mostrarne il valore in nessuna delle forme predefinite &ndash; prima usava l'intero sottostante. Per rendere più espliciti i messaggi d'errore si può sempre ricorrere all'operatore di ridirezione:</p>
+<pre class="code">
+<ins>std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, Level level) {
+  os &lt;&lt; static_cast&lt;int&gt;(level);
+  return os;
+}</ins>
+
+int main() {
+  ...
+
+  Level l = Level::e_low;
+  CHECK(l != Level::e_low);
+  assert(lastFailure == &quot;[error] l != Level::e_low evaluates to <del>{?}</del><ins>0</ins> != <del>{?}</del><ins>0</ins>&quot;);
+  CHECK(l == Level::e_high);
+  assert(lastFailure == &quot;[error] l == Level::e_high evaluates to <del>{?}</del><ins>0</ins> == <del>{?}</del><ins>2</ins>&quot;);
+
+  return 0;
+}
+</pre>
+<p>Per rappresentazioni più specifiche si può sfruttare una <a href="x-macro.html">x-macro</a>:</p>
+<pre class="code">
+<ins>#define LEVELS(lambda_) \
+  lambda_(low) \
+  lambda_(medium) \
+  lambda_(high)
+
+#define LEVEL_ID(name_) e_ ## name_,
+#define LEVEL_ENTRY(name_) { Level::e_ ## name_, &quot;Level::e_&quot; #name_ },</ins>
+
+enum class Level {
+  <ins>LEVELS(LEVEL_ID)</ins>
+  <del>e_low,</del>
+  <del>e_medium,</del>
+  <del>e_high,</del>
+};
+
+<ins>#include &lt;map&gt;
+static std::map&lt;Level, std::string&gt; level_names = {
+  LEVELS(LEVEL_ENTRY)
+};</ins>
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, Level level) {
+  os &lt;&lt; <del>static_cast&lt;int&gt;(level)</del><ins>level_names[level]</ins>;
+  return os;
+}
+
+int main() {
+  ...
+
+  Level l = Level::e_low;
+  CHECK(l != Level::e_low);
+  assert(lastFailure ==
+    &quot;[error] l != Level::e_low evaluates to <del>0</del><ins>Level::e_low</ins> != <del>0</del><ins>Level::e_low</ins>&quot;);
+  CHECK(l == Level::e_high);
+  assert(lastFailure ==
+    &quot;[error] l == Level::e_high evaluates to <del>0</del><ins>Level::e_low</ins> == <del>2</del><ins>Level::e_high</ins>&quot;);
+
+  retur 0;
+}
+</pre>
+<h3>Inibire esplicitamente il warning</h3>
+<p>Per fare in modo che GCC non emetta il warning in oggetto, si agisce sul file <span class="file">gut.h</span>: per le versioni di GCC precedenti la 4.6, tramite una direttiva <span class="code">pragma</span> che indica che il file dev'essere trattato alla stregua di un file di inclusione di sistema, causando la soppressione di tutta una classe di messaggi diagnostici, compreso quello in esame; per le versioni successive, disabilitando selettivamente il warning indesiderato nella porzione di codice che lo causa:</p>
+<pre class="code">
+// gut.h
+...
+
+<ins>#if defined __GNUC__ &amp;&amp; (__GNUC__ &lt; 4 || (__GNUC__ == 4 &amp;&amp; __GNUC_MINOR__ &lt; 6))
+#pragma GCC system_header
+#endif</ins>
+
+namespace gut {
+...
+
+template &lt;typename T&gt;
+std::string toString(const T&amp; value) {
+  std::ostringstream os;
+<ins>#if defined __GNUC__ &amp;&amp; ((__GNUC__ == 4 &amp;&amp; __GNUC_MINOR__ &gt;= 6) || __GNUC__ &gt; 4)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored &quot;-Wsign-promo&quot;
+#endif</ins>
+  os &lt;&lt; std::boolalpha &lt;&lt; value;
+<ins>#if defined __GNUC__ &amp;&amp; ((__GNUC__ == 4 &amp;&amp; __GNUC_MINOR__ &gt;= 6) || __GNUC__ &gt; 4)
+#pragma GCC diagnostic pop
+#endif</ins>
+  return os.str();
+}
+</pre>
+<p>Questa tecnica risulta utile quando non è possibile modificare il tipo enumerato o non è possibile &ndash; o non è  opportuno &ndash; definire l'operatore di ridirezione.</p>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-17/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-17/test-gut.cpp">gut.cpp</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<li class="ref"><em>&ldquo;Are C++ enums signed or unsigned?&rdquo;</em>, StackOverflow &mdash; &lt;<a href="http://stackoverflow.com/questions/159034/are-c-enums-signed-or-unsigned">http://stackoverflow.com/questions/159034/are-c-enums-signed-or-unsigned</a>&gt;, visitato il 16/11/2015.</li>
+<li class="ref"><em>&ldquo;Options Controlling C++ Dialect&rdquo;</em>, Using the GNU Compiler Collection (GCC) &mdash; &lt;<a href="https://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/C_002b_002b-Dialect-Options.html">https://gcc.gnu.org/onlinedocs/gcc-4.4.4/gcc/C_002b_002b-Dialect-Options.html</a>&gt;, visitato il 16/11/2015.</li>
+<li class="ref"><em>&ldquo;TestAssert.h&rdquo;</em>, CppUnit project page  &mdash; &lt;<a href="http://people.freedesktop.org/~mmohrhard/cppunit/_test_assert_8h_source.html">http://people.freedesktop.org/~mmohrhard/cppunit/_test_assert_8h_source.html</a>&gt;, visitato il 16/11/2015.</li>
+<li class="ref"><em>&ldquo;What is the type of an enumeration such as enum Color? Is it of type int?&rdquo;</em>, C++ Super-FAQ &mdash; &lt;<a href="https://isocpp.org/wiki/faq/newbie#enumeration-is-its-own-type">https://isocpp.org/wiki/faq/newbie#enumeration-is-its-own-type</a>&gt;, visitato il 16/11/2015.</li>
+<p class="modification-notice">Pagina modificata il 16/11/2015</p>
+</body>
+</html>
