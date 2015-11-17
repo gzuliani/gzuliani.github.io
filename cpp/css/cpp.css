@@ -7,7 +7,7 @@ span.file-name {
 }
 
 span.function {
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
 }
 
 span.library {
@@ -15,5 +15,5 @@ span.library {
 }
 
 span.object {
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
 }

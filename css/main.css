@@ -42,7 +42,7 @@ body {
   */
  background: #fdf6e3;
  color: #586e75;
- font-family: Candara, Verdana, Arial, Sans Serif;
+ font-family: Calibri, Tahoma, "DejaVu Sans", Arial, sans-serif;
  font-size: 120%;
  line-height: 1.4em;
  margin: auto;
@@ -57,7 +57,7 @@ del {
 
 h1, h2, h3, h4 {
  color: #b58900;
- font-family: Cambria, Times New Roman, Times, Serif;
+ font-family: Cambria, Georgia, "URW Bookman L", "Times New Roman", Times, serif;
  margin-top: 2em;
  margin-bottom: 1em;
 }
@@ -157,7 +157,7 @@ p.update {
 }
 
 code {
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, "Courier New", monospace;
  font-size: .9em;
 }
 
@@ -165,7 +165,7 @@ code {
 pre.code {
  background: #eee8d5;
  border: 1px solid #073642;
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .8em;
  line-height: 1.2em;
  padding: 1em;

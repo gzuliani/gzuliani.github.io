@@ -1,33 +1,33 @@
 body {
  color: #586e75;
- font-family: Candara, Verdana, Arial, Sans Serif;
+ font-family: Calibri, Tahoma, "DejaVu Sans", Arial, sans-serif;
  margin-left: 0em;
  padding-left: 1.5em;
 }
 
+h1, h2, h3, h4 {
+ font-family: Cambria, Georgia, "URW Bookman L", "Times New Roman", Times, serif;
+}
+
 h1 {
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1.5em; 
  margin-top: 2em;
  margin-bottom: 1em;
 }
 
 h2 {
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1.2em;
  margin-top: 2em;
  margin-bottom: .5em;
 }
 
 h3 {
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1em;
  margin-top: 2em;
  margin-bottom: 1em;
 }
 
 h4 {
- font-family: Cambria, Times New Roman, Times, Serif;
  font-size: 1em;
  font-style: italic;
  font-weight: normal;

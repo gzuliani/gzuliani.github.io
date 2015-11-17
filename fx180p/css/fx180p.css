@@ -12,14 +12,14 @@ span.display {
  color: #fdf6e3;
  border-width: 1;
  border-style: solid;
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  padding: .2em;
 }
 
 span.key {
  border-width: 1;
  border-style: solid;
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  padding: .2em;
 }
 
