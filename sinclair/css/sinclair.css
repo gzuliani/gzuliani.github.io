@@ -21,7 +21,7 @@ p.snapshot {
 table.code {
  background: #eee8d5;
  border: 1px solid #073642;
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .9em;
  margin-left: 0em;
  padding: 1em;
