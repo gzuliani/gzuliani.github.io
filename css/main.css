@@ -157,7 +157,7 @@ p.update {
 }
 
 code {
- font-family: Consolas, "Courier New", monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .9em;
 }
 
@@ -174,7 +174,7 @@ pre.code {
 }
 
 span.code {
- font-family: Consolas, Courier New, monospace;
+ font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .9em;
 }
 
