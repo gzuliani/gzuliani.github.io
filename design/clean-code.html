@@ -17,7 +17,7 @@
   <li><q>You know you are working on clean code when each routine you read turns out to be pretty much what you expect&hellip;</q> &ndash; Ward Cunningham, inventor of Wiki;</li>
  </ul>
 <p>Si argomenta sul paradosso che il codice sporco, risultato di un'attivit&agrave; frenetica di sviluppo volta ad accelarare i tempi di consegna, si rivela essere in realt&agrave; una &ndash; se non la principale &ndash; causa di ritardo. Viene quindi presentata la metafora della finestra rotta, la cui morale dovrebbe spronare a ripulire il codice ogni qualvolta se ne presenti la possibilit&agrave;, in particolare durante le fasi di <span class="term">refactoring</span>: anche la ripulitura del codice quindi, pu&ograve; essere effettuata in maniera incrementale.</p>
-<p>La regola dei boyscout viene cos&igrave; decinata: <q>lascia il codice pi&ugrave; pulito di come l'hai trovato</q>.</p>
+<p>Viene infine citata la regola dei boyscout: <q>lascia il codice pi&ugrave; pulito di come l'hai trovato</q>.</p>
 <h2>2. Meaningful names</h2>
 <p>I consigli proposti in questo capitolo sono piuttosto noti, e spesso si ritrovano in pubblicazioni analoghe (cfr. Pescio, <em>Manuale di Stile C++</em>, Fowler, <em>Refactoring</em>, &hellip;):</p>
 <ul>
@@ -117,7 +117,7 @@
 <ul>
  <li>definire e rispettare le regole di formattazione;</li>
  <li>preferire il codice autoesplicativo (rifattorizzare piuttosto che commentare);</li>
- <li>evitare commenti ridondanti o fuorvianti; guardarsi l'obsolescenza dei commenti;</li>
+ <li>evitare commenti ridondanti o fuorvianti; fare attenzione all'obsolescenza dei commenti;</li>
  <li>rimuovere il codice commentato;</li>
  <li>non usare i commenti per registrare le attivit&agrave; svolte: usare un sistema di controllo dei sorgenti.</li>
 </ul>
@@ -171,7 +171,7 @@
 <p>Librerie di terze parti:</p>
 <ul>
  <li>disaccoppiare il codice dalle API proprietarie per mezzo di wrappers;</li>
- <li>se la documentazione fornita con la libreria non &egrave; sufficientemente affidabile, o se il suo comportamento non &egrave; stabile nelle versioni che si succedono, pu&ograve; risultare conveniente sviluppare unit test per determinarne il reale funzionamento (<span class="term">learning tests</span>).</li>
+ <li>se la documentazione fornita con la libreria non &egrave; sufficientemente affidabile, o se il suo comportamento non &egrave; stabile nelle versioni che si succedono, pu&ograve; risultare conveniente sviluppare unit test per determinarne il reale funzionamento (<span class="term">learning tests</span>);</li>
 </ul>
 <p>Relativamente al codice sviluppato da altri colleghi, qualora questo non sia ancora disponibile, si raccomanda l'uso di <span class="term">mock/stubs</span> per emulare le funzionalit&agrave; necessarie; questi potranno in seguito essere riutilizzati come <span class="term">adapter</span> dei componenti reali, quando diventeranno disponibili.</p>
 <h2>9. Unit Test</h2>
@@ -182,10 +182,10 @@
   <li>non si scrive codice di produzione se non quello necessario per far passare il test che fallisce.</li>
  </ol>
 </p>
-<p>Il TDD costringe lo sviluppatore a passare continuamente dallo scrivere codice di test &ndash; che fallisce &ndash; alla scrittura di codice di produzione &ndash; che fa passare il test. Il codice progredisce duqnue per piccoli passi, essendo la durata tipica di un ciclo di qualche minuto. Risulta perci&ograve; quasi impossibile ritrovarsi in situazioni inestricabili, dato che per definizione, se a un dato momento il test non passa, &egrave; sicuramente dovuto alle modifiche introdotte nell'ultima iterazione. Ci&ograve; regala una notevole serenit&agrave; al programmatore, che ha la certezza che, qualunque cosa sia successa, pochi <em>undo</em> ci ricondurranno ad una situazione stabile.</p>
+<p>Il TDD costringe lo sviluppatore a passare continuamente dallo scrivere codice di test &ndash; che fallisce &ndash; alla scrittura di codice di produzione &ndash; che fa passare il test. Il codice progredisce cos&igrave; per piccoli passi, essendo la durata tipica di un ciclo di qualche minuto. Risulta perci&ograve; quasi impossibile perdersi nel codice dato che, per definizione, se a un dato momento il test non passa la causa &egrave; da ricercare nelle modifiche introdotte nell'ultima iterazione. Ci&ograve; regala una notevole serenit&agrave; al programmatore, che ha la certezza che, qualunque cosa sia successa, pochi <em>undo</em> lo ricondurranno ad una situazione stabile.</p>
 <p>Il codice di test va trattato come il codice di produzione. Cosa fa invece di un test case un <em>buon</em> test case?</p>
 <ul>
- <li>deve emergere chiaramente la struttura <span class="term">build-operate-check</span>;</li>
+ <li>deve emergere chiaramente la struttura <span class="term">build-operate-check</span> (o AAA: <span class="term">arrange-act-assert</span>);</li>
  <li>deve considerare un unico aspetto dell'oggetto in test;</li>
  <li>deve essere rapido, indipendente, ripetibile rispetto all'ambiente di esecuzione, auto-validante (deve fornire una chiara indicazione circa il successo o il fallimento);</li>
 </ul>
