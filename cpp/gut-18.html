@@ -1,0 +1,376 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /18</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /18</h1>
+<p>Questa parte (la diciottesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a>, qui la <a href="gut-14.html">quattordicesima</a>, qui la <a href="gut-15.html">quindicesima</a>, qui la <a href="gut-16.html">sedicesima</a> e qui la <a href="gut-17.html">diciasettesima</a>) introduce alcune macro per il <em>benchmarking</em> del codice.</p>
+<h2>Introduzione</h2>
+<p>Capita a volte di avere la necessità di misurare le prestazioni di una porzione di codice; può altre volte risultare utile assicurarsi che un'attività di <em>refactoring</em> non introduca delle pesanti inefficienze. Ho esteso gut per gestire questi due scenari.</p>
+<h3>Rifattorizzazioni preliminari</h3>
+<p>Ho leggermente riorganizzato i file di gut:</p>
+<ul>
+<li>rinominato <span class="file-name">gut-tap.h</span> in <span class="file-name">tap.h</span> e modificato le guardie di inclusione di conseguenza;</li>
+<li>rinominato <span class="file-name">gut-num.h</span> in <span class="file-name">math.h</span> e modificato le guardie di inclusione di conseguenza;</li>
+<li>spostato in un file esterno (<span class="file-name">colors.h</span>) l'attivazione opzionale dei colori in console e il caricamento della relativa implementazione;</li>
+<li>spostato in un file esterno (<span class="file-name">utils.h</span>) l'implementazione della classe <span class="code">StaticFlag</span>, per consentire lo scorporo di cui sopra;</li>
+<li>spostato in una gerarchia di file esterni le implementazioni relative alle temporizzazioni: il file <span class="file-name">timing.h</span>, oltre a contenere le definizioni comuni, seleziona l'implementazione sulla base della disponibilità della libreria standard <span class="code">std::chrono</span> (<span class="file-name">chrono</span>/<span class="file-name">custom</span>) e, nel caso, in funzione della piattaforma (<span class="file-name">linux</span>/<span class="file-name">windows</span>).</li>
+</ul>
+<h2>Implementazione</h2>
+<p>La stima del tempo di esecuzione avviene allocando un oggetto <span class="code">Timer</span> immediatamente prima della valutazione dell'espressione di interesse, e determinando il tempo trascorso dalla sua allocazione subito dopo; si può usare successivamente la misura così ottenuta per emettere un <em>warning</em>, generare una <em>failure</em> alla stregua di un <span class="code">CHECK</span> o far fallire il test come accade in una <span class="code">REQUEST</span>:</p>
+<pre class="code">
+// file timing.h
+...
+
+<ins>#define GUT_DURATION(expr_) \
+  [&amp;] { \
+  gut::Timer t_; \
+  (void)(expr_); \
+  return t_.elapsedTime(); \
+  }()</ins>
+</pre>
+<p><span class="code">GUT_DURATION</span> è di fatto un'invocazione <em>in-place</em> di una <em>lambda-expression</em>.</p>
+<h3><span class="code">SHOULD_LAST_AT_MOST</span></h3>
+<p><span class="code">SHOULD_LAST_AT_MOST</span> emette un <em>warning</em> nel caso il tempo impiegato per la valutazione dell'espressione specificata si riveli essere maggiore della soglia predefinita:</p>
+<pre class="code">
+...
+
+<ins>#define SHOULD_LAST_AT_MOST(expr_, limit_) \
+  GUT_BEGIN \
+  auto duration_ = GUT_DURATION(expr_); \
+  if (duration_ &gt; limit_) \
+    WARN( \
+    std::string(#expr_) \
+      + &quot; took &quot; \
+      + gut::toString(gut::match_duration(duration_, limit_)) \
+      + &quot; (expected less than &quot; \
+      + gut::toString(gut::match_duration(limit_, duration_)) \
+      + &quot;)&quot;); \
+  GUT_END</ins>
+</pre>
+<p>La funzione <span class="code">match_duration</span> ha lo scopo di uniformare la prima durata alla seconda, in modo di che il messaggio risultante presenti durate (effettiva e massima ammessa) con unità di misura e formato uguali.</p>
+<h3><span class="code">LASTS_AT_MOST</span></h3>
+<p><span class="code">LASTS_AT_MOST</span> causa un errore quando la valutazione dell'espressione impiega più tempo del previsto:</p>
+<pre class="code">
+...
+
+<ins>#define LASTS_AT_MOST(expr_, limit_) \
+  GUT_BEGIN \
+  auto duration_ = GUT_DURATION(expr_); \
+  if (duration_ &gt; limit_) \
+    gut::theListener.failure( \
+    gut::DurationFailure( \
+      #expr_, \
+      gut::match_duration(duration_, limit_), \
+      gut::match_duration(limit_, duration_), \
+      __FILE__, \
+      __LINE__)); \
+  GUT_END</ins>
+</pre>
+<h3><span class="code">REQUIRE_LASTS_AT_MOST</span></h3>
+<p>La macro <span class="code">REQUIRE_LASTS_AT_MOST</span> causa l'uscita anticipata dal test in caso di durata eccessiva:</p>
+<pre class="code">
+...
+
+<ins>#define REQUIRE_LASTS_AT_MOST(expr_, limit_) \
+  GUT_BEGIN \
+  auto duration_ = GUT_DURATION(expr_); \
+  if (duration_ &gt; limit_) { \
+    gut::theListener.failure( \
+    gut::FatalDurationFailure( \
+      #expr_, \
+      gut::match_duration(duration_, limit_), \
+      gut::match_duration(limit_, duration_), \
+      __FILE__, \
+      __LINE__)); \
+    throw gut::AbortTest(); \
+  } \
+  GUT_END</ins>
+</pre>
+<h3>Rifattorizzazione di <span class="code">Timer</span></h3>
+<p>Le nuove macro hanno richiesto un piccolo intervento sulla classe <span class="code">Timer</span>, oltre alla definizione di due nuove notifiche, <span class="code">DurationFailure</span> e <span class="code">FatalDurationFailure</span> rispettivamente. La classe <span class="code">Timer</span> è stata aggiornata per generalizzare il valore di ritorno del metodo <span class="code">elapsedTime</span>:</p>
+<pre class="code">
+// file timing-chrono.h
+...
+class Timer {
+  std::chrono::steady_clock::time_point start_;
+public:
+  Timer() { reset (); }
+  void reset() { start_ = std::chrono::steady_clock::now(); }
+  Duration elapsedTime() {
+  return Duration(std::chrono::steady_clock::now() - start_);
+  }
+  <del>double</del> <ins>Duration</ins> elapsedTime() {
+  using namespace std::chrono;
+  return <del>duration_cast&lt;milliseconds&gt;(</del>
+    <ins>Duration(</ins>steady_clock::now() - start_)<ins>)</ins><del>.count() / 1000.</del>;
+  }
+};
+</pre>
+<p>La versione <em>custom</em> del timer, quella cioè implementata in assenza del supporto della libreria <span class="code">std::chrono</span>, viene specializzata in funzione della piattaforma, poiché la funzione <span class="code">clock</span> su Linux considera solo il tempo CPU impiegato per la valutazione dell'espressione, non quello effettivamente trascorso. La versione per Windows è ricavata da quella presente nel file <span class="file-name">gut.h</span>:</p>
+<pre class="code">
+// file windows/timing-custom.h
+
+#ifndef GUT_WINDOWS_TIMINGCUSTOM_H
+#define GUT_WINDOWS_TIMINGCUSTOM_H
+
+#include &lt;time.h&gt; // clock
+
+namespace gut {
+
+class Timer {
+  clock_t start_;
+public:
+  Timer() { reset(); }
+  void reset() { start_ = clock(); }
+  <del>double</del> <ins>Duration</ins> elapsedTime() {
+  return <ins>Duration(</ins>
+    static_cast&lt;double&gt;(clock() - start_)
+    / CLOCKS_PER_SEC<ins>)</ins>;
+  }
+};
+
+} // namespace gut
+
+#endif // GUT_WINDOWS_TIMINGCUSTOM_H
+</pre>
+<p>Quella per Linux è simile, ma fa uso della funzione <span class="code">times</span> al posto di <span class="code">clock</span>:</p>
+<pre class="code">
+// file linux/timing-custom.h
+
+#ifndef GUT_LINUX_TIMINGCUSTOM_H
+#define GUT_LINUX_TIMINGCUSTOM_H
+
+#include &lt;sys/times.h&gt; // times
+#include &lt;unistd.h&gt;  // _SC_CLK_TCK
+
+namespace gut {
+
+class Timer {
+  clock_t start_;
+public:
+  Timer() { reset(); }
+  void reset() {
+  struct tms start;
+  start_ = times(&amp;start);
+  }
+  Duration elapsedTime() {
+  struct tms end;
+  return Duration(
+    static_cast&lt;double&gt;(times(&amp;end) - start_)
+    / sysconf(_SC_CLK_TCK));
+  }
+};
+
+} // namespace gut
+
+#endif // GUT_LINUX_TIMINGCUSTOM_H
+</pre>
+<p>La classe <span class="code">Duration</span> ha lo scopo di modellare un intervallo di tempo e convertirlo in stringa; esiste nelle due versioni custom/chrono:</p>
+<pre class="code">
+// file timing-chrono.h
+...
+
+<ins>class Duration {
+  typedef std::chrono::duration&lt;double&gt; duration_t;
+  duration_t seconds_;
+public:
+  explicit Duration(double seconds) : seconds_(seconds) {}
+  template&lt;class Rep, class Period&gt;
+  explicit Duration(std::chrono::duration&lt;Rep, Period&gt; duration)
+   : seconds_(std::chrono::duration_cast&lt;duration_t&gt;(duration)) {}
+  double seconds() const { return seconds_.count(); }
+  template&lt;class T&gt;
+  bool operator&gt;(const T&amp; duration) const { return seconds_ &gt; duration; }
+  bool operator&gt;(int duration) const { return seconds_.count() &gt; duration; }
+  bool operator&gt;(double duration) const { return seconds_.count() &gt; duration; }
+};</ins>
+
+...
+
+<ins>std::string toString(const Duration&amp; value) {
+  std::ostringstream oss;
+  oss &lt;&lt; value.seconds() &lt;&lt; &quot;s&quot;;
+  return oss.str();
+}</ins>
+
+<ins>template&lt;class T, class U&gt;
+Duration match_duration(const T&amp; source, const U&amp; /*target*/) {
+  return Duration(source);
+}</ins>
+</pre>
+<p>Come si può dedurre dal codice, le soglie temporali possono essere specificate come istanze di oggetti di tipo <span class="code">std::chrono::duration</span> oppure come semplici valori scalari, nel qual caso l'unità di misura sottintesa è il <strong>secondo</strong>. La versione custom è la seguente:</p>
+<pre class="code">
+// file timing-custom.h
+...
+
+<ins>class Duration {
+  double seconds_;
+public:
+  explicit Duration(double seconds) : seconds_(seconds) {}
+  double seconds() const { return seconds_; }
+  bool operator&gt;(double duration) const { return seconds_ &gt; duration; }
+};</ins>
+
+<ins>std::string toString(const Duration&amp; value) {
+  std::ostringstream oss;
+  oss &lt;&lt; value.seconds() &lt;&lt; &quot;s&quot;;
+  return oss.str();
+}</ins>
+
+<ins>template&lt;class T&gt;
+Duration match_duration(const Duration&amp; source, const T&amp; /*target*/) {
+  return source;
+}</ins>
+
+<ins>template&lt;class T&gt;
+Duration match_duration(const T&amp; source, const Duration&amp; /*target*/) {
+  return Duration(source);
+}</ins>
+</pre>
+<h3><span class="code">DurationFailure</span>, <span class="code">FatalDurationFailure</span></h3>
+<p>Le due nuove notifiche si occupano di comporre il messaggio da presentare all'utente, demandando alla funzione <span class="code">toString</span> il <em>rendering</em> degli intervalli di tempo:</p>
+<pre class="code">
+// file gut.h
+...
+
+<ins>struct DurationFailure : public Error {
+  DurationFailure(
+  const char* expression,
+  const Duration&amp; measured,
+  const Duration&amp; limit,
+  const char* file,
+  int line) : Error(file, line) {
+  content()
+    &lt;&lt; expression
+    &lt;&lt; &quot; took &quot;
+    &lt;&lt; gut::toString(measured)
+    &lt;&lt; &quot;, expected less than &quot;
+    &lt;&lt; gut::toString(limit);
+  }
+};</ins>
+
+<ins>struct FatalDurationFailure : public Fatal {
+  FatalDurationFailure(
+  const char* expression,
+  const Duration&amp; measured,
+  const Duration&amp; limit,
+  const char* file,
+  int line) : Fatal(file, line) {
+  content()
+    &lt;&lt; expression
+    &lt;&lt; &quot; took &quot;
+    &lt;&lt; gut::toString(measured)
+    &lt;&lt; &quot;, expected less than &quot;
+    &lt;&lt; gut::toString(limit);
+  }
+};</ins>
+</pre>
+<h3>Interfaccia <span class="code">DefaultReport</span></h3>
+<p>È stata infine adattata l'interfaccia <span class="code">DefaultReport</span>, che riceve la durata del test come oggetto <span class="code">Duration</span> anziché come valore scalare <span class="code">double</span>:</p>
+<pre class="code">
+// file gut.h
+...
+
+class DefaultReport {
+...
+
+void end(
+  int tests,
+  int failedTests,
+  int failures,
+  <del>double</del> <ins>const Duration&amp;</ins> duration) {
+...
+
+  void endTest(
+    bool failed,
+    <del>double</del> <ins>const Duration&amp;</ins> /*duration*/) {
+...
+
+};
+</pre>
+<h2>Esempio</h2>
+<p>Segue un esempio d'uso delle nuove macro:</p>
+<pre class="code">
+// file example-timing.cpp
+
+<ins>#include &quot;gut.h&quot;</ins>
+
+<ins>#include &lt;thread&gt;</ins>
+
+<ins>int f(int, int) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(250));
+  return 0;
+}</ins>
+
+<ins>TEST(&quot;duration detection&quot;) {
+  // define a threshold in s
+  auto limit = std::chrono::duration&lt;double&gt;(.1);
+
+  // emits a warning
+  SHOULD_LAST_AT_MOST(f(1, 2), limit);
+
+  // emits an error
+  LASTS_AT_MOST(f(1, 2), limit);
+
+  // can use threshold defined in other units
+  LASTS_AT_MOST(f(1, 2), std::chrono::milliseconds(100));
+
+  // thresholds are in s by default
+  LASTS_AT_MOST(f(1, 2),  0);
+  LASTS_AT_MOST(f(1, 2),  1);
+  LASTS_AT_MOST(f(1, 2), .1);
+
+  // causes the test to end
+  REQUIRE_LASTS_AT_MOST(f(1, 2), limit);
+
+  // this check won&apos;t be executed
+  CHECK(1 == 2);
+}</ins>
+
+/* output:
+ *
+ * Test suite started...
+ * duration detection: FAILED
+ *  example-timing.cpp(15) : [warning] f(1, 2) took 0.250148s (expected less than 0.1s)
+ *  example-timing.cpp(18) : [error] f(1, 2) took 0.250879s, expected less than 0.1s
+ *  example-timing.cpp(21) : [error] f(1, 2) took 0.250853s, expected less than 0.1s
+ *  example-timing.cpp(24) : [error] f(1, 2) took 0.250963s, expected less than 0s
+ *  example-timing.cpp(26) : [error] f(1, 2) took 0.250195s, expected less than 0.1s
+ *  example-timing.cpp(29) : [fatal] f(1, 2) took 0.250745s, expected less than 0.1s
+ * Ran 1 test(s) in 2s.
+ * FAILED - 5 failure(s) in 1 test(s).
+ */
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-18/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-18/colors.h">colors.h</a></li>
+	<li><a href="files/gut/part-18/windows/colors.h">windows/colors.h</a></li>
+	<li><a href="files/gut/part-18/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-18/math.h">math.h</a></li>
+	<li><a href="files/gut/part-18/tap.h">tap.h</a></li>
+	<li><a href="files/gut/part-18/timing.h">timing.h</a></li>
+	<li><a href="files/gut/part-18/timing-chrono.h">timing-chrono.h</a></li>
+	<li><a href="files/gut/part-18/timing-custom.h">timing-custom.h</a></li>
+	<li><a href="files/gut/part-18/windows/timing-custom.h">windows/timing-custom.h</a></li>
+	<li><a href="files/gut/part-18/linux/timing-custom.h">linux/timing-custom.h</a></li>
+	<li><a href="files/gut/part-18/utils.h">utils.h</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-18/test-gut.cpp">test-gut.cpp</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-18/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-18/example-tap.cpp">example-tap.cpp</a></li>
+	<li><a href="files/gut/part-18/example-timing.cpp">example-timing.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 03/03/2016</p>
+</body>
+</html>

@@ -1,5 +1,5 @@
-#ifndef COLORS_H
-#define COLORS_H
+#ifndef GUT_WINDOWS_COLORS_H
+#define GUT_WINDOWS_COLORS_H
 
 #include <iostream>
 #include <windows.h>
@@ -11,7 +11,7 @@ namespace color {
 class WindowsConsole_ {
     HANDLE handle_;
     WORD defaultAttrs_;
-    static const WORD mask_ = 
+    static const WORD mask_ =
         FOREGROUND_RED
         | FOREGROUND_GREEN
         | FOREGROUND_BLUE
@@ -143,4 +143,4 @@ std::ostream& reset(std::ostream& os) {
 
 } // namespace gut
 
-#endif // COLORS_H
+#endif // GUT_WINDOWS_COLORS_H
