@@ -19,7 +19,7 @@ public:
         int tests,
         int failedTests,
         int /*failures*/,
-        double /*duration*/) {
+        const Duration& /*duration*/) {
         if (quit_)
             return;
         os_ << "1.." << tests << std::endl;
@@ -35,7 +35,7 @@ public:
         ++testCount_;
         testName_ = name;
     }
-    void endTest(bool failed, double /*duration*/) {
+    void endTest(bool failed, const Duration& /*duration*/) {
         std::ostringstream oss;
         if (failed)
             oss << "not ";
