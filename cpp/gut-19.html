@@ -1,0 +1,242 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /19</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /19</h1>
+<p>Questa parte (la diciannovesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a>, qui la <a href="gut-14.html">quattordicesima</a>, qui la <a href="gut-15.html">quindicesima</a>, qui la <a href="gut-16.html">sedicesima</a>, qui la <a href="gut-17.html">diciasettesima</a> e qui la <a href="gut-18.html">diciottesima</a>) introduce la possibilità di sospendere l'esecuzione di un test case in corrispondenza del primo fallimento all'interno di un <em>debugger</em>, quando questo è presente.</p>
+<h2>Introduzione</h2>
+<p>Per passare il controllo al debugger è &ldquo;sufficiente&rdquo; impostare programmaticamente un <em>breakpoint</em> nel punto in cui si è verificata la non conformità del test, nella fattispecie prima della chiamata <span class="code">gut::theListener.failure</span>:</p>
+<pre class="code">
+// file gut.h
+...
+
+#include &quot;colors.h&quot;
+<ins>#include &quot;debugger.h&quot;</ins>
+#include &quot;timing.h&quot;
+...
+
+#define CHECK(expr_) \
+  GUT_BEGIN \
+    if (!(gut::Capture()-&gt;*expr_)) { \
+      <ins>GUT_DEBUG_BREAK \</ins>
+      gut::theListener.failure( \
+        gut::CheckFailure( \
+          #expr_, gut::Expression::last, __FILE__, __LINE__)); \
+    } \
+  GUT_END
+
+#define THROWS_(expr_, exception_, prefix_, abort_) \
+  GUT_BEGIN \
+    bool catched_ = false; \
+    try { \
+      (void)(expr_); \
+      <ins>GUT_DEBUG_BREAK \</ins>
+      gut::theListener.failure( \
+        gut::prefix_ ## NoThrowFailure( \
+          #expr_, __FILE__, __LINE__)); \
+    } catch(const exception_&amp;) { \
+      catched_ = true; \
+    } catch(const std::exception&amp; e_) { \
+      <ins>GUT_DEBUG_BREAK \</ins>
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongTypedExceptionFailure( \
+          #expr_, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      <ins>GUT_DEBUG_BREAK \</ins>
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongExceptionFailure( \
+          #expr_, __FILE__, __LINE__)); \
+    } \
+    if (!catched_ &amp;&amp; abort_) \
+      throw gut::AbortTest(); \
+  GUT_END
+...
+</pre>
+<p>L'uso delle interruzioni è opzionale e sono normalmente disattivate; alla stregua di quanto già fatto per la colorazione del testo in console, l'attivazione avviene per mezzo di una macro, in questo caso denominata <span class="code">GUT_ENABLE_BREAKINDEBUGGER</span>:</p>
+<pre class="code">
+// file debugger.h
+<ins>#ifndef GUT_DEBUGGER_H
+#define GUT_DEBUGGER_H
+
+#include &quot;utils.h&quot;
+
+namespace gut {
+
+namespace debugger {
+
+// enable/disable breakpoints
+struct BreakInDebugger_ {};
+typedef StaticFlag&lt;BreakInDebugger_&gt; BreakInDebugger;
+
+#define GUT_ENABLE_BREAKINDEBUGGER \
+  gut::debugger::BreakInDebugger breakInDebugger_;
+
+} // namespace debugger
+
+} // namespace gut
+
+#ifdef _WIN32
+#include &quot;windows/debugger.h&quot;
+#elif  __linux__
+#include &quot;linux/debugger.h&quot;
+#endif
+
+#ifdef NDEBUG
+#define GUT_DEBUG_BREAK
+#else
+#define GUT_DEBUG_BREAK \
+  if (gut::debugger::BreakInDebugger::enabled() \
+    &amp;&amp; gut::debugger::isAttached()) \
+    GUT_DEBUG_BREAK_;
+#endif
+
+#endif // GUT_DEBUGGER_H</ins>
+</pre>
+<p>La macro <span class="code">GUT_DEBUG_BREAK</span> è disponibile solo in modalità <em>debug</em>, quando cioé la macro <span class="code">NDEBUG</span> non è definita, e il breakpoint viene attivato solo nel caso un debugger stia effettivamente monitorando il programma di test. L'implementazione del breakpoint, <span class="code">GUT_DEBUG_BREAK_</span>, così come quella della funzione di controllo della presenza del debugger, <span class="code">debugger::isAttached</span>, dipende dalla piattaforma; quella per Windows è:</p>
+<pre class="code">
+// file windows/debugger.h
+<ins>#ifndef GUT_WINDOWS_DEBUGGER_H
+#define GUT_WINDOWS_DEBUGGER_H
+
+#define WIN32_LEAN_AND_MEAN
+#include &lt;windows.h&gt;
+
+namespace gut {
+
+namespace debugger {
+
+bool isAttached() {
+  return IsDebuggerPresent() == TRUE;
+}
+
+} // namespace debugger
+
+} // namespace dex
+
+#define GUT_DEBUG_BREAK_ \
+  __debugbreak()
+
+#endif // GUT_WINDOWS_DEBUGGER_H</ins>
+</pre>
+<p>Quella per Linux è leggermente più articolata:</p>
+<pre class="code">
+// file linux/debugger.h
+<ins>#ifndef GUT_LINUX_DEBUGGER_H
+#define GUT_LINUX_DEBUGGER_H
+
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;fcntl.h&gt;
+
+namespace gut {
+
+namespace debugger {
+
+bool isAttached() {
+  int status = open(&quot;/proc/self/status&quot;, O_RDONLY);
+
+  if (status == -1)
+    return false;
+
+  char buffer[1024];
+  ssize_t num_read = read(status, buffer, sizeof(buffer));
+
+  if (num_read &gt; 0) {
+    buffer[num_read] = 0;
+    static const char prop[] = &quot;TracerPid:&quot;;
+    char* tracer = strstr(buffer, prop);
+
+    if (tracer)
+      return static_cast&lt;bool&gt;(atoi(tracer + sizeof(prop) - 1));
+  }
+  return false;
+}
+
+} // namespace debugger
+
+} // namespace dex
+
+#define GUT_DEBUG_BREAK_ \
+  __asm__ volatile(&quot;int $0x03&quot;);
+
+#endif // GUT_LINUX_DEBUGGER_H</ins>
+</pre>
+<h2>Esempio</h2>
+<p>Segue un banale test case d'esempio:</p>
+<pre class="code">
+// file example-breakpoint.cpp
+<ins>#include &quot;gut.h&quot;
+
+GUT_ENABLE_BREAKINDEBUGGER
+
+TEST(&quot;break into debugger&quot;) {
+  int i = 1;
+  CHECK(i == 2);
+}</ins>
+</pre>
+<p>Il codice è predisposto per causare l'interruzione all'interno del debugger; l'interruzione tuttavia avverrà se saranno rispettate due condizioni: il codice dovrà essere compilato senza macro <span class="code">NDEBUG</span>, e un debugger dovrà risultare presente al momento dell'errore. La presenza delle informazioni di debug sarà sicuramente preziosa, in un contesto d'uso realistico:</p>
+<pre class="code">
+<ins>$ g++ -g -std=c++11 example-breakpoint.cpp -o example-breakpoint</ins>
+</pre>
+<p>Lanciato in assenza di un debugger, il programma termina normalmente:</p>
+<pre class="code">
+<ins>$ ./example-breakpoint</ins>
+Test suite started...
+break into debugger: FAILED
+ example-breakpoint.cpp(7) : [error] i == 2 evaluates to 1 == 2
+Ran 1 test(s) in 0s.
+FAILED - 1 failure(s) in 1 test(s).
+</pre>
+<p>Lanciato da debugger, il programma si blocca in corripondenza del test che fallisce:</p>
+<pre class="code">
+<ins>$ gdb ./example-breakpoint</ins>
+GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
+...
+Reading symbols from ./example-breakpoint...done.
+(gdb) <ins>run</ins>
+Starting program: /home/dex/projects/dex/ext/gut/example-breakpoint 
+Test suite started...
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x00000000004029ea in test_5 () at example-breakpoint.cpp:7
+7	    CHECK(i == 2);
+(gdb) 
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-19/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-19/colors.h">colors.h</a></li>
+	<li><a href="files/gut/part-19/debugger.h">debugger.h</a></li>
+	<li><a href="files/gut/part-19/math.h">math.h</a></li>
+	<li><a href="files/gut/part-19/tap.h">tap.h</a></li>
+	<li><a href="files/gut/part-19/timing.h">timing.h</a></li>
+	<li><a href="files/gut/part-19/timing-chrono.h">timing-chrono.h</a></li>
+	<li><a href="files/gut/part-19/timing-custom.h">timing-custom.h</a></li>
+	<li><a href="files/gut/part-19/utils.h">utils.h</a></li>
+	<li><a href="files/gut/part-19/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-19/linux/debugger.h">linux/debugger.h</a></li>
+	<li><a href="files/gut/part-19/linux/timing-custom.h">linux/timing-custom.h</a></li>
+	<li><a href="files/gut/part-19/windows/colors.h">windows/colors.h</a></li>
+	<li><a href="files/gut/part-19/windows/debugger.h">windows/debugger.h</a></li>
+	<li><a href="files/gut/part-19/windows/timing-custom.h">windows/timing-custom.h</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-19/test-gut.cpp">test-gut.cpp</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-19/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-19/example-breakpoint.cpp">example-breakpoint.cpp</a></li>
+	<li><a href="files/gut/part-19/example-tap.cpp">example-tap.cpp</a></li>
+	<li><a href="files/gut/part-19/example-timing.cpp">example-timing.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 22/03/2016</p>
+</body>
+</html>
