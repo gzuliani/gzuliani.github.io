@@ -63,7 +63,7 @@ h1, h2, h3, h4 {
 }
 
 h1 {
- font-size: 1.5em; 
+ font-size: 1.5em;
 }
 
 h2 {
@@ -157,7 +157,7 @@ p.update {
 }
 
 code {
- font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .9em;
 }
 
@@ -165,7 +165,7 @@ code {
 pre.code {
  background: #eee8d5;
  border: 1px solid #073642;
- font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .8em;
  line-height: 1.2em;
  padding: 1em;
@@ -174,7 +174,7 @@ pre.code {
 }
 
 span.code {
- font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .9em;
 }
 

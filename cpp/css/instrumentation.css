@@ -3,7 +3,7 @@ span.compiler-option {
 }
 
 span.compiler-directive {
- font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
 }
 
 span.linker-option {
@@ -20,7 +20,7 @@ p.warning {
 
 table {
  border-width: 1px;
- font-family: Consolas, Monaco, "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: 75%
 }
 
