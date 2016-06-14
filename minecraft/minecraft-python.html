@@ -7,57 +7,46 @@
 </head>
 <body>
 <p class="page-path"><a href="../index.html#minecraft-python">risorse</a> | programmare minecraft in python</p>
-<h1>Programmazione di Minecraft</h1>
-<p>Per <em>programmazione</em> in  Minecraft si intende un sistema di gioco nel quale le azioni del giocatore non vengono comandate attraverso l’uso del mouse e della tastiera, ma specificandole come sequenze di istruzioni espresse in un particolare linguaggio di programmazione &mdash; Java, JavaScript, Lua, Python, &hellip; Il vantaggio è che con poche istruzioni di codice è possibile ottenere artefatti la cui costruzione manuale richiederebbe invece parecchio tempo.</p>
+<h1>Programmazione in Minecraft</h1>
+<p>Per <em>programmazione</em> in Minecraft si intende un sistema di gioco nel quale le azioni del giocatore non vengono comandate attraverso il mouse e la tastiera, ma specificandole come sequenze di istruzioni di un particolare linguaggio di programmazione &mdash; Java, JavaScript, Lua, Python, &hellip; Il vantaggio è che con poche istruzioni di codice è possibile ottenere artefatti la cui costruzione manuale richiederebbe invece parecchio tempo.</p>
 <h2>Programmazione Python di Minecraft</h2>
-<p>Esiste una versione di Minecraft che supporta nativamente la programmazione Python: è quella predisposta per la scheda didattica <em>Raspberry Pi</em>, la cosiddetta <em>Minecraft: Pi Edition</em>. Gli svantaggi principali di questa soluzione sono due: il primo consiste nella necessità di dotarsi di una Raspberry Pi, in secondo luogo la versione di Minecraft ad essa dedicata, pur essendo gratuita, non è aggiornatissima.</p>
+<p>Esiste una versione di Minecraft che supporta nativamente la programmazione Python: è quella predisposta per la scheda didattica <a href="https://www.raspberrypi.org/">Raspberry Pi</a>, la cosiddetta <a href="http://pi.minecraft.net/">Minecraft: Pi Edition</a>. Gli svantaggi principali di questa soluzione sono due: il primo è la necessità di dotarsi di una Raspberry Pi, il secondo è che la versione di Minecraft ad essa dedicata, pur essendo gratuita, non è aggiornatissima.</p>
 <h2>Programmazione Python di Minecraft su PC</h2>
-<p>Con relativamente poco sforzo è possibile replicare un ambiente analogo su PC. In rete si trovano diversi <em>tutorial</em> dedicati a Windows e Mac, non ne ho trovati per Linux. Di seguito dunque i passaggi che consentono di installare una versione di Minecraft programmabile in Python su Ubuntu, nella fattispecie <em>Ubuntu 14.04 64 bit</em>.</p>
+<p>Con relativamente poco sforzo è possibile replicare un ambiente analogo su PC utilizzando la versione standard di Minecraft (quella a pagamento). In rete si trovano diversi <em>tutorial</em> dedicati a Windows e Mac, ma non ne ho trovati per Linux. Di seguito dunque i passaggi che consentono di installare una versione di Minecraft programmabile in Python su Ubuntu, nella fattispecie <em>Ubuntu 14.04 64 bit</em>.</p>
 <h2>Ambiente di lavoro</h2>
-<p>La versione standard di Minecraft non può essere programmata. Per poter programmare Minecraft occorre:</p>
+<p>La versione standard di Minecraft non può essere programmata; per renderla programmabile occorrono alcuni componenti aggiuntivi:</p>
 <ul>
-<li>il supporto al linguaggio di programmazione prescelto (Python 2.7 in questo caso);</li>
-<li>un editor di testo per la redazione dei programmi;</li>
-<li>una versione programmabile di Minecraft.</li>
+<li><p>il supporto al linguaggio di programmazione prescelto (Python 2.7 in questo caso);</p></li>
+<li><p>un editor di testo per la redazione dei programmi;</p></li>
+<li><p>una versione server programmabile di Minecraft alla quale connettersi.</p></li>
 </ul>
 <p>Una volta soddisfatti i primi due requisiti (l’installazione standard di Ubuntu li soddisfa entrambi), il terzo viene risolto in due fasi:</p>
 <ul>
-<li><strong>lato server</strong>: installazione di un server Minecraft che espone un’API adeguata;</li>
-<li><strong>lato client</strong>: installazione di una libreria Python che consenta l’accesso all’API pubblicata dal server.</li>
-</ul>
-<p>Il primo punto viene di norma risolto installando due componenti:</p>
+<li><p><strong>lato server</strong>: installazione di un server Minecraft che espone un’API adeguata; di norma ciò si ottiene combinando due moduli:</p>
 <ol>
-<li>un server Minecraft programmabile;</li>
-<li>un plug-in che espone un’API adeguata.</li>
+<li><p>un server Minecraft programmabile;</p></li>
+<li><p>un plug-in che consente l’accesso alle funzionalità del server;</p></li>
 </ol>
-<p>Il secondo punto (la configurazione del client) prevede, oltre all’installazione della versione standard di Minecraft, l’installazione della libreria di comunicazione con il server:</p>
-<pre class="code">
-                           +-------------+
-+-------------+            |   Client    |
-|   Server    |            |  Minecraft  |
-|  Minecraft  |            +-------------+
-|             |
-|  +-----------+           +-----------------+   +--------------+
-|  |  Plug-in  |&lt;----------|   Libreria di   |   |  Linguaggio  |
-|  +-----------+           |  Comunicazione  |   |    Python    |
-|             |            +-----------------+   +--------------+
-+-------------+                     ^                   ^
-                                    |                   |
-                                    +---------+---------+
-                                              |
-                                       +-------------+
-                                       |  Programma  |
-                                       +-------------+
-
-</pre>
+</li>
+<li><p><strong>lato client</strong>: installazione di una libreria Python che permette all'utente di inviare i comandi al server.</p></li>
+</ul>
+<img src="img/minecraft-python/minecraft-python.png"/>
+<p class="illustration">Architettura client/server</p>
 <p>La modalità di lavoro è:</p>
 <ol>
-<li>avvio del server di Minecraft;</li>
-<li>avvio del client di Minecraft e connessione al server;</li>
-<li>redazione, sul client, del programma Python tramite editor di testo;</li>
-<li>lancio, sul client, del programma Python da terminale;</li>
-<li>verifica dell’effetto ottenuto nella finestra del client Minecraft;</li>
-<li>ritornare al punto 3.</li>
+<li>
+<p>avvio del server di Minecraft:</p>
+<img src="img/minecraft-python/server.png"/>
+<p class="illustration">Un server Minecraft in esecuzione all'interno di una finestra di terminale</p>
+</li>
+<li><p>avvio del client di Minecraft e connessione al server;</p></li>
+<li><p>redazione, sul client, del programma Python tramite editor di testo;</p></li>
+<li><p>lancio, sul client, del programma Python da terminale;</p></li>
+<li>
+<p>verifica dell’effetto ottenuto nella finestra del client Minecraft:</p>
+<img src="img/minecraft-python/client.png"/>
+<p class="illustration">Tipico ambiente di programmazione: editor di testo, terminale di lancio del programma, client Minecraft</p>
+</li>
 </ol>
 <p>Ho condotto i primi esperimenti seguendo le indicazioni riportate nel testo <a href="https://www.amazon.it/gp/product/111894691X">Adventures in Minecraft</a>, e ho utilizzato il server <a href="#canarymod">CanaryMod</a>; successivamente, considerando le dichiarazioni circa l’efficienza e soprattutto il livello di aggiornamento, sono passato <a href="#spigot">Spigot</a> (ad oggi, la versione più recente di CanaryMod disponibile è la 1.8.x, quella di Spigot la 1.9.4). Di seguito sono riportate le istruzioni per l’installazione di entrambi i server.</p>
 <a name="canarymod"></a>
@@ -95,7 +84,7 @@ $ java -jar CanaryMod.jar
 <h3>Verifica dell’installazione del server CanaryMod</h3>
 <ol>
 <li><p>avviare il client di Minecraft, selezionando la versione del server <em>CanaryMod</em> appena installato; <strong>non dovesse essere disponibile, riavviare il client assicurandosi che il computer abbia accesso a internet, selezionare nuovamente la versione corretta e attendere che vengano scaricati e installati i file necessari</strong>;</p></li>
-<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare <span class="code">localhost</span> come <em>Server Address</em>;</p></li>
+<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare nella casella <em>Server Address</em> l'indirizzo IP del computer sul quale gira il server Minecraft (&ldquo;<span class="code">localhost</span>&rdquo; se è quello sul quale è in esecuzione il client);</p></li>
 <li><p>nel caso il client non dovesse riuscire a collegarsi al server ed emettesse l’errore
 <pre class="code">
 failed to login: authentication servers are down for maintenance
@@ -147,9 +136,7 @@ $ java -jar BuildTools.jar
 </li>
 <li><p>la procedura impiega alcuni minuti per creare il server; al termine, verrà generato il file <span class="file">spigot-x.y.z.jar</span> (in questo caso, <span class="file">spigot-1.9.4.jar</span>);</p>
 </li>
-<li>
-<p>copiare il file del server nella sua cartella definitiva; per comodità,
-   conviene creare un <em>link simbolico</em> al <span class="file">jar</span> del server:</p>
+<li><p>copiare il file del server nella sua cartella definitiva; per comodità, conviene creare un <em>link simbolico</em> al <span class="file">jar</span> del server:</p>
 <pre class="code">
 $ ln spigot-1.9.4.jar spigot.jar
 </pre>
@@ -182,7 +169,7 @@ $ java -Xms512M -Xmx1G -XX:MaxPermSize=128 -XX:+UseConcMarkSweepGC -jar spigot.j
 <h3>Verifica dell’installazione del server Spigot</h3>
 <ol>
 <li><p>avviare il client di Minecraft, selezionando la versione del server <em>Spigot</em> appena installato; <strong>non dovesse essere disponibile, riavviare il client assicurandosi che il computer abbia accesso a internet, selezionare nuovamente la versione corretta e attendere che vengano scaricati e installati i file necessari</strong>;</p></li>
-<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare <span class="code">localhost</span> come <em>Server Address</em>;</p></li>
+<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare nella casella <em>Server Address</em> l'indirizzo IP del computer sul quale gira il server Minecraft (&ldquo;<span class="code">localhost</span>&rdquo; se è quello sul quale è in esecuzione il client);</p></li>
 <li><p>uscire dal gioco e arrestare il server immettendo il comando <span class="code">stop</span> nella finestra del terminale.</p></li>
 </ol>
 <h2>Installazione del plug-in RaspberryJuice</h2>
