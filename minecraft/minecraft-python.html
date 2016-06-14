@@ -7,30 +7,52 @@
 </head>
 <body>
 <p class="page-path"><a href="../index.html#minecraft-python">risorse</a> | programmare minecraft in python</p>
-<h1>Programmazione di Minecraft</h1>
-<p>Per <em>programmazione</em> in  Minecraft si intende un sistema di gioco nel quale le azioni del giocatore non vengono comandate attraverso l'uso del mouse e della tastiera, ma specificandole come sequenze di istruzioni espresse in un particolare linguaggio di programmazione &mdash; ne sono disponibili diversi: Java, JavaScript, Lua, Python, &hellip; Il vantaggio è che in poche istruzioni di codice è possibile condensare la procedura per costruire artefatti complessi, che richiederebbe parecchio tempo per essere costruiti nel modo convenzionale.</p>
+<h1>Programmazione in Minecraft</h1>
+<p>Per <em>programmazione</em> in Minecraft si intende un sistema di gioco nel quale le azioni del giocatore non vengono comandate attraverso il mouse e la tastiera, ma specificandole come sequenze di istruzioni di un particolare linguaggio di programmazione &mdash; Java, JavaScript, Lua, Python, &hellip; Il vantaggio è che con poche istruzioni di codice è possibile ottenere artefatti la cui costruzione manuale richiederebbe invece parecchio tempo.</p>
 <h2>Programmazione Python di Minecraft</h2>
-<p>Esiste una versione di Minecraft che supporta nativamente la programmazione Python: è quella predisposta per la scheda didattica <em>Raspberry Pi</em>, la cosiddetta <em>Minecraft: Pi Edition</em>. Gli svantaggi principali di questa soluzione sono due: il primo consiste nella necessità di dotarsi di una Raspberry Pi, in secondo luogo la versione di Minecraft ad essa dedicata, pur essendo gratuita, non è aggiornatissima.</p>
+<p>Esiste una versione di Minecraft che supporta nativamente la programmazione Python: è quella predisposta per la scheda didattica <a href="https://www.raspberrypi.org/">Raspberry Pi</a>, la cosiddetta <a href="http://pi.minecraft.net/">Minecraft: Pi Edition</a>. Gli svantaggi principali di questa soluzione sono due: il primo è la necessità di dotarsi di una Raspberry Pi, il secondo è che la versione di Minecraft ad essa dedicata, pur essendo gratuita, non è aggiornatissima.</p>
 <h2>Programmazione Python di Minecraft su PC</h2>
-<p>Con relativamente poco sforzo è possibile replicare un ambiente analogo su PC. In rete si trovano diversi <em>tutorial</em> dedicati a Windows e Mac, non ne ho trovati per Linux. Di seguito dunque i passaggi che consentono di installare una versione di Minecraft programmabile in Python su Ubuntu, nella fattispecie <em>Ubuntu 14.04 64 bit</em>.</p>
-<h2>Architettura</h2>
-<p>Affinché Minecraft in Python (ed in generale con qualunque altro linguaggio disponibile, ad esempio JavaScript) avviene con una modalità leggermente differente rispetto all'uso </p>
-<p>Due sono gli aspetti da affrontare:</p>
+<p>Con relativamente poco sforzo è possibile replicare un ambiente analogo su PC utilizzando la versione standard di Minecraft (quella a pagamento). In rete si trovano diversi <em>tutorial</em> dedicati a Windows e Mac, ma non ne ho trovati per Linux. Di seguito dunque i passaggi che consentono di installare una versione di Minecraft programmabile in Python su Ubuntu, nella fattispecie <em>Ubuntu 14.04 64 bit</em>.</p>
+<h2>Ambiente di lavoro</h2>
+<p>La versione standard di Minecraft non può essere programmata; per renderla programmabile occorrono alcuni componenti aggiuntivi:</p>
 <ul>
-<li><strong>lato server</strong>: installazione di un server Minecraft che espone un'API adeguata;</li>
-<li><strong>lato client</strong>: installazione di una libreria Python che consenta l'accesso all'API pubblicata dal server.</li>
+<li><p>il supporto al linguaggio di programmazione prescelto (Python 2.7 in questo caso);</p></li>
+<li><p>un editor di testo per la redazione dei programmi;</p></li>
+<li><p>una versione server programmabile di Minecraft alla quale connettersi.</p></li>
 </ul>
-<p>Il primo punto viene di norma risolto installando due componenti:</p>
+<p>Una volta soddisfatti i primi due requisiti (l’installazione standard di Ubuntu li soddisfa entrambi), il terzo viene risolto in due fasi:</p>
+<ul>
+<li><p><strong>lato server</strong>: installazione di un server Minecraft che espone un’API adeguata; di norma ciò si ottiene combinando due moduli:</p>
 <ol>
-<li>un server Minecraft programmabile;</li>
-<li>un plug-in del server che espone un'API adeguata.</li>
+<li><p>un server Minecraft programmabile;</p></li>
+<li><p>un plug-in che consente l’accesso alle funzionalità del server;</p></li>
 </ol>
-<p>Come spesso accade, la scelta del server influenza in qualche misura quella del client.</p>
-<p>Ho condotto i primi esperimenti seguendo le indicazioni riportate nel testo <a href="https://www.amazon.it/gp/product/111894691X">Adventures in Minecraft</a>, e ho utilizzato il server <a href="#canarymod">CanaryMod</a>; successivamente, considerando le dichiarazioni circa l'efficienza e soprattutto il livello di aggiornamento, sono passato <a href="#spigot">Spigot</a> (ad oggi, la versione più recente di CanaryMod disponibile è la 1.8.x, quella di Spigot la 1.9.4). Riporto le istruzioni per l'installazione di entrambi i server.</p>
+</li>
+<li><p><strong>lato client</strong>: installazione di una libreria Python che permette all'utente di inviare i comandi al server.</p></li>
+</ul>
+<img src="img/minecraft-python/minecraft-python.png"/>
+<p class="illustration">Architettura client/server</p>
+<p>La modalità di lavoro è:</p>
+<ol>
+<li>
+<p>avvio del server di Minecraft:</p>
+<img src="img/minecraft-python/server.png"/>
+<p class="illustration">Un server Minecraft in esecuzione all'interno di una finestra di terminale</p>
+</li>
+<li><p>avvio del client di Minecraft e connessione al server;</p></li>
+<li><p>redazione, sul client, del programma Python tramite editor di testo;</p></li>
+<li><p>lancio, sul client, del programma Python da terminale;</p></li>
+<li>
+<p>verifica dell’effetto ottenuto nella finestra del client Minecraft:</p>
+<img src="img/minecraft-python/client.png"/>
+<p class="illustration">Tipico ambiente di programmazione: editor di testo, terminale di lancio del programma, client Minecraft</p>
+</li>
+</ol>
+<p>Ho condotto i primi esperimenti seguendo le indicazioni riportate nel testo <a href="https://www.amazon.it/gp/product/111894691X">Adventures in Minecraft</a>, e ho utilizzato il server <a href="#canarymod">CanaryMod</a>; successivamente, considerando le dichiarazioni circa l’efficienza e soprattutto il livello di aggiornamento, sono passato <a href="#spigot">Spigot</a> (ad oggi, la versione più recente di CanaryMod disponibile è la 1.8.x, quella di Spigot la 1.9.4). Di seguito sono riportate le istruzioni per l’installazione di entrambi i server.</p>
 <a name="canarymod"></a>
 <h2>CanaryMod</h2>
 <ol>
-<li><p>Scaricare l&rsquo;ultima versione di <em>CanaryMod</em> dal <a href="http://canarymod.net/releases">sito ufficiale</a>, in questo caso <span class="file">CanaryMod-1.2.0_0.jar</span>, che contiene un server minecraft v. 1.8 (<strong>non farsi ingannare dall&rsquo;indice dei file: ad esempio, il file <span class="file">CanaryMod-1.7.10-1.1.3.jar</span> contiene un server v. 1.7.10</strong>);</p></li>
+<li><p>Scaricare l’ultima versione di <em>CanaryMod</em> dal <a href="http://canarymod.net/releases">sito ufficiale</a>, in questo caso <span class="file">CanaryMod-1.2.0_0.jar</span>, che contiene un server minecraft v. 1.8 (<strong>non farsi ingannare dall’indice dei file: ad esempio, il file <span class="file">CanaryMod-1.7.10-1.1.3.jar</span> contiene un server v. 1.7.10</strong>);</p></li>
 <li><p>creare per comodità un <em>link simbolico</em> al <span class="file">jar</span> del server:</p>
 <pre class="code">
 $ ln CanaryMod-1.2.0_0.jar CanaryMod.jar
@@ -59,11 +81,11 @@ $ java -jar CanaryMod.jar
 </pre>
 </li>
 </ol>
-<h3>Verifica dell&rsquo;installazione del server CanaryMod</h3>
+<h3>Verifica dell’installazione del server CanaryMod</h3>
 <ol>
 <li><p>avviare il client di Minecraft, selezionando la versione del server <em>CanaryMod</em> appena installato; <strong>non dovesse essere disponibile, riavviare il client assicurandosi che il computer abbia accesso a internet, selezionare nuovamente la versione corretta e attendere che vengano scaricati e installati i file necessari</strong>;</p></li>
-<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare <span class="code">localhost</span> come <em>Server Address</em>;</p></li>
-<li><p>nel caso il client non dovesse riuscire a collegarsi al server ed emettesse l&rsquo;errore
+<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare nella casella <em>Server Address</em> l'indirizzo IP del computer sul quale gira il server Minecraft (&ldquo;<span class="code">localhost</span>&rdquo; se è quello sul quale è in esecuzione il client);</p></li>
+<li><p>nel caso il client non dovesse riuscire a collegarsi al server ed emettesse l’errore
 <pre class="code">
 failed to login: authentication servers are down for maintenance
 </pre>
@@ -79,15 +101,15 @@ online-mode=false
 nella finestra del terminale.</p>
 </li>
 </ol>
-<h3>Installazione del plugin CanaryRaspberryJuice</h3>
+<h3>Installazione del plug-in CanaryRaspberryJuice</h3>
 <ol>
-<li><p>scaricare l&rsquo;ultima versione disponibile dal <a href="https://github.com/martinohanlon/CanaryRaspberryJuice/archive/master.zip">sito ufficiale</a>;</p></li>
+<li><p>scaricare l’ultima versione disponibile dal <a href="https://github.com/martinohanlon/CanaryRaspberryJuice/archive/master.zip">sito ufficiale</a>;</p></li>
 <li><p>scompattare il file <span class="file">CanaryRaspberryJuice-master.zip</span> e copiare il file <span class="file">jars/canaryraspberryjuice-X.Y.jar</span> più recente (in questo caso <span class="file">canaryraspberryjuice-1.3.jar</span>) nella cartella <span class="file">CanaryMod/plugins</span>.</p></li>
 </ol>
 <h3>Installazione della libreria client di CanaryRaspberryJuice</h3>
 <ol>
 <li><p>creare la cartella che conterrà gli script Python <span class="file">MinecraftPy</span>;</p></li>
-<li><p>copiare nella cartella <span class="file">MinecraftPy</span> la cartella <span class="file">mcpi</span> che si trova nella sotto-cartella <span class="file">resources/mcpi/api/python/modded</span> dell&rsquo;archivio di <em>CanaryRaspberryJuice</em> appena scaricato;</p></li>
+<li><p>copiare nella cartella <span class="file">MinecraftPy</span> la cartella <span class="file">mcpi</span> che si trova nella sotto-cartella <span class="file">resources/mcpi/api/python/modded</span> dell’archivio di <em>CanaryRaspberryJuice</em> appena scaricato;</p></li>
 <li><p>avviare il server CanaryMod;</p></li>
 <li><p>avviare il client ed entrare nel gioco;</p></li>
 <li><p>creare il file <span class="file">HelloMinecraftWorld.py</span> nella cartella <span class="file">MinecraftPy</span>:</p>
@@ -99,10 +121,12 @@ mc.postToChat("Hello Minecraft World!")
 </li>
 <li><p>lanciare lo script e verificare che il messaggio di saluto appare in <em>chat</em>.</p></li>
 </ol>
+<p class="note"><strong>Nota</strong>: per evitare la sospensione del client di Minecraft durante la redazione dei programmi, è conveniente porre a <span class="code">false</span> il parametro <span class="code">pauseOnLostFocus</span> nel file <span class="file">~/.minecraft/options.txt</span>.</p>
 <a name="spigot"></a>
 <h2>Spigot</h2>
+<p class="note">Spigot necessita di Java versione 7 o superiore.</p>
 <ol>
-<li><p>Scaricare l&rsquo;ultima versione dei &ldquo;Build Tools&rdquo; di <em>Spigot</em> dal <a href="https://www.spigotmc.org/wiki/spigot-installation/">sito ufficiale</a>, o direttamente da <a href="https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar">qui</a>;</p></li>
+<li><p>Scaricare l’ultima versione dei &ldquo;Build Tools&rdquo; di <em>Spigot</em> dal <a href="https://www.spigotmc.org/wiki/spigot-installation/">sito ufficiale</a>, o direttamente da <a href="https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar">qui</a>;</p></li>
 <li><p>copiare il file in una cartella temporanea;</p></li>
 <li><p>lanciare il <em>build</em> del server:</p>
 <pre class="code">
@@ -112,9 +136,7 @@ $ java -jar BuildTools.jar
 </li>
 <li><p>la procedura impiega alcuni minuti per creare il server; al termine, verrà generato il file <span class="file">spigot-x.y.z.jar</span> (in questo caso, <span class="file">spigot-1.9.4.jar</span>);</p>
 </li>
-<li>
-<p>copiare il file del server nella sua cartella definitiva; per comodità,
-   conviene creare un <em>link simbolico</em> al <span class="file">jar</span> del server:</p>
+<li><p>copiare il file del server nella sua cartella definitiva; per comodità, conviene creare un <em>link simbolico</em> al <span class="file">jar</span> del server:</p>
 <pre class="code">
 $ ln spigot-1.9.4.jar spigot.jar
 </pre>
@@ -135,29 +157,30 @@ eula=true
 </li>
 <li><p>avviare nuovamente il server:</p>
 <pre class="code">
-$ java -jar spigot.jar
+$ java -Xms512M -Xmx1G -XX:MaxPermSize=128 -XX:+UseConcMarkSweepGC -jar spigot.jar
 </pre>
+<p class="note"><strong>Nota</strong>: il parametro <span class="code">MaxPermSize</span> non è necessario con Java versione 8 o superiore.</p>
 <p>e verificare che si avvii correttamente; il terminale non deve chiudersi, e dopo qualche tempo deve apparire un messaggio simile a:</p>
 <pre class="code">
-[INFO]: Done (2.396s)! For help, type "help" or "?"
+[22:59:51 INFO]: Done (15.847s)! For help, type "help" or "?"
 </pre>
 </li>
 </ol>
-<h3>Verifica dell&rsquo;installazione del server Spigot</h3>
+<h3>Verifica dell’installazione del server Spigot</h3>
 <ol>
 <li><p>avviare il client di Minecraft, selezionando la versione del server <em>Spigot</em> appena installato; <strong>non dovesse essere disponibile, riavviare il client assicurandosi che il computer abbia accesso a internet, selezionare nuovamente la versione corretta e attendere che vengano scaricati e installati i file necessari</strong>;</p></li>
-<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare <span class="code">localhost</span> come <em>Server Address</em>;</p></li>
+<li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare nella casella <em>Server Address</em> l'indirizzo IP del computer sul quale gira il server Minecraft (&ldquo;<span class="code">localhost</span>&rdquo; se è quello sul quale è in esecuzione il client);</p></li>
 <li><p>uscire dal gioco e arrestare il server immettendo il comando <span class="code">stop</span> nella finestra del terminale.</p></li>
 </ol>
-<h2>Installazione del plugin RaspberryJuice</h2>
+<h2>Installazione del plug-in RaspberryJuice</h2>
 <ol>
-<li><p>scaricare l&rsquo;ultima versione disponibile dal <a href="https://github.com/zhuowei/RaspberryJuice">sito ufficiale</a>;</p></li>
+<li><p>scaricare l’ultima versione disponibile dal <a href="https://github.com/zhuowei/RaspberryJuice">sito ufficiale</a>;</p></li>
 <li><p>scompattare il file <span class="file">RaspberryJuice-master.zip</span> e copiare il file <span class="file">jars/raspberryjuice-x.y.jar</span> compatibile con la versione del server a disposizione (<span class="file">raspberryjuice-1.8.jar</span> per la versione 1.9.4 di Spigot) nella cartella <span class="file">plugins</span> della cartella di installazione di Spigot;</p></li>
 </ol>
 <h3>Installazione della libreria Python di RaspberryJuice</h3>
 <ol>
 <li><p>creare la cartella che conterrà gli script Python <span class="file">MinecraftPy</span>;</p></li>
-<li><p>copiare nella cartella <span class="file">MinecraftPy</span> la cartella <span class="file">mcpi</span> che si trova nella sotto-cartella <span class="file">src\main\resources\mcpi\api\python\modded</span> dell&rsquo;archivio di <em>RaspberryJuice</em> appena scaricato;</p></li>
+<li><p>copiare nella cartella <span class="file">MinecraftPy</span> la cartella <span class="file">mcpi</span> che si trova nella sotto-cartella <span class="file">src\main\resources\mcpi\api\python\modded</span> dell’archivio di <em>RaspberryJuice</em> appena scaricato;</p></li>
 <li><p>avviare il server Spigot;</p></li>
 <li><p>avviare il client ed entrare nel gioco;</p></li>
 <li><p>creare il file <span class="file">HelloMinecraftWorld.py</span> nella cartella <span class="file">MinecraftPy</span>:</p>
@@ -169,6 +192,7 @@ mc.postToChat("Hello Minecraft World!")
 </li>
 <li><p>lanciare lo script e verificare che il messaggio di saluto appare in <em>chat</em>.</p></li>
 </ol>
+<p class="note"><strong>Nota</strong>: per evitare la sospensione del client di Minecraft durante la redazione dei programmi, è conveniente porre a <span class="code">false</span> il parametro <span class="code">pauseOnLostFocus</span> nel file <span class="file">~/.minecraft/options.txt</span>.</p>
 <p class="modification-notice">Pagina modificata il 13/06/2016</p>
 </body>
 </html>
