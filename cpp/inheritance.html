@@ -116,7 +116,7 @@ TEST(&quot;factory&quot;) {
 ...
 
 <ins>struct B {
-  virtual std::string f() const {
+  std::string f() const {
     return &quot;B&quot;;
   };
 };</ins>
@@ -347,14 +347,14 @@ public:
 private:
   struct Concept {
     virtual ~Concept() { };
-    <ins>virtual Concept* clone_() const = 0;</ins>
+    virtual Concept* clone_() const = 0;
     virtual std::string f() const = 0;
   };
   template &lt;typename T&gt;
   struct Model : Concept {
     T obj_;
     Model(T obj) : obj_(std::move(obj)) { }
-    <ins>virtual Concept* clone_() const { return new Model(*this); }</ins>
+    virtual Concept* clone_() const { return new Model(*this); }
     virtual std::string f() const { return obj_.f(); }
   };
   std::unique_ptr&lt;const Concept&gt; pimpl_;
