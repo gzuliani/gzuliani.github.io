@@ -1,0 +1,581 @@
+<html>
+<head>
+<title>Greed dice game Kata</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#greed-kata">risorse</a> | greed kata</p>
+<h1>Greed dice game Kata</h1>
+<p>Ho trovato un riferimento al kata in oggetto in un <a href="https://twitter.com/xpmatteo/status/744186001925480448">tweet</a> di <a href="https://twitter.com/xpmatteo">@xpmatteo</a>, così ho deciso di affrontarlo in C++. Il gioco<sup><a href="#ref-2">[2]</a></sup> consiste nel lanciare cinque dadi e nel determinare il punteggio della configurazione ottenuta applicando ciclicamente le seguenti regole fino all'esaurimento dei dadi:</p>
+<ol>
+<li>la tripletta &#x2680;&#x2680;&#x2680; vale 1000 punti;</li>
+<li>ogni altra tripletta vale 100 volte il punto dei dadi (&#x2681;&#x2681;&#x2681; vale 200 punti);</li>
+<li>un singolo &#x2680; vale 100 punti;</li>
+<li>un singolo &#x2684; vale 50 punti;</li>
+<li>qualunque altra combinazione non dà diritto ad alcun punto;</li>
+<li>una volta applicata una regola, i dadi coinvolti vengono scartati.</li>
+</ol>
+<h3>1000 punti per tre &ldquo;uno&rdquo;</h3>
+<p>Si inizia con un test che verifica la corretta applicazione della prima regola in elenco:</p>
+<pre class="code">
+[file test_greed_kata.cpp]
+
+<ins>#include &quot;gut.h&quot;
+
+TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
+  CHECK(score({1, 1, 1}) == 1000);
+}</ins>
+</pre>
+<p>Il compilatore termina con errore, mancando la definizione della funzione <span class="code">score</span>; l'implementazione minima che soddisfa il test è tuttavia banale:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+<ins>int score(const std::vector&lt;int&gt;&amp; /*roll*/) {
+  return 1000;
+}</ins>
+
+TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
+  CHECK(score({1, 1, 1}) == 1000);
+}
+
+/* output:
+ *
+ * Test suite started...
+ * a set of three 1&apos;s is worth 1000 points: OK
+ * Ran 1 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Refactoring #1</h3>
+<p>Il parametro <span class="code">roll</span> della funzione <span class="code">score</span> è di tipo troppo generico, meglio circostanziare il contesto:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+<ins>using Die = int;
+using Roll = std::vector&lt;Die&gt;;</ins>
+
+int score(const <del>std::vector&lt;int&gt;</del><ins>Roll</ins>&amp; /*roll*/) {
+  return 1000;
+}
+
+TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
+  CHECK(score({1, 1, 1}) == 1000);
+}
+</pre>
+<h3>100 punti volte il valore del dado per le altre triplette</h3>
+<p>Segue il test dedicato alle altre triplette:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;a set of 3 of any other number is worth 100 * that number&quot;) {
+  CHECK(score({2, 2, 2}) == 200);
+  CHECK(score({3, 3, 3}) == 300);
+  CHECK(score({4, 4, 4}) == 400);
+  CHECK(score({5, 5, 5}) == 500);
+  CHECK(score({6, 6, 6}) == 600);
+}</ins>
+
+/* output
+ *
+ * Test suite started...
+ * a set of three 1&apos;s is worth 1000 points: OK
+ * a set of 3 of any other number is worth 100 * that number: FAILED
+ *  test_greed.cpp(15) : [error] score({2, 2, 2}) == 200 evaluates to 1000 == 200
+ *  test_greed.cpp(16) : [error] score({3, 3, 3}) == 300 evaluates to 1000 == 300
+ *  test_greed.cpp(17) : [error] score({4, 4, 4}) == 400 evaluates to 1000 == 400
+ *  test_greed.cpp(18) : [error] score({5, 5, 5}) == 500 evaluates to 1000 == 500
+ *  test_greed.cpp(19) : [error] score({6, 6, 6}) == 600 evaluates to 1000 == 600
+ * Ran 2 test(s) in 0s.
+ * FAILED - 5 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Modificare la funzione <span class="code">score</span> per far passare anche questo secondo test non è complicato:</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; <del>/*</del>roll<del>*/</del>) {
+  <ins>Die first_die = roll[0];
+  if (first_die == 1)</ins>
+    return 1000;
+  <ins>else
+    return first_die * 100;</ins>
+}
+...
+
+/* output:
+ *
+ * Test suite started...
+ * a set of three 1&apos;s is worth 1000 points: OK
+ * a set of 3 of any other number is worth 100 * that number: OK
+ * Ran 2 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>100 punti per un singolo &ldquo;uno&rdquo;</h3>
+<p>Un nuovo test controlla il punteggio assegnato al dado 1 in virtù della terza regola:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;a single 1 is worth 100 points&quot;) {
+  CHECK(score({1}) == 100);
+}</ins>
+...
+
+/* output:
+ *
+ * ...
+ * a single 1 is worth 100 points: FAILED
+ *  test_greed.cpp(27) : [error] score({1}) == 100 evaluates to 1000 == 100
+ * Ran 3 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Viene di conseguenza modificata la funzione <span class="code">score</span>, ancora una volta senza troppe difficoltà:</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; roll) {
+  Die first_die = roll[0];
+  <del>if (first_die == 1)</del>
+  <ins>if (roll == Roll({1, 1, 1}))</ins>
+    return 1000;
+  else
+    return first_die * 100;
+}
+...
+
+/* output:
+ *
+ * ...
+ * a single 1 is worth 100 points: OK
+ * Ran 3 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Refactoring #2</h3>
+<p>Essendo <span class="code">first_die</span> riferito una volta sola, il riferimento locale può essere eliminato:</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; roll) {
+  <del>Die first_die = roll[0];</del>
+  if (roll == Roll({1, 1, 1}))
+    return 1000;
+  else
+    return <del>first_die</del><ins>roll[0]</ins> * 100;
+}
+...
+</pre>
+<h3>50 punti per un singolo &ldquo;cinque&rdquo;</h3>
+<p>Segue il codice di test dedicato alla quarta regola:</p>
+<pre class="code">
+...
+
+<ins>TEST("a single 5 is worth 50 points") {
+  CHECK(score({5}) == 50);
+}</ins>
+...
+
+/* output:
+ *
+ * ...
+ * a single 5 is worth 50 points: FAILED
+ *  test_greed.cpp(30) : [error] score({5}) == 50 evaluates to 500 == 50
+ * Ran 4 test(s) in 0s.
+ * FAILED - 1 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Per far passare anche questo test è sufficiente aggiungere la nuova casistica in <span class="code">score</span>:</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; roll) {
+  if (roll == Roll({1, 1, 1}))
+    return 1000;
+  <ins>else if (roll == Roll({5}))
+    return 50;</ins>
+  else
+    return roll[0] * 100;
+}
+...
+
+/* output:
+ *
+ * ...
+ * a single 5 is worth 50 points: OK
+ * Ran 4 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Refactoring #3</h3>
+<p>La presenza di molteplici clausole <span class="code">if</span>/<span class="code">else</span> sta minando la qualità dell'implementazione della funzione <span class="code">score</span>; conviene cambiare approccio. Una possibilità è distinguere la definizione delle regole del gioco dalla loro applicazione. A tal scopo si introduce l'oggetto <span class="code">Rule</span>, che verifica se una data configurazione di dadi corrisponde ad una sequenza prefissata, e fornisce il punteggio ad essa associato; la funzione <span class="code">score</span> si limita così a selezionare ed applicare la regola più adatta alla configurazione di dadi corrente, rispettando ovviamente l'ordine richiesto:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+<ins>#include &lt;algorithm&gt;</ins>
+
+using Die = int;
+using Roll = std::vector&lt;Die&gt;;
+
+<ins>class Rule {
+  const Roll roll_;
+  const int score_;
+public:
+  Rule(const Roll&amp; roll, int score) : roll_(roll), score_(score) {}
+  bool matches(const Roll&amp; roll) const {
+    return std::equal(roll_.begin(), roll_.end(), roll.begin());
+  }
+  int score() const { return score_; }
+};</ins>
+...
+</pre>
+<p>Le configurazioni che realizzano un punteggio non nullo sono, nell'ordine di applicazione stabilito dalle regole del gioco:</p>
+<pre class="code">
+...
+
+<ins>static Rule greed_rules[] = {
+  Rule({1, 1, 1}, 1000),
+  Rule({2, 2, 2},  200),
+  Rule({3, 3, 3},  300),
+  Rule({4, 4, 4},  400),
+  Rule({5, 5, 5},  500),
+  Rule({6, 6, 6},  600),
+  Rule({1,     },  100),
+  Rule({5,     },   50),
+};</ins>
+...
+</pre>
+<p>Come anticipato, la funzione <span class="code">score</span> seleziona la prima regola applicabile, e ritorna il punteggio associato; nel caso non sia stata possibile applicare alcuna regola, il punteggio della configurazione è nullo:</p>
+<pre class="code">
+...
+int score(const Roll&amp; roll) {
+<del>  if (roll == Roll({1, 1, 1}))
+    return 1000;
+  else
+    return roll[0] * 100;</del>
+  <ins>for (auto rule : greed_rules)
+    if (rule.matches(roll))
+      return rule.score();
+  return 0;</ins>
+}
+...
+
+/* output:
+ *
+ * Test suite started...
+ * a set of three 1&apos;s is worth 1000 points: OK
+ * a set of 3 of any other number is worth 100 * that number: OK
+ * a single 1 is worth 100 points: OK
+ * a single 5 is worth 50 points: OK
+ * Ran 4 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>0 punti per tutte le altre combinazioni</h3>
+<p>Tutti i test predisposti fino ad ora sono soddisfatti. Resta da verificare che alle restanti combinazioni venga effettivamente attribuito il punteggio nullo:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;any other die or combination is worth 0 points&quot;) {
+  CHECK(score({2         }) == 0);
+  CHECK(score({3         }) == 0);
+  CHECK(score({4         }) == 0);
+  CHECK(score({6         }) == 0);
+  CHECK(score({2, 2      }) == 0);
+  CHECK(score({2, 3      }) == 0);
+  CHECK(score({2, 2, 3   }) == 0);
+  CHECK(score({2, 3, 4, 6}) == 0);
+}</ins>
+
+/* output:
+ *
+ * ...
+ * any other die or combination is worth 0 points: OK
+ * Ran 5 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Applicazione ciclica delle regole /1</h3>
+<p><span class="code">score</span> si limita ad attivare la prima regola pertinente, ma in realtà deve applicarle in sequenza fino all'esaurimento dei dadi. Un nuovo test evidenzia questa non-conformità:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;after applying a rule, dice involved in it are removed from the roll&quot;) {
+  CHECK(score({5, 5, 5, 5, 3}) == 550);
+  CHECK(score({2, 3, 4, 6, 2}) ==   0);
+  CHECK(score({1, 5, 1, 2, 4}) == 250);
+  CHECK(score({5, 5, 5, 5, 5}) == 600);
+}</ins>
+
+/* output:
+ *
+ * ...
+ * after applying a rule, dice involved in it are removed from the roll: FAILED
+ *  test_greed.cpp(69) : [error] score({5, 5, 5, 5, 3}) == 550 evaluates to 500 == 550
+ *  test_greed.cpp(71) : [error] score({1, 5, 1, 2, 4}) == 250 evaluates to 100 == 250
+ *  test_greed.cpp(72) : [error] score({5, 5, 5, 5, 5}) == 600 evaluates to 500 == 600
+ * Ran 6 test(s) in 0s.
+ * FAILED - 3 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Il numero di dadi da eliminare dalla configurazione in esame coincide con la lunghezza della configurazione che caratterizza l'oggetto <span class="code">Rule</span>, che per questa ragione la pubblica:</p>
+<pre class="code">
+class Rule {
+...
+
+  int score() const { return score_; }
+  <ins>int length() const { return roll_.size(); }</ins>
+};
+</pre>
+<p>L'applicazione ciclica delle regole si ottiene introducendo una ricorsione in <span class="code">score</span>:</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; roll) {
+  <ins>if (roll.empty()) // avoid infinite recursion
+    return 0;</ins>
+  for (auto rule : greed_rules)
+    if (rule.matches(roll))
+      return rule.score()
+        <ins>// calculate the score for the remaining dice
+        + score(Roll(roll.begin() + rule.length(), roll.end()))</ins>;
+  return 0;
+}
+
+/* output:
+ *
+ * ...
+ * after applying a rule, dice involved in it are removed from the roll: OK
+ * Ran 6 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Refactoring #4</h3>
+<p>Il secondo commento della funzione <span class="code">score</span> è una chiara indicazione che si può fare meglio:</p>
+<pre class="code">
+...
+
+<ins>Roll drop(const Roll&amp; roll, int count) {
+  return Roll(roll.begin() + count, roll.end());
+}</ins>
+
+int score(const Roll&amp; roll) {
+  if (roll.empty()) // avoid infinite recursion
+    return 0;
+  for (auto rule : greed_rules)
+    if (rule.matches(roll))
+      return rule.score() <ins>+ score(drop(roll, rule.length()));</ins>
+<del>        // calculate the score for the remaining dice
+        + score(Roll(roll.begin() + rule.length(), roll.end()));</del>
+  return 0;
+}
+</pre>
+<h3>Applicazione ciclica delle regole /2</h3>
+<p>Il ciclo realizzato dalla funzione <span class="code">score</span> non soddisfa pienamente i requisiti iniziali, poiché si arresta alla prima regola disattesa anziché proseguire fino all'esaurimento dei dadi, come dimostra il seguente test:</p>
+<pre class="code">
+...
+
+<ins>TEST(&quot;rules are applied until all dice are evaluated&quot;) {
+  CHECK(score({1, 2, 3, 4, 5}) == 150);
+  CHECK(score({2, 3, 3, 3, 4}) == 300);
+  CHECK(score({2, 2, 2, 3, 5}) == 250);
+}</ins>
+
+/* output:
+ *
+ * ...
+ * rules are applied until all dice are evaluated: FAILED
+ *  test_greed.cpp(81) : [error] score({1, 2, 3, 4, 5}) == 150 evaluates to 100 == 150
+ *  test_greed.cpp(82) : [error] score({2, 3, 3, 3, 4}) == 300 evaluates to 0 == 300
+ *  test_greed.cpp(83) : [error] score({2, 2, 2, 3, 5}) == 250 evaluates to 200 == 250
+ * Ran 7 test(s) in 0s.
+ * FAILED - 3 failure(s) in 1 test(s).
+ */
+</pre>
+<p>La soluzione al problema consiste nell'introdurre una <em>fallback-rule</em> che, in caso di mancata applicazione delle regole, prosegua la valutazione scartando il primo dado (senza modificare il punteggio):</p>
+<pre class="code">
+...
+
+int score(const Roll&amp; roll) {
+  if (roll.empty()) // avoid infinite recursion
+    return 0;
+  for (auto rule : greed_rules)
+    if (rule.matches(roll))
+      return rule.score() + score(drop(roll, rule.length()));
+  return <del>0</del><ins>score(drop(roll, 1))</ins>;
+}
+
+/* output:
+ *
+ * ...
+ * rules are applied until all dice are evaluated: OK
+ * Ran 7 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h3>Refactoring #5</h3>
+<p>I due <span class="code">return</span> della funzione <span class="code">score</span> hanno forma molto simile, e viene naturale chiedersi se è possibile eliminarne uno. La regola di <em>fallback</em> implicitamente implementata dal secondo <span class="code">return</span> potrebbe essere esplicitata sotto forma di <span class="code">Rule</span>? Dopotutto, sarebbe sufficiente definire una nuova regola il cui metodo <span class="code">match</span> torna sempre <span class="code">true</span>, il cui punteggio è nullo, e ha <span class="code">length</span> pari a 1. D'altra parte, il C++ non consente di memorizzare oggetti di tipo diversi all'interno di un array; occorre allora separare le due responsabilità assegnate alla classe <span class="code">Rule</span>: la verifica dell'applicabilità della regola viene ora attribuito ad un nuovo oggetto, denominato <span class="code">Match</span>, mentre <span class="code">Rule</span> conserva il punteggio associato alla regola:</p>
+<pre class="code">
+...
+
+<ins>class Match {
+public:
+  virtual ~Match() = default;
+  virtual bool matches(const Roll&amp; roll) const = 0;
+  virtual int length() const = 0;
+};</ins>
+
+<ins>class Sequence : public Match {
+  const Roll roll_;
+public:
+  Sequence(const Roll&amp; roll) : roll_(roll) {}
+  bool matches(const Roll&amp; roll) const override {
+    return std::equal(roll_.begin(), roll_.end(), roll.begin());
+  }
+  int length() const override { return roll_.size(); }
+};</ins>
+
+class Rule {
+  <del>const Roll roll_;</del>
+  <ins>const std::shared_ptr&lt;const Match&gt; match_;</ins>
+  const int score_;
+public:
+  <del>Rule(const Roll&amp; roll, int score) : roll_(roll), score_(score) {}</del>
+  <ins>Rule(const Match* match, int score) : match_(match), score_(score) {}</ins>
+  bool matches(const Roll&amp; roll) const { <ins>return match_-&gt;matches(roll); }</ins>
+<del>    return std::equal(roll_.begin(), roll_.end(), roll.begin());
+  }</del>
+  int score() const { return score_; }
+  int length() const { return <del>roll_.size()</del><ins>match_-&gt;length()</ins>; }
+};
+...
+
+static Rule greed_rules[] = {
+  Rule(<ins>new Sequence(</ins>{1, 1, 1}<ins>)</ins>, 1000),
+  Rule(<ins>new Sequence(</ins>{2, 2, 2}<ins>)</ins>,  200),
+  Rule(<ins>new Sequence(</ins>{3, 3, 3}<ins>)</ins>,  300),
+  Rule(<ins>new Sequence(</ins>{4, 4, 4}<ins>)</ins>,  400),
+  Rule(<ins>new Sequence(</ins>{5, 5, 5}<ins>)</ins>,  500),
+  Rule(<ins>new Sequence(</ins>{6, 6, 6}<ins>)</ins>,  600),
+  Rule(<ins>new Sequence(</ins>{1,     }<ins>)</ins>,  100),
+  Rule(<ins>new Sequence(</ins>{5,     }<ins>)</ins>,   50),
+};
+...
+</pre>
+<p>A questo punto è possibile implementare la <em>fallback-rule</em>, introducendo un nuovo oggetto <span class="code">Match</span> dalle caratteristiche già discusse:</p>
+<pre class="code">
+...
+
+<ins>class Fallback : public Match {
+public:
+  bool matches(const Roll&amp; /*roll*/) const override { return true; }
+  int length() const override { return 1; }
+};</ins>
+...
+
+static Rule greed_rules[] = {
+  ...
+  Rule(new Sequence({1,     }),  100),
+  Rule(new Sequence({5,     }),   50),
+  <ins>Rule(new Fallback(),             0),</ins>
+};
+</pre>
+<p>La presenza della nuova regola rende superfluo il <span class="code">return</span> finale in <span class="code">score</span>, dato che ad ogni ciclo una regola applicabile sarà sempre disponibile:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+#include &lt;algorithm&gt;
+<ins>#include &lt;cassert&gt;</ins>
+...
+
+int score(const Roll&amp; roll) {
+  if (roll.empty()) // avoid infinite recursion
+    return 0;
+<del>  for (auto rule : greed_rules)
+    if (rule.matches(roll))
+      return rule.score() + score(drop(roll, rule.length()));
+  return score(drop(roll, 1));</del>
+  <ins>auto target_rule = std::find_if(
+    std::begin(greed_rules), std::end(greed_rules),
+    [&amp;roll](const Rule&amp; rule) { return rule.matches(roll); });
+  assert(target_rule != std::end(greed_rules));
+  return target_rule-&gt;score() + score(drop(roll, target_rule-&gt;length()));</ins>
+}
+...
+
+/* output:
+ *
+ * Test suite started...
+ * a set of three 1's is worth 1000 points: OK
+ * a set of 3 of any other number is worth 100 * that number: OK
+ * a single 1 is worth 100 points: OK
+ * a single 5 is worth 50 points: OK
+ * any other die or combination is worth 0 points: OK
+ * after applying a rule, dice involved in it are removed from the roll: OK
+ * rules are applied until all dice are evaluated: OK
+ * Ran 7 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>L'<span class="code">assert</span> sull'effettiva disponibilità di una regola applicabile è d'obbligo!</p>
+<h3>L'ordine dei dadi non conta</h3>
+<p>Il codice sviluppato presuppone che i dadi si presentino sempre in ordine crescente, ma questo non è un prerequisito; un test per verificare che il calcolo del punteggio funziona anche in assenza di questa condizione è il seguente:</p>
+<pre class="code">
+...
+
+TEST(&quot;dice order does not matter&quot;) {
+  CHECK(score({1, 1, 5, 1, 1}) == 1150);
+  CHECK(score({3, 4, 5, 3, 3}) ==  350);
+  CHECK(score({5, 5, 3, 5, 5}) ==  550);
+  CHECK(score({3, 4, 3, 5, 3}) ==  350);
+}
+
+/* output:
+ *
+ * ...
+ * dice order does not matter: FAILED
+ *  test_greed.cpp(112) : [error] score({1, 1, 5, 1, 1}) == 1150 evaluates to 450 == 1150
+ *  test_greed.cpp(113) : [error] score({3, 4, 5, 3, 3}) == 350 evaluates to 50 == 350
+ *  test_greed.cpp(114) : [error] score({5, 5, 3, 5, 5}) == 550 evaluates to 200 == 550
+ *  test_greed.cpp(115) : [error] score({3, 4, 3, 5, 3}) == 350 evaluates to 50 == 350
+ * Ran 8 test(s) in 0s.
+ * FAILED - 4 failure(s) in 1 test(s).
+ */
+</pre>
+<p>Per ovviare a questa mancanza si nasconde l'attuale funzione <span class="code">score</span> e si utilizza la sua firma per definire una funzione di comodo che ha l'unico scopo di ordinare la sequenza dei dadi prima di sottoporla all'attuale implementazione:</p>
+<pre class="code">
+...
+
+int <ins>sorted_roll_</ins>score(const Roll&amp; roll) {
+  if (roll.empty()) // avoid infinite recursion
+    ...
+  return target_rule->score()
+    + <ins>sorted_roll_</ins>score(drop(roll, target_rule->length()));
+}
+
+<ins>int score(const Roll&amp; roll) {
+  Roll sorted_roll = roll;
+  std::sort(sorted_roll.begin (), sorted_roll.end());
+  return sorted_roll_score(sorted_roll);
+}</ins>
+...
+
+/* output:
+ *
+ * ...
+ * dice order does not matter: OK
+ * Ran 8 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/greed_kata/test_greed.cpp">test_greed.cpp</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Vaccari, M. &quot;Greed and Simple Design&quot;. <em>Matteo Vaccari Blog</em>. &lt;<a href="http://matteo.vaccari.name/blog/archives/709">http://matteo.vaccari.name/blog/archives/709</a>&gt;. Visitato il 04 agosto 2016.</li>
+<a name="ref-2"></a>
+<li class="ref">&quot;Farkle&quot;. <em>Wikipedia</em>. &lt;<a href="https://en.wikipedia.org/wiki/Farkle">https://en.wikipedia.org/wiki/Farkle</a>&gt;. Visitato il 04 agosto 2016.</li>
+<p class="modification-notice">Pagina modificata il 05/08/2016</p>
+</body>
+</html>
