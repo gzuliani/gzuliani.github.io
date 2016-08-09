@@ -1,0 +1,67 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tramonto in Scratch</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/scratch-fur.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-tramonto">risorse</a> |
+tramonto in scratch</p>
+<h1>Tramonto in Scratch</h1>
+<h2>Introduzione</h2>
+<p>Questo è uno studio circa un progetto di interfacciamento di Scratch con Arduino da svolgere in un CoderDojo. L'idea è di utilizzare una fotoresistore per captare il livello di luminosità ambientale e adattare di conseguenza lo scenario di Scratch. In caso di luce intensa, il sole brillerà alto nel cielo, calando e infine tramontando al sopraggiungere del buio:</p>
+<img src="img/scratch-tramonto/sole-alto.png">
+<p class="illustration">In presenza molta di luce, il sole dovrà brillare alto.</p>
+<img src="img/scratch-tramonto/sole-basso.png">
+<p class="illustration">In presenza poca di luce, il sole dovrà abbassarsi e la scena oscurarsi.</p>
+<img src="img/scratch-tramonto/sole-al-tramonto.png">
+<p class="illustration">In assenza di luce, il sole dovrà tramontare dietro al paesaggio, lasciando la scena nell'ombra.</p>
+<h2>Hardware</h2>
+<p>Il circuito per l'acquisizione del livello di luminosità ambientale è un semplice partitore di tensione che comprende un <em>fotoresistore</em>, un componente elettronico la cui resistenza varia al variare dell'intensità luminosa che lo colpisce. Il partitore di tensione è un circuito che consente di trasformare la variazione di resistenza in variazione di tensione, che è la grandezza che Arduino è in grado di acquisire.</p>
+<img src="img/scratch-tramonto/schema-elettrico.png">
+<p class="illustration">Lo schema elettrico del circuito elettronico.</p>
+<p>All'aumentare della luminosità, la resistenza del fotoresistore diminuisce, causando l'aumento della tensione al pin A1 di Arduino; al diminuire della luminosità la sua resistenza aumenta, facendo di conseguenza calare la tensione al centro del partitore. Il voltaggio misurato al pin A1 dà dunque un'indicazione diretta della quantità di luce che investe il fotoresistore: maggiore è il suo valore, maggiore è il livello di luminosità dell'ambiente. Sarà questo valore che verrà utilizzato nel progetto Scratch per determinare la posizione dello <em>sprite</em> del sole e il livello di ombreggiatura del paesaggio. Il cablaggio del circuito si riduce a due componenti e quattro conduttori:</p>
+<img src="img/scratch-tramonto/cablaggio.png">
+<p class="illustration">Il cablaggio del partitore di tensione.</p>
+<img src="img/scratch-tramonto/circuito.jpg">
+<p class="illustration">Il circuito finale.</p>
+<h2>Software</h2>
+<p>L'acquisizione del valore di luminosità (sappiamo ora trattarsi in realtà di un valore di tensione che dipende dalla quantità di luce che colpisce il fotoresistore) avviene per mezzo del modulo S2A_fm, descritto a suo tempo <a href="scratch-arduino.html#S2A_fm">qui</a>. Il progetto consta di tre sprite principali:</p>
+<ul>
+<li><strong>Sole</strong>, che si sposta verticalmente in funzione del livello di luminosità, tanto più in alto quanta più luce c'è;</li>
+<li><strong>Notte</strong>, che simula lo scendere della notte: è uno sprite , completamente nero, delle stesse dimensioni dello schermo, il cui livello di trasparenza varia al variare del livello di luminosità;</li>
+<li><strong>Cespuglio</strong>, puramente decorativo, ha lo scopo di nascondere <strong>Sole</strong> nella parte terminale del suo cammino, per consentirgli di tramontare.</li>
+</ul>
+<p>Per comodità, nel progetto il valore della luminosità è stato normalizzato nell'intervallo 0&div;1, con 0 che indica il livello minimo di luminosità (il buio), 1 quello massimo (fotoresistore in piena luce). In questo modo è relativamente facile programmare il moto dello sprite <strong>Sole</strong> tra due coordinate y prefissate:</p>
+<img src="img/scratch-tramonto/script-sole.png">
+<p class="illustration">Lo script dello sprite <strong>Sole</strong>.</p>
+<p>Tralasciando momentaneamente il fatto che lo sprite inizialmente si nasconde ed attende il ricevimento del messaggio <strong>go</strong> prima di iniziare la sua attività, si nota che il ciclo principale è composto di quattro fasi:</p>
+<ol>
+<li>acquisizione del livello di luminosità e sua normalizzazione nell'intervallo 0&div;1, sulla base dei valori delle variabili <code>luminosita_min</code> e <code>luminosita_max</code>, sulle quali torneremo in seguito;</li>
+<li>controllo che il valore normalizzato non ecceda i limiti 0 e 1;</li>
+<li>spostamento dello sprite tra le coordinate 180 e -160;</li>
+<li>breve attesa prima della prossima acquisizione.</li>
+</ol>
+<p>Quando il livello di luminosità acquisito &mdash; rappresentato dal blocco <code>Valore Pin Analogico (A) 1</code> &mdash; è massimo, il valore della variabile <code>luminosita</code> è 1 e l'ordinata assunta da <strong>Sole</strong> è pari a 300 * 1 - 160 = 300 - 160 = 140; quando il livello di luminosità acquisito è minimo, il valore assunto da <code>luminosita</code> è nullo, e lo sprite si sposta perciò all'ordinata 300 * 0 - 160 = 0 - 160 = -160. Al variare dell'intensità luminosa tra il valore massimo (<code>luminosita_max</code>) e quello minimo (<code>luminosita_min</code>), il sole si sposterà in sincrono tra gli estremi di ordinata y=+180 e y=-160.</p>
+<p>Una logica del tutto analoga si applica all'effetto di trasparenza dello sprite <strong>Notte</strong>: quando <code>luminosita</code> è pari a 1, l'effetto trasparenza è massimo (100), e l'ombreggiatura è del tutto assente; quando è minimo, l'effetto trasparenza è inibito (0) e la scena appare completamente nera:</p>
+<img src="img/scratch-tramonto/script-notte.png">
+<p class="illustration">Lo script dello sprite <strong>Notte</strong>.</p>
+<p>Lo sprite <strong>Cespuglio</strong> serve solo per permettere al sole di tramontare:</p>
+<img src="img/scratch-tramonto/sprite-cespuglio.png">
+<p class="illustration">In evidenza lo sprite <strong>Cespuglio</strong> che, posto in primo piano, copre <strong>Sole</strong>.</p>
+<h2>Calibrazione</h2>
+<p>Come si determinano i valori di luminosità minimo e massimo? In linea di principio si potrebbe stabilire che il valore minimo &mdash; buio assoluto &mdash; corrisponde alla tensione nulla, mentre quello massimo &mdash; luminosità &ldquo;infinita&rdquo; &mdash; alla tensione di alimentazione, ovvero 5V. Leggendo le specifiche dell'hardware di Arduino scopriremmo che i valori numerici associati alle due tensioni nominali sono rispettivamente 0 e 1023.</p>
+<p>Non è tuttavia detto che le variazioni di luce effettive coprano tutto l'intervallo ipotizzato; più realisticamente i valori acquisiti si troveranno all'interno di un intervallo più piccolo, vuoi per le caratteristiche dell'ambiente in cui si opera, vuoi per le peculiarità costruttive del sensore. Per questa ragione conviene lasciare al software la responsabilità di stabilire quali siano le soglie di funzionamento corrette. La <em>calibrazione</em> è la procedura che si occupa di ciò.</p>
+<p>In questo caso la procedura di calibrazione sarà piuttosto semplice: si limiterà ad acquisire il livello di luminosità ad intervalli regolari per cinque secondi, aggiornando continuamente il livello minimo e massimo registrati: durante questi cinque secondi sarà nostra cura fare in modo che il fotoresistore sia investito dalla maggior quantità di luce possibile, in modo da realizzare la lettura del valore massimo, e porlo quindi in una zona d'ombra (oscurandolo magari con la mano), per determinare correttamente il valore minimo. Della calibrazione si occupa lo sfondo:</p>
+<img src="img/scratch-tramonto/script-sfondo.png">
+<p class="illustration">La procedura di calibrazione.</p>
+<p>Per rendere la procedura di calibrazione più amichevole, è stato aggiunto un conto alla rovescia che scandisce i cinque secondi e mostra all'utente i livelli minimo e massimo registrati fino a quel punto:</p>
+<img src="img/scratch-tramonto/calibrazione.png">
+<p class="illustration">Due secondi la termine della calibrazione.</p>
+<p>Terminata la fase di calibrazione, si potrà far tramontare il sole in Scratch oscurando artificialmente il fotoresistore!</p>
+<h2>Download</h2>
+<p class="note">Scarica <a href="files/scratch-tramonto/s2a_tramonto.sb2">s2a_tramonto.sb2</a>, il progetto per Scratch 2.0 completo.</p>
+<p class="modification-notice">Pagina modificata il 09/08/2016</p>
+</body>
+</html>
