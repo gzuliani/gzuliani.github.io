@@ -36,7 +36,7 @@ tramonto in scratch</p>
 <p>Per comodità, nel progetto il valore della luminosità è stato normalizzato nell'intervallo 0&div;1, con 0 che indica il livello minimo di luminosità (il buio), 1 quello massimo (fotoresistore in piena luce). In questo modo è relativamente facile programmare il moto dello sprite <strong>Sole</strong> tra due coordinate y prefissate:</p>
 <img src="img/scratch-tramonto/script-sole.png">
 <p class="illustration">Lo script dello sprite <strong>Sole</strong>.</p>
-<p>Tralasciando momentaneamente il fatto che lo sprite inizialmente si nasconde ed attende il ricevimento del messaggio <strong>go</strong> prima di iniziare la sua attività, si nota che il ciclo principale è composto di quattro fasi:</p>
+<p>Tralasciando momentaneamente il fatto che lo sprite inizialmente si nasconde ed attende il ricevimento del messaggio <strong>calibrazione ok</strong> prima di iniziare la sua attività, si nota che il ciclo principale è composto di quattro fasi:</p>
 <ol>
 <li>acquisizione del livello di luminosità e sua normalizzazione nell'intervallo 0&div;1, sulla base dei valori delle variabili <code>luminosita_min</code> e <code>luminosita_max</code>, sulle quali torneremo in seguito;</li>
 <li>controllo che il valore normalizzato non ecceda i limiti 0 e 1;</li>
@@ -53,10 +53,12 @@ tramonto in scratch</p>
 <h2>Calibrazione</h2>
 <p>Come si determinano i valori di luminosità minimo e massimo? In linea di principio si potrebbe stabilire che il valore minimo &mdash; buio assoluto &mdash; corrisponde alla tensione nulla, mentre quello massimo &mdash; luminosità &ldquo;infinita&rdquo; &mdash; alla tensione di alimentazione, ovvero 5V. Leggendo le specifiche dell'hardware di Arduino scopriremmo che i valori numerici associati alle due tensioni nominali sono rispettivamente 0 e 1023.</p>
 <p>Non è tuttavia detto che le variazioni di luce effettive coprano tutto l'intervallo ipotizzato; più realisticamente i valori acquisiti si troveranno all'interno di un intervallo più piccolo, vuoi per le caratteristiche dell'ambiente in cui si opera, vuoi per le peculiarità costruttive del sensore. Per questa ragione conviene lasciare al software la responsabilità di stabilire quali siano le soglie di funzionamento corrette. La <em>calibrazione</em> è la procedura che si occupa di ciò.</p>
-<p>In questo caso la procedura di calibrazione sarà piuttosto semplice: si limiterà ad acquisire il livello di luminosità ad intervalli regolari per cinque secondi, aggiornando continuamente il livello minimo e massimo registrati: durante questi cinque secondi sarà nostra cura fare in modo che il fotoresistore sia investito dalla maggior quantità di luce possibile, in modo da realizzare la lettura del valore massimo, e porlo quindi in una zona d'ombra (oscurandolo magari con la mano), per determinare correttamente il valore minimo. Della calibrazione si occupa lo sfondo:</p>
+<p>La procedura di calibrazione è piuttosto semplice: si limita a campionare il livello di luminosità ad intervalli regolari per un lasso di tempo predefinito, aggiornando continuamente il livello minimo e massimo registrati: nel mentre sarà nostra cura fare in modo che il fotoresistore sia investito dalla maggior quantità di luce possibile, in modo da realizzare la lettura del valore massimo, quindi porlo in una zona buia (oscurandolo magari con la mano), per determinare correttamente il valore minimo. Della calibrazione si occupa lo sfondo:</p>
 <img src="img/scratch-tramonto/script-sfondo.png">
 <p class="illustration">La procedura di calibrazione.</p>
-<p>Per rendere la procedura di calibrazione più amichevole, è stato aggiunto un conto alla rovescia che scandisce i cinque secondi e mostra all'utente i livelli minimo e massimo registrati fino a quel punto:</p>
+<p>Per rendere la procedura di calibrazione più amichevole, è stato aggiunto un conto alla rovescia della durata di cinque secondi, che scandisce il tempo che passa e mostra all'utente i livelli minimo e massimo registrati fino a quel punto:</p>
+<img src="img/scratch-tramonto/script-conteggio.png">
+<p class="illustration">Lo script che regola la durata della calibrazione.</p>
 <img src="img/scratch-tramonto/calibrazione.png">
 <p class="illustration">Due secondi la termine della calibrazione.</p>
 <p>Terminata la fase di calibrazione, si potrà far tramontare il sole in Scratch oscurando artificialmente il fotoresistore!</p>
