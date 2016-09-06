@@ -1,0 +1,584 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Campi di bit in C++11/14</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#bitfield-enum">risorse</a> | campi di bit in C++</p>
+<h1>Campi di bit in C++11/14</h1>
+<p class="note">Tutti gli esempi sono stati compilati con la versione 6.1.0 di GCC della distribuzione MinGW curata da <a href="https://nuwen.net/mingw.html">nuwen.net</a> con i flag <span class="code">-Wall -Wextra -pedantic -Wsign-promo -std=c++14</span>.</p>
+<h2>Introduzione</h2>
+<p>I tipi enumerati che il C++ ha ereditato dal C non consentono di implementare una maschera di bit in modo consistente:</p>
+<pre class="code">
+/* file enum-bitfield.cpp */
+
+#include &lt;iostream&gt;
+
+enum Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+int main() {
+  Color yellow = e_red | e_green; // error!
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; yellow &lt;&lt; &quot;\n&quot;;
+}
+</pre>
+<p>Il compilatore genera il seguente errore, in corrispondenza della dichiarazione della variabile <span class="code">yellow</span>:</p>
+<pre class="code">
+enum-bitfield.cpp:12:24: error: invalid conversion from &apos;int&apos; to &apos;Color&apos; [-fpermissive]
+</pre>
+<p>Il problema si può risolvere cambiando il tipo della variabile da <span class="code">Color</span> a <span class="code">int</span>:</p>
+<pre class="code">
+...
+int main() {
+  <del>Color</del> <ins>int</ins> yellow = e_red | e_green; // ok
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; yellow &lt;&lt; &quot;\n&quot;;
+}
+
+/* output:
+ *
+ * `yellow` code is 3
+ */
+</pre>
+<p>È però un peccato rinunciare alla tipizzazione della variabile, anche perché ciò può portare alla proliferazione di errori nel codice. È possibile rendere il codice compilabile evitando il declassamento della variabile <span class="code">yellow</span>?</p>
+<p>Prima di proseguire, vale la pena notare che l'uso degli enumerati del C ha anche altri risvolti critici. Per esempio, un errore analogo a quello appena discusso si ottiene tentando di passare una combinazione di valori di tipo <span class="code">Color</span> ad una funzione che accetta un parametro del medesimo tipo:</p>
+<pre class="code">
+...
+
+<ins>void f(Color color) {
+  std::cout &lt;&lt; &quot;`color` code is &quot; &lt;&lt; color &lt;&lt; &quot;\n&quot;;
+}</ins>
+
+int main() {
+  int yellow = e_red | e_green;
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; yellow &lt;&lt; &quot;\n&quot;;
+
+<ins>  f(e_red);           // ok
+  f(e_red | e_blue); // error!</ins>
+}
+</pre>
+<pre class="code">
+enum-bitfield.cpp:20:11: error: invalid conversion from &apos;int&apos; to &apos;Color&apos; [-fpermissive]
+</pre>
+<p>Un aspetto in questo caso non critico, ma che conviene far emergere, è la conversione implicita a intero che subisce del parametro <span class="code">color</span> durante la serializzazione su <span class="code">std::cout</span> in <span class="code">f</span>. Se si compila il codice attivando il flag <span class="code">-Wsign-promo</span>, il compilatore segnala, in corrispondenza di quella linea di codice:</p>
+<pre class="code">
+enum-bitfield.cpp:12:38: warning: passing 'Color' chooses 'int' over 'long unsigned int' [-Wsign-promo]
+</pre>
+<p>Conviene allora esplicitare la conversione:</p>
+<pre class="code">
+...
+
+void f(Color color) {
+  std::cout &lt;&lt; &quot;`color` code is &quot; &lt;&lt; <ins>static_cast&lt;int&gt;(</ins>color<ins>)</ins> &lt;&lt; &quot;\n&quot;;
+}
+...
+</pre>
+<p>Un altro problema degli enumerati C è legato all'impossibilità di usare lo stesso simbolo per due costanti appartenenti a tipi differenti:</p>
+<pre class="code">
+...
+
+enum Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+<ins>enum Mood {
+  e_angry,
+  e_blue, // error!
+  e_calm,
+  // ...
+};</ins>
+...
+</pre>
+<pre class="code">
+enum-bitfield.cpp:13:3: error: redeclaration of &apos;e_blue&apos;
+</pre>
+<p>Un ulteriore problema di questa tipologia di dato deriva dal fatto che i valori di un enumerato possono apparire in una qualunque espressione aritmetica:</p>
+<pre class="code">
+...
+
+<del>enum Mood {
+  e_angry,
+  e_blue, // error!
+  e_calm,
+  // ...
+};</del>
+...
+
+int main() {
+   ...
+
+  f(e_red);
+<ins>  // </ins>f(e_red | e_blue);
+
+<ins>  int nonsense = e_red + e_green * e_blue; // compiles!
+  std::cout &lt;&lt; &quot;`nonsense` code is &quot; &lt;&lt; nonsense &lt;&lt; &quot;\n&quot;;</ins>
+}
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `color` code is 1
+ * `nonsense` code is 9
+ */
+</pre>
+<p>È consentito pure combinare tra loro costanti di enumerati diversi:</p>
+<pre class="code">
+...
+
+<ins>enum Permission {
+  e_read    = 1,
+  e_write   = 2,
+  e_execute = 4,
+};</ins>
+
+int main() {
+  ...
+
+  int nonsense = e_red + e_green * e_blue; // compiles!
+  std::cout &lt;&lt; &quot;`nonsense` code is &quot; &lt;&lt; nonsense &lt;&lt; &quot;\n&quot;;
+
+  <ins>int mismatch = e_blue | e_write; // compiles!
+  std::cout &lt;&lt; &quot;`mismatch` code is &quot; &lt;&lt; mismatch &lt;&lt; &quot;\n&quot;;</ins>
+}
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `color` code is 1
+ * `nonsense` code is 9
+ * `mismatch` code is 6
+ */
+</pre>
+<p>Serve quindi un meccanismo che consenta di combinare tra loro, attraverso gli operatori <em>bitwise</em>, le costanti di un tipo enumerato senza essere costretti a scendere nel dominio degli interi, impedendo tuttavia che queste possano essere usate all'interno di generiche espressioni matematiche alla stregua di normali valori numerici.</p>
+<h2>Le <span class="term">scoped enumeration</span></h2>
+<p>Trasformare l'enumerato <span class="code">Color</span> in un <span class="code">enum class</span> (o equivalentemente a <span class="code">enum struct</span>) <span class="code"></span> è il primo passo per raggiungere l'obiettivo prefissato, dato che le costanti di questo tipo non sono esplicitamente convertibili a un tipo intero:</p>
+<pre class="code">
+...
+
+enum <ins>class</ins> Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+enum <ins>class</ins> Permission {
+  e_read    = 1,
+  e_write   = 2,
+  e_execute = 4,
+};
+...
+
+int main() {
+  <del>int</del> <ins>Color</ins> yellow = <ins>Color::</ins>e_red | <ins>Color::</ins>e_green; // error!
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; <ins>static_cast&lt;int&gt;(</ins>yellow<ins>)</ins> &lt;&lt; &quot;\n&quot;;
+
+  f(<ins>Color::</ins>e_red);
+  <del>//</del> f(<ins>Color::</ins>e_red | <ins>Color::</ins>e_blue);
+
+  <del>int</del> <ins>Color</ins> nonsense = <ins>Color::</ins>e_red + <ins>Color::</ins>e_green * <ins>Color::</ins>e_blue; // error!
+  std::cout &lt;&lt; &quot;`nonsense` code is &quot; &lt;&lt; <ins>static_cast&lt;int&gt;(</ins>nonsense<ins>)</ins> &lt;&lt; &quot;\n&quot;;
+
+  <del>int</del> <ins>Color</ins> mismatch = <ins>Color::</ins>e_blue | <ins>Permission::</ins>e_write; // error!
+  std::cout &lt;&lt; &quot;`mismatch` code is &quot; &lt;&lt; <ins>static_cast&lt;int&gt;(</ins>mismatch<ins>)</ins> &lt;&lt; &quot;\n&quot;;
+}
+</pre>
+<p>La compilazione della versione aggiornata del codice rileva quattro errori:</p>
+<pre class="code">
+enum-bitfield.cpp:22:31: error: no match for 'operator|' (operand types are 'Color' and 'Color')
+enum-bitfield.cpp:26:18: error: no match for 'operator|' (operand types are 'Color' and 'Color')
+enum-bitfield.cpp:28:50: error: no match for 'operator*' (operand types are 'Color' and 'Color')
+enum-bitfield.cpp:31:34: error: no match for 'operator|' (operand types are 'Color' and 'Permission')
+</pre>
+<p>Gli ultimi due errori sono graditi: uno segnala un caso d'uso del tipo <span class="code">Color</span> in un contesto non prettamente binario, il secondo una combinazione di costanti di tipo diverso. I primi due errori si risolvono invece introducendo l'operatore mancante:</p>
+<pre class="code">
+...
+
+enum class Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+<ins>Color operator|(Color lhs, Color rhs) {
+  return Color::e_red;
+}</ins>
+...
+
+int main() {
+  ...
+
+<del>  Color nonsense = Color::e_red + Color::e_green * Color::e_blue;
+  std::cout &lt;&lt; &quot;`nonsense` code is &quot; &lt;&lt; static_cast&lt;int&gt;(nonsense) &lt;&lt; &quot;\n&quot;;</del>
+
+<del>  Color mismatch = Color::e_blue | Permission::e_write; // compiles!
+  std::cout &lt;&lt; &quot;`mismatch` code is &quot; &lt;&lt; static_cast&lt;int&gt;(mismatch) &lt;&lt; &quot;\n&quot;;</del>
+}
+
+/* output:
+ * 
+ * `yellow` code is 1
+ * `color` code is 1
+ * `color` code is 1
+ */
+</pre>
+<p>Implementazione a parte, il codice risulta così compilabile.</p>
+<h2>Operatori</h2>
+<p>Gli operatori bit a bit del tipo enumerato possono essere realizzati tramite gli omologhi operanti sugli interi. Poiché il C++11 permette di ricavare il tipo intero utilizzato dal compilatore per implementare un enumerato tramite la <span class="code">struct</span> <span class="code">underlying_type</span>, non è difficile convertire i due parametri in ingresso nei corrispettivi valori interi &ndash; senza rischiare di perdere di precisione! &ndash;, effettuare l'operazione richiesta e trasformare il risultato nel tipo enumerato originale:</p>
+<pre class="code">
+Color operator|(Color lhs, Color rhs) {
+  <del>return Color::e_red;</del>
+<ins>  using underlying = typename std::underlying_type&lt;Color&gt;::type;
+  return static_cast&lt;Color&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));</ins>
+}
+...
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `color` code is 1
+ * `color` code is 5
+ */
+</pre>
+<p>Per evitare duplicazioni di codice, conviene implementare <span class="code">operator|</span> in termini di <span class="code">operator|=</span>:</p>
+<pre class="code">
+...
+
+<ins>Color&amp; operator|=(Color&amp; lhs, Color rhs) {
+  using underlying = typename std::underlying_type&lt;Color&gt;::type;
+  return lhs = static_cast&lt;Color&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));
+}</ins>
+
+Color operator|(Color lhs, Color rhs) {
+<del>  using underlying = typename std::underlying_type&lt;Color&gt;::type;
+  return static_cast&lt;Color&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));</del>
+<ins>  return lhs |= rhs;</ins>
+}
+
+int main() {
+  Color yellow = Color::e_red | Color::e_green;
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; static_cast&lt;int&gt;(yellow) &lt;&lt; &quot;\n&quot;;
+
+<ins>  Color cyan = Color::e_green;
+  cyan |= Color::e_blue;
+  std::cout &lt;&lt; &quot;`cyan` code is &quot; &lt;&lt; static_cast&lt;int&gt;(cyan) &lt;&lt; &quot;\n&quot;;</ins>
+
+  f(Color::e_red);
+  f(Color::e_red | Color::e_blue);
+}
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `cyan` code is 6
+ * `color` code is 1
+ * `color` code is 5
+ */
+</pre>
+<p>L'implementazione di <span class="code">operator|=</span> non è particolarmente efficiente, richiedendo la costruzione di un intero temporaneo, ma il codice più diretto:</p>
+<pre class="code">
+  return static_cast&lt;underlying&amp;&gt;(lhs) |= static_cast&lt;underlying&gt;(rhs);
+</pre>
+<p>non è valido, perché il C++ non consente di trasformare una referenza non costante &ndash; il parametro <span class="code">lhs</span> &ndash; a un tipo indipendente. Le implementazioni degli altri operatori binari <span class="code">&amp;</span> e <span class="code">&amp;=</span>, <span class="code">^</span> e <span class="code">^=</span>, e <span class="code">~</span> sono del tutto analoghe.</p>
+<h2><span class="code">constexpr</span></h2>
+<p>Se si dispone di un compilatore che supporta il C++14, gli operatori possono essere dichiarati <span class="code">constexpr</span>, in virtù di <a href="#ref-2">[2]</a>:</p>
+<pre class="code">
+...
+
+<ins>constexpr</ins> Color&amp; operator|=(Color&amp; lhs, Color rhs) {
+  using underlying = typename std::underlying_type&lt;Color&gt;::type;
+  return lhs = static_cast&lt;Color&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));
+}
+
+<ins>constexpr</ins> Color operator|(Color lhs, Color rhs) {
+  return lhs |= rhs;
+}
+...
+</pre>
+<h2>Generalizzazione</h2>
+<p>Come generalizzare l'approccio per estenderlo ad un secondo enumerato?</p>
+<pre class="code">
+...
+
+int main() {
+  ...
+
+  <ins>Permission edit = Permission::e_read | Permission::e_write; // error!
+  std::cout &lt;&lt; &quot;`edit` code is &quot; &lt;&lt; static_cast&lt;int&gt;(edit) &lt;&lt; &quot;\n&quot;;</ins>
+}
+</pre>
+<pre class="code">
+enum-bitfield.cpp:42:40: error: no match for 'operator|' (operand types are 'Permission' and 'Permission')
+</pre>
+<p>Per rendere il codice valido si ricorre ai template:</p>
+<pre class="code">
+...
+
+<ins>template &lt;class T&gt;</ins>
+constexpr <del>Color</del> <ins>T</ins>&amp; operator|=(<del>Color</del> <ins>T</ins>&amp; lhs, <del>Color</del> <ins>T</ins> rhs) {
+  using underlying = typename std::underlying_type&lt;<del>Color</del> <ins>T</ins>&gt;::type;
+  return lhs = static_cast&lt;<del>Color</del> <ins>T</ins>&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));
+}
+
+<ins>template &lt;class T&gt;</ins>
+constexpr <del>Color</del> <ins>T</ins> operator|(<del>Color</del> <ins>T</ins> lhs, <del>Color</del> <ins>T</ins> rhs) {
+  return lhs |= rhs;
+}
+...
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `cyan` code is 6
+ * `color` code is 1
+ * `color` code is 5
+ * `edit` code is 3
+ */
+</pre>
+<p>Il codice ottenuto è però fin troppo generico: l'implementazione degli operatori binari ora nasconde quella specifica dei tipi che ne definiscono uno proprietario, oltre a fornirne una per i tipi che non dispongono di <span class="code">underlying_type</span> o peggio per i tipi per i quali gli operatori binari non hanno senso:</p>
+<pre class="code">
+int main() {
+  ...
+
+<ins>  std::string a = &quot;one&quot;;
+  std::string b = &quot;two&quot;;
+  a |= b;</ins>
+}
+</pre>
+<pre class="code">
+c:\mingw\include\c++\6.1.0\type_traits:2245:38: error: &apos;std::__cxx11::basic_string&lt;char&gt;&apos; is not an enumeration type
+       typedef __underlying_type(_Tp) type;
+                                      ^~~~
+</pre>
+<p>Per rendere gli operatori disponibili solo per i tipi enumerati scelti dall'utente si può sfruttare lo SFINAE:</p>
+<pre class="code">
+...
+
+template &lt;class T&gt;
+constexpr <del>T&amp;</del> <ins>typename std::enable_if&lt;is_bitfield(T()), T&gt;::type&amp;</ins>
+operator|=(T&amp; lhs, T rhs) {
+  using underlying = typename std::underlying_type&lt;T&gt;::type;
+  return lhs = static_cast&lt;T&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));
+}
+
+template &lt;class T&gt;
+constexpr <del>T</del> <ins>typename std::enable_if&lt;is_bitfield(T()), T&gt;::type</ins>
+operator|(T lhs, T rhs) {
+  return lhs |= rhs;
+}
+...
+</pre>
+<p>Il tipo di ritorno degli operatori dipende dal valore ritornato dalla funzione <span class="code">is_bitfield</span>: se <span class="code">true</span>, il valore di ritorno degli operatori saranno <span class="code">T&amp;</span>/<span class="code">T</span> rispettivamente &ndash; ottenendo così la definizione originale di entrambi &ndash; in caso contrario sarà <span class="code">void&amp;</span>/<span class="code">void</span>, di fatto una <em>substitution failure</em>.</p>
+<p>Per consentire al compilatore di generare le versioni degli operatori binari per <span class="code">Color</span> e <span class="code">Permission</span> è dunque necessario fornire una versione apposita della funzione <span class="code">is_bitfield</span>:</p>
+<pre class="code">
+...
+
+<ins>// types are not bitfields by default
+template &lt;class T&gt;
+constexpr bool is_bitfield(T) { return false; }</ins>
+
+<ins>constexpr bool is_bitfield(Color) { return true; }
+constexpr bool is_bitfield(Permission) { return true; }</ins>
+
+int main() {
+ ...
+}
+</pre>
+<p>Le funzioni sono dichiarate <span class="code">constexpr</span> perché devono essere valutabili a <em>compile-time</em>. Con queste modifiche il codice d'errore relativo all'applicazione dell'operatore <span class="code">|=</span> alle stringhe cambia, a dimostrazione del fatto che il compilatore non tenta più di istanziare l'implementazione generica dell'operatore sul tipo <span class="code">std::string</span>, ma lamenta invece la sua assenza:</p>
+<pre class="code">
+enum-bitfield.cpp:57:5: error: no match for &apos;operator|=&apos; (operand types are &apos;std::__cxx11::string {aka std::__cxx11::basic_string&lt;char&gt;}&apos; and &apos;std::__cxx11::string {aka std::__cxx11::basic_string&lt;char&gt;}&apos;)
+   a |= b;
+   ~~^~~~
+</pre>
+<h2>Namespace</h2>
+<p>Nell'uso normale, ci si può attendere che il codice di libreria risieda in un namespace diverso da quello che contiene gli enumerati. Il codice continua a funzionare sotto queste condizioni?</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+<ins>namespace bitfield {</ins>
+
+template &lt;class T&gt;
+constexpr bool is_bitfield(T) { return false; }
+
+template &lt;class T&gt;
+constexpr typename std::enable_if&lt;is_bitfield(T()), T&gt;::type&amp;
+operator|=(T&amp; lhs, T rhs) {
+  using underlying = typename std::underlying_type&lt;T&gt;::type;
+  return lhs = static_cast&lt;T&gt;(
+    static_cast&lt;underlying&gt;(lhs) | static_cast&lt;underlying&gt;(rhs));
+}
+
+template &lt;class T&gt;
+constexpr typename std::enable_if&lt;is_bitfield(T()), T&gt;::type
+operator|(T lhs, T rhs) {
+  return lhs |= rhs;
+}
+
+<ins>} // namespace bitfield</ins>
+
+<ins>namespace draw {</ins>
+
+enum class Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+constexpr bool is_bitfield(Color) { return true; }
+
+void f(Color color) {
+  std::cout &lt;&lt; &quot;`color` code is &quot; &lt;&lt; static_cast&lt;int&gt;(color) &lt;&lt; &quot;\n&quot;;
+}
+
+<ins>} // namespace draw</ins>
+
+<ins>namespace filesystem {</ins>
+
+enum class Permission {
+  e_read    = 1,
+  e_write   = 2,
+  e_execute = 4,
+};
+
+constexpr bool is_bitfield(Permission) { return true; }
+
+<ins>} // namespace filesystem</ins>
+
+int main() {
+  <ins>draw::</ins>Color yellow = <ins>draw::</ins>Color::e_red | <ins>draw::</ins>Color::e_green;
+  std::cout &lt;&lt; &quot;`yellow` code is &quot; &lt;&lt; static_cast&lt;int&gt;(yellow) &lt;&lt; &quot;\n&quot;;
+
+  <ins>draw::</ins>Color cyan = <ins>draw::</ins>Color::e_green;
+  cyan |= <ins>draw::</ins>Color::e_blue;
+  std::cout &lt;&lt; &quot;`cyan` code is &quot; &lt;&lt; static_cast&lt;int&gt;(cyan) &lt;&lt; &quot;\n&quot;;
+
+  <ins>draw::</ins>f(<ins>draw::</ins>Color::e_red);
+  <ins>draw::</ins>f(<ins>draw::</ins>Color::e_red | <ins>draw::</ins>Color::e_blue);
+
+  <ins>filesystem::</ins>Permission edit =
+    <ins>filesystem::</ins>Permission::e_read | <ins>filesystem::</ins>Permission::e_write;
+  std::cout &lt;&lt; &quot;`edit` code is &quot; &lt;&lt; static_cast&lt;int&gt;(edit) &lt;&lt; &quot;\n&quot;;
+
+<del>  std::string a = &quot;one&quot;;
+  std::string b = &quot;two&quot;;
+  a |= b;</del>
+}
+</pre>
+<pre class="code">
+enum-bitfield.cpp:55:43: error: no match for &apos;operator|&apos; ...
+enum-bitfield.cpp:59:11: error: no match for &apos;operator|=&apos; ...
+enum-bitfield.cpp:63:30: error: no match for &apos;operator|&apos; ...
+enum-bitfield.cpp:66:36: error: no match for &apos;operator|&apos; ...
+</pre>
+<p>Chiaramente, le definizioni degli operatori non sono visibili; sfruttando l'<em>argument-dependent lookup</em><sup><a href="#ref-4">[4]</a></sup> è tuttavia facile risolvere il problema: basta includere l'operatore nel namespace che contiene l'enumerato, l'ADL farà il resto:</p>
+<pre class="code">
+...
+
+namespace draw {
+  ...
+
+<ins>using bitfield::operator|;
+using bitfield::operator|=;</ins>
+
+void f(Color color) {
+  std::cout &lt;&lt; &quot;`color` code is &quot; &lt;&lt; static_cast&lt;int&gt;(color) &lt;&lt; &quot;\n&quot;;
+}
+
+} // namespace draw
+
+namespace filesystem {
+  ...
+
+<ins>using bitfield::operator|;
+using bitfield::operator|=;</ins>
+
+} // namespace filesystem
+...
+
+/* output:
+ *
+ * `yellow` code is 3
+ * `cyan` code is 6
+ * `color` code is 1
+ * `color` code is 5
+ * `edit` code is 3
+ */
+
+</pre>
+<h2>Macro</h2>
+<p>È infine possibile lasciare a una macro l'espansione del codice, considerato che si ripete uguale a sè stesso per ogni enumerato che si vuole trasformare in un <em>bitfield</em>:</p>
+<pre class="code">
+...
+
+<ins>#define DECLARE_BITFIELD(type_) \
+    constexpr bool is_bitfield(type_) { return true; } \
+    using bitfield::operator|; \
+    using bitfield::operator|=</ins>
+...
+
+namespace draw {
+
+enum class Color {
+  e_red   = 1,
+  e_green = 2,
+  e_blue  = 4,
+};
+
+<del>constexpr bool is_bitfield(Color) { return true; }
+
+using bitfield::operator|;
+using bitfield::operator|=;</del>
+
+<ins>DECLARE_BITFIELD(Color);</ins>
+
+void f(Color color) {
+  std::cout &lt;&lt; &quot;`color` code is &quot; &lt;&lt; static_cast&lt;int&gt;(color) &lt;&lt; &quot;\n&quot;;
+}
+
+} // namespace draw
+
+namespace filesystem {
+
+enum class Permission {
+  e_read    = 1,
+  e_write   = 2,
+  e_execute = 4,
+};
+
+<del>constexpr bool is_bitfield(Permission) { return true; }
+
+using bitfield::operator|;
+using bitfield::operator|=;</del>
+
+<ins>DECLARE_BITFIELD(Permission);</ins>
+
+} // namespace filesystem
+</pre>
+<h2>Sorgenti</h2>
+<ul>
+<li><a href="files/bitfield-enum/bitfield.h">bitfield.h</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Kalb, J. &quot;Enum BitFields NYC 2016-07-12&quot;. <em>YouTube</em>. &lt;<a href="https://www.youtube.com/watch?v=cZ3TNrRzHfM">https://www.youtube.com/watch?v=cZ3TNrRzHfM</a>&gt;. Visitato il 2 settembre 2016.</li>
+<a name="ref-2"></a>
+<li class="ref">Smith, R. &quot;Relaxing constraints on constexpr functions&quot;. <em>Standard C++</em>. &lt;<a href="https://isocpp.org/files/papers/N3652.html">https://isocpp.org/files/papers/N3652.html</a>&gt;. Visitato il 2 settembre 2016.</li>
+<a name="ref-3"></a>
+<li class="ref">Williams, A. &quot;Using Enum Classes as Bitfields&quot;. <em>ACCU</em>. &lt;<a href="https://accu.org/index.php/journals/2228">https://accu.org/index.php/journals/2228</a>&gt;. Visitato il 2 settembre 2016.</li>
+<a name="ref-4"></a>
+<li class="ref">&quot;http://en.cppreference.com/w/cpp/language/adl&quot;. <em>cppreference.com</em>. &lt;<a href="http://en.cppreference.com/w/cpp/language/adl">http://en.cppreference.com/w/cpp/language/adl</a>&gt;. Visitato il 5 settembre 2016.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 06/09/2016</p>
+</body>
+</html>
