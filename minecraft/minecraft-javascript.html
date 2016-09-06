@@ -1,0 +1,129 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Programmare Minecraft in JavaScript</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/minecraft-javascript.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#minecraft-javascript">risorse</a> | programmare minecraft in javascript</p>
+<h1>Programmazione in Minecraft</h1>
+<p>Per <em>programmazione</em> in Minecraft si intende un sistema di gioco nel quale le azioni del giocatore non vengono comandate attraverso il mouse e la tastiera, ma specificandole come sequenze di istruzioni di un particolare linguaggio di programmazione &mdash; Java, JavaScript, Lua, Python, &hellip; Il vantaggio è che con poche istruzioni di codice è possibile ottenere artefatti la cui costruzione manuale richiederebbe invece parecchio tempo.</p>
+<h2>Programmazione JavaScript di Minecraft</h2>
+<p>Il plug-in più diffuso per la programmazione JavaScript di Minecraft è <a href="http://scriptcraftjs.org/">ScriptCraft</a>, sviluppato da Walter Higgins. L'ultima versione disponibile &ndash; liberamente scaricabile dal <a href="http://scriptcraftjs.org/download/latest/">sito ufficiale</a> &ndash; è compatibile con i server CanaryMod v. 1.8.0 e Spigot 1.9.</p>
+<h3>Installazione di ScriptCraft</h3>
+<p>Scaricato l'archivio <span class="file">scriptcraft.jar</span> lo si copia nella cartella <span class="file">plugins</span> del server Minecraft prescelto (in questo caso uno Spigot 1.9.4). Lanciato il server dal terminale, si attende il messaggio che conferma il caricamento del plug-in di ScriptCraft e il completamento dell'avvio Spigot:</p>
+<pre class="code">
+&gt; java -jar spigot-1.9.4.jar
+
+...
+[16:00:06 INFO]: [scriptcraft] Enabling scriptcraft v3.2.0-2016-06-08
+[16:00:09 INFO]: Done (10.128s)! For help, type &quot;help&quot; or &quot;?&quot;
+[16:00:10 INFO]: [scriptcraft] js-patch setTimeout() test complete
+&gt;
+</pre>
+<p>A questo punto ScriptCraft è stato caricato, ma non è ancora disponibile per gli utenti, solo per coloro che detengono i diritti di <em>operator</em>; per elevare un utente a tale stato è sufficiente impartire il comando <span class="code">op</span>, seguito dal nome dell'utente, nel terminale del server:</p>
+<pre class="code">
+&gt; op &lt;nome-utente&gt;
+[16:10:35 INFO]: Opped &lt;nome-utente&gt;
+&gt;
+</pre>
+<p>Alternativamente, si può inserire il nome dell'utente nel file <span class="file">ops.*</span> del server (consultare la documentazione del server in uso per determinare il nome completo e la posizione del file di configurazione degli operatori).</p>
+<h3>Verifica dell'installazione</h3>
+<p>Avviato il client Minecraft, ci si connette al server locale e si scrive nella <em>chat</em>:</p>
+<pre class="code">
+/js echo(self, "Hello Minecraft!")
+</pre>
+<p>(la chat si apre automaticamente alla pressione del carattere &ldquo;/&rdquo;).</p>
+<img src="img/minecraft-javascript/chat-command.png"/>
+<p class="illustration">Codice JavaScript pronto per essere interpretato da ScriptCraft</p>
+<p>Si conferma il comando premendo il tasto &ldquo;Invio&rdquo;. Il codice JavaScript viene inviato al server che lo inoltra al plug-in ScriptCraft che a sua volta lo esegue:</p>
+<img src="img/minecraft-javascript/chat-command-response.png"/>
+<p class="illustration">L'effetto del comando <span class="code">echo</span></p>
+<p>La chat permette di eseguire semplici comandi JavaScript. Per compiti più complessi conviene affidarsi agli <em>script</em>. Gli script sono file di testo che contengono codice JavaScript e che sono richiamabili dalla chat, purché vengano salvati all'interno della cartella <span class="file">scriptcraft/plugins</span> (o in una sottocartella al suo interno) della cartella del server Minecraft. Un semplice esempio di script per ScriptCraft è il seguente:</p>
+<pre class="code">
+// file greet.jsp
+
+function greet(player) {
+  echo(player, 'Hello ' + player.name);
+}
+exports.greet = greet;
+</pre>
+<p>Salvando il codice sopra riportato nel file <span class="file">greet.jsp</span> all'interno della cartella <span class="file">scriptcraft/plugins</span>, è possibile richiederne l'esecuzione direttamente dalla chat:</p>
+<p class="note">Dopo aver creato un nuovo script o aggiornato uno esistente, è necessario segnalare a ScriptCraft che il contenuto della sua cartella <span class="file">plugins</span> è cambiato e obbligarlo così a ricaricare le nuove definizioni; il comando <span class="code">/js refresh()</span> ha esattamente questo scopo.</p>
+<img src="img/minecraft-javascript/chat-script.png"/>
+<p class="illustration">Invocazione di (una funzione di) uno script ScriptCraft</p>
+<p>Il codice viene eseguito alla pressione del tasto &ldquo;Invio&rdquo;:</p>
+<img src="img/minecraft-javascript/chat-script-response.png"/>
+<p class="illustration">L'effetto della funzione <span class="code">greet</span> &mdash; nome oscurato per questioni di privacy ;)</p>
+<h3>Avvertenze</h3>
+<ul>
+<li>La predisposizione degli script più complessi può richiedere del tempo e un numero non trascurabile di prove. Può quindi accadere di trovarsi con un sacco di strutture temporanee o incomplete che appesantiscono il server, fino a farlo rallentare sensibilmente. A quel punto conviene ricreare il mondo (consultare la documentazione del proprio server);</li>
+<li>sia CanaryMod che Spigot possono essere configurati in modo di creare mondi piatti: può risultare comodo, specialmente nelle fasi iniziali;</li>
+<li>alla stessa stregua, è possibile disabilitare la generazione dei mostri.</li>
+</ul>
+<p>Segue un esempio di configurazione che, oltre a forzare la creazione di mondi piatti e privi di mostri, imposta automaticamente la modalità di gioco creativa e disabilita l'autenticazione degli utenti (utile nell'uso di Minecraft in rete locale):</p>
+<pre class="code">
+# completely flat worlds are best for building from scratch
+# bukkit/spigotmc
+level-type=FLAT
+# canarymod
+world-type=FLAT
+generate-structures=false
+
+# creative mode
+gamemode=1
+pvp=false
+
+# turns off authentication (for classroom environments)
+online-mode=false
+spawn-npcs=false
+spawn-monsters=false
+</pre>
+<p class="illustration">Fonte: <a href="https://github.com/walterhiggins/ScriptCraft/blob/master/docs/YoungPersonsGuideToProgrammingMinecraft.md#configuring-your-server-optional">https://github.com/walterhiggins/ScriptCraft/blob/master/docs/YoungPersonsGuideToProgrammingMinecraft.md#configuring-your-server-optional</a></p>
+<h3>Pagine utili</h3>
+<ul>
+<li>le <a href="https://github.com/walterhiggins/ScriptCraft/blob/master/README.md">istruzioni</a> di installazione;</li>
+<li>la <a href="https://github.com/walterhiggins/ScriptCraft/blob/master/docs/YoungPersonsGuideToProgrammingMinecraft.md">guida introduttiva</a> ufficiale;</li>
+<li>l'<a href="https://github.com/walterhiggins/ScriptCraft/blob/master/docs/API-Reference.md">elenco completo</a> dei comandi disponibili.</li>
+</ul>
+<h2>BlocklyCraft</h2>
+<p><a href="http://bgon.github.io/BlocklyCraft/">BlocklyCraft</a> è un sistema di programmazione visuale di Minecraft basato su ScriptCraft.</p>
+<p class="note">Poiché BlocklyCraft contiene al suo interno ScriptCraft, i due plug-in non possono coesistere: di norma i server Minecraft non sono in grado di gestire più copie di uno stesso plug-in. Se si intende installare BlocklyCraft in un server che già contiene ScriptCraft, è necessario prima rimuovere quest'ultimo &ndash; sarà comunque disponibile la copia contenuta in BlocklyCraft.</p>
+<p>BlocklyCraft funziona sia con CanaryMod che con Spigot, ma quest'ultimo è il server consigliato dai suoi sviluppatori.</p>
+<p>BlocklyCraft presenta un'interfaccia simile a quella di <a href="https://scratch.mit.edu/">Scratch</a>: i programmi non vengono inseriti da tastiera ma costruiti creando delle aggregazione di blocchi predefiniti, spostandoli con il mouse alla stregua di mattoncini lego:</p>
+<img src="img/minecraft-javascript/blocklycraft-blocks.png"/>
+<p class="illustration">Esempio di script BlocklyCraft</p>
+<p>L'interfaccia di BlocklyCraft risulta particolarmente adatta per i principianti e per coloro che non hanno rudimenti di programmazione. BlocklyCraft, a richiesta, può comunque mostrare il codice JavaScript corrispondente allo script in lavorazione, selezionando la scheda &ldquo;JavaScript&rdquo;:</p>
+<img src="img/minecraft-javascript/blocklycraft-code.png"/>
+<p class="illustration">Codice JavaScript relativo allo script a blocchi</p>
+<p>La doppia vista Blocks/JavaScript rende BlocklyCraft un valido strumento per guidare la transizione da un approccio alla programmazione amatoriale ad uno più professionale.</p>
+<p>I blocchi messi a disposizione dal plug-in sono pochi, tant'è che l'unica attività automatizzabile è la costruzione di strutture, per quanto complesse: tutte le altre risorse messe a disposizione da ScriptCraft sono precluse (console, eventi, moduli, ...). La realizzazione di script complessi è di fatto impraticabile, e per tale attività è necessario rivolgersi direttamente a ScriptCraft via JavaScript.</p>
+<h3>Installazione</h3>
+<p>Per installare il plug-in è sufficiente scaricare l'ultima versione dal <a href="https://github.com/bgon/BlocklyCraft/releases/">sito ufficiale</a> e, dopo averne verificato la compatibilità col proprio server, copiare il file <span class="file">blocklycraft.jar</span> nella cartella <span class="file">plugins</span>. Ricordarsi di eliminare il plug-in di ScriptCraft (file <span class="file">scriptcraft.jar</span>) se presente prima di avviare il server.</p>
+<h3>Verifica dell'installazione</h3>
+<p>Avviato il server, aprire un browser e collegarsi all'indirizzo <span class="code">http://localhost:7070/</span>; se l'installazione è avvenuta correttamente, apparirà la pagina dell'editor di BlocklyCraft. Creare un semplice script (<em>Drone</em> nella terminologia ScriptCraft):</p>
+<img src="img/minecraft-javascript/drone-definition.png"/>
+<p class="illustration">Il drone di test</p>
+<p>Completata la definizione dello script, premere il pulsante rosso per verificarne la correttezza ed effettuarne il <em>deploy</em>, ovvero inviarlo al plug-in:</p>
+<img src="img/minecraft-javascript/drone-deploy.png"/>
+<p class="illustration">Messaggio di conferma dell'avvenuto deploy</p>
+<p>In caso d'errori apparirà una finestra contenente un messaggio esplicativo circa il problema riscontrato, mentre il deploy verrà annullato.</p>
+<p><strong>Nota implementativa</strong>: il deploy ha l'effetto di inviare il codice JavaScript dei droni al plug-in BlocklyCraft, che li salva nella cartella <span class="file">scriptcraft/plugins/blocklycraft</span> del server alla stregua di generici script di ScriptCraft, separandoli per indirizzo IP di provenienza.</p>
+<p class="note">Le definizioni dei droni sono conservate dal server fino al successivo riavvio. Alcune opzioni di privacy del browser utilizzato dall'utente potrebbero causare la perdita delle definizioni dei droni precedentemente inviati al server alla chiusura del browser.</p>
+<p>Per eseguire il drone appena definito se ne indica il nome nel comando <span class="code">/jsp</span>:</p>
+<img src="img/minecraft-javascript/chat-drone.png"/>
+<p class="illustration">Il comando <span class="code">/jsp</span> di esecuzione del drone di test</p>
+<p>La costruzione di 3&times;4 blocchi di pietra appare subito dopo l'invio del comando:</p>
+<img src="img/minecraft-javascript/chat-drone-response.png"/>
+<p class="illustration">La costruzione eseguita dal drone di test</p>
+<h2>Considerazioni finale</h2>
+<h3>ScriptCraft vs. RaspberryJuice</h3>
+<p>ScriptCraft richiede la scrittura di codice JavaScript, così come <a href="minecraft-python.html">RaspberryJuice</a> impone la conoscenza del linguaggio Python. Prescindendo dalle vocazioni didattiche dei due linguaggi, l'indubbio vantaggio di ScriptCraft rispetto a RaspberryJuice è di consentire il lancio degli script direttamente dalla chat del client Minecraft; il secondo infatti esige l'uso di una finestra di terminale. D'altra parte, ScriptCraft obbliga l'utente a salvare i propri script in una ben precisa cartella del server, cosa non sempre scontata: l'utente potrebbe non disporre dei diritti di scrittura nella cartella del server Minecraft, oppure questo potrebbe girare su un altro computer. RaspberryJuice non pone alcun vincolo sulla cartella di salvataggio degli script, permettendo quindi all'utente di eseguirli anche se la cartella del server non è direttamente accessibile (purché ovviamente munito dell'apposito plug-in).</p>
+<p>A discapito di RaspberryJuice va citato il fatto che anche nel caso si utilizzi un server remoto opportunamente configurato, è necessario installare nel client i <em>binding</em> Python dell'API del plug-in (ovvero i file cartella <span class="file">resources/mcpi/api/python/modded</span> dell'archivio di RaspberryJuice); l'uso di ScriptCraft non richiede invece alcun intervento sul client.</p>
+<h3>BlocklyCraft vs. ScriptCraft</h3>
+<p>Sebbene BlocklyCraft si basi su ScriptCraft, le funzionalità che mette a disposizione sono molto limitate: consente in pratica di automatizzare la sola costruzione di strutture, per quanto complesse. Il vantaggio principale di BlocklyCraft rispetto a ScriptCraft è l'interfaccia visuale particolarmente intuitiva. Come ScriptCraft, anche il suo uso in ambiente client/server è immediato: è sufficiente aprire il browser internet del client all'indirizzo <span class="code">http://&lt;NOME-SERVER&gt;:7070</span>.</p>
+<p class="note"><strong>Nota</strong>: per evitare la sospensione del client di Minecraft durante la redazione dei programmi, è conveniente porre a <span class="code">false</span> il parametro <span class="code">pauseOnLostFocus</span> nel file <span class="file">~/.minecraft/options.txt</span>.</p>
+<p class="modification-notice">Pagina modificata il 06/09/2016</p>
+</body>
+</html>
