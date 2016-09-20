@@ -124,6 +124,35 @@ spawn-monsters=false
 <h3>BlocklyCraft vs. ScriptCraft</h3>
 <p>Sebbene BlocklyCraft si basi su ScriptCraft, le funzionalità che mette a disposizione sono molto limitate: in pratica si possono realizzare solo costruzioni. Il vantaggio principale di BlocklyCraft rispetto a ScriptCraft è l'interfaccia visuale particolarmente intuitiva. L'uso in ambiente client/server è ancora più immediato: è sufficiente che l'utente si conetta con il suo browser all'indirizzo <span class="code">http://&lt;NOME-SERVER&gt;:7070</span> e può già iniziare a programmare.</p>
 <p class="note"><strong>Nota</strong>: per evitare la sospensione del client di Minecraft durante la redazione dei programmi, è conveniente porre a <span class="code">false</span> il parametro <span class="code">pauseOnLostFocus</span> nel file <span class="file">~/.minecraft/options.txt</span>.</p>
+<br>
+<p class="update"><strong>Aggiornamento [20/09/2016]</strong></p>
+<p>Il server Spigot adotta uno strano comportamento quando eseguito nella JVM di Oracle, in particolare ricarica il plug-in di ScriptCraft ogni pochi secondi, causando il continuo riavvio del server HTTP di BlocklyCraft:</p>
+<pre class="code">
+...
+[21:09:01 INFO]: Done (12,811s)! For help, type "help" or "?"
+[21:09:01 INFO]: [scriptcraft] js-patch setTimeout() test complete
+[21:09:04 INFO]: [scriptcraft] Disabling scriptcraft v3.2.0-2016-06-08
+[21:09:04 INFO]: [scriptcraft] HTTP web server stopped
+[21:09:04 INFO]: [scriptcraft] Enabling scriptcraft v3.2.0-2016-06-08
+...
+[21:09:08 INFO]: [scriptcraft] HTTP web server for content in scriptcraft/www now available on http://127.0.1.1:7070/
+[21:09:05 INFO]: [scriptcraft] Disabling scriptcraft v3.2.0-2016-06-08
+[21:09:05 INFO]: [scriptcraft] HTTP web server stopped
+[21:09:05 INFO]: [scriptcraft] Enabling scriptcraft v3.2.0-2016-06-08
+...
+[21:09:06 INFO]: [scriptcraft] js-patch setTimeout() test complete
+[21:09:08 INFO]: [scriptcraft] HTTP web server for content in scriptcraft/www now available on http://127.0.1.1:7070/
+[21:09:08 INFO]: [scriptcraft] Disabling scriptcraft v3.2.0-2016-06-08
+[21:09:08 INFO]: [scriptcraft] HTTP web server stopped
+[21:09:08 INFO]: [scriptcraft] Enabling scriptcraft v3.2.0-2016-06-08
+...
+[21:09:08 INFO]: [scriptcraft] HTTP web server for content in scriptcraft/www now available on http://127.0.1.1:7070/
+[21:09:08 INFO]: [scriptcraft] Disabling scriptcraft v3.2.0-2016-06-08
+[21:09:08 INFO]: [scriptcraft] HTTP web server stopped
+[21:09:08 INFO]: [scriptcraft] Enabling scriptcraft v3.2.0-2016-06-08
+...
+</pre>
+<p>L'anomalia non si verifica quando si utilizza la JVM di OpenJDK.</p>
 <p class="modification-notice">Pagina modificata il 07/09/2016</p>
 </body>
 </html>
