@@ -54,8 +54,12 @@ sudo dpkg -i S4A15.deb
 <p class="note">S4A si basa sul <a href="http://wiki.scratch.mit.edu/wiki/Remote_Sensors_Protocol">Remote Sensor Protocol</a> di Scratch, dichiarato obsoleto.</p>
 <a name="S2A_fm"></a>
 <h2>S2A_fm</h2>
-<p>S2A_fm si integra con un’installazione esistente di Scratch 2.0: si tratta dunque di un’<a href="http://wiki.scratch.mit.edu/wiki/Scratch_Extension">estensione</a>, non di un ambiente Scratch alternativo. È sviluppato in <a href="https://www.python.org/">Python</a>. Oltre al <span class="term">run-time</span> del linguaggio (di cui è richiesta la versione 2.7 o superiore), necessita di alcune librerie aggiuntive, che nella configurazione minima risultano essere <a href="http://pyserial.sourceforge.net/">PySerial</a> e <a href="https://github.com/MrYsLab/PyMata">PyMata</a>, entrambe installabili tramite <span class="code">pip</span>.</p>
-<p>La versione dell’estensione in prova è la 1.5, ed è ottenibile clonando o scaricando il <span class="term">repository</span> git del progetto all’indirizzo <a href="https://github.com/MrYsLab/s2a_fm">https://github.com/MrYsLab/s2a_fm</a>.</p>
+<p>S2A_fm si integra con un’installazione esistente di Scratch 2.0: si tratta dunque di un’<a href="http://wiki.scratch.mit.edu/wiki/Scratch_Extension">estensione</a>, non di un ambiente Scratch alternativo. È sviluppato in <a href="https://www.python.org/">Python</a>. Oltre al <span class="term">run-time</span> del linguaggio (di cui è richiesta la versione 2.7 o superiore), necessita di alcune librerie aggiuntive, che nella configurazione minima risultano essere <a href="http://pyserial.sourceforge.net/">PySerial</a> e <a href="https://github.com/MrYsLab/PyMata">PyMata</a>, entrambe installabili tramite <span class="code">pip</span>:</p>
+<pre class="code">
+sudo pip install PySerial
+sudo pip install PyMata
+</pre>
+<p>La versione dell’estensione in prova è la 1.5, ed è ottenibile clonando o scaricando il <span class="term">repository</span> git del progetto all’indirizzo <a href="https://github.com/MrYsLab/s2a_fm">https://github.com/MrYsLab/s2a_fm</a> in una cartella locale.</p>
 <p>L’uso dell’estensione richiede l’avvio di un servizio apposito, che può essere effettuato in modalità manuale direttamente dalla riga di comando. È sufficiente aprire una finestra di terminale, portarsi nella cartella di principale di S2A_fm, e dare il comando:</p>
 <pre class="code">
 python s2a_fm.py /dev/ttyACM0
@@ -75,7 +79,12 @@ python s2a_fm.py /dev/ttyACM0
 <li><span class="code">Debugger On/Off</span></li>
 </ul>
 <p class="note">Subito dopo l’avvio di Scratch, verificare la presenza del messaggio &laquo;<span class="code">Scratch detected! Ready to rock and roll...</span>&raquo; nel terminale, a conferma del fatto che il server ha &ldquo;agganciato&rdquo; Scratch.</p>
-<p>Anche S2A_fm richiede l’installazione del firmware <em>StandardFirmata</em>, incluso nell’ambiente di sviluppo di Arduino (menu <em>File &gt; Examples &gt; Firmata &gt; StandardFirmata</em>). Durante l’esecuzione di un programma, Scratch interroga il server S2A_fm utilizzando il protocollo HTTP. Il server si occupa di trasformare tali richieste nel formato Firmata riconosciuto da Arduino.</p>
+<img src="img/scratch-arduino/server.png">
+<p class="illustration">Il server notifica l'avvenuta connessione con Scratch.</p>
+<p>Anche S2A_fm richiede l’installazione del firmware <em>StandardFirmata</em>, incluso nell’ambiente di sviluppo di Arduino (menu <em>File &gt; Examples &gt; Firmata &gt; StandardFirmata</em>).</p>
+<img src="img/scratch-arduino/firmata.png">
+<p class="illustration">Il comando per caricare il <em>firmata</em>.</p>
+<p>Durante l’esecuzione di un programma, Scratch interroga il server S2A_fm utilizzando il protocollo HTTP. Il server si occupa di trasformare tali richieste nel formato Firmata riconosciuto da Arduino.</p>
 <p>L’arresto del server S2A_fm, <strong>che deve avvenire dopo la chiusura di Scratch</strong>, si ottiene premendo la combinazione di tasti <span class="code">Ctrl+C</span> nella finestra del terminale.</p>
 <h2>Esempio</h2>
 <p>Come banco di prova ho usato	un progetto minimale che consente di spostare uno sprite a destra e a sinistra con i tasti cursore; la pressione del tasto spazio fa apparire un fumetto:</p>
