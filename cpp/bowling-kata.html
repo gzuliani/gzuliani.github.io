@@ -1,0 +1,619 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bowling Kata</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#bowling-kata">risorse</a> | bowling kata</p>
+<h1>Bowling Kata</h1>
+<p>Si tratta probabilmente del <em>code kata</em> più celebre. Io ne sono venuto a conoscenza grazie a <a href="#ref-2">[2]</a>. Ho deciso di affrontarlo in C++. Ho dapprima convertito i test JUnit nella sintassi <a href="gut.html">gut</a>:</p>
+<pre class="code">
+// file: test_bowling.cpp
+
+#include &quot;gut.h&quot;
+
+TEST(&quot;two throws no mark&quot;) {
+  Game game;
+  game.add(5);
+  game.add(4);
+  CHECK(9 == game.score());
+}
+
+TEST(&quot;four throws no mark&quot;) {
+  Game game;
+  game.add(5);
+  game.add(4);
+  game.add(7);
+  game.add(2);
+  CHECK(18 == game.score());
+  CHECK( 9 == game.score_for_frame(1));
+  CHECK(18 == game.score_for_frame(2));
+}
+
+TEST(&quot;simple spare&quot;) {
+  Game game;
+  game.add(3);
+  game.add(7);
+  game.add(3);
+  CHECK(13 == game.score_for_frame(1));
+}
+
+TEST(&quot;simple frame after spare&quot;) {
+  Game game;
+  game.add(3);
+  game.add(7);
+  game.add(3);
+  game.add(2);
+  CHECK(13 == game.score_for_frame(1));
+  CHECK(18 == game.score_for_frame(2));
+  CHECK(18 == game.score());
+}
+
+TEST(&quot;simple strike&quot;) {
+  Game game;
+  game.add(10);
+  game.add(3);
+  game.add(6);
+  CHECK(19 == game.score_for_frame(1));
+  CHECK(28 == game.score());
+}
+
+TEST(&quot;perfect game&quot;) {
+  Game game;
+  for (int i = 0; i &lt; 12; ++i)
+    game.add(10);
+  CHECK(300 == game.score());
+}
+
+TEST(&quot;end of array&quot;) {
+  Game game;
+  for (int i = 0; i &lt; 9; ++i) {
+    game.add(0);
+    game.add(0);
+  }
+  game.add( 2);
+  game.add( 8); // 10th frame spare
+  game.add(10); // strike in last position of array
+  CHECK(20 == game.score());
+}
+
+TEST(&quot;sample game&quot;) {
+  Game game;
+  game.add( 1);
+  game.add( 4);
+  game.add( 4);
+  game.add( 5);
+  game.add( 6);
+  game.add( 4);
+  game.add( 5);
+  game.add( 5);
+  game.add(10);
+  game.add( 0);
+  game.add( 1);
+  game.add( 7);
+  game.add( 3);
+  game.add( 6);
+  game.add( 4);
+  game.add(10);
+  game.add( 2);
+  game.add( 8);
+  game.add( 6);
+  CHECK(133 == game.score());
+}
+
+TEST(&quot;heart break&quot;) {
+  Game game;
+  for (int i = 0; i &lt; 11; ++i)
+    game.add(10);
+  game.add(9);
+  CHECK(299 == game.score());
+}
+
+TEST(&quot;tenth frame spare&quot;) {
+  Game game;
+  for (int i = 0; i &lt; 9; ++i)
+    game.add(10);
+  game.add(9);
+  game.add(1);
+  game.add(1);
+  CHECK(270 == game.score());
+}
+</pre>
+<p>Il codice di test così com'è non compila neppure:</p>
+<pre class="code">
+/* output:
+ *
+ * test_bowling.cpp: In function &apos;void test_5()&apos;:
+ * test_bowling.cpp:6:3: error: &apos;Game&apos; was not declared in this scope
+ *    Game game;
+ *    ^~~~
+ * ...
+ */
+</pre>
+<p>Il primo passo consiste dunque nel rendere il codice compilabile:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+
+<ins>class Game {
+public:
+  void add(int) {}
+  int score() const { return 0; }
+  int score_for_frame(int) const { return 0; }
+};</ins>
+</pre>
+<p>Il codice viene ora compilato con successo, ma tutti i test falliscono, in particolare il primo:</p>
+<pre class="code">
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: FAILED
+ *  test_bowling.cpp(16) : [error] 9 == game.score() evaluates to 9 == 0
+ *  ...
+ */
+</pre>
+<p>Lo sviluppo avviene incrementalmente, soddisfando un test alla volta.</p>
+<h3>Two throws no mark</h3>
+<p>Per far passare il primo test è sufficiente accumulare il numero di birilli abbattuti e considerare la somma come punteggio:</p>
+<pre class="code">
+class Game {
+  <ins>int score_;</ins>
+public:
+  <ins>Game() : score_(0) {}</ins>
+  void add(int <ins>pins</ins>) { <ins>score_ += pins;</ins> }
+  int score() const { return <del>0</del> <ins>score_</ins>; }
+  int score_for_frame(int) const { return 0; }
+};
+
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: FAILED
+ *  test_bowling.cpp(28) : [error] 9 == game.score_for_frame(1) evaluates to 9 == 0
+ *  test_bowling.cpp(29) : [error] 18 == game.score_for_frame(2) evaluates to 18 == 0
+ * ...
+ */
+</pre>
+<h3>Four throws no mark</h3>
+<p>Il superamento del secondo test richiede il raggruppamento dei tiri a due a due, e di conseguenza la memorizzazione dell'esito di ogni singolo tiro:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+<ins>#include &lt;numeric&gt; // accumulate</ins>
+
+class Game {
+  <del>int</del> <ins>std::vector&lt;int&gt;</ins> score_;
+public:
+  <del>Game() : score_(0) {}</del>
+  void add(int pins) { <del>score_ += pins</del> <ins>score_.push_back(pins)</ins>; }
+  int score() const { return <del>score_</del> <ins>score_for_frame(score_.size() / 2)</ins>; }
+  int score_for_frame(int <ins>i</ins>) const { <del>return 0; }</del>
+    <ins>return std::accumulate(score_.begin(), score_.begin() + 2 * i, 0);
+  }</ins>
+};
+
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: OK
+ * simple spare: FAILED
+ *  test_bowling.cpp(39) : [error] 13 == game.score_for_frame(1) evaluates to 13 == 10
+ * ...
+ */
+</pre>
+<p>L'oggetto <span class="code">Game</span> ora si fa carico di due problemi diversi: il calcolo del punteggio complessivo del gioco e quello di ogni singolo <em>frame</em>; è bene separare i due aspetti, introducendo un nuovo oggetto <span class="code">Frame</span> che si occupi del secondo. <span class="code">Game</span> non conterrà più la sequenza dei numeri di birilli abbattuti, ma una sequenza di dieci <span class="code">Frame</span>:</p>
+<pre class="code">
+#include &quot;gut.h&quot;
+<ins>#include &lt;cassert&gt;</ins>
+#include &lt;numeric&gt; // accumulate
+
+class Game {
+  <del>std::vector&lt;int&gt; score_;</del>
+  <ins>static const int FRAMES = 10;
+  std::vector&lt;Frame&gt; frames_;
+  int current_frame_;</ins>
+public:
+  <ins>Game() : frames_(FRAMES), current_frame_(0) {}</ins>
+  void add(int pins) { <del>score_.push_back(pins); }</del>
+    <ins>if (frames_[current_frame_].is_completed())
+      ++current_frame_;
+    assert(current_frame_ &lt; FRAMES);
+    frames_[current_frame_].add(pins);
+  }</ins>
+  int score() const {
+    return score_for_frame(<del>score_.size() / 2</del> <ins>current_frame_ + 1</ins>);
+  }
+  int score_for_frame(int i) const {
+    return std::accumulate(<del>score_.begin(), score_.begin() + 2 * i, 0);</del>
+      <ins>frames_.begin(), frames_.begin() + i, 0,
+        [](int a, const Frame&amp; f) { return a + f.score(); });</ins>
+  }
+};
+</pre>
+<p>Sarebbe stato possibile iniziare con un <span class="code">frames_</span> vuoto e aggiungere <span class="code">Frame</span> all'occorrenza, ma sapendo che il numero di <em>frame</em> di una partita è esattamente dieci, conviene esplicitarlo.</p>
+<p>L'oggetto <span class="code">Frame</span> tiene traccia del numero di birilli abbattuti nei due tiri di sua competenza, effettua il computo del punteggio e indica a <span class="code">Game</span> quando è perciò ora di passare ad un nuovo <span class="code">Frame</span>, perché entrambi i suoi tiri sono stati effettuati:</p>
+<pre class="code">
+<ins>class Frame {
+  int first_roll_;
+  int second_roll_;
+public:
+  Frame() : first_roll_(-1), second_roll_(-1) {}
+  void add(int pins) {
+    first_roll_ == -1 ? first_roll_ = pins : second_roll_ = pins;
+  }
+  bool is_completed() const { return second_roll_ != -1; }
+  int score() const {
+    return is_completed() ? first_roll_ + second_roll_ : 0;
+  }
+};</ins>
+</pre>
+<p>Lanciando il programma di test, si ha la conferma che i primi due casi sono ancora soddisfatti:</p>
+<pre class="code">
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: OK
+ * simple spare: FAILED
+ *  test_bowling.cpp(65) : [error] 13 == game.score_for_frame(1) evaluates to 13 == 10
+ * ...
+ */
+</pre>
+<h3>Simple spare</h3>
+<p>Per determinare il punteggio per uno <em>spare</em>, cioè di un <span class="code">Frame</span> in cui tutti i birilli sono stati abbattuti, è necessario conoscere il punteggio ottenuto nel tiro successivo. A tale scopo si può passare la sequenza di tiri effettuati alla funzione <span class="code">score</span>, purché <span class="code">Frame</span> sia in grado di determinare qual'è il tiro successivo ai suoi due tiri di competenza, per esempio ricordando qual'è il tiro che l'ha originato. Si introduce dapprima l'oggetto <span class="code">Roll</span> che rappresenta un tiro della sequenza dei tiri che costituiscono una partita:</p>
+<pre class="code">
+<ins>class Roll {
+  int number_;
+  int pins_;
+public:
+  Roll(int number, int pins) : number_(number), pins_(pins) {}
+  int number() const { return number_; }
+  int pins() const { return pins_; }
+};
+
+using Rolls = std::vector&lt;Roll&gt;;</ins>
+</pre>
+<p>Si modifica quindi <span class="code">Game</span> che ora deve tener traccia dei tiri effettuati:</p>
+<pre class="code">
+class Game {
+  static const int FRAMES = 10;
+  <ins>Rolls rolls_;</ins>
+  std::vector&lt;Frame&gt; frames_;
+  int current_frame_;
+public:
+  Game() : frames_(10), current_frame_(0) {}
+  void add(int pins) {
+    <ins>rolls_.push_back(Roll(rolls_.size(), pins));</ins>
+    if (frames_[current_frame_].is_completed())
+      ++current_frame_;
+    assert(current_frame_ &lt; FRAMES);
+    frames_[current_frame_].add(<del>pins</del> <ins>rolls_.back()</ins>);
+  }
+  int score() const { return score_for_frame(current_frame_ + 1); }
+  int score_for_frame(int i) const {
+    return std::accumulate(
+      frames_.begin(), frames_.begin() + i, 0,
+        [<ins>this</ins>](int a, const Frame&amp; f) { return a + f.score(<ins>rolls_</ins>); });
+  }
+};
+</pre>
+<p>L'oggetto <span class="code">Frame</span> contiene ora un riferimento al suo primo tiro; per gestire l'istanziazione del riferimento occorre introdurre uno stato esplicito del <span class="code">Frame</span>:</p>
+<pre class="code">
+class Frame {
+  <del>int</del> <ins>Roll</ins> first_roll_;
+  <del>int second_roll_;</del>
+  <ins>enum State {
+    e_empty,
+    e_incomplete,
+    e_complete,
+    e_spare,
+  };
+  State state_;</ins>
+public:
+  Frame() : first_roll_(-1<ins>, 0</ins>), <del>second_roll_(-1)</del> <ins>state_(e_empty)</ins> {}
+  <del>void add(int pins) {
+    first_roll_ == -1 ? first_roll_ = pins : second_roll_ = pins;
+  }</del>
+  <ins>void add(const Roll&amp; roll) {
+    if (state_ == e_empty) {
+      first_roll_ = roll;
+      state_ = e_incomplete;
+    } else if (state_ == e_incomplete) {
+      if (roll.pins() + first_roll_.pins() == 10)
+        state_ = e_spare;
+      else
+        state_ = e_complete;
+    }
+  }</ins>
+  bool is_completed() const { <del>return second_roll_ != -1;</del>
+    <ins>return state_ == e_complete || state_ == e_spare;</ins>
+  }
+  int score(<ins>const Rolls&amp; rolls</ins>) const {
+    <del>return is_completed() ? first_roll_ + second_roll_ : 0;</del>
+    <ins>if (state_ == e_incomplete)
+      return 0;
+    else if (state_ == e_complete)
+      return sum_scores(rolls, 2);
+    else if (state_ == e_spare
+        &amp;&amp; first_roll_.number() + 2 &lt; static_cast&lt;int&gt;(rolls.size()))
+      return sum_scores(rolls, 3);
+    return 0;</ins>
+  }
+<ins>private:
+  int sum_scores(const Rolls&amp; rolls, int rolls_to_add) const {
+    assert(first_roll_.number() + rolls_to_add &lt;= static_cast&lt;int&gt;(rolls.size()));
+    auto start_pos = rolls.begin() + first_roll_.number();
+    return std::accumulate(
+      start_pos, start_pos + rolls_to_add, 0,
+        [](int a, const Roll&amp; roll) { return a + roll.pins(); });
+  }</ins>
+};
+</pre>
+<p>I primi tre test ora sono soddisfatti e, a sorpresa, pure il quarto:</p>
+<pre class="code">
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: OK
+ * simple spare: OK
+ * simple frame after spare: OK
+ * simple strike: FAILED
+ *  test_bowling.cpp(122) : [error] 19 == game.score_for_frame(1) evaluates to 19 == 13
+ *  test_bowling.cpp(123) : [error] 28 == game.score() evaluates to 28 == 13
+ * ...
+ */
+</pre>
+<p>Si può fattorizzare il calcolo del numero di tiri effettuati dall'inizio del frame:</p>
+<pre class="code">
+class Frame {
+  ...
+  int score(const Rolls&amp; rolls) const {
+    if (state_ == e_incomplete)
+      return 0;
+    else if (state_ == e_complete)
+      return sum_scores(rolls, 2);
+    else if (state_ == e_spare <ins>&amp;&amp; available_rolls(rolls) &gt; 2)</ins>
+             <del>&amp;&amp; first_roll_.number() + 2 &lt; static_cast&lt;int&gt;(rolls.size()))</del>
+      return sum_scores(rolls, 3);
+    return 0;
+  }
+private:
+  <ins>int available_rolls(const Rolls&amp; rolls) const {
+    return static_cast&lt;int&gt;(rolls.size()) - first_roll_.number();
+  }</ins>
+  int sum_scores(const Rolls&amp; rolls, int rolls_to_add) const {
+    <del>assert(first_roll_.number() + rolls_to_add &lt;= static_cast&lt;int&gt;(rolls.size()));</del>
+    <ins>assert(available_rolls(rolls) &gt;= rolls_to_add);</ins>
+    auto start_pos = rolls.begin() + first_roll_.number();
+    return std::accumulate(
+      start_pos, start_pos + rolls_to_add, 0,
+        [](int a, const Roll&amp; roll) { return a + roll.pins(); });
+  }
+};
+</pre>
+<h3>Simple strike</h3>
+<p>Il quinto test fallisce per la mancata gestione dello <em>strike</em>, che è di facile implementazione:</p>
+<pre class="code">
+class Frame {
+  Roll first_roll_;
+  enum State {
+    e_empty,
+    e_incomplete,
+    e_complete,
+    e_spare,
+    <ins>e_strike,</ins>
+  };
+  State state_;
+public:
+  Frame() : first_roll_(-1, 0), state_(e_empty) {}
+  void add(const Roll&amp; roll) {
+    if (state_ == e_empty) {
+      first_roll_ = roll;
+      <ins>if (first_roll_.pins() == 10)
+        state_ = e_strike;
+      else</ins>
+        state_ = e_incomplete;
+    } else if (state_ == e_incomplete) {
+      if (roll.pins() + first_roll_.pins() == 10)
+        state_ = e_spare;
+      else
+        state_ = e_complete;
+    }
+  }
+  bool is_completed() const {
+    return state_ == e_complete
+        || state_ == e_spare
+        <ins>|| state_ == e_strike</ins>;
+  }
+  int score(const Rolls&amp; rolls) const {
+    if (state_ == e_incomplete)
+      return 0;
+    else if (state_ == e_complete)
+      return sum_scores(rolls, 2);
+    else if (<ins>(</ins>state_ == e_spare <ins>|| state_ == e_strike)</ins>
+        &amp;&amp; available_rolls(rolls) > 2)
+      return sum_scores(rolls, 3);
+    return 0;
+  }
+private:
+  ...
+};
+
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: OK
+ * simple spare: OK
+ * simple frame after spare: OK
+ * simple strike: OK
+ *
+ * This application has requested the Runtime to terminate it in an unusual way.
+ * Please contact the application's support team for more information.
+ * perfect game: Assertion failed!
+ *
+ * File: test_bowling.cpp, Line 81
+ * 
+ * Expression: current_frame_ &lt; FRAMES
+ */
+</pre>
+<p>Soddisfatto il test &ldquo;simple strike&rdquo;, vale la pena mettere in evidenza il significato della costante <span class="code">10</span> che appare ora due volte in <span class="code">Frame</span>:</p>
+<pre class="code">
+class Frame {
+  <ins>static const int PINS = 10;</ins>
+  Roll first_roll_;
+  ...
+  void add(const Roll&amp; roll) {
+    if (state_ == e_empty) {
+      first_roll_ = roll;
+      if (first_roll_.pins() == <del>10</del> <ins>PINS</ins>)
+        state_ = e_strike;
+      else
+        state_ = e_incomplete;
+    } else if (state_ == e_incomplete) {
+      if (roll.pins() + first_roll_.pins() == <del>10</del> <ins>PINS</ins>)
+        state_ = e_spare;
+      else
+        state_ = e_complete;
+    }
+  }
+  ...
+};
+</pre>
+<h3>Perfect game</h3>
+<p>Il caso della partita perfetta ha causato un accesso all'undicesimo &ndash; e inesistente &ndash; frame. Ciò a causa del fatto che il decimo frame non prevede la gestione dei tiri <em>bonus</em>: il giocatore ha infatti diritto a un tiro extra in caso di spare, due in caso di strike. Serve quindi specializzare l'oggetto <span class="code">Frame</span> per modellare correttamente la natura del decimo frame:</p>
+<pre class="code">
+class Frame {
+<ins>protected:</ins>
+  static const int PINS = 10;
+  ...
+public:
+  Frame() : roll_(0, 0), state_(e_empty) {}
+  <ins>virtual</ins> void add(const Roll&amp; roll) {
+    ...
+  }
+  <ins>virtual</ins> bool is_completed() const {
+    return state_ == e_complete
+        || state_ == e_spare
+        || state_ == e_strike;
+  }
+  ...
+};
+
+<ins>class TenthFrame : public Frame {
+  int bonus_rolls_;
+public:
+  TenthFrame() : bonus_rolls_(0) {}
+  void add(const Roll&amp; roll) override {
+    if (!Frame::is_completed())
+      Frame::add(roll);
+    else
+      ++bonus_rolls_;
+  }
+  bool is_completed() const override {
+    return state_ == e_complete
+       || (state_ == e_spare    &amp;&amp; bonus_rolls_ == 1)
+       || (state_ == e_strike   &amp;&amp; bonus_rolls_ == 2);
+  }
+};</ins>
+</pre>
+<p>Ora è necessario configurare <span class="code">Game</span> con una sequenza di nove <span class="code">Frame</span> e un ultimo <span class="code">TenthFrame</span>. Per supportare il polimorfismo il <span class="code">vector</span> non può più contenere oggetti <span class="code">Frame</span>, bensì puntatori:</p>
+<pre class="code">
+class Game {
+  static const int FRAMES = 10;
+  Rolls rolls_;
+  <ins>using FramePtr = std::shared_ptr&lt;Frame&gt;;</ins>
+  std::vector&lt;<del>Frame</del> <ins>FramePtr</ins>&gt; frames_;
+  int current_frame_;
+public:
+  Game() : <del>frames_(FRAMES),</del> current_frame_(0) {
+    <ins>for (int i = 0; i &lt; FRAMES - 1; ++i)
+      frames_.push_back(std::make_shared&lt;Frame&gt;());
+    frames_.push_back(std::make_shared&lt;TenthFrame&gt;());
+    assert(frames_.size() == FRAMES);</ins>
+  }
+  void add(int pins) {
+    rolls_.push_back(Roll(rolls_.size(), pins));
+    if (frames_[current_frame_]<del>.</del> <ins>-&gt;</ins>is_completed())
+      ++current_frame_;
+    assert(current_frame_ &lt; FRAMES);
+    frames_[current_frame_]<del>.</del> <ins>-&gt;</ins>add(rolls_.back());
+  }
+  int score() const {
+    return score_for_frame(current_frame_ + 1);
+  }
+  int score_for_frame(int i) const {
+    return std::accumulate(
+      frames_.begin(), frames_.begin() + i, 0,
+        [this](int a, const <del>Frame</del> <ins>FramePtr</ins>&amp; f) { return a + f<del>.</del> <ins>-&gt;</ins>score(rolls_); });
+  }
+};
+</pre>
+<p>Questo ultimo intervento conclude il kata:</p>
+<pre class="code">
+/* output:
+ *
+ * Test suite started...
+ * two throws no mark: OK
+ * four throws no mark: OK
+ * simple spare: OK
+ * simple frame after spare: OK
+ * simple strike: OK
+ * perfect game: OK
+ * end of array: OK
+ * sample game: OK
+ * heart break: OK
+ * tenth frame spare: OK
+ * Ran 10 test(s) in 0s.
+ * OK - all tests passed.
+ */
+</pre>
+<p>Per evidenziare che il punteggio di un tiro corrisponde al numero di birilli abbattuti si può separare, in <span class="code">Roll</span>, il conteggio dei birilli (necessario ai fini della determinazione degli spare e degli strike) dal punteggio associato (indispensabile per calcolare il punteggio del frame):</p>
+<pre class="code">
+class Roll {
+  int number_;
+  int pins_;
+public:
+  Roll(int number, int pins) : number_(number), pins_(pins) {}
+  int number() const { return number_; }
+  int pins() const { return pins_; }
+  <ins>int score() const { return pins_; }</ins>
+};
+...
+
+class Frame {
+  ...
+  int sum_scores(const Rolls&amp; rolls, int rolls_to_add) const {
+    assert(available_rolls(rolls) &gt;= rolls_to_add);
+    auto start_pos = rolls.begin() + first_roll_.number();
+    return std::accumulate(
+      start_pos, start_pos + rolls_to_add, 0,
+        [](int a, const Roll&amp; roll) { return a + roll.<del>pins</del> <ins>score</ins>(); });
+  }
+};
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/bowling_kata/test_bowling.cpp">test_bowling.cpp</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Martin, R. C. <em>Agile Software Development: Principles, Patterns, and Practices</em>. Prentice-Hall, 2003, ISBN 0-13-597444-5.</li>
+<a name="ref-2"></a>
+<li class="ref">Martin, R. C., Koss, R. S. <em>objectmentor.com</em>. &quot;Engineer Notebook: An Extreme Programming Episode&quot;. &lt;<a href="http://www.objectmentor.com/resources/articles/xpepisode.htm">http://www.objectmentor.com/resources/articles/xpepisode.htm</a>&gt;. Visitato il 11 gennaio 2010.</li>
+<a name="ref-3"></a>
+<li class="ref">Pescio, C. <em>carlopescio.com</em>. &quot;Get the ball rolling, part 1 (of 4, I guess)&quot;. &lt;<a href="http://www.carlopescio.com/2007/07/get-ball-rolling-part-1-of-4-i-guess.html">http://www.carlopescio.com/2007/07/get-ball-rolling-part-1-of-4-i-guess.html</a>&gt;. Visitato il 21 giugno 2011.</li>
+<a name="ref-4"></a>
+<li class="ref">Pescio, C. <em>carlopescio.com</em>. &quot;Get the ball rolling, part 2 (of 4, most likely)&quot;. &lt;<a href="http://www.carlopescio.com/2007/07/get-ball-rolling-part-2-of-4-most.html">http://www.carlopescio.com/2007/07/get-ball-rolling-part-2-of-4-most.html</a>&gt;. Visitato il 21 giugno 2011.</li>
+<a name="ref-5"></a>
+<li class="ref">Pescio, C. <em>carlopescio.com</em>. &quot;Get the ball rolling, part 3 (of 4, pretty sure)&quot;. &lt;<a href="http://www.carlopescio.com/2007/07/get-ball-rolling-part-3-of-4-pretty.html">http://www.carlopescio.com/2007/07/get-ball-rolling-part-3-of-4-pretty.html</a>&gt;. Visitato il 21 giugno 2011.</li>
+<a name="ref-6"></a>
+<li class="ref">Pescio, C. <em>carlopescio.com</em>. &quot;Get the ball rolling, part 4 (of 4, told ya :-)&quot;. &lt;<a href="http://www.carlopescio.com/2007/08/get-ball-rolling-part-4-of-4-told-ya.html">http://www.carlopescio.com/2007/08/get-ball-rolling-part-4-of-4-told-ya.html</a>&gt;. Visitato il 21 giugno 2011.</li>
+<a name="ref-7"></a>
+<li class="ref">&quot;Bowling&quot;. <em>Wikipedia</em>. &lt;<a href="https://it.wikipedia.org/wiki/Bowling">https://it.wikipedia.org/wiki/Bowling</a>&gt;. Visitato il 25 ottobre 2016.</li>
+<p class="modification-notice">Pagina modificata il 25/10/2016</p>
+</body>
+</html>
