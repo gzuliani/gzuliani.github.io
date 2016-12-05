@@ -1,0 +1,184 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sviluppare per Arduino con SciTE</title>
+<link rel='stylesheet' type='text/css' href='../../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='css/scite-arduino.css'></link>
+</head>
+<body>
+<p class="page-path"><a href="../../index.html#scite-arduino">risorse</a> | sviluppare per arduino con scite</p>
+<h1>Sviluppare per Arduino con SciTE</h1>
+<p>L'editor fornito dall'IDE di Arduino non è particolarmente comodo per la redazione di programmi. Questa impressione dev'essere condivisa dagli sviluppatori stessi dell'IDE, considerando che l'ambiente consente di utilizzarne uno esterno &ndash; vedi voce <span class="command">Use External Editor</span> del menu <span class="menu">Preferences</span>. In questa modalità tuttavia l'autonomia non è completa: se lo <span class="term">sketch</span> può essere lavorato con l'editor preferito, la compilazione e l'<span class="term">upload</span> del firmware deve avvenire comunque attraverso l'IDE.</p>
+<p>A partire dalla versione 1.5.2, l'IDE di Arduino offre un'interfaccia a linea di comando attraverso la quale un programma esterno può richiedere la compilazione di uno sketch o il suo caricamento sulla scheda. Le regole d'uso sono riportate sul <a href="https://github.com/arduino/Arduino/blob/master/build/shared/manpage.adoc">sito ufficiale</a>.</p>
+<p class="note"><strong>Nota 1</strong>: gli esperimenti sono stati condotti con Arduino IDE 1.6.5 e SciTE 3.7.1 su Ubuntu 14.04 64 bit.</p>
+<p class="note"><strong>Nota 2</strong>: per la corretta compilazione degli sketch, la <span class="term">toolchain</span> di Arduino richiede che il codice sorgente sia salvato in un file con estensione <span class="path">*.ino</span> all'interno di una cartella con lo stesso nome del file.</p>
+<p class="note"><strong>Nota 3:</strong> i due comandi principali dell'IDE di Arduino, <span class="command">Verify</span> e <span class="command">Upload</span>, sono stati mappati per analogia nei comandi <span class="command">Compile (Ctrl+F7)</span> e <span class="command">Build (F7)</span> di SciTE rispettivamente.</p>
+<h2>Configurazione di SciTE</h2>
+<p>Prima di eseguire un qualunque comando è necessario specificare il percorso al programma dell'IDE di Arduino, il tipo di scheda Arduino con cui si intende lavorare, nonché la porta USB alla quale questa è connessa. A tal scopo sono state definite tre variabili:</p>
+<pre class="code">
+arduino.program=/path/to/the/arduino/ide/executable
+arduino.board=package:architecture:board
+arduino.port=/path/to/the/usb/port
+</pre>
+<p>Fare riferimento alla documentazione ufficiale per il formato e il significato dei parametri. Segue un esempio reale di configurazione dalla quale si evince che si sta utilizzando una scheda originale Arduino Uno collegata alla prima porta USB del computer:</p>
+<pre class="code">
+#
+# arduino sketches support
+#
+arduino.program=/opt/arduino-1.6.5-r5/arduino
+arduino.board=arduino:avr:uno
+arduino.port=/dev/ttyACM0
+</pre>
+<p>Segue la definizione del comando di accesso all'interfaccia:</p>
+<pre class="code">
+arduino.command=$(arduino.program) --board $(arduino.board) --port $(arduino.port)
+</pre>
+<p>Si procede con la definizione del nuovo tipo di file <span class="code">Arduino Sketch (*.ino)</span>, includendolo nella categoria &ldquo;All Source&rdquo; e nell'elenco dei tipi di file disponibili della maschera <span class="window">Open File</span>:</p>
+<pre class="code">
+# arduino file type
+file.patterns.arduino=*.ino
+*source.patterns.arduino=$(file.patterns.arduino);
+filter.arduino=Arduino Sketch (*.ino)|$(file.patterns.arduino)|
+*filter.arduino=$(filter.arduino)
+</pre>
+<p>Si passa a definire il supporto per l'evidenziazione della sintassi dichiarando di voler utilizzare il parser del linguaggio C++ &mdash; gli sketch Arduino sono di fatto dei frammenti di programma C++ &mdash; e specificando quali sono i nomi di funzione che si vogliono enfatizzati:</p>
+<pre class="code">
+# arduino syntax highlight
+lexer.$(file.patterns.arduino)=cpp
+
+# arduino keywords and library function names
+arduino.library.keywords=pinMode \
+digitalWrite \
+digitalRead \
+analogReference \
+analogRead \
+analogWrite \
+analogReadResolution \
+analogWriteResolution \
+tone \
+noTone \
+shiftOut \
+shiftIn \
+pulseIn \
+millis \
+micros \
+delay \
+delayMicroseconds \
+min \
+max \
+abs \
+constrain \
+map \
+pow \
+sqrt \
+sin \
+cos \
+tan \
+isAlphaNumeric \
+isAlpha \
+isAscii \
+isWhitespace \
+isControl \
+isDigit \
+isGraph \
+isLowerCase \
+isPrintable \
+isPunct \
+isSpace \
+isUpperCase \
+isHexadecimal \
+randomSeed \
+random \
+lowByte \
+highByte \
+bitRead \
+bitWrite \
+bitSet \
+bitClear \
+bit \
+attachInterrupt \
+detatchInterrupt \
+interrupts \
+noInterrupts \
+Serial \
+Stream
+
+arduino.lcd.keywords=begin \
+clear \
+home \
+setCursor \
+write \
+print \
+cursor \
+noCursor \
+blink \
+noBlink \
+display \
+noDisplay \
+scrollDisplayLeft \
+scrollDisplayRight \
+autoscroll \
+noAutoscroll \
+leftToRight \
+rightToLeft \
+createChar
+
+arduino.wire.keywords=begin \
+requestFrom \
+beginTransmission \
+endTransmission \
+write \
+available \
+read \
+onReceive \
+onRequest
+
+keywords.$(file.patterns.arduino)=$(keywordclass.cpp)
+keywords2.$(file.patterns.arduino)=$(keywordclass2.cpp) \
+$(arduino.library.keywords) \
+$(arduino.lcd.keywords) \
+$(arduino.wire.keywords)
+</pre>
+<p>La configurazione precedente presuppone che la variabile <span class="code">keywordclass.cpp</span> contenga l'elenco delle parole chiave del C++, mentre la variabile <span class="code">keywordclass2.cpp</span> contenga i nomi delle funzioni della libreria standard del linguaggio:</p>
+<pre class="code">
+# list of c++ keywords
+keywordclass.cpp=alignas \
+alignof \
+and \
+and_eq \
+...
+xor \
+xor_eq
+
+# list of c/c++ library function names
+keywordclass2.cpp=abort \
+abs \
+acos \
+...
+vscanf \
+vsscanf
+keywords2.$(file.patterns.cpp)=$(keywordclass2.cpp)
+</pre>
+<p>Entrambe le variabili possono essere lasciate vuote o non essere dichiarate affatto, nel qual caso verrebbero evidenziati solo i nomi specificati nelle variabili <span class="code">arduino.*.keywords</span>, perdendo di fatto un po' del potere espressivo disponibile in SciTE. È da tener conto che l'evidenziazione delle parole chiave e delle chiamate a funzione avviene solamente se sono stati definiti gli stili appropriati:</p>
+<pre class="code">
+# style for the C++ "keywords"-class words
+style.cpp.5=...
+
+# style for the C++ "keywords2"-class words
+style.cpp.16=...
+</pre>
+<p>Essendo gli sketch di Arduino dei frammenti di C++ veri e propri, conviene sfruttare l'aiuto che SciTE può fornire circa la parametrizzazione delle funzioni della libreria standard del linguaggio, se disponibile:</p>
+<pre class="code">
+# arduino api specs
+api.$(file.patterns.arduino)=$(SciteUserHome)/.scite/api/cpp.api
+</pre>
+<p>Resta da specificare la corrispondenza tra i comandi di SciTE e quelli dell'IDE Arduino:</p>
+<pre class="code">
+# arduino commands
+if PLAT_UNIX
+    command.compile.$(file.patterns.arduino)=$(arduino.command) --verify $(FilePath)
+    command.build.$(file.patterns.arduino)=$(arduino.command) --upload $(FilePath)
+</pre>
+<p class="modification-notice">Pagina modificata il 05/12/2016</p>
+</body>
+</html>

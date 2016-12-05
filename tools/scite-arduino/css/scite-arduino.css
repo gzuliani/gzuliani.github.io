@@ -1,0 +1,12 @@
+span.command {
+ font-style: italic;
+}
+
+span.menu {
+ font-weight: bold;
+}
+
+span.window {
+ font-weight: bold;
+}
+
