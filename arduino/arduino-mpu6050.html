@@ -1,0 +1,756 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Accelerometro con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-mpu6050.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-mpu6050">risorse</a> | accelerometro con arduino</p>
+<h1>Accelerometro con Arduino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>La genesi di questo progetto è dovuta alle insistenze di mio figlio, una volta scoperta l'esistenza dell'accelerazione. Tutto è nato durante una visita alla base aeronautica delle Frecce Tricolori, ascoltando il tecnico spiegare a quali forze siano soggetti i piloti durante lo svolgimento delle manovre acrobatiche. Nei giorni successivi, durante i viaggi in auto, in corrispondenza ad ogni ripartenza o brusca frenata, la domanda era sempre la stessa: &ldquo;&hellip; e questi, quanti &laquo;g&raquo; erano, papà?&rdquo;<a href="#ref-1"><sup>[1]</sup></a></p>
+<h2>Il sensore MPU-6050</h2>
+<p>Ho affrontato il progetto perché ho scoperto l'esistenza di un sensore a basso costo e facilmente interfacciabile con Arduino, l'<a href="https://www.invensense.com/products/motion-tracking/6-axis/mpu-6050/">MPU-6050</a>. In realtà ho optato per una <span class="term">evaluation board</span> basata su questo sensore, la SODIAL GY-521, che rende l'interconnessione tra i due sistemi ancora più semplice. È disponibile per pochi Euro  in svariate rivendite on-line di componenti elettronici, Amazon compresa.</p>
+<img src="img/arduino-mpu6050/gy-521.jpg">
+<p class="illustration">La scheda GY-521 con il sensore MPU-6050 al centro</p>
+<p>La scheda GY-521 è più conveniente da usare rispetto al sensore nudo perché:</p>
+<ul>
+<li>ha un regolatore interno che alimenta l'unità MPU-6050 alla tensione richiesta di 3.3V a partire dai 5V disponibili sulla scheda Arduino (non serve quindi predisporne uno apposito);</li>
+<li>include due resistori di <span class="term">pull-up</span> sulle linee SCL e SCA del bus I2C che il sensore utilizza come interfaccia di comunicazione (non indispensabile, essendone dotato anche Arduino, comunque utile!);</li>
+<li>pone a massa il pin AD0 del sensore interno con un resistore di <span class="term">pull-down</span> (il valore di tensione presente a questo pin determina l'indirizzo del bus I2C dell'unità, ed è perciò importante non lasciarlo scollegato);</li>
+<li>in ultimo, è corredata di un LED che segnala la presenza della tensione di alimentazione.</li>
+</ul>
+<h3>Cablaggio</h3>
+<p>Il collegamento della scheda GY-521 ad Arduino avviene per mezzo di quattro cavetti:</p>
+<table cellspacing="0" cellpadding="0">
+<tr><th>GY-521</th><th>Arduino</th><th class="wire">Cavo</th></tr>
+<tr><td class="pin">VCC</td><td class="pin">5V</td><td class="wire">rosso</td></tr>
+<tr><td class="pin">GND</td><td class="pin">GND</td><td class="wire">nero</td></tr>
+<tr><td class="pin">SCL</td><td class="pin">A5</td><td class="wire">giallo</td></tr>
+<tr><td class="pin">SDA</td><td class="pin">A4</td><td class="wire">verde</td></tr>
+</table>
+<p>Le linee <span class="pin">SCL</span> e <span class="pin">SDA</span> del bus I2C sono collegate ai pin <span class="pin">A4</span> e <span class="pin">A5</span> per sfruttare la libreria di comunicazione <span class="library">Wire</span> di Arduino che implementa la comunicazione del protocollo utilizzando proprio quei due pin.</p>
+<img src="img/arduino-mpu6050/wiring-mpu6050.png">
+<p class="illustration">Schema di connessione della scheda GY-521 ad Arduino</p>
+<img src="img/arduino-mpu6050/circuit-mpu6050.jpg">
+<p class="illustration">Realizzazione pratica del circuito</p>
+<h3>Verifica del cablaggio</h3>
+<p>Per verificare che il circuito sia stato cablato correttamente ed il sensore funzioni come da specifiche si può innanzitutto controllare che questi risponda all'indirizzo <span class="address">0x68</span> del bus I2C, avendo lasciato il pin <span class="pin">AD0</span> scollegato (cfr. registro 117 &ldquo;Who am I&rdquo; in <a href="#ref-7">[7]</a>):</p>
+<blockquote>The contents of WHO_AM_I are the upper 6 bits of the MPU-60X0’s 7-bit I C address. The least significant bit of the MPU-60X0’s I2C address is determined by the value of the AD0 pin. The value of the AD0 pin is not reflected in this register. The default value of the register is 0x68. Bits 0 and 7 are reserved (Hard coded to 0).</blockquote>
+<p>Un semplice scanner che verifica la presenza di dispositivi collegati al bus I2C di Arduino è disponibile all'indirizzo <a href="http://playground.arduino.cc/Main/I2cScanner">http://playground.arduino.cc/Main/I2cScanner</a>, e quel che segue ne è un adattamento:</p>
+<pre class="code">
+#include &lt;Wire.h&gt;
+
+void setup() {
+  Wire.begin();
+  Serial.begin(9600);
+}
+
+void loop() {
+  int found_devices = 0;
+  static char buffer[128];
+  Serial.println(&quot;Scanning IC2 bus...&quot;);
+
+  for (byte addr = 0; addr &lt; 127; ++addr) {
+    if ((addr == 0)  // General call address
+      || (addr == 1) // CBUS address
+      || (addr == 2) // Reserved for Different Bus Formats
+      || (addr == 3) // Reserved for future purposes
+      || (addr &amp; 0x7c == 0x04) // Hs-mode master code
+      || (addr &amp; 0x7c == 0x38) // 10-bit slave addressing
+      || (addr &amp; 0x7c == 0x3c)) // Reserved for future purposes
+       continue;
+
+    Wire.beginTransmission(addr);
+    byte response = Wire.endTransmission();
+
+    if (response == 0) {
+      sprintf(buffer, &quot;IC2 device found at address 0x%02X&quot;, addr);
+      Serial.println(buffer);
+      ++found_devices;
+    }
+    else if (response != 2) { // 2 = NACK on transmit of address
+      sprintf(buffer, &quot;Error %d while peeking address 0x%02X&quot;, response, addr);
+      Serial.println(buffer);
+    }
+  }
+
+  if (found_devices == 0)
+    Serial.println(&quot;No device found.&quot;);
+
+  Serial.println(&quot;Scanning completed, waiting for another run...&quot;);
+  delay(5000);
+}
+</pre>
+<p>Se tutto è a posto, nella finestra del monitor seriale si dovrebbe leggere qualcosa di simile a:</p>
+<pre class="code">
+  Scanning IC2 bus...
+  IC2 device found at address 0x68
+  Scanning completed, waiting for another run...
+</pre>
+<p>Collegando il pin <span class="pin">AD0</span> a <span class="pin">5V</span> l'indirizzo del sensore dovrebbe passare a <span class="address">0x69</span>:</p>
+<pre class="code">
+  Scanning IC2 bus...
+  IC2 device found at address 0x69
+  Scanning completed, waiting for another run...
+</pre>
+<h3>Lettura dei dati grezzi</h3>
+<p>Il sensore MPU-6050 supporta due modalità di funzionamento: la prima, più semplice, consente di acquisire i dati provenienti dal giroscopio, dagli accelerometri e dal sensore interno di temperatura in modo sincrono, ovvero su esplicita richiesta inviata sul bus I2C. La seconda modalità, detta <span class="term">Digital Motion Processor&trade; (DMP)</span>, è in grado invece di effettuare il <span class="term">tracking</span> del sensore nello spazio tridimensionale e di riconoscere diverse <span class="term">gesture</span>, come ad esempio lo scuotimento. La comunicazione in questo caso avviene in modo asincrono, per mezzo di <span class="term">interrupt</span>, grazie al buffer interno di cui è dotata la scheda. Fare riferimento alla documentazione ufficiale per maggiori informazioni a riguardo<a href="#ref-6"><sup>[6]</sup></a>.</p>
+<p>La collezione di librerie per AVR/Arduino <a href="https://github.com/jrowberg/i2cdevlib">I2C Device Library</a> ne contiene una per l'accelerometro scelto per questo progetto che porta il suo stesso nome, <a href="https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050">MPU6050</a>. Avendo optato per l'interrogazione sincrona del sensore, ho preferito implementare direttamente il protocollo di comunicazione per impratichirmi nell'uso delle primitive di basso livello messe a disposizione dalla libreria <span class="library">Wire</span>.</p>
+<p>Scorrendo le specifiche tecniche dell'MPU-6050<a href="#ref-7"><sup>[7]</sup></a>, si scopre che prima di avviare il ciclo di interrogazioni è necessario &ldquo;risvegliare&rdquo; il circuito disabilitando lo <em>sleep-mode</em> in cui il sensore si trova al momento dell'accesione; per far ciò è necessario azzerare il bit 6 del registro <span class="register">Power Management 1</span> di indirizzo <span class="address">0x6B</span>. Inclusa la libreria <span class="library">Wire</span> per la gestione del bus I2C, si definiscono alcune costanti di comodo e si procede ad azzerare l'intero registro nella fase di inizializzazione dello <span class=term">sketch</span>:</p>
+<pre class="code">
+<ins>#include &lt;Wire.h&gt;</ins>
+
+<ins>const int8_t MPU_I2C_ADDR = 0x68; // address of the MPU-6050 device</ins>
+
+<ins>const int8_t PWR_MGMT_1   = 0x6B; // Power Management 1 register address</ins>
+
+void setup() {
+<ins>  // initialize the Wire library
+  Wire.begin();</ins>
+
+<ins>  // wake up the mpu-6050 unit
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(PWR_MGMT_1);
+  Wire.write(0);
+  Wire.endTransmission();</ins>
+}
+</pre>
+<p>L'azzeramento del bit 6 avviene in maniera drastica, azzerando l'intero registro. Consultando la documentazione, si scopre che in realtà è conveniente agire in questo modo perché:</p>
+<ul>
+ <li>il bit 7, se attivo, causa il reset del dispositivo;</li>
+ <li>il bit 5, se attivo, il dispositivo entra in un ciclo di <span class="term">sample</span>/<span class="term">sleep</span>;</li>
+ <li>il bit 4 è riservato;</li>
+ <li>il bit 3, se attivo, spegne il sensore di temperatura interno;</li>
+ <li>i bit 2&div;0 determinano la sorgente del segnale di <span class="term">clock</span>; quando sono tutti a zero, il sensore utilizza l'oscillatore interno (condizione di default al momento dell'accensione).</li>
+</ul>
+<p>L'accelerometro dell'unità MPU può lavorare su quattro fondo scala diversi: &plusmn;2g, &plusmn;4g, &plusmn;8g e &plusmn;16g. Poiché la documentazione ufficiale non specifica quale fondo scala sia attivo al momento dell'accensione del sensore (anche se tutti gli esperimenti fatti hanno dimostrato che il sensore, una volta spento e riacceso, si predispone sul fondo scala &plusmn;2g), conviene impostarne uno esplicitamente. Il fondo scala è determinato dai bit 3 e 4 del registro <span class="register">Accelerometer Configuration</span> di indirizzo <span class="address">0x1C</span>:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>b<sub>4</sub></th><th>b<sub>3</sub></th><th>fondo scala</th></tr>
+<tr><td class="bits">0</td><td class="bits">0</td><td class="number">&plusmn;2g</td></tr>
+<tr><td class="bits">0</td><td class="bits">1</td><td class="number">&plusmn;4g</td></tr>
+<tr><td class="bits">1</td><td class="bits">0</td><td class="number">&plusmn;8g</td></tr>
+<tr><td class="bits">1</td><td class="bits">1</td><td class="number">&plusmn;16g</td></tr>
+</table>
+<p>Anche in questo caso conviene definire delle costanti di comodo che risultano più esplicite rispetto a dei numeri &ldquo;magici&rdquo; sparpagliati nel codice di cui si rischia di dimenticare il significato in breve tempo:</p>
+<pre class="code">
+#include &lt;Wire.h&gt;
+
+<ins>const int8_t ACCEL_CONFIG = 0x1C; // Accelerometer Configuration</ins>
+const int8_t PWR_MGMT_1   = 0x6B; // Power Management 1 register address
+
+<ins>// accelerometer full scale modes
+const int8_t AFS_SEL_2G   = 0x00;
+const int8_t AFS_SEL_4G   = 0x08;
+const int8_t AFS_SEL_8G   = 0x10;
+const int8_t AFS_SEL_16G  = 0x18;</ins>
+
+void setup() {
+  // initialize the Wire library
+  Wire.begin();
+
+  // wake up the mpu-6050 unit
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(PWR_MGMT_1);
+  Wire.write(0);
+  Wire.endTransmission();
+
+<ins>  // set the accelerometer full scale
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_CONFIG);
+  Wire.write(AFS_SEL_2G);
+  Wire.endTransmission();</ins>
+
+<ins>  // initialize the serial port
+  Serial.begin(9600);</ins>
+}
+</pre>
+<p>L'apertura della porta seriale consentirà più avanti di inviare al computer i dati acquisiti dall'accelerometro, così da verificare il corretto funzionamento del programma.</p>
+<p>I valori di accelerazione degli assi x, y e z determinati dal sensore sono interi a 16 bit memorizzati all'interno di tre coppie registri a 8 bit:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Indirizzo</th><th>Registro</th><th>Descrizione</th></tr>
+<tr><td class="address">0x3B</td><td class="register">ACCEL_XOUT_H</td><td>byte più significativo accelerazione asse x</td></tr>
+<tr><td class="address">0x3C</td><td class="register">ACCEL_XOUT_L</td><td>byte meno significativo accelerazione asse x</td></tr>
+<tr><td class="address">0x3D</td><td class="register">ACCEL_YOUT_H</td><td>byte più significativo accelerazione asse y</td></tr>
+<tr><td class="address">0x3E</td><td class="register">ACCEL_YOUT_L</td><td>byte meno significativo accelerazione asse y</td></tr>
+<tr><td class="address">0x3F</td><td class="register">ACCEL_ZOUT_H</td><td>byte più significativo accelerazione asse z</td></tr>
+<tr><td class="address">0x40</td><td class="register">ACCEL_ZOUT_L</td><td>byte meno significativo accelerazione asse z</td></tr>
+</table>
+<p>Essendo questi registri contigui, la lettura dei 6 byte di dati può avvenire in blocco a partire dal primo registro, il cui indirizzo per comodità e chiarezza viene definito in una costante:</p>
+<pre class="code">
+...
+const int8_t ACCEL_CONFIG = 0x1C; // Accelerometer Configuration
+<ins>const int8_t ACCEL_XOUT_H = 0x3B; // Accelerometer Measurements</ins>
+const int8_t PWR_MGMT_1   = 0x6B; // Power Management 1 register address
+...
+</pre>
+<p>Segue il codice per la lettura dei 6 byte di dati:</p>
+<pre class="code">
+void loop() {
+<ins>  // point to the first accelerometer register
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_XOUT_H);
+  Wire.endTransmission();
+
+<ins>  // read six bytes of data
+  Wire.requestFrom(MPU_I2C_ADDR, 6);</ins>
+
+<ins>  // wait some time before the next acquisition
+  delay(1000);</ins>
+}
+</pre>
+<p>A questo punto è necessario ricostruire i tre valori di accelerazione a 16 bit a partire dai 6 byte appena letti; tenendo presente che per ogni coppia di registri quello di indirizzo inferiore contiene il byte più significativo, il problema si risolve con due semplici operazioni logiche:</p>
+<pre class="code">
+void loop() {
+  ...
+  // read six bytes of data
+  Wire.requestFrom(MPU_I2C_ADDR, 6);
+
+  <ins>// the most significant byte is transmitted first!
+  int16_t accel_x = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_y = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_z = Wire.read() &lt;&lt; 8 | Wire.read();</ins>
+
+<ins>  // print the acceleration values
+  Serial.println(String(accel_x));
+  Serial.println(String(accel_y));
+  Serial.println(String(accel_z));
+  Serial.println(&quot; &quot;);</ins>
+
+  // wait some time before the next acquisition
+  delay(1000);
+}
+</pre>
+<p>Segue un esempio di cattura del monitor seriale:</p>
+<pre class="code">
+-680
+112
+16432
+
+-656
+76
+16472
+
+-672
+100
+16512
+
+-620
+68
+16496
+
+-740
+92
+16560
+...
+</pre>
+<h3>Conversione dei dati grezzi in &laquo;g&raquo;</h3>
+<p>I dati grezzi ottenuti dal sensore non sono molto parlanti, perché si riferiscono ad un fondo scala che colui che legge i dati potrebbe non conoscere. Diventano più comprensibili se espressi in funzione dell'accelerazione gravitazionale. Per far ciò è sufficiente riscalare il valore numerico acquisito rispetto al fondo scala in uso in quell'istante:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>fondo scala</th><th>sensibilità</th></tr>
+<tr><td class="number">&plusmn;2g</td><td class="number">16384 LSB/g</td></tr>
+<tr><td class="number">&plusmn;4g</td><td class="number">8192 LSB/g</td></tr>
+<tr><td class="number">&plusmn;8g</td><td class="number">4096 LSB/g</td></tr>
+<tr><td class="number">&plusmn;16g</td><td class="number">2048 LSB/g</td></tr>
+</table>
+<p>La sensibilità del sensore rappresenta il valore di accelerazione associato al singolo bit, e si ottiene dividendo il numero di configurazioni disponibili (2<sup>16</sup>=65536) per l'ampiezza dell'intervallo di misura (4g per il <span class="term">range</span> &plusmn;2g, 8g per il &plusmn;4g e così via).</p>
+<p>Tornando al codice, si dichiara dapprima la variabile che conterrà il fattore di conversione da dato grezzo a frazione di accelerazione di gravità:</p>
+<pre class="code">
+...
+// accelerometer full scale modes
+const int8_t AFS_SEL_2G   = 0x00;
+const int8_t AFS_SEL_4G   = 0x08;
+const int8_t AFS_SEL_8G   = 0x10;
+const int8_t AFS_SEL_16G  = 0x18;
+
+<ins>float to_g_force;</ins>
+...
+</pre>
+<p>Si prosegue inizializzando la variabile in funzione del fondo scala scelto:</p>
+<pre class="code">
+void setup() {
+  // initialize the Wire library
+  Wire.begin();
+
+  // wake up the mpu-6050 unit
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(PWR_MGMT_1);
+  Wire.write(0);
+  Wire.endTransmission();
+
+<ins>  // select the accelerometer full scale
+  int8_t afs_sel = AFS_SEL_2G;</ins>
+
+  // set the accelerometer full scale
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_CONFIG);
+  Wire.write(<del>AFS_SEL_2G</del> <ins>afs_sel</ins>);
+  Wire.endTransmission();
+
+<ins>  // set the acceleration conversion factor
+  to_g_force = 1. / (16384 >> (afs_sel >> 3 &amp; 0x03));</ins>
+
+  // initialize the serial port
+  Serial.begin(9600);
+}
+</pre>
+<p>Infine, si determinano i valori di accelerazione g lungo i tre assi:</p>
+<pre class="code">
+void loop() {
+  ...
+  // the most significant byte is transmitted first!
+  int16_t accel_x = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_y = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_z = Wire.read() &lt;&lt; 8 | Wire.read();
+
+<ins>  // convert accelerometer readings to g-force values
+  float accel_x_g = accel_x * to_g_force;
+  float accel_y_g = accel_y * to_g_force;
+  float accel_z_g = accel_z * to_g_force;</ins>
+
+  // print the acceleration values
+  Serial.println(String(accel_x)<ins> + &quot;: &quot; + accel_x_g</ins>);
+  Serial.println(String(accel_y)<ins> + &quot;: &quot; + accel_x_g</ins>);
+  Serial.println(String(accel_z)<ins> + &quot;: &quot; + accel_x_g</ins>);
+  Serial.println(&quot; &quot;);
+
+  // wait some time before the next acquisition
+  delay(1000);
+}
+</pre>
+<p>Nel monitor seriale ora appaiono anche i valori di accelerazione:</p>
+<pre class="code">
+-216: -0.01
+132: 0.01
+20364: 1.24
+
+-408: -0.02
+108: 0.01
+20168: 1.23
+
+-160: -0.01
+108: 0.01
+20248: 1.24
+
+-228: -0.01
+160: 0.01
+20136: 1.23
+
+-352: -0.02
+132: 0.01
+20324: 1.24
+</pre>
+<p>Si nota che il sensore, disposto orizzontalmente sul tavolo in stato di riposo, fornisce un valore di accelerazione sugli assi x e y praticamente nullo, mentre sull'asse verticale un valore leggermente superiore a quello atteso di 1g, l'accelerazione gravitazionale naturale.</p>
+<p>Lo sketch con l'interrogazione diretta del sensore è scaricabile <a href="files/arduino-mpu6050/raw-data/mpu6050.ino">qui</a>.</p>
+<h2>Display</h2>
+<p>Per rendere l'accelerometro utilizzabile senza la presenza di un computer è necessario arricchire il circuito di un display sul quale visualizzare i valori di accelerazione; in questo caso si è optato per un LCM-1602C, un display LCD piuttosto comune (è distribuito con lo starter kit Arduino), che implementa l'interfaccia standard Hitachi HD44780.</p>
+<img src="img/arduino-mpu6050/lcm1602c.jpg">
+<p class="illustration">Il display LCD trovato nello starter kit Arduino</p>
+<p>Il display contiene due righe di sedici caratteri ciascuna:</p>
+<pre class="code">
+&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;
+&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;
+</pre>
+<p>I valori delle tre accelerazioni saranno visualizzati secondo il formato:</p>
+<pre class="code">
+X:&plusmn;N.NN&#x2423;&#x2423;Y:&plusmn;N.NN
+Z:&plusmn;N.NN&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;&#x2423;
+</pre>
+<p>Resta spazio a sufficienza per visualizzare il valore complessivo dell'accelerazione:</p>
+<pre class="code">
+X:&plusmn;N.NN&#x2423;&#x2423;Y:&plusmn;N.NN
+Z:&plusmn;N.NN&#x2423;&#x2423;A:&plusmn;N.NN
+</pre>
+<h3>Cablaggio</h3>
+<p>Dovendo visualizzare solo caratteri e cifre, il display può essere collegato ad Arduino avviene secondo la modalità semplificata a 4 bit, che richiede 7 linee di controllo anziché 11 (alimentazioni escluse):</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th colspan="2">Display</th><th>Arduino</th><th class="wire">Cavo</th><th>Note</th></tr>
+<tr><td class="pin">1</td><td class="pin">VSS</td><td class="pin">GND</td><td class="wire">nero</td><td></td></tr>
+<tr><td class="pin">2</td><td class="pin">VDD</td><td class="pin">5V</td><td class="wire">rosso</td><td></td></tr>
+<tr><td class="pin">3</td><td class="pin">V0</td><td class="pin"></td><td class="wire">-</td><td>cursore potenziometro</td></tr>
+<tr><td class="pin">4</td><td class="pin">RS</td><td class="pin">12</td><td class="wire">arancio</td><td></td></tr>
+<tr><td class="pin">5</td><td class="pin">R/W</td><td class="pin">GND</td><td class="wire">nero</td><td>1=R, 0=W</td></tr>
+<tr><td class="pin">6</td><td class="pin">E</td><td class="pin">11</td><td class="wire">giallo</td><td></td></tr>
+<tr><td class="pin">7</td><td class="pin">DB0</td><td class="pin"></td><td class="wire">-</td><td>non collegato</td></tr>
+<tr><td class="pin">8</td><td class="pin">DB1</td><td class="pin"></td><td class="wire">-</td><td>non collegato</td></tr>
+<tr><td class="pin">9</td><td class="pin">DB2</td><td class="pin"></td><td class="wire">-</td><td>non collegato</td></tr>
+<tr><td class="pin">10</td><td class="pin">DB3</td><td class="pin"></td><td class="wire">-</td><td>non collegato</td></tr>
+<tr><td class="pin">11</td><td class="pin">DB4</td><td class="pin">5</td><td class="wire">bianco</td><td></td></tr>
+<tr><td class="pin">12</td><td class="pin">DB5</td><td class="pin">4</td><td class="wire">arancio</td><td></td></tr>
+<tr><td class="pin">13</td><td class="pin">DB6</td><td class="pin">3</td><td class="wire">blu</td><td></td></tr>
+<tr><td class="pin">14</td><td class="pin">DB7</td><td class="pin">2</td><td class="wire">verde</td><td></td></tr>
+<tr><td class="pin">15</td><td class="pin">A</td><td class="pin">5V</td><td class="wire">rosso</td><td>retroilluminazione +</td></tr>
+<tr><td class="pin">16</td><td class="pin">K</td><td class="pin">GND</td><td class="wire">nero</td><td>retroilluminazione -</td></tr>
+</table>
+<img src="img/arduino-mpu6050/wiring-mpu6050-lcd.png">
+<p class="illustration">Schema di connessione del display LCD con il potenziometro di regolazione del contrasto</p>
+<img src="img/arduino-mpu6050/circuit-mpu6050-lcd.jpg">
+<p class="illustration">Realizzazione pratica del circuito</p>
+<p>Per pilotare il display si ricorre alla libreria <span class="library">LiquidCrystal</span>:</p>
+<pre class="code">
+<ins>#include&lt;LiquidCrystal.h&gt;</ins>
+#include&lt;Wire.h&gt;
+...
+
+float to_g_force;
+
+<ins>// declare the LCD wiring schema used
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);</ins>
+
+<ins>// define the masks for the two rows
+static char* upper_row = &quot;X:       Y:     &quot;;
+static char* lower_row = &quot;Z:       A:     &quot;;</ins>
+</pre>
+<p>La libreria standard di Arduino non possiede una funzione di conversione dei valori a virgola mobile in stringa, per cui si rende necessario predisporre una <em>routine</em> apposita che faccia apparire i valori di accelerazione nel formato prefissato:</p>
+<pre class="code">
+<ins>void sprintf_accel(char* buffer, int pos, float value) {
+  // convert the floating point value in cents
+  int cents = static_cast&lt;int&gt;(value * 100);
+  // print the sign
+  if (cents &gt;= 0)
+    buffer[pos++] = &apos;+&apos;;
+  else
+    buffer[pos++] = &apos;-&apos;;
+  // print the value, or 9.99 if it is too big
+  cents = min(999, labs(cents));
+  buffer[pos++] = &apos;0&apos; + cents / 100 % 10; // units
+  buffer[pos++] = &apos;.&apos;;                    // decimal separator
+  buffer[pos++] = &apos;0&apos; + cents /  10 % 10; // tenths
+  buffer[pos++] = &apos;0&apos; + cents       % 10; // cents
+}</ins>
+</pre>
+<p>A questo punto non resta che inizializzare la libreria e utilizzare la nuova funzione per scrivere i valori di accelerazione nei posti giusti:</p>
+<pre class="code">
+void setup() {
+  ...
+
+  to_g_force = 1. / 16384;
+
+<ins>  // initialize the LCD display
+  lcd.begin(16, 2);
+
+  // print the first row template
+  lcd.setCursor(0, 0);
+  lcd.print(upper_row);
+
+  // print the second row template
+  lcd.setCursor(0, 1);
+  lcd.print(lower_row);</ins>
+
+  // initialize serial port
+  Serial.begin(9600);
+}
+
+void loop() {
+  ...
+
+  // convert accelerometer readings to g-force values
+  float accel_x_g = accel_x * to_g_force;
+  float accel_y_g = accel_y * to_g_force;
+  float accel_z_g = accel_z * to_g_force;
+
+<ins>  // calculate the total acceleration
+  float accel_a_g = sqrt(
+      accel_x_g *accel_x_g
+      + accel_y_g * accel_y_g
+      + accel_z_g * accel_z_g);</ins>
+
+<ins>  // print the acceleration values into the row templates
+  sprintf_accel(upper_row,  2, accel_x_g);
+  sprintf_accel(upper_row, 11, accel_y_g);
+  sprintf_accel(lower_row,  2, accel_z_g);
+  sprintf_accel(lower_row, 11, accel_a_g);</ins>
+
+<ins>  // update the display
+  lcd.setCursor(0, 0);
+  lcd.print(upper_row);
+  lcd.setCursor(0, 1);
+  lcd.print(lower_row);</ins>
+
+  // print the acceleration values
+  Serial.println(String(accel_x) + &quot;: &quot; + accel_x_g);
+  Serial.println(String(accel_y) + &quot;: &quot; + accel_x_g);
+  Serial.println(String(accel_z) + &quot;: &quot; + accel_x_g);
+  Serial.println(&quot; &quot;);
+
+  // wait some time before the next acquisition
+  delay(1000);
+}
+</pre>
+<p>Lo sketch con il supporto del display è scaricabile <a href="files/arduino-mpu6050/display/mpu6050.ino">qui</a>.</p>
+<h3>Aumento della frequenza di campionamento</h3>
+<p>La frequenza di acquisizione di 1Hz non è sufficiente per apprezzare variazioni repentine di accelerazione: sottoponendo il circuito ad un urto è raro vederne sul display l'effetto. Un modo per &ldquo;catturare&rdquo; in modo più efficace i cambiamenti di accelerazione consiste nell'aumentare la frequenza di campionamento. D'altra parte, non è pensabile visualizzare i dati acquisiti allo stesso ritmo con cui vengono raccolti: il tempo di risposta non nullo del display e l'effetto persistenza della retina<a href="#ref-6"><sup>[6]</sup></a> non permetterebbero di leggere con chiarezza i valori numerici.</p>
+<p>In questi casi conviene conservare un numero prestabilito di campioni e visualizzare sul display quello più significativo, avendo cura di aggiornare il display con frequenza minore di quella di campionamento in modo da evitare fastidiosi sfarfallii.</p>
+<p>Il ciclo principale del programma dovrà quindi:</p>
+<ul>
+<li>acquisire i valori di accelerazione sui tre assi principali;</li>
+<li>determinare il valore complessivo di accelerazione;</li>
+<li>sostituire il campione più vecchio con i nuovi dati;</li>
+<li>se è giunto il tempo:
+<ul>
+<li>trovare il campione con il valore massimo di accelerazione;</li>
+<li> aggiornare il display;</li>
+</ul></li>
+<li>sospendere l'esecuzione fino all'istante della prossima acquisizione.</li>
+</ul>
+<p>A tal scopo si definiscono alcune variabili di supporto:</p>
+<pre class="code">
+...
+
+// declare the LCD wiring schema used
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+<ins>const int display_refresh_rate_ms = 500;     // update the display every 500ms
+unsigned long last_display_refresh_time = 0; // last time the display was updated</ins>
+
+static char* upper_row = &quot;X:       Y:     &quot;;
+static char* lower_row = &quot;Z:       A:     &quot;;
+
+<ins>// data acquisition rate
+const unsigned long scan_rate_ms = 10;       // sample at 100Hz</ins>
+
+<ins>// data buffers
+const int buffer_length = 100;
+
+float accel_x_buffer[buffer_length];
+float accel_y_buffer[buffer_length];
+float accel_z_buffer[buffer_length];
+float accel_a_buffer[buffer_length];</ins>
+
+<ins>int next_scan_index = 0;                     // where the next sample will be saved</ins>
+...
+
+void loop() {
+<ins>  unsigned long loop_start = millis();</ins>
+
+  // point to the first accelerometer register
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_XOUT_H);
+  Wire.endTransmission();
+
+  // read six bytes of data
+  Wire.requestFrom(MPU_I2C_ADDR, 6);
+
+  // the most significant byte is transmitted first!
+  int16_t accel_x = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_y = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_z = Wire.read() &lt;&lt; 8 | Wire.read();
+
+  // convert the accelerometer readings to g-force values
+  float accel_x_g = accel_x * to_g_force;
+  float accel_y_g = accel_y * to_g_force;
+  float accel_z_g = accel_z * to_g_force;
+
+  // calculate the total acceleration
+  float accel_a_g = sqrt(
+    accel_x_g *accel_x_g
+    + accel_y_g * accel_y_g
+    + accel_z_g * accel_z_g);
+
+<ins>  // save the acceleration data
+  accel_x_buffer[next_scan_index] = accel_x_g;
+  accel_y_buffer[next_scan_index] = accel_y_g;
+  accel_z_buffer[next_scan_index] = accel_z_g;
+  accel_a_buffer[next_scan_index] = accel_a_g;</ins>
+
+<ins>  // find the position for the next scan
+  next_scan_index = (next_scan_index + 1) % buffer_length;</ins>
+
+<ins>  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    // time to update the display
+    last_display_refresh_time = millis();
+
+    // find the maximum acceleration index
+    int max_scan_index = 0;
+
+    for (int i = 1; i &lt; buffer_length; i++)
+      if (accel_a_buffer[i] &gt; accel_a_buffer[max_scan_index])
+        max_scan_index = i;</ins>
+
+      sprintf_accel(upper_row,  2, <del>accel_x_g</del> <ins>accel_x_buffer[max_scan_index]</ins>);
+      sprintf_accel(upper_row, 11, <del>accel_y_g</del> <ins>accel_y_buffer[max_scan_index]</ins>);
+      sprintf_accel(lower_row,  2, <del>accel_z_g</del> <ins>accel_z_buffer[max_scan_index]</ins>);
+      sprintf_accel(lower_row, 11, <del>accel_a_g</del> <ins>accel_a_buffer[max_scan_index]</ins>);
+
+      lcd.setCursor(0, 0);
+      lcd.print(upper_row);
+      lcd.setCursor(0, 1);
+      lcd.print(lower_row);
+<ins>  }</ins>
+
+  // print the acceleration values
+  Serial.println(String(accel_x) + &quot;: &quot; + accel_x_g);
+  Serial.println(String(accel_y) + &quot;: &quot; + accel_y_g);
+  Serial.println(String(accel_z) + &quot;: &quot; + accel_z_g);
+  Serial.println(&quot; &quot;);
+
+<ins>  // wait for the acquisition period to expire
+  unsigned long elapsed = millis() - loop_start;
+
+  if (elapsed &lt; scan_rate_ms)
+    delay(scan_rate_ms - elapsed);</ins>
+}
+
+<del>  // wait some time before the next acquisition
+  delay(1000);</del>
+
+</pre>
+<p>Compilando il programma si riscontra un errore di memoria:</p>
+<pre class="code">
+Global variables use 2,096 bytes (102%) of dynamic memory, leaving -48 bytes for local variables. Maximum is 2,048 bytes.
+processing.app.debug.RunnerException: Not enough memory; see http://www.arduino.cc/en/Guide/Troubleshooting#size for tips on reducing your footprint.
+	at processing.app.debug.Compiler.size(Compiler.java:344)
+	at processing.app.debug.Compiler.build(Compiler.java:123)
+	at processing.app.Sketch.build(Sketch.java:1109)
+	at processing.app.Sketch.exportApplet(Sketch.java:1127)
+	at processing.app.Sketch.exportApplet(Sketch.java:1113)
+	at processing.app.Editor$DefaultExportHandler.run(Editor.java:2380)
+	at processing.app.Base.&lt;init&gt;(Base.java:454)
+	at processing.app.Base.guardedMain(Base.java:226)
+	at processing.app.Base.main(Base.java:137)
+Not enough memory; see http://www.arduino.cc/en/Guide/Troubleshooting#size for tips on reducing your footprint.
+</pre>
+<p>Troppe variabili globali. Un modo per risolvere il problema è quello di ridurre la dimensione del buffer, portandola da 100 a 90 campioni, oppure rinunciare alla trasmissione seriale. Meglio la seconda, considerando che ora i valori di accelerazione possono essere letti direttamente sul display:</p>
+<pre class="code">
+void setup() {
+  ...
+
+<del>  // initialize the serial port
+  Serial.begin(9600);</del>
+}
+
+void loop() {
+  ...
+
+<del>  // print the acceleration values
+  Serial.println(String(accel_x) + &quot;: &quot; + accel_x_g);
+  Serial.println(String(accel_y) + &quot;: &quot; + accel_y_g);
+  Serial.println(String(accel_z) + &quot;: &quot; + accel_z_g);
+  Serial.println(&quot; &quot;);</del>
+
+  // wait for the acquisition period to expire
+  unsigned long elapsed = millis() - loop_start;
+  ...
+}
+</pre>
+<p>La compilazione ora ha successo, sebbene venga emesso il seguente avviso:</p>
+<pre class="code">
+Global variables use 1,893 bytes (92%) of dynamic memory, leaving 155 bytes for local variables. Maximum is 2,048 bytes.
+Low memory available, stability problems may occur.
+</pre>
+<p>L'avviso può essere ignorato, fin tanto che le variabili locali non eccedono i 155 byte (allo stato attuale il codice ne usa poco più di trenta). Lo sketch che implementa l'acquisizione bufferizzata è scaricabile <a href="files/arduino-mpu6050/buffer/mpu6050.ino">qui</a>.</p>
+<h2>Calibrazione</h2>
+<p>In stato di riposo, posto su una superficie perfettamente orizzontale, le letture fornite dal sensore in uso sono le seguenti:</p>
+<pre class="code">
+X:-0.01&#x2423;&#x2423;Y:+0.00
+Z:+1.24&#x2423;&#x2423;A:+1.24
+</pre>
+<p>Mentre i valori di accelerazione sugli assi x e y sono sufficientemente vicini al valore atteso zero, sull'asse verticale il sensore misura un'accelerazione ben maggiore di 1g. Con un po' di prove, si scopre che l'entità dell'errore non dipende dalla scelta del fondo scala. Il problema è noto<a href="#ref-4"><sup>[4]</sup></a><a href="#ref-4"><sup>[5]</sup></a>, ma fortunatamente di facile soluzione<a href="#ref-3"><sup>[3]</sup></a>: si tratta di calibrare il sensore, posizionandolo su una superficie piana, lanciando lo sketch di calibrazione disponibile <a href="https://www.i2cdevlib.com/forums/applications/core/interface/file/attachment.php?id=27">qui</a>, quindi caricare gli <em>offset</em> da esso calcolati negli appositi registri del sensore. Poiché lo sketch di calibrazione fa uso della libreria MPU6050 della collezione I2C Device Library, è necessario salvare, nella stessa cartella che ospita lo sketch <span class="path">mpu-6050-calibration.ino</span>, anche i file <span class="path">I2Cdev.h</span>, <span class="path">I2Cdev.cpp</span>, <span class="path">MPU605.h</span> e <span class="path">MPU6050.cpp</span> scaricabili dal <a href="https://github.com/jrowberg/i2cdevlib">sito ufficiale</a> (un archivio locale contenente tutti i file necessari è disponibile <a href="files/arduino-mpu6050/mpu-6050-calibration.zip">qui</a>).</p>
+<p>Una volta compilato e caricato lo sketch, è necessario aprire il monitor seriale e impostarlo alla velocità di 115200 baud. Sul monitor apparirà il messaggio:</p>
+<pre class="code">
+Send any character to start sketch.
+</pre>
+<p>Subito dopo aver premuto il pulsante <span class="button">Send</span> la procedura di calibrazione ha inizio:</p>
+<pre class="code">
+MPU6050 Calibration Sketch
+
+Your MPU6050 should be placed in horizontal position, with package letters facing up.
+Don't touch it until you see a finish message.
+
+MPU6050 connection successful
+
+Reading sensors for first time...
+
+Calculating offsets...
+...
+...
+...
+...
+...
+
+FINISHED!
+
+Sensor readings with offsets:	-5	5	16380	0	-1	0
+Your offsets:	-2574	336	1755	6	-41	35
+
+Data is printed as: acelX acelY acelZ giroX giroY giroZ
+Check that your sensor readings are close to 0 0 16384 0 0 0
+If calibration was succesful write down your offsets so you can set them in your projects using something similar to mpu.setXAccelOffset(youroffset)
+</pre>
+<p>In questo caso i valori di calibrazione suggeriti sono rispettivamente <span class="code">-2574</span> per l'accelerometro dell'asse x, <span class="code">336</span> per quello dell'asse y, <span class="code">1755</span> per quello sull'asse z.</p>
+<p class="note"><strong>Nota:</strong> i valori correttivi sono specifici di un determinato sensore. Non utilizzare i valori di calibrazione di un sensore per uno diverso. Ogni sensore va calibrato separatamente.</p>
+<p>Come si calibra il sensore? La documentazione ufficiale non ne fa menzione, ma il sensore è dotato di una serie di registri che servono proprio a questo scopo<a href="#ref-8"><sup>[8]</sup></a>.</p>
+<p>Il codice viene quindi esteso per inviare i valori di calibrazione negli appositi registri in fase di inizializzazione della scheda:</p>
+<pre class="code">
+...
+
+<ins>const int8_t XG_OFFS_USRH = 0x06; // Accelerometer Offset Cancellation</ins>
+const int8_t ACCEL_CONFIG = 0x1C; // Accelerometer Configuration
+const int8_t ACCEL_XOUT_H = 0x3B; // Accelerometer Measurements
+const int8_t PWR_MGMT_1   = 0x6B; // Power Management 1 register address
+...
+
+void setup() {
+  ...
+  // set the acceleration conversion factor
+  to_g_force = 1. / (16384 &gt;&gt; (afs_sel &gt;&gt; 3 &amp; 0x03));
+
+<ins>  // calibrate the accelerometer
+  const int16_t offset_x = -2574;
+  const int16_t offset_y =   336;
+  const int16_t offset_z =  1755;
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(XG_OFFS_USRH);</ins>
+
+<ins>  uint8_t offsets[6];
+  offsets[0] = static_cast&lt;uint8_t&gt;(offset_x &gt;&gt; 8);
+  offsets[1] = static_cast&lt;uint8_t&gt;(offset_x &amp; 0x00ff);
+  offsets[2] = static_cast&lt;uint8_t&gt;(offset_y &gt;&gt; 8);
+  offsets[3] = static_cast&lt;uint8_t&gt;(offset_y &amp; 0x00ff);
+  offsets[4] = static_cast&lt;uint8_t&gt;(offset_z &gt;&gt; 8);
+  offsets[5] = static_cast&lt;uint8_t&gt;(offset_z &amp; 0x00ff);</ins>
+
+<ins>  Wire.write(offsets, 6);
+  Wire.endTransmission();</ins>
+
+  // initialize the LCD display
+  lcd.begin(16, 2);
+
+  // print the first row template
+  lcd.setCursor(0, 0);
+  lcd.print(upper_row);
+
+  // print the second row template
+  lcd.setCursor(0, 1);
+  lcd.print(lower_row);
+}
+</pre>
+<p>L'effetto della calibrazione è subito evidente:</p>
+<pre class="code">
+X:-0.00&#x2423;&#x2423;Y:+0.00
+Z:+1.00&#x2423;&#x2423;A:+1.00
+</pre>
+<p>La versione finale dello sketch con la calibrazione del sensore è scaricabile <a href="files/arduino-mpu6050/calibration/mpu6050.ino">qui</a>.</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref"><em>&ldquo;Accelerazione di gravità&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0">https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0</a>, visitato il 19/12/2016.</li>
+<a name="ref-2"></a>
+<li class="ref"><em>&ldquo;Persistenza della visione&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Persistenza_della_visione">https://it.wikipedia.org/wiki/Persistenza_della_visione</a>, visitato il 26/12/2016.</li>
+<a name="ref-3"></a>
+<li class="ref"><em>&ldquo;Arduino Sketch to automatically calculate MPU6050 offsets&rdquo;</em>, I2Cdevlib Forums &mdash; <a href="http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/">http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/</a>, visitato il 26/12/2016.</li>
+<a name="ref-4"></a>
+<li class="ref"><em>&ldquo;MPU6050 accelerometer calibration&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=268931.0">http://forum.arduino.cc/index.php?topic=268931.0</a>, visitato il 26/12/2016.</li>
+<a name="ref-5"></a>
+<li class="ref"><em>&ldquo;Calibrating &amp; Optimising the MPU6050&rdquo;</em>, chillibasket &mdash; <a href="http://wired.chillibasket.com/2015/01/calibrating-mpu6050/">http://wired.chillibasket.com/2015/01/calibrating-mpu6050/</a>, visitato il 26/12/2016.</li>
+<a name="ref-6"></a>
+<li class="ref"><em>&ldquo;MPU-6000 and MPU-6050 Product Specification&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Datasheet1.pdf">MPU-6000-Datasheet1.pdf</a>, scaricato il 15/11/2016.</li>
+<a name="ref-7"></a>
+<li class="ref"><em>&ldquo;MPU-6000 and MPU-6050 Register Map and Descriptions&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Register-Map1.pdf">MPU-6000-Register-Map1.pdf</a>, scaricato il 15/11/2016.</li>
+<a name="ref-8"></a>
+<li class="ref"><em>&ldquo;MPU Hardware Offset Registers Application Note&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/invensense-hardware-offset-registers.pdf">invensense-hardware-offset-registers.pdf</a>, scaricato il 12/12/2016 da <a href="http://www.digikey.com/en/pdf/i/invensense/mpu-hardware-offset-registers">qui</a>.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 27/12/2016</p>
+</body>
+</html>
