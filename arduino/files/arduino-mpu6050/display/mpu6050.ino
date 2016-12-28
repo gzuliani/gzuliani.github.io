@@ -53,8 +53,8 @@ void setup() {
 
   // set the accelerometer full scale
   Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_CONFIG);
   Wire.write(afs_sel);
-  Wire.write(AFS_SEL_2G);
   Wire.endTransmission();
 
   // set the acceleration conversion factor
