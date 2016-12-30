@@ -1,0 +1,37 @@
+img {
+ border: 1px solid #073642;
+ display: block;
+ margin-left: 3em;
+ margin-top: 2em;
+ margin-bottom: 0em;
+}
+
+p.illustration {
+ font-size: 75%;
+ font-weight: bold;
+ margin-left: 5em;
+ margin-top: .5em;
+}
+
+span.address {
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .85em;
+}
+
+span.library {
+ font-style: italic;
+}
+
+span.menu {
+ font-weight: bold;
+}
+
+span.path {
+ font-size: .85em;
+ font-weight: bold;
+}
+
+span.pin {
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .85em;
+}
