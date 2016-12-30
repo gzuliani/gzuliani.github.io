@@ -1,0 +1,114 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Accelerometro grafico con arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-mpu6050-oled.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-mpu6050-oled">risorse</a> | accelerometro grafico con arduino</p>
+<h1>Accelerometro grafico con Arduino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Una volta completato il <a href="arduino-mpu6050.html">progetto dell'accelerometro</a>, un amico mi ha suggerito di realizzarne una versione grafica in cui i valori di accelerazione lungo gli assi x e y è rappresentato dalla posizione di un punto su di un diagramma polare:</p>
+<img src="img/arduino-mpu6050-oled/graphic-accelerometer.png">
+<p class="illustration">Un accelerometro grafico</p>
+<p>In commercio si trovano dei piccoli display OLED monocromatici di piccolo formato, anche meno di un pollice, facilmente interfacciabili con Arduino. Ne ho acquistato uno di 0,96 pollici di diagonale con una risoluzione di 128x64 pixel, compatibile con il display SSD1603 prodotto da Adafruit, per poco più di 5 Euro su Amazon:</p>
+<img src="img/arduino-mpu6050-oled/display.jpg">
+<p class="illustration">Il display OLED acquistato</p>
+<p>Oltre al costo irrisorio, il display ha il vantaggio di poter essere pilotato tramite il bus I2C di Arduino sfruttando le librerie sviluppate per il display originale.</p>
+<h2>Cablaggio</h2>
+<p>La connessione al bus I2C richiede solamente i connettori per i canali <span class="pin">SCL</span> e <span class="pin">SDA</span>, linee di alimentazione escluse. Il display può essere collegato in cascata all'accelerometro:</p>
+<img src="img/arduino-mpu6050-oled/wiring-mpu5060-display.png">
+<p class="illustration">Connessione del display al bus I2C del circuito dell'accelerometro</p>
+<img src="img/arduino-mpu6050-oled/circuit-mpu5060-display.jpg">
+<p class="illustration">Realizzazione pratica del circuito</p>
+<p>Per verificare la corretta cablatura del circuito conviene effettuare uno scan del bus I2C (cfr. appunti <a href="arduino-mpu6050.html#verifica-cablaggio">accelerometro con arduino</a>); se tutto funziona correttamente, lo scanner dovrebbe individuare due dispositivi distinti, l'accelerometro e il display:</p>
+<pre class="code">
+Scanning IC2 bus...
+IC2 device found at address 0x3C
+IC2 device found at address 0x68
+Scanning completed, waiting for another run...
+</pre>
+<p>All'indirizzo <span class="address">0x68</span> sappiamo trovarsi l'accelerometro, quindi il display sta rispondendo all'indirizzo <span class="address">0x3C</span>.</p>
+<h2>Librerie di supporto</h2>
+<p>Esistono diverse librerie che facilitano di molto l'uso del display; due di queste sono in particolare:</p>
+<ul>
+<li><span class="library">Adafruit GFX Library</span><a href="ref-2"><sup>[2]</sup></a>: libreria grafica di base, indipendente dall'hardware;</li>
+<li><span class="library">Adafruit SSD1306</span><a href="ref-3"><sup>[3]</sup></a>: driver per il display OLED in uso.</li>
+</ul>
+<p>Le librerie possono essere installate nell'IDE di Arduino così da essere disponibili per eventuali progetti futuri:</p>
+<ol>
+<li>aprire la maschera di gestione delle librerie con il comando <span class="menu">Sketch</span> &rarr; <span class="menu">Include Library</span> &rarr; <span class="menu">Manage Libraries...</span>;</li>
+<li>selezionare la versione più recente della libreria di interesse (1.1.5 per <span class="library">Adafruit GFX Library</span>, 1.1.2 per <span class="library">Adafruit SSD1306</span>);</li>
+<li>attendere il <em>download</em> e l'installazione della libreria;</li>
+<li>procedere con la libreria successiva.</li>
+</ol>
+<p>Al termine della procedura, come controprova dell'avvenuta installazione si può utilizzare lo sketch che dimostra le capacità del display. Dal menu <span class="menu">File</span> &rarr; <span class="menu">Examples</span> &rarr; <span class="menu">Adafruit SSD1306</span> selezionare lo sketch <span class="menu">ssd1306_128x64_i2c</span>, avendo cura di impostare l'indirizzo corretto del display sostituendo alla riga 61 l'indirizzo preimpostato <span class="address">0x3D</span> con <span class="address">0x3C</span>:</p>
+<pre class="code">
+[file ssd1306_128x64_i2c.ino]
+
+...
+
+void setup()   {
+  Serial.begin(9600);
+
+  // by default, we'll generate the high voltage from the 3.3v line internally!
+  display.begin(SSD1306_SWITCHCAPVCC, <del>0x3D</del> <ins>0x3C</ins>);  // initialize with the I2C...
+  // init done
+
+  // Show image buffer on the display hardware.
+  // Since the buffer is intialized with an Adafruit splashscreen
+  // internally, this will display the splashscreen.
+  display.display();
+  delay(2000);
+
+  ...
+}
+</pre>
+<p>Avviata la compilazione, ho ottenuto il seguente errore:</p>
+<pre class="code">
+Height incorrect, please fix Adafruit_SSD1306.h!
+</pre>
+<p>Il problema nasce dal fatto che la libreria <span class="library">Adafruit SSD1306</span> è predisposta per pilotare un display con una risoluzione di 128x32 pixel, mentre quello in uso ha un'altezza doppia. Per indicare alla libreria l'effettiva risoluzione del display è necessario modificare una dichiarazione all'interno del file <span class="path">Adafruit_SSD1306.h</span> che si trova nella cartella <span class="path">Arduino/libraries/Adafruit_SSD1306</span> all'interno della cartella <span class="term">home</span> dell'utente corrente. L'intervento va effettuato alla riga 73:</p>
+<pre class="code">
+//   #define SSD1306_128_64
+   #define SSD1306_128_32
+//   #define SSD1306_96_16
+</pre>
+<p class="illustration">Il codice originale della libreria</p>
+<pre class="code">
+   #define SSD1306_128_64
+//   #define SSD1306_128_32
+//   #define SSD1306_96_16
+</pre>
+<p class="illustration">Il codice modificato con la risoluzione corretta selezionata</p>
+<h2>Sketch</h2>
+<p></p>
+
+
+
+
+<p class="todo">La versione finale dello sketch con la calibrazione del sensore è scaricabile <a href="files/arduino-mpu6050-oled/mpu6050-oled.ino">qui</a>.</p>
+<h2>Estensioni</h2>
+<ul>
+<li>Aggiungere la scala fittizia &plusmn;1g utilizzando la scala &plusmn;2g del sensore e diminuendo di un'unità lo shift verso destra dei dati grezzi;</li>
+<li>mostrare il valore di accelerazione attuale;</li>
+<li>mostrare i valori massimi di accelerazione nelle quattro direzioni principali ai lati del grafico;</li>
+<li>aggiungere l'indicazione dell'accelerazione sull'asse z con una barra verticale a lato del grafico polare;</li>
+<li>mostrare la traccia del cursore sul grafico polare;</li>
+<li>commutare automaticamente alla scala superiore al superamento del fondo scala corrente;</li>
+<li>aggiungere una schermata iniziale di benvenuto;</li>
+<li>&hellip;</li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref"><em>&ldquo;Adafruit GFX Graphics Library Guide&rdquo;</em>, learn.adafruit.com &mdash; <a href="https://learn.adafruit.com/adafruit-gfx-graphics-library/">https://learn.adafruit.com/adafruit-gfx-graphics-library/</a>, visitato il 30/12/2016.</li>
+<a name="ref-2"></a>
+<li class="ref"><em>&ldquo;Adafruit-GFX-Library&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit-GFX-Library">https://github.com/adafruit/Adafruit-GFX-Library</a>, visitato il 30/12/2016.</li>
+<a name="ref-3"></a>
+<li class="ref"><em>&ldquo;Adafruit_SSD1306&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit_SSD1306">https://github.com/adafruit/Adafruit_SSD1306</a>, visitato il 30/12/2016.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 30/12/2016</p>
+</body>
+</html>
