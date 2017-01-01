@@ -9,10 +9,10 @@
 <p class="page-path"><a href="../index.html#arduino-mpu6050-oled">risorse</a> | accelerometro grafico con arduino</p>
 <h1>Accelerometro grafico con Arduino</h1>
 <p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
-<p>Una volta completato il <a href="arduino-mpu6050.html">progetto dell'accelerometro</a>, un amico mi ha suggerito di realizzarne una versione grafica in cui i valori di accelerazione lungo gli assi x e y è rappresentato dalla posizione di un punto su di un diagramma polare:</p>
+<p>Una volta completato il <a href="arduino-mpu6050.html">progetto dell'accelerometro</a>, un amico mi ha suggerito di realizzarne una versione grafica in cui i valori di accelerazione lungo gli assi x e y sono rappresentati dalla posizione di un punto su di un diagramma cartesiano:</p>
 <img src="img/arduino-mpu6050-oled/graphic-accelerometer.png">
 <p class="illustration">Un accelerometro grafico</p>
-<p>In commercio si trovano dei piccoli display OLED monocromatici di piccolo formato, anche meno di un pollice, facilmente interfacciabili con Arduino. Ne ho acquistato uno di 0,96 pollici di diagonale con una risoluzione di 128x64 pixel, compatibile con il display SSD1603 prodotto da Adafruit, per poco più di 5 Euro su Amazon:</p>
+<p>In commercio si trovano diversi display OLED monocromatici di piccolo formato facilmente interfacciabili con Arduino. Ne ho acquistato uno di 0,96 pollici di diagonale con una risoluzione di 128x64 pixel, compatibile con il display SSD1603 prodotto da Adafruit, per poco più di 5 Euro su Amazon:</p>
 <img src="img/arduino-mpu6050-oled/display.jpg">
 <p class="illustration">Il display OLED acquistato</p>
 <p>Oltre al costo irrisorio, il display ha il vantaggio di poter essere pilotato tramite il bus I2C di Arduino sfruttando le librerie sviluppate per il display originale.</p>
@@ -29,21 +29,21 @@ IC2 device found at address 0x3C
 IC2 device found at address 0x68
 Scanning completed, waiting for another run...
 </pre>
-<p>All'indirizzo <span class="address">0x68</span> sappiamo trovarsi l'accelerometro, quindi il display sta rispondendo all'indirizzo <span class="address">0x3C</span>.</p>
+<p>Il dispositivo di indirizzo <span class="address">0x68</span> è l'accelerometro, l'altro &ndash; <span class="address">0x3C</span> &ndash; è il display.</p>
 <h2>Librerie di supporto</h2>
-<p>Esistono diverse librerie che facilitano di molto l'uso del display; due di queste sono in particolare:</p>
+<p>Esistono diverse librerie per il controllo del display; quelle di interesse sono:</p>
 <ul>
 <li><span class="library">Adafruit GFX Library</span><a href="ref-2"><sup>[2]</sup></a>: libreria grafica di base, indipendente dall'hardware;</li>
 <li><span class="library">Adafruit SSD1306</span><a href="ref-3"><sup>[3]</sup></a>: driver per il display OLED in uso.</li>
 </ul>
-<p>Le librerie possono essere installate nell'IDE di Arduino così da essere disponibili per eventuali progetti futuri:</p>
+<p>Le librerie possono essere installate nell'IDE di Arduino in modo da poter essere utilizzabili anche per eventuali altri progetti:</p>
 <ol>
 <li>aprire la maschera di gestione delle librerie con il comando <span class="menu">Sketch</span> &rarr; <span class="menu">Include Library</span> &rarr; <span class="menu">Manage Libraries...</span>;</li>
 <li>selezionare la versione più recente della libreria di interesse (1.1.5 per <span class="library">Adafruit GFX Library</span>, 1.1.2 per <span class="library">Adafruit SSD1306</span>);</li>
 <li>attendere il <em>download</em> e l'installazione della libreria;</li>
 <li>procedere con la libreria successiva.</li>
 </ol>
-<p>Al termine della procedura, come controprova dell'avvenuta installazione si può utilizzare lo sketch che dimostra le capacità del display. Dal menu <span class="menu">File</span> &rarr; <span class="menu">Examples</span> &rarr; <span class="menu">Adafruit SSD1306</span> selezionare lo sketch <span class="menu">ssd1306_128x64_i2c</span>, avendo cura di impostare l'indirizzo corretto del display sostituendo alla riga 61 l'indirizzo preimpostato <span class="address">0x3D</span> con <span class="address">0x3C</span>:</p>
+<p>Al termine della procedura, come controprova dell'avvenuta installazione si può utilizzare lo sketch che dimostra le possibilità del display. Dal menu <span class="menu">File</span> &rarr; <span class="menu">Examples</span> &rarr; <span class="menu">Adafruit SSD1306</span> selezionare lo sketch <span class="menu">ssd1306_128x64_i2c</span>, avendo cura di impostare l'indirizzo corretto del display sostituendo alla riga 61 l'indirizzo preimpostato <span class="address">0x3D</span> con <span class="address">0x3C</span>:</p>
 <pre class="code">
 [file ssd1306_128x64_i2c.ino]
 
@@ -53,7 +53,7 @@ void setup()   {
   Serial.begin(9600);
 
   // by default, we'll generate the high voltage from the 3.3v line internally!
-  display.begin(SSD1306_SWITCHCAPVCC, <del>0x3D</del> <ins>0x3C</ins>);  // initialize with the I2C...
+  display.begin(SSD1306_SWITCHCAPVCC, <del>0x3D</del><ins>0x3C</ins>);  // initialize with the I2C...
   // init done
 
   // Show image buffer on the display hardware.
@@ -82,16 +82,499 @@ Height incorrect, please fix Adafruit_SSD1306.h!
 //   #define SSD1306_96_16
 </pre>
 <p class="illustration">Il codice modificato con la risoluzione corretta selezionata</p>
+<p>Il codice ora compila e una volta trasferito sulla scheda Arduino permette di apprezzare le caratteristiche grafiche del display a disposizione.</p>
 <h2>Sketch</h2>
-<p></p>
+<p>Lo sviluppo dello sketch per il display OLED inizia da quello per display LCD, dopo aver eliminato il codice relativo al display LCD e all'acquisizione dell'accelerazione sull'asse z, in questo caso superflua:</p>
+<pre class="code">
+<del>#include &lt;LiquidCrystal.h&gt;</del>
+#include &lt;Wire.h&gt;
 
+const int8_t MPU_I2C_ADDR = 0x68; // address of the MPU-6050 device
 
+const int8_t XG_OFFS_USRH = 0x06; // Accelerometer Offset Cancellation
+const int8_t ACCEL_CONFIG = 0x1C; // Accelerometer Configuration
+const int8_t ACCEL_XOUT_H = 0x3B; // Accelerometer Measurements
+const int8_t PWR_MGMT_1   = 0x6B; // Power Management 1 register address
 
+// accelerometer full scale modes
+const int8_t AFS_SEL_2G   = 0x00;
+const int8_t AFS_SEL_4G   = 0x08;
+const int8_t AFS_SEL_8G   = 0x10;
+const int8_t AFS_SEL_16G  = 0x18;
 
-<p class="todo">La versione finale dello sketch con la calibrazione del sensore è scaricabile <a href="files/arduino-mpu6050-oled/mpu6050-oled.ino">qui</a>.</p>
+<del>float to_g_force;</del>
+
+<del>// declare the LCD wiring schema used</del>
+<del>LiquidCrystal lcd(12, 11, 5, 4, 3, 2);</del>
+const int display_refresh_rate_ms = 500;     // update the display every 500ms
+unsigned long last_display_refresh_time = 0; // last time the display was updated
+
+<del>// define the masks for the two rows</del>
+<del>static char* upper_row = &quot;X:       Y:     &quot;;</del>
+<del>static char* lower_row = &quot;Z:       A:     &quot;;</del>
+
+// data acquisition rate
+const unsigned long scan_rate_ms = 10;       // sample at 100Hz
+
+// data buffers
+const int buffer_length = 100;
+
+<del>float</del><ins>int16_t</ins> accel_x_buffer[buffer_length];
+<del>float</del><ins>int16_t</ins> accel_y_buffer[buffer_length];
+<del>float accel_z_buffer[buffer_length];</del>
+float accel_a_buffer[buffer_length];
+
+int next_scan_index = 0;                     // where the next sample will be saved
+
+<del>void sprintf_accel(char* buffer, int pos, float value) {
+  // convert the floating point value in cents
+  int cents = static_cast&lt;int&gt;(value * 100);
+  // print the sign
+  if (cents &gt;= 0)
+    buffer[pos++] = &apos;+&apos;;
+  else
+    buffer[pos++] = &apos;-&apos;;
+  // print the value, or 9.99 if it is too big
+  cents = min(999, labs(cents));
+  buffer[pos++] = &apos;0&apos; + cents / 100 % 10; // units
+  buffer[pos++] = &apos;.&apos;;                    // decimal separator
+  buffer[pos++] = &apos;0&apos; + cents /  10 % 10; // tenths
+  buffer[pos++] = &apos;0&apos; + cents       % 10; // cents
+}</del>
+
+void setup() {
+  // initialize the Wire library
+  Wire.begin();
+
+  // wake up the mpu-6050 unit
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(PWR_MGMT_1);
+  Wire.write(0);
+  Wire.endTransmission();
+
+  // select the accelerometer full scale
+  int8_t afs_sel = AFS_SEL_2G;
+
+  // set the accelerometer full scale
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_CONFIG);
+  Wire.write(afs_sel);
+  Wire.endTransmission();
+
+<del>  // set the acceleration conversion factor
+  to_g_force = 1. / (16384 &gt;&gt; (afs_sel &gt;&gt; 3 &amp; 0x03));</del>
+
+  // calibrate the accelerometer
+  const int16_t offset_x = -2574;
+  const int16_t offset_y =   336;
+  const int16_t offset_z =  1755;
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(XG_OFFS_USRH);
+
+  uint8_t offsets[6];
+  offsets[0] = static_cast&lt;uint8_t&gt;(offset_x &gt;&gt; 8);
+  offsets[1] = static_cast&lt;uint8_t&gt;(offset_x &amp; 0x00ff);
+  offsets[2] = static_cast&lt;uint8_t&gt;(offset_y &gt;&gt; 8);
+  offsets[3] = static_cast&lt;uint8_t&gt;(offset_y &amp; 0x00ff);
+  offsets[4] = static_cast&lt;uint8_t&gt;(offset_z &gt;&gt; 8);
+  offsets[5] = static_cast&lt;uint8_t&gt;(offset_z &amp; 0x00ff);
+
+  Wire.write(offsets, 6);
+  Wire.endTransmission();
+
+<del>  // initialize the LCD display
+  lcd.begin(16, 2);</del>
+
+<del>  // print the first row template
+  lcd.setCursor(0, 0);
+  lcd.print(upper_row);</del>
+
+<del>  // print the second row template
+  lcd.setCursor(0, 1);
+  lcd.print(lower_row);</del>
+}
+
+void loop() {
+  unsigned long loop_start = millis();
+
+  // point to the first accelerometer register
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(ACCEL_XOUT_H);
+  Wire.endTransmission();
+
+  // read <del>six</del><ins>four</ins> bytes of data
+  Wire.requestFrom(MPU_I2C_ADDR, <del>6</del><ins>4</ins>);
+
+  // the most significant byte is transmitted first!
+  int16_t accel_x = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_y = Wire.read() &lt;&lt; 8 | Wire.read();
+  int16_t accel_z = Wire.read() &lt;&lt; 8 | Wire.read();
+
+<del>  // convert the accelerometer readings to g-force values
+  float accel_x_g = accel_x * to_g_force;
+  float accel_y_g = accel_y * to_g_force;
+  float accel_z_g = accel_z * to_g_force;</del>
+
+  // calculate the total acceleration
+<del>  float accel_a_g = sqrt(
+    accel_x_g * accel_x_g
+    + accel_y_g * accel_y_g
+    + accel_z_g * accel_z_g</del>);
+<ins>  float accel_a = sq(accel_x) + sq(accel_y);</ins>
+
+  // save the acceleration data
+  accel_x_buffer[next_scan_index] = accel_x_g;
+  accel_y_buffer[next_scan_index] = accel_y_g;
+<del>  accel_z_buffer[next_scan_index] = accel_z_g;</del>
+  accel_a_buffer[next_scan_index] = accel_a<del>_g</del>;
+
+  // find the position for the next scan
+  next_scan_index = (next_scan_index + 1) % buffer_length;
+
+  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    // time to update the display
+    last_display_refresh_time = millis();
+
+    // find the maximum acceleration index
+    int max_scan_index = 0;
+
+    for (int i = 1; i &lt; buffer_length; i++)
+      if (accel_a_buffer[i] &gt; accel_a_buffer[max_scan_index])
+        max_scan_index = i;
+
+<del>    // print the acceleration values into the row templates
+    sprintf_accel(upper_row,  2, accel_x_buffer[max_scan_index]);
+    sprintf_accel(upper_row, 11, accel_y_buffer[max_scan_index]);
+    sprintf_accel(lower_row,  2, accel_z_buffer[max_scan_index]);
+    sprintf_accel(lower_row, 11, accel_a_buffer[max_scan_index]);</del>
+
+<del>    // update the display
+    lcd.setCursor(0, 0);
+    lcd.print(upper_row);
+    lcd.setCursor(0, 1);
+    lcd.print(lower_row);</del>
+  }
+
+  // wait for the acquisition period to expire
+  unsigned long elapsed = millis() - loop_start;
+
+  if (elapsed &lt; scan_rate_ms)
+    delay(scan_rate_ms - elapsed);
+}
+</pre>
+<p>Oltre a quanto anticipato, considerato che non è richiesta la visualizzazione dei valori di accelerazione espressi in frazioni di g, si è optato per lavorare con i dati grezzi acquisiti dal sensore, per evitare inutili operazioni in virgola mobile che sono particolarmente onerose per il microcontrollore montato sulla scheda Arduino &mdash; fino a 10 volte più lente rispetto alle operazioni sui numeri interi<a href="#ref-4"><sup>[4]</sup></a><a href="#ref-5"><sup>[5]</sup></a><a href="#ref-6"><sup>[6]</sup></a><a href="#ref-8"><sup>[8]</sup></a>. La variabile <span class="code">accel_a</span> (che contiene ora il quadrato del valore di accelerazione totale) rimane <span class="code">float</span> per evitare condizioni di <span class="term">overflow</span>, quando cioè il dato grezzo è così elevato che il suo quadrato non è rappresentabile con soli 16 bit.</p>
+<p>Perché non si calcola il valore effettivo di accelerazione ma &ldquo;solo&rdquo; il suo quadrato? Poiché questo valore viene usato solo per determinare il campione massimo, calcolarne la radice quadrata sarebbe un inutile spreco di tempo: il massimo tra i quadrati è anche il massimo tra i valori sotto radice.</p>
+<p>Lo sketch ora acquisisce i dati, ma non li visualizza. Considerando che la risoluzione del display è di 128x64 pixel, conviene mostrare il diagramma cartesiano in prospettiva, in forma di ovale:</p>
+<img src="img/arduino-mpu6050-oled/grid.png">
+<p class="illustration">Il piano grafico visto in prospettiva</p>
+<p>La griglia vuole essere un omaggio a <a href="https://it.wikipedia.org/wiki/Elite_(videogioco)">Elite</a>, cui giocavo negli anni '80:</p>
+<img src="img/arduino-mpu6050-oled/elite.png">
+<p class="illustration">La schermata iniziale di Elite sullo ZX Spectrum &ndash; notare lo schermo radar in basso!</p>
+<p>I valori di accelerazione lungo gli assi x e y saranno rappresentati da un punto fluttuante sulla superficie del grafico. Considerando il posizionamento dei due sensori ed i sistemi di riferimento da essi adottati, l'asse x dell'accelerometro corrisponde alle ordinate del display, mentre l'asse y dell'accelerometro a quello delle ascisse:</p>
+<img src="img/arduino-mpu6050-oled/axes.jpg">
+<p class="illustration">Corrispondenza tra i sistemi di riferimento sensore/display</p>
+<p>Definita la modalità di visualizzazione, si dichiara e inizializza il display:</p>
+<pre class="code">
+<ins>#include &lt;SPI.h&gt;</ins>
+#include &lt;Wire.h&gt;
+<ins>#include &lt;Adafruit_GFX.h&gt;</ins>
+<ins>#include &lt;Adafruit_SSD1306.h&gt;</ins>
+...
+
+<ins>// declare the OLED display used
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);</ins>
+const int display_refresh_rate_ms = <del>500</del><ins>100</ins>;     // update the display every <del>500</del><ins>100</ins>ms
+unsigned long last_display_refresh_time = 0; // last time the display was updated
+...
+
+// data acquisition rate
+const unsigned long scan_rate_ms = <del>10</del><ins>5</ins>;       // sample at <del>100</del><ins>200</ins>Hz
+
+// data buffers
+const int buffer_length = <del>100</del><ins>20</ins>;
+...
+
+void setup() {
+  ...
+
+<ins>  // initialize the display
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);</ins>
+
+<ins>  // hide the Adafruit welcome screen
+  display.clearDisplay();
+  display.display();</ins>
+}
+</pre>
+<p>L'uso delle librerie grafiche richiede un discreto quantitativo di memoria, tant'è che se si lascia a 100 la dimensione del buffer dove vengono temporaneamente conservati i dati grezzi ottenuti dal sensore la compilazione dello sketch fallisce con errore <span class="code">not enough memory</span>. Conviene perciò diminuire a 20 il numero di campioni memorizzati. Considerando d'altra parte che i tempi di risposta del display OLED sono molto più rapidi di un LCD, si può aumentare la frequenza di campionamento a 200Hz. I 20 campioni acquisiti a 200Hz coprono un intervallo di tempo di 100ms, e questa sarà la durata del ciclo di aggiornamento del display: in questo modo il display verrà aggiornato al completo ricaricamento del buffer.</p>
+<p>Per semplicità, il ciclo di aggiornamento del display consiste in una cancellazione, seguita dal caricamento dell'immagine della griglia e dal disegno del cursore nella posizione corrispondente ai valori di accelerazione. Ripristinare solo la parte di griglia al di sotto del cursore potrebbe risultare più efficiente rispetto al ridisegno dell'intero schermo ma, consideratane la complessità, l'aggiornamento mirato del display verrà implementato solo se necessario:</p>
+<pre class="code">
+void loop() {
+  ...
+
+  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    // time to update the display
+    last_display_refresh_time = millis();
+
+    // find the maximum acceleration index
+    int max_scan_index = 0;
+
+    for (int i = 1; i &lt; buffer_length; i++)
+      if (accel_a_buffer[i] &gt; accel_a_buffer[max_scan_index])
+        max_scan_index = i;
+
+<ins>    // clear the drawing area
+    display.clearDisplay();</ins>
+
+<ins>    // load the grid image
+    display.drawBitmap(
+      (display.width()  - grid_width ) / 2, // x
+      (display.height() - grid_height) / 2, // y
+      grid_bitmap,
+      grid_width,
+      grid_height,
+      WHITE);</ins>
+
+<ins>    // plot the cursor
+    display.fillCircle(
+      display.width()  / 2 + (accel_y_buffer[max_scan_index] &gt;&gt;  9),
+      display.height() / 2 + (accel_x_buffer[max_scan_index] &gt;&gt; 10),
+      cursor_radius,
+      WHITE);</ins>
+
+<ins>    // refresh the display
+    display.display();</ins>
+  }
+
+  // wait for the acquisition period to expire
+  unsigned long elapsed = millis() - loop_start;
+
+  if (elapsed &lt; scan_rate_ms)
+    delay(scan_rate_ms - elapsed);
+}
+</pre>
+<p>Si può notare che l'immagine della griglia viene centrata sul display. La definizione della <span class="term">bitmap</span> monocromatica della griglia consiste di 42 righe di 14 byte ciascuna (14 &times; 8 = 112 colonne), ed è la seguente:</p>
+<pre class="code">
+// the grid
+static const int grid_width  = 112;
+static const int grid_height =  42;
+
+static const unsigned char PROGMEM grid_bitmap[] = {
+  B00000000, B00000000, B00000000, B00000000, B00000000, B00000101, B01010101,
+   B01010101, B01010000, B00000000, B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B00000001, B01010000, B00000000,
+   B00000000, B00000101, B01000000, B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B01011100, B00000000, B00000001,
+   B00000000, B00000000, B00011010, B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00001111, B00001000, B00000000, B00000000,
+   B00000000, B00000000, B00010000, B11110000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B11100000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000111, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000110, B00000000, B00100000, B00000000, B00000000,
+   B00000000, B00000000, B00000100, B00000000, B01100000, B00000000, B00000000,
+  B00000000, B00000000, B00110000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00001100, B00000000, B00000000,
+  B00000000, B00000000, B10000000, B00000000, B10000000, B00000000, B00000000,
+   B00000000, B00000000, B00000001, B00000000, B00000001, B00000000, B00000000,
+  B00000000, B00000010, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B01000000, B00000000,
+  B00000000, B00001000, B00000000, B00000010, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B01000000, B00000000, B00010000, B00000000,
+  B00000000, B00100010, B00100010, B00100000, B01000100, B01000100, B01000101,
+   B00100010, B00100010, B00100010, B00000100, B01000100, B01000100, B00000000,
+  B00000000, B10000000, B00000000, B00001000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00010000, B00000000, B00000001, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+  B00000010, B00000000, B00000000, B00100000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000100, B00000000, B00000000, B01000000,
+  B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+  B00001000, B00000000, B00000000, B10000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000001, B00000000, B00000000, B00010000,
+  B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+  B00010000, B00000000, B00000010, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B01000000, B00000000, B00001000,
+  B00100000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000100,
+  B00100000, B00000000, B00001000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00010000, B00000000, B00000100,
+  B00110001, B00010001, B00000001, B00010001, B00010001, B00010001, B00010000,
+   B10001000, B10001000, B10001000, B10001000, B10000001, B00010001, B00010100,
+  B00100000, B00000000, B00100000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000100, B00000000, B00000100,
+  B00100000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000100,
+  B00010000, B00000000, B10000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000001, B00000000, B00001000,
+  B00010000, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00001000,
+  B00001000, B00000010, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B01000000, B00010000,
+  B00000100, B00000000, B00000000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00000000, B00100000,
+  B00000010, B00001000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00010000, B01000000,
+  B00000001, B00000000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B00000000, B10000000,
+  B00000000, B10100000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00000101, B00000000,
+  B00000000, B01101000, B10001000, B10001000, B10001000, B10001000, B10001001,
+   B00010001, B00010001, B00010001, B00010001, B00010001, B00010110, B00000000,
+  B00000000, B00001000, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000000, B00011000, B00000000,
+  B00000000, B00000110, B00000000, B00000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000000, B00000000, B01100000, B00000000,
+  B00000000, B00000001, B10000000, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00000001, B10000000, B00000000,
+  B00000000, B00000000, B01100000, B00000000, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B00000000, B00000110, B00000000, B00000000,
+  B00000000, B00000000, B00011100, B00000000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00000000, B00111000, B00000000, B00000000,
+  B00000000, B00000000, B00000011, B10000000, B00000000, B00000000, B00000000,
+   B10000000, B00000000, B00000000, B00000001, B11000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B01110000, B00000000, B00000000, B00000000,
+   B00000000, B00000000, B00000000, B00001110, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00001111, B00000000, B00000000, B00000001,
+   B00000000, B00000000, B00000000, B11110000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B11111000, B00000000, B00000000,
+   B00000000, B00000000, B00011111, B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B00000111, B11111000, B00000000,
+   B10000000, B00011111, B11100000, B00000000, B00000000, B00000000, B00000000,
+  B00000000, B00000000, B00000000, B00000000, B00000000, B00000111, B11111111,
+   B11111111, B11100000, B00000000, B00000000, B00000000, B00000000, B00000000,
+};
+</pre>
+<p>Il cursore è rappresentato da un cerchio pieno, di raggio prefissato:</p>
+<pre class="code">
+<ins>// the cursor
+static const int cursor_radius = 4;</ins>
+
+// the grid
+static const int grid_width  = 112;
+static const int grid_height =  42;
+...
+</pre>
+<p>La posizione del cursore è determinata con un metodo piuttosto efficiente, anche se impreciso (comunque accettabile per questo tipo di implementazione). La prima considerazione è che i valori di accelerazione acquisiti dal sensore sono interi a 16 bit con segno. La seconda è che per le accelerazioni trasversali (asse y dell'accelerometro, corrispondente alle ascisse del display), le coordinate assunte dal cursore vanno da 0 a 127, mentre per quelle longitudinali (asse x dell'accelerometro, corrispondente alle ordinate del display) vanno da 0 a 63. Per mappare un valore a 16 bit con segno nell'intervallo [0..127] è sufficiente ridurlo nell'intervallo [-64..+63] con una semplice operazione di shift di 9 posizioni, e aggiungere 64 al risultato. Idem per la mappatura sull'intervallo [0..63], con l'accortezza di effettuare uno shift del dato grezzo di 10 posizioni per ridurlo nell'intervallo [-32..+31], e sommare 32 al risultato ottenuto.</p>
+<img src="img/arduino-mpu6050-oled/grid-oled.jpg">
+<p class="illustration">Il display OLED in funzione</p>
+<p>La versione dello sketch fin qui ottenuta è scaricabile <a href="files/arduino-mpu6050-oled/basic/mpu6050-oled.ino">qui</a>.</p>
+<h2>Cambio scala manuale</h2>
+<p>Poiché il sensore può funzionare con quattro sensibilità differenti, si può estendere il circuito e il firmware per consentire all'utente di selezionare il fondo scala che preferisce?</p>
+<p>Per impratichirmi con l'uso delle <span class="term">interrupt</span>, ho deciso di comandare il fondo scala via interruzioni: la pressione di un pulsante genera un'interruzione che si occupa di configurare il sensore sul fondo scala successivo, secondo il ciclo &plusmn;2g &rarr; &plusmn;4g &rarr; &plusmn;8g &rarr; &plusmn;16g &rarr; &plusmn;2g &hellip;</p>
+<p>Sfruttando la possibilità che offre la scheda Arduino di generare un'interruzione in corrispondenza di un cambiamento del livello elettrico presente sul pin <span class="pin">3</span>, il circuito si arricchisce di un pulsante che collega il suddetto pin a massa:</p>
+<img src="img/arduino-mpu6050-oled/wiring-mpu5060-display-button.png">
+<p class="illustration">Il pulsante per il cambio scala</p>
+<img src="img/arduino-mpu6050-oled/circuit-mpu5060-display-button.jpg">
+<p class="illustration">Dettaglio del pulsante di cambio scala</p>
+<p>A livello software c'è da tener conto di una particolarità della piattaforma Arduino: durante il servizio di un'interruzione non è possibile utilizzare la libreria <span class="library">Wire</span> perché lei stessa ne fa uso<a href="#ref-7"><sup>[7]</sup></a><a href="#ref-9"><sup>[9]</sup></a>. Nella <span class="term">routine</span> di gestione dell'interruzione non si può quindi inviare il comando di cambio fondo scala al sensore, ma si può richiedere al programma principale di farlo quanto prima. A tal scopo si usano due variabili, <span class="code">afs_sel</span> che indica il fondo scala corrente e <span class="code">new_afs_sel</span> che indica invece il fondo scala desiderato: se i due valori sono diversi, il programma principale invia il comando di cambio fondo scala. La routine di gestione dell'interrupt si limita quindi ad aggiornare il valore della variabile <span class="code">new_afs_sel</span>, lasciando che sia il programma principale ad inoltrare la richiesta al sensore.</p>
+<p>Lo sketch va esteso per supportare la nuova funzionalità, che prevede anche la visualizzazione del fondo scala corrente nell'angolo in basso a sinistra del display:</p>
+<pre class="code">
+...
+
+// accelerometer full scale modes
+const int8_t AFS_SEL_2G   = 0x00;
+const int8_t AFS_SEL_4G   = 0x08;
+const int8_t AFS_SEL_8G   = 0x10;
+const int8_t AFS_SEL_16G  = 0x18;
+
+<ins>volatile int8_t afs_sel;
+volatile int8_t new_afs_sel;</ins>
+...
+
+<ins>// interrupt handler
+void changeScale() {
+  if (afs_sel == AFS_SEL_2G)
+    new_afs_sel = AFS_SEL_4G;
+  else if (afs_sel == AFS_SEL_4G)
+    new_afs_sel = AFS_SEL_8G;
+  else if (afs_sel == AFS_SEL_8G)
+    new_afs_sel = AFS_SEL_16G;
+  else if (afs_sel == AFS_SEL_16G)
+    new_afs_sel = AFS_SEL_2G;
+}</ins>
+
+void setup() {
+  // initialize the Wire library
+  Wire.begin();
+
+  // wake up the mpu-6050 unit
+  Wire.beginTransmission(MPU_I2C_ADDR);
+  Wire.write(PWR_MGMT_1);
+  Wire.write(0);
+  Wire.endTransmission();
+
+  // select the accelerometer full scale
+  <del>int8_t</del> afs_sel = AFS_SEL_2G;
+  <ins>new_afs_sel = afs_sel;</ins>
+  ...
+
+  // hide the Adafruit welcome screen
+  display.clearDisplay();
+  display.display();
+
+<ins>  // attach the interrupt handler
+  const byte changeScalePin = 3;
+  pinMode(changeScalePin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(changeScalePin), changeScale, FALLING);</ins>
+}
+
+void loop() {
+  unsigned long loop_start = millis();
+
+<ins>  // change the accelerometer scale if requested
+  if (new_afs_sel != afs_sel) {
+    afs_sel = new_afs_sel;
+    // set the accelerometer full scale
+    Wire.beginTransmission(MPU_I2C_ADDR);
+    Wire.write(ACCEL_CONFIG);
+    Wire.write(afs_sel);
+    Wire.endTransmission();
+  }</ins>
+  ...
+
+  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    ...
+
+    // load the grid image
+    display.drawBitmap(
+      (display.width()  - grid_width ) / 2, // x
+      (display.height() - grid_height) / 2, // y
+      grid_bitmap,
+      grid_width,
+      grid_height,
+      WHITE);
+
+<ins>    // print the current accelerometer scale
+    display.setCursor(0, display.height() - 8);
+    display.setTextColor(WHITE);
+    display.print(&quot;FS=&quot;);
+    display.print(2 &lt;&lt; ((afs_sel &gt;&gt; 3) &amp; 0x03));
+    display.print(&quot;g&quot;);</ins>
+
+    // plot the cursor
+    display.fillCircle(
+      display.width()  / 2 + (accel_y_buffer[max_scan_index] &gt;&gt;  9),
+      display.height() / 2 + (accel_x_buffer[max_scan_index] &gt;&gt; 10),
+      cursor_radius,
+      WHITE);
+  }
+  ...
+}
+</pre>
+<p>Da notare la manipolazione binaria della variabile <span class="code">afs_sel</span> per passare dalle costanti <span class="code">AFS_SEL_*G</span> all'effettivo valore del fondo scala 2, 4, 8 o 16.</p>
+<img src="img/arduino-mpu6050-oled/grid-oled-fs.jpg">
+<p class="illustration">Il display OLED con l'indicazione del fondo scala</p>
+<p>La versione dello sketch con la gestione del fondo scala è scaricabile <a href="files/arduino-mpu6050-oled/scale-change/mpu6050-oled.ino">qui</a>.</p>
 <h2>Estensioni</h2>
+<p>Segue un elenco non esaustivo di possibili sviluppi del progetto:</p>
 <ul>
-<li>Aggiungere la scala fittizia &plusmn;1g utilizzando la scala &plusmn;2g del sensore e diminuendo di un'unità lo shift verso destra dei dati grezzi;</li>
+<li>aumentare la precisione della rappresentazione grafica rimodulando la posizione del cursore in funzione delle dimensioni effettive della griglia;</li>
+<li>aggiungere la scala fittizia &plusmn;1g utilizzando la scala &plusmn;2g del sensore e diminuendo di un'unità lo shift verso destra dei dati grezzi;</li>
 <li>mostrare il valore di accelerazione attuale;</li>
 <li>mostrare i valori massimi di accelerazione nelle quattro direzioni principali ai lati del grafico;</li>
 <li>aggiungere l'indicazione dell'accelerazione sull'asse z con una barra verticale a lato del grafico polare;</li>
@@ -108,7 +591,19 @@ Height incorrect, please fix Adafruit_SSD1306.h!
 <li class="ref"><em>&ldquo;Adafruit-GFX-Library&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit-GFX-Library">https://github.com/adafruit/Adafruit-GFX-Library</a>, visitato il 30/12/2016.</li>
 <a name="ref-3"></a>
 <li class="ref"><em>&ldquo;Adafruit_SSD1306&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit_SSD1306">https://github.com/adafruit/Adafruit_SSD1306</a>, visitato il 30/12/2016.</li>
+<a name="ref-4"></a>
+<li class="ref"><em>&ldquo;Avoiding float math to speed up arduino&rdquo;</em>, StackExchange &mdash; <a href="http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino">http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino</a>, visitato il 01/01/2017.</li>
+<a name="ref-5"></a>
+<li class="ref"><em>&ldquo;Faster code Fridays: Avoid floating point math&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/">http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/</a>, visitato il 01/01/2017.</li>
+<a name="ref-6"></a>
+<li class="ref"><em>&ldquo;Faster code Fridays: Understand division and speed of operations&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/">http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/</a>, visitato il 01/01/2017.</li>
+<a name="ref-7"></a>
+<li class="ref"><em>&ldquo;Hardware Interrupt and I2C interference - how to resolve&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=308019.0">http://forum.arduino.cc/index.php?topic=308019.0</a>, visitato il 02/01/2017.</li>
+<a name="ref-8"></a>
+<li class="ref"><em>&ldquo;Speed of floating point operations -- test results&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=40901.0">http://forum.arduino.cc/index.php?topic=40901.0</a>, visitato il 01/01/2017.</li>
+<a name="ref-9"></a>
+<li class="ref"><em>&ldquo;Wire communication during interrupt handling&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=254857.0">http://forum.arduino.cc/index.php?topic=254857.0</a>, visitato il 02/01/2017.</li>
 </ol>
-<p class="modification-notice">Pagina modificata il 30/12/2016</p>
+<p class="modification-notice">Pagina modificata il 01/01/2017</p>
 </body>
 </html>
