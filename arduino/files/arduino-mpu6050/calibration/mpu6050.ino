@@ -1,4 +1,4 @@
-#include<LiquidCrystal.h>
+#include <LiquidCrystal.h>
 #include <Wire.h>
 
 const int8_t MPU_I2C_ADDR = 0x68; // address of the MPU-6050 device
@@ -129,7 +129,7 @@ void loop() {
 
   // calculate the total acceleration
   float accel_a_g = sqrt(
-    accel_x_g *accel_x_g
+    accel_x_g * accel_x_g
     + accel_y_g * accel_y_g
     + accel_z_g * accel_z_g);
 

@@ -1,4 +1,4 @@
-#include<LiquidCrystal.h>
+#include <LiquidCrystal.h>
 #include <Wire.h>
 
 const int8_t MPU_I2C_ADDR = 0x68; // address of the MPU-6050 device

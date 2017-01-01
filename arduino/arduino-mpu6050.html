@@ -390,8 +390,8 @@ Z:&plusmn;N.NN&#x2423;&#x2423;A:&plusmn;N.NN
 <p class="illustration">Realizzazione pratica del circuito</p>
 <p>Per pilotare il display si ricorre alla libreria <span class="library">LiquidCrystal</span>:</p>
 <pre class="code">
-<ins>#include&lt;LiquidCrystal.h&gt;</ins>
-#include&lt;Wire.h&gt;
+<ins>#include &lt;LiquidCrystal.h&gt;</ins>
+#include &lt;Wire.h&gt;
 ...
 
 float to_g_force;
@@ -453,7 +453,7 @@ void loop() {
 
 <ins>  // calculate the total acceleration
   float accel_a_g = sqrt(
-      accel_x_g *accel_x_g
+      accel_x_g * accel_x_g
       + accel_y_g * accel_y_g
       + accel_z_g * accel_z_g);</ins>
 
@@ -544,7 +544,7 @@ void loop() {
 
   // calculate the total acceleration
   float accel_a_g = sqrt(
-    accel_x_g *accel_x_g
+    accel_x_g * accel_x_g
     + accel_y_g * accel_y_g
     + accel_z_g * accel_z_g);
 
