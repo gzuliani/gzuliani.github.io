@@ -218,7 +218,6 @@ void loop() {
   // the most significant byte is transmitted first!
   int16_t accel_x = Wire.read() << 8 | Wire.read();
   int16_t accel_y = Wire.read() << 8 | Wire.read();
-  int16_t accel_z = Wire.read() << 8 | Wire.read();
 
   // calculate the total acceleration
   float accel_a = sq(accel_x) + sq(accel_y);
@@ -264,8 +263,8 @@ void loop() {
 
     // plot the cursor
     display.fillCircle(
-      display.width()  / 2 + (accel_y_buffer[max_scan_index] >>  9),
-      display.height() / 2 + (accel_x_buffer[max_scan_index] >> 10),
+      display.width()  / 2 - (accel_y_buffer[max_scan_index] >>  9),
+      display.height() / 2 - (accel_x_buffer[max_scan_index] >> 10),
       cursor_radius,
       WHITE);
 
