@@ -223,8 +223,8 @@ void loop() {
 <ins>  float accel_a = sq(accel_x) + sq(accel_y);</ins>
 
   // save the acceleration data
-  accel_x_buffer[next_scan_index] = accel_x_g;
-  accel_y_buffer[next_scan_index] = accel_y_g;
+  accel_x_buffer[next_scan_index] = accel_x<del>_g</del>;
+  accel_y_buffer[next_scan_index] = accel_y<del>_g</del>;
 <del>  accel_z_buffer[next_scan_index] = accel_z_g;</del>
   accel_a_buffer[next_scan_index] = accel_a<del>_g</del>;
 
@@ -270,7 +270,7 @@ void loop() {
 <p class="illustration">Il piano grafico visto in prospettiva</p>
 <p>La griglia vuole essere un omaggio a <a href="https://it.wikipedia.org/wiki/Elite_(videogioco)">Elite</a>, cui giocavo negli anni '80:</p>
 <img src="img/arduino-mpu6050-oled/elite.png">
-<p class="illustration">La schermata iniziale di Elite sullo ZX Spectrum &ndash; notare lo schermo radar in basso!</p>
+<p class="illustration">La schermata iniziale di Elite sullo ZX Spectrum</p>
 <p>I valori di accelerazione lungo gli assi x e y saranno rappresentati da un punto fluttuante sulla superficie del grafico. Considerando il posizionamento dei due sensori ed i sistemi di riferimento da essi adottati, l'asse x dell'accelerometro corrisponde alle ordinate del display, mentre l'asse y dell'accelerometro a quello delle ascisse:</p>
 <img src="img/arduino-mpu6050-oled/axes.jpg">
 <p class="illustration">Corrispondenza tra i sistemi di riferimento sensore/display</p>
@@ -339,8 +339,8 @@ void loop() {
 
 <ins>    // plot the cursor
     display.fillCircle(
-      display.width()  / 2 + (accel_y_buffer[max_scan_index] &gt;&gt;  9),
-      display.height() / 2 + (accel_x_buffer[max_scan_index] &gt;&gt; 10),
+      display.width()  / 2 - (accel_y_buffer[max_scan_index] &gt;&gt;  9),
+      display.height() / 2 - (accel_x_buffer[max_scan_index] &gt;&gt; 10),
       cursor_radius,
       WHITE);</ins>
 
@@ -459,6 +459,7 @@ static const int grid_height =  42;
 ...
 </pre>
 <p>La posizione del cursore è determinata con un metodo piuttosto efficiente, anche se impreciso (comunque accettabile per questo tipo di implementazione). La prima considerazione è che i valori di accelerazione acquisiti dal sensore sono interi a 16 bit con segno. La seconda è che per le accelerazioni trasversali (asse y dell'accelerometro, corrispondente alle ascisse del display), le coordinate assunte dal cursore vanno da 0 a 127, mentre per quelle longitudinali (asse x dell'accelerometro, corrispondente alle ordinate del display) vanno da 0 a 63. Per mappare un valore a 16 bit con segno nell'intervallo [0..127] è sufficiente ridurlo nell'intervallo [-64..+63] con una semplice operazione di shift di 9 posizioni, e aggiungere 64 al risultato. Idem per la mappatura sull'intervallo [0..63], con l'accortezza di effettuare uno shift del dato grezzo di 10 posizioni per ridurlo nell'intervallo [-32..+31], e sommare 32 al risultato ottenuto.</p>
+<p>Notare che su entrambe le coordinate è stato effettuato un cambiamento di segno, in modo che il movimento del cursore sul diagramma rispecchi le accelerazioni effettivamente misurate dal sensore.</p>
 <img src="img/arduino-mpu6050-oled/grid-oled.jpg">
 <p class="illustration">Il display OLED in funzione</p>
 <p>La versione dello sketch fin qui ottenuta è scaricabile <a href="files/arduino-mpu6050-oled/basic/mpu6050-oled.ino">qui</a>.</p>
@@ -558,8 +559,8 @@ void loop() {
 
     // plot the cursor
     display.fillCircle(
-      display.width()  / 2 + (accel_y_buffer[max_scan_index] &gt;&gt;  9),
-      display.height() / 2 + (accel_x_buffer[max_scan_index] &gt;&gt; 10),
+      display.width()  / 2 - (accel_y_buffer[max_scan_index] &gt;&gt;  9),
+      display.height() / 2 - (accel_x_buffer[max_scan_index] &gt;&gt; 10),
       cursor_radius,
       WHITE);
   }
