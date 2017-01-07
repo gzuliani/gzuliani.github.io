@@ -584,8 +584,135 @@ void loop() {
 <li>aggiungere una schermata iniziale di benvenuto;</li>
 <li>&hellip;</li>
 </ul>
+<p class="update"><strong>Aggiornamento [06/01/2016]</strong></p>
+<h3>Aggiunta della scala &plusmn;1g</h3>
+<p>Avendo messo alla prova l'accelerometro durante alcuni brevi viaggi in auto, ho potuto constatare che la scala &plusmn;2g ha una sensibilità troppo limitata per le accelerazioni che si sperimentano su un'auto convenzionale: il cursore rimane sempre nei pressi del centro del grafico. Ho pensato quindi di modificare lo sketch introducendo la scala fittizia &plusmn;1g impostando l'accelerometro sulla scala minima &plusmn;2g e riducendo di un fattore 2 la rimappatura dei valori di accelerazione. A tal scopo è stata introdotta una variabile booleana che indica se ci si trova nella scala &plusmn;1g o &plusmn;2g:</p>
+<pre class="code">
+volatile int8_t afs_sel;
+volatile int8_t new_afs_sel;
+<ins>volatile bool emulate_1g_afs;</ins>
+...
+
+void setup() {
+  ...
+
+  // select the accelerometer full scale
+  afs_sel = AFS_SEL_2G;
+  new_afs_sel = afs_sel;
+
+<ins>  // start with the fake 1g scale
+  emulate_1g_afs = true;</ins>
+  ...
+}
+</pre>
+<p>Nella routine di cambio scala bisogna ora tener conto della nuova sensibilità:</p>
+<pre class="code">
+// interrupt handler
+void changeScale() {
+  if (afs_sel == AFS_SEL_2G) <ins>{
+    if (emulate_1g_afs == true)
+      emulate_1g_afs = false; // switch from fake 1g to actual 2g scale
+    else</ins>
+      new_afs_sel = AFS_SEL_4G;
+  <ins>}</ins>
+  else if (afs_sel == AFS_SEL_4G)
+    new_afs_sel = AFS_SEL_8G;
+  else if (afs_sel == AFS_SEL_8G)
+    new_afs_sel = AFS_SEL_16G;
+  else if (afs_sel == AFS_SEL_16G) <ins>{</ins>
+    new_afs_sel = AFS_SEL_2G;
+<ins>    emulate_1g_afs = true; // back to fake 1g scale
+  }</ins>
+}
+</pre>
+<p>La tabella sottostante riporta la mappatura tra la scala selezionata dall'utente, i valori assunti delle variabili <span class="code">afs_sel</span> e <span class="code">emulate_1g_afs</span> e l'entità dello shift applicato ai valori di accelerazione sui due assi del display:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>scala</th><th><span class="code">afs_sel</span></th><th><span class="code">emulate_1g_afs</span></th><th wrap>shift x</th><th>shift y</th></tr>
+<tr><td>&plusmn;1g</td><td>AFS_SEL_2G</td><td>true</td><td>8</td><td>9</td></tr>
+<tr><td>&plusmn;2g</td><td>AFS_SEL_2G</td><td>false</td><td>9</td><td>10</td></tr>
+<tr><td>&plusmn;4g</td><td>AFS_SEL_4G</td><td>false</td><td>9</td><td>10</td></tr>
+<tr><td>&plusmn;8g</td><td>AFS_SEL_8G</td><td>false</td><td>9</td><td>10</td></tr>
+<tr><td>&plusmn;16g</td><td>AFS_SEL_16G</td><td>false</td><td>9</td><td>10</td></tr>
+</table>
+<p>Resta solo da visualizzare la nuova scala ed applicare lo shift corretto:</p>
+<pre class="code">
+void loop() {
+  ...
+
+  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    ...
+
+    // print the current accelerometer scale
+    display.setCursor(0, display.height() - 8);
+    display.setTextColor(WHITE);
+    display.print(&quot;FS=&quot;);
+    <ins>if (emulate_1g_afs)
+        display.print(1);
+    else</ins>
+      display.print(2 &lt;&lt; ((afs_sel &gt;&gt; 3) &amp; 0x03));
+    display.print(&quot;g&quot;);
+
+    // plot the cursor
+    display.fillCircle(
+      <del>display.width()  / 2</del>
+      <ins>64</ins> - (accel_y_buffer[max_scan_index] &gt;&gt; <ins>(emulate_1g_afs ? 8 :</ins>  9<ins>)</ins>),
+      <del>display.height() / 2</del>
+      <ins>32</ins> - (accel_x_buffer[max_scan_index] &gt;&gt; <ins>(emulate_1g_afs ? 9 :</ins> 10<ins>)</ins>),
+      cursor_radius,
+      WHITE);
+
+    // refresh the display
+    display.display();
+  }
+  ...
+
+}
+</pre>
+<p>La versione dello sketch con la scala fittizia &plusmn;1g è scaricabile da <a href="files/arduino-mpu6050-oled/1g/mpu6050-oled.ino">qui</a>.</p>
+<h3>Aumento della precisione</h3>
+<p>Con l'aumento della sensibilità, diventa più evidente l'approssimazione introdotta nella mappatura dei valori di accelerazione sul grafico:</p>
+<img src="img/arduino-mpu6050-oled/mapping-error.jpg">
+<p class="illustration">Posizione del cursore a fronte di un'accelerazione trasversale di 1g</p>
+<p>Come già detto, l'errore è dovuto al fatto che la scala dei valori di accelerazione trasversale viene mappata sulla larghezza del display (128 pixel) sebbene l'asse maggiore dell'ellisse sia lungo solo 108 pixel; stesso discorso per le accelerazioni longitudinali, i cui valori sono mappati sull'intera altezza del display (64 pixel) quando in realtà l'asse minore dell'ellisse ne misura solo 42.</p>
+<p>Si può aumentare l'accuratezza della mappatura senza ricorrere all'uso della matematica in virgola mobile con un semplice stratagemma. Consideriamo ad esempio il semiasse positivo delle ascisse, sul quale vengono mappati i valori di accelerazione trasversale destra:</p>
+<p class="formula">accel_y &rarr; x &isin; [0, 64)</p>
+<p>Questi valori dovrebbero in realtà essere mappati sulla lunghezza del semiasse orizzontale dell'ellisse:</p>
+<p class="formula">accel_y &rarr; x &isin; [0, 56)</p>
+<p>Dunque le coordinate x andrebbero normalizzate di un fattore:</p>
+<p class="formula">x' = x &middot; 56 / 64 = x &middot; 0,875</p>
+<p>La formula può essere così riscritta:</p>
+<p class="formula">x' = x &middot; 0,875 = x &middot; (1 - 0,125) = x - x &middot; 0,125 = x - x / 8</p>
+<p>Essendo x intera, anche la divisione è tra numeri interi. Similmente si procede per le ordinate:</p>
+<p class="formula">accel_x &rarr; y &isin; [0, 32) &mdash; mappatura attuale</p>
+<p class="formula">accel_x &rarr; y &isin; [0, 21) &mdash; mappatura desiderata</p>
+<p class="formula">y' = y &middot; 21 / 32 = y &middot; 0,65625</p>
+<p class="formula">y' = y &middot; 0,65625 = y &middot; (1 - 0,34375) = y - y &middot; 0,34375 &cong; y - y / 3</p>
+<p>L'espressione intera in questo caso è un'approssimazione della mappatura ottimale, ma un'appossimazione nettamente migliore alla precedente. Il codice diventa:</p>
+<pre class="code">
+void loop() {
+  ...
+  // time to update the display?
+  if (millis() - last_display_refresh_time &gt; display_refresh_rate_ms) {
+    ...
+
+    // plot the cursor
+    <ins>int32_t x = accel_y_buffer[max_scan_index] &gt;&gt; (emulate_1g_afs ? 8 :  9);
+    int32_t y = accel_x_buffer[max_scan_index] &gt;&gt; (emulate_1g_afs ? 9 : 10);</ins>
+
+    display.fillCircle(
+      64 - <del>(accel_y_buffer[max_scan_index] &gt;&gt; (emulate_1g_afs ? 8 :  9))</del><ins>(x - x / 8)</ins>,
+      32 - <del>(accel_x_buffer[max_scan_index] &gt;&gt; (emulate_1g_afs ? 9 : 10))</del><ins>(y - y / 3)</ins>,
+      cursor_radius,
+      WHITE);
+    ...
+  }
+}
+</pre>
+<img src="img/arduino-mpu6050-oled/mapping-corrected.jpg">
+<p class="illustration">Posizione del cursore corretta<ol>
+<p>La versione finale dello sketch è disponibile <a href="files/arduino-mpu6050-oled/corrected/mpu6050-oled.ino">qui</a>.</p>
 <h2>Riferimenti</h2>
-<ol>
 <a name="ref-1"></a>
 <li class="ref"><em>&ldquo;Adafruit GFX Graphics Library Guide&rdquo;</em>, learn.adafruit.com &mdash; <a href="https://learn.adafruit.com/adafruit-gfx-graphics-library/">https://learn.adafruit.com/adafruit-gfx-graphics-library/</a>, visitato il 30/12/2016.</li>
 <a name="ref-2"></a>
