@@ -6,6 +6,11 @@ img {
  margin-bottom: 0em;
 }
 
+p.formula {
+ font-style: italic;
+ margin-left: 3em;
+}
+
 p.illustration {
  font-size: 75%;
  font-weight: bold;
@@ -34,4 +39,8 @@ span.path {
 span.pin {
  font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .85em;
+}
+
+td {
+ text-align: center;
 }
