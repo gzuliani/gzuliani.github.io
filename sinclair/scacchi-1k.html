@@ -190,7 +190,7 @@ Addr  Data
 43AE  76                                  ; 24^ ed ultima riga del quadro video
 </pre>
 <p>La casella nera posta all'inizio della quinta riga (indirizzo <span class="code">4337<sub>H</sub></span> = <span class="code">17207<sub>D</sub></span>) indica il colore del pezzo da giocare, mentre le lettere <span class="code">DHR</span> in campo inverso sono le iniziali dell'autore. Le cinque caselle in grigetto alla riga 15 (indirizzo <span class="code">43A0<sub>H</sub></span> = <span class="code">17312<sub>D</sub></span>, qui rappresentate con una sequenza di cancelletti) sono l'area in cui viene visualizzata la mossa del giocatore umano.</p>
-<p>Notare la configurazione della scacchiera, con i pezzi bianchi in alto e i neri in basso. Altra particolarità: il bianco ha già mosso! La cassetta originale contiene due versioni del programma, una con l'apertura del pedone di re, l'altra con il pedone di regina (la versione qui analizzata):</p>
+<p>Notare la configurazione della scacchiera, con i pezzi bianchi in alto e i neri in basso. Altra particolarità: il bianco ha già mosso! La cassetta originale contiene due versioni del programma, una con l'apertura del pedone di re, l'altra con il pedone di donna (la versione qui analizzata):</p>
 <img src="img/scacchi-1k/instructions.jpg">
 <p class="illustration">Le istruzioni originali con l'indicazione delle due versioni del programma</p>
 <p>La scelta della mossa iniziale è del tutto arbitraria, e il programma funzionerebbe correttamente qualunque essa fosse. Evidentemente l'autore ha preferito partire con un'apertura legittima, piuttosto che affidarsi al caso.</p>
@@ -1432,6 +1432,16 @@ Addr  Data
 4321  33                                  ; N - cavallo: 2
 4322  35                                  ; P - pedone:  1
 </pre>
+<h2>Considerazioni finali</h2>
+<p>Non c'è che dire, un risultato al limite dell'incredibile per un programma di soli 657 byte! Per ovvie ragioni di spazio, l'autore dovuto tralasciare l'implementazione delle seguenti regole:</p>
+<ul>
+<li>l'<strong>arrocco</strong> &mdash; richiede che né il re né la torre siano mai state mossi, che non ci sia alcun pezzo tra di loro, e che nessuna delle case comprese tra i due pezzi sia sotto scacco;</li>
+<li>la <strong>presa al varco</strong>, o <em>en passant</em> &mdash; richiede che la mossa venga effettuata immediatamente dopo l'avanzamento di due case del pedone avversario, altrimenti si perde il diritto di farla;</li>
+<li>la <strong>sottopromozione</strong> &mdash; in rari casi è conveniente trasformare il pedone che raggiunge l'ultima traversa in cavallo piuttosto che regina;</li>
+<li>la conclusione della partita per <strong>ripetizione di posizione</strong> &mdash; il giocatore che con la sua mossa replica per la terza volta la stessa posizione può chiedere la patta;</li>
+<li>la <strong>regola delle 50 mosse</strong> &mdash; un giocatore può richiedere patta se nelle ultime 50 mosse non sono avvenuti avanzamenti di pedone né catture.</li>
+</ul>
+<p>L'implementazione di queste regole, specie delle ultime tre, richiede risorse di calcolo che vanno ben oltre le capacità di uno ZX81 con 1KB di RAM.</p>
 <h2>Riferimenti</h2>
 <ol>
 <a name="ref-1"></a>
