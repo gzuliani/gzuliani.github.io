@@ -1123,7 +1123,7 @@ Addr  Data
 ; ALIST - aggiunge una mossa in coda alla lista delle mosse valide
 ;
 ; input:
-;         C  = LSB dell'indirizzo della casa di arrivo
+;         C = LSB dell'indirizzo della casa di arrivo
 ;
 ; output: -
 ;
@@ -1174,7 +1174,7 @@ Addr  Data
 ; PSC - ritorna il valore del pezzo indicato
 ;
 ; input:
-;         A  = codice del pezzo da valutare
+;         A = codice del pezzo da valutare
 ;
 ; output:
 ;
@@ -1263,7 +1263,7 @@ Addr  Data
 42AF  5F                    ld e,a          ; DE punta alla casa di arrivo
 42B0  16 43                 ld d,43
 
-42B2  CD D5 42              call <a href="#PMOVE">PMOVE</a>      ; valuta la mossa dell'utente
+42B2  CD D5 42              call <a href="#PMOVE">PMOVE</a>      ; valuta questa mossa
 42B5  18 F3                 jr MPSCAN2      ; analizza quella successiva
 
 42B7  C1          MPSCAN3   pop bc          ; ci sono altre case da valutare?
@@ -1303,7 +1303,7 @@ Addr  Data
 ;
 ; output:
 ;
-;         A  = LSB dell'indirizzo della casa di arrivo
+;         A = LSB dell'indirizzo della casa di arrivo
 ;
 ; effetti collaterali:
 ;
@@ -1324,11 +1324,12 @@ Addr  Data
 
 
 <a name="PMOVE"></a>
-; PMOVE - seleziona la mossa migliore per il pezzo indicato da (PPC)
+; PMOVE - assegna il punteggio alla mossa
 ;
 ; input:
 ;
-;         DE = indirizzo della casa di arrivo
+;         (PPC) = indirizzo della casa di partenza
+;         DE    = indirizzo della casa di arrivo
 ;
 ; output: -
 ;
