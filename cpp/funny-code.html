@@ -1,0 +1,410 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Funny code</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#funny-code">risorse</a> | funny code</p>
+<h1>Funny code</h1>
+<p>Ho seguito &ndash; su YouTube &ndash; l'intervento &ldquo;Funny Code&rdquo; che Matteo Baglini ha tenuto alla <em>NoSlidesConf</em> di Bologna a inizio dicembre 2016<a href="#ref-1"><sup>[1]</sup></a>. In quell'occasione Matteo ha mostrato come implementare la funzione di valutazione della lunghezza di una lista, e la lista stessa, per mezzo di sole funzioni. Lo fa per passi, partendo da un'implementazione di tipo imperativo/procedurale in JavaScript. Poiché certi passaggi mi sono risultati ostici, ho voluto ripercorrerne le orme, utilizzando il C++14 e il compilatore GCC v. 6.1.0 della distribuzione <a href="https://nuwen.net/mingw.html">nuwen</a> di MinGW (v. 14.0) su una macchina Windows 7 Pro 64 bit.</p>
+<h2>...</h2>
+<p>Ho cercato di rimanere il più fedele possibile al percorso seguito da Matteo, ma a causa delle differenze tra i due linguaggi e delle rispettive librerie, in alcune (poche) occasioni si sono resi necessari interventi <em>ad-hoc</em>.</p>
+<h3>Via!</h3>
+<p>Si parte da una soluzione di tipo procedurale:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;list&gt;
+
+const std::list&lt;int&gt; empty_list = {};
+const std::list&lt;int&gt; one_item_list = { 1 };
+const std::list&lt;int&gt; many_items_list = { 1, 2, 3 };
+
+template &lt;class T&gt;
+int length(T list) {
+  int count = 0;
+  auto i = std::begin(list);
+  while (i != std::end(list)) {
+    ++i;
+    ++count;
+  }
+  return count;
+}
+
+int main() {
+  std::cout
+    &lt;&lt; length(empty_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(one_item_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(many_items_list) &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1 3
+</pre>
+<h3>Ricorsione</h3>
+<p>Il primo passo verso un'implementazione puramente funzionale è quello di sostituire il ciclo con una chiamata ricorsiva:</p>
+<pre class="code">
+template &lt;class T&gt;
+int length(T list) {
+<del>  int count = 0;
+  auto i = std::begin(list);
+  while (i != std::end(list)) {
+    ++i;
+    ++count;
+  }
+  return count;</del>
+<ins>  return list == empty_list
+    ? 0
+    : 1 + length(T(++std::begin(list), std::end(list)));</ins>
+}
+...
+
+// output: 0 1 3
+</pre>
+<h3>Eliminazione dello <span class="term">slicing</span> della lista</h3>
+<p>L'obiettivo successivo è quello di eliminare la segmentazione esplicita della lista introducendo un'implementazione a oggetti della stessa in forma di struttura di dati persistente, tipica dei linguaggi funzionali:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+<del>#include &lt;list&gt;</del>
+<ins>#include &lt;memory&gt;</ins>
+
+<ins>struct Node;
+using List = std::shared_ptr&lt;Node&gt;;
+
+struct Node {
+  int first;
+  List rest;
+  Node (int first_, List rest_) : first(first_), rest(rest_) {}
+};</ins>
+
+<del>const std::list&lt;int&gt; empty_list = {};</del>
+<ins>const List empty_list;</ins>
+<del>const std::list&lt;int&gt; one_item_list = { 1 };</del>
+<ins>const List one_item_list = std::make_shared&lt;Node&gt;(1, empty_list);</ins>
+<del>const std::list&lt;int&gt; many_items_list = { 1, 2, 3 };</del>
+<ins>const List many_items_list =
+  std::make_shared&lt;Node&gt;(1,
+    std::make_shared&lt;Node&gt;(2,
+      std::make_shared&lt;Node&gt;(3, empty_list)));</ins>
+
+template &lt;class T&gt;
+int length(T list) {
+  return list == empty_list
+    ? 0
+    : 1 + length(<del>T(++std::begin(list), std::end(list))</del> <ins>list->rest</ins>);
+}
+...
+
+// output: 0 1 3
+</pre>
+<p class="note">Questo passo avrebbe potuto essere affrontato più tardi, in modo da risolvere il problema della ricorsione una volta per tutte anziché ritornarci subito dopo.</p>
+<h3>Ricorsione iterativa</h3>
+<p>Ciò che a prima vista potrebbe sembrare una contraddizione in termini è in realtà un modo alternativo di realizzare una ricorsione: anziché dare luogo ad una serie di chiamate annidate che viene risolta all'indietro una volta raggiunto il caso base (ovvero un <span class="term">linear recursive process</span>), si passa lo stato della computazione da una chiamata all'altra, realizzando un <span class="term"> linear iterative process</span> (la procedura è ricorsiva, perché invoca sé stessa, non lo è il processo sottostante &ndash; cfr. <a href="#ref-2">[2]</a> per dettagli). Lo stato in questo caso è costituito dalla lunghezza della porzione di lista già considerata e la porzione di lista rimanente:</p>
+<pre class="code">
+template &lt;class T&gt;
+int length(T list<ins>, int acc</ins>) {
+  return list == empty_list
+    ? <del>0</del> <ins>acc</ins>
+    : <del>1 +</del> length(list->rest<ins>, 1 + acc</ins>);
+}
+</pre>
+<p>Questa implementazione ha il vantaggio di abilitare la <span class="term">tail-call optimization</span>, che garantisce l'esecuzione della procedura ricorsiva utilizzando una quantità di memoria indipendente dal numero di chiamate, scongiurando il rischio di uno <span class="term">stack overflow</span>.</p>
+<p>Avendo modificato la <span class="code">signature</span> della funzione <span class="code">length</span>, è necessario ripristinare l'interfaccia originale:</p>
+<pre class="code">
+template &lt;class T&gt;
+int length(T list, int acc) {
+  return list == empty_list
+    ? acc
+    : length(list->rest, 1 + acc);
+}
+
+<ins>template &lt;class T&gt;
+int length(T list) {
+  return length(list, 0);
+}</ins>
+...
+
+// output: 0 1 3
+</pre>
+<h3><span class="code">Node</span> come funzione</h3>
+<p>Il passo successivo consiste nel realizzare il contenitore in termini di funzioni. Occorre a questo punto aprire un breve inciso. Un valore costante può essere facilmente reso come funzione:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+const auto zero = []{ return 0; };
+
+int main() {
+  std::cout &lt;&lt; zero() &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0
+</pre>
+<p>Non è pratico definire una funzione per ogni valore possibile; conviene utilizzare una funzione per creare le funzioni costanti che di volta in volta si rendono necessarie:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+const auto zero = []{ return 0; };
+
+<ins>const auto wrap = [](auto x) { return [x]() { return x; }; };
+const auto one = wrap(1);</ins>
+
+int main() {
+  std::cout &lt;&lt; zero() <ins>&lt;&lt; &quot; &quot; &lt;&lt; one()</ins> &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1
+</pre>
+<p>Lo scopo finale è quello di costruire due funzioni che mimino l'accesso ai membri <span class="code">first</span> e <span class="code">rest</span> dell'oggetto <span class="code">Node</span>. Se aggiungiamo un parametro alla funzione ritornata dalla <span class="term">factory</span> <span class="code">wrap</span> otteniamo immediatamente il primo:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+<del>const auto zero = []{ return 0; };</del>
+
+const auto wrap = [](auto x) { return [x](<ins>auto</ins>) { return x; }; };
+<del>const auto one = wrap(1);</del>
+
+int main() {
+  std::cout &lt;&lt; <del>zero()</del> <ins>wrap(0)(1)</ins> &lt;&lt; &quot; &quot; <del>one()</del> <ins>wrap(1)(0)</ins> &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1
+</pre>
+<p><span class="code">wrap</span> dunque ritorna il primo dei due argomenti passati, e può quindi essere considerato un <span class="term">accessor</span> per il membro <span class="code">first</span>. Usando la notazione JavaScript, la definizione di <span class="code">wrap</span> è la seguente:</p>
+<pre class="code">
+wrap = (x) => (y) => x
+</pre>
+<p>A conferma di quanto appena detto:</p>
+<pre class="code">
+wrap(a)(b) = [(y) => a](b) = a
+</pre>
+<p>Per recuperare il secondo argomento, Matteo compone <span class="code">wrap</span> con l'identità, che in questo contesto denomina <span class="code">delay</span> per il fatto che ritarda l'applicazione di <span class="code">wrap</span> al secondo parametro. Sempre in notazione JavaScript, definendo:</p>
+<pre class="code">
+delay = (x) => x
+</pre>
+<p>Si ottiene:</p>
+<pre class="code">
+wrap(delay)(a)(b) = [(y) => delay](a)(b) = delay(b) = b
+</pre>
+<p>In C++ diventa:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+const auto wrap = [](auto x) { return [x](auto) { return x; }; };
+<ins>const auto delay = [](auto x) { return x; };</ins>
+
+int main() {
+  std::cout
+    &lt;&lt; wrap(0)(1) &lt;&lt; &quot; &quot;
+    &lt;&lt; wrap(1)(0) &lt;&lt; &quot; &quot;
+<ins>    &lt;&lt; wrap(delay)(0)(1) &lt;&lt; &quot; &quot;
+    &lt;&lt; wrap(delay)(1)(0) &lt;&lt; &quot;\n&quot;</ins>;
+}
+
+// output: 0 1 1 0
+</pre>
+<p>Dichiarando esplicitamente i due combinatori:</p>
+<pre class="code">
+...
+
+<ins>const auto first = wrap;</ins> 
+<ins>const auto rest = wrap(delay);</ins> 
+
+int main() {
+  std::cout
+    &lt;&lt; <del>wrap</del> <ins>first</ins>(0)(1) &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>wrap</del> <ins>first</ins>(1)(0) &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>wrap(delay)</del> <ins>rest</ins>(0)(1) &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>wrap(delay)</del> <ins>rest</ins>(1)(0) &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1 1 0
+</pre>
+<p>Resta a questo punto da definire una funzione che impacchetti i due argomenti, al cui valore di ritorno possa essere applicato uno tra <span class="code">first</span>/<span class="code">rest</span> al fine di estrarre la componente desiderata all'occorrenza. In prima istanza si può definire una funzione <span class="code">pair</span> che accetta i due argomenti e ritorna una funzione che prende a sua volta il <em>selettore</em> da applicare alla coppia appena creata:</p>
+<pre class="code">
+...
+
+<ins>const auto pair = [](auto x, auto y) {
+  return [x, y](auto select) {
+    return select(x)(y);
+  };
+};</ins>
+
+int main() {
+  std::cout
+    &lt;&lt; <del>first(0)(1)</del> <ins>pair(0, 1)(first)</ins> &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>first(1)(0)</del> <ins>pair(1, 0)(first)</ins> &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>rest(0)(1)</del> <ins>pair(0, 1)(rest)</ins> &lt;&lt; &quot; &quot;
+    &lt;&lt; <del>rest(1)(0)</del> <ins>pair(1, 0)(rest)</ins> &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1 1 0
+</pre>
+<p>Matteo, giunti a questo punto, opta per una funzione <span class="code">pair</span> costruita su funzioni unarie, per aumentarne il riuso:</p>
+<pre class="code">
+const auto pair = [](auto x<del>, auto y</del>) {
+  <ins>return [x](auto y) {</ins>  
+    return [x, y](auto select) {
+      return select(x)(y);
+    };
+  <ins>};</ins>
+};
+
+int main() {
+  std::cout
+    &lt;&lt; pair(0<del>,</del><ins>)(</ins>1)(first) &lt;&lt; &quot; &quot;
+    &lt;&lt; pair(1<del>,</del><ins>)(</ins>0)(first) &lt;&lt; &quot; &quot;
+    &lt;&lt; pair(0<del>,</del><ins>)(</ins>1)(rest) &lt;&lt; &quot; &quot;
+    &lt;&lt; pair(1<del>,</del><ins>)(</ins>0)(rest) &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1 1 0
+</pre>
+<p>Si può ora procedere alla sostituzione della lista:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+<del>#include &lt;memory&gt;</del>
+
+<del>struct Node;
+using List = std::shared_ptr&lt;Node&gt;;</del>
+
+<del>struct Node {
+  int first;
+  List rest;
+  Node (int first_, List rest_) : first(first_), rest(rest_) {}
+};</del>
+
+<ins>const auto wrap = [](auto x) { return [x](auto) { return x; }; };
+const auto delay = [](auto x) { return x; };</ins>
+
+<ins>const auto first = wrap;
+const auto rest = wrap(delay);</ins>
+
+<ins>const auto pair = [](auto x) {
+  return [x](auto y) {
+    return [x, y](auto sel) {
+      return sel(x)(y);
+    };
+  };
+};</ins>
+
+<del>const List empty_list;</del>
+<ins>const auto empty_list = pair(-1)(-1);</ins>
+<del>const List one_item_list = std::make_shared&lt;Node&gt;(1, empty_list);</del>
+<ins>const auto one_item_list = pair(1)(empty_list);</ins>
+<del>const List many_items_list =
+  std::make_shared&lt;Node&gt;(1,
+    std::make_shared&lt;Node&gt;(2,
+      std::make_shared&lt;Node&gt;(3, empty_list)));</del>
+<ins>const auto many_items_list = pair(1)(pair(2)(pair(3)(empty_list)));</ins>
+
+template &lt;class T&gt;
+int length(T list, int acc) {
+  return list<ins>(first)</ins> == <del>empty_list</del> <ins>-1</ins>
+    ? acc
+    : length(list<del>-&gt;</del><ins>(</ins>rest<ins>)</ins>, 1 + acc);        // &lt;--- ERROR!
+}
+
+template &lt;class T&gt;
+int length(T list) {
+  return length(list, 0);
+}
+
+int main() {
+  std::cout
+    &lt;&lt; length(empty_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(one_item_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(many_items_list) &lt;&lt; &quot;\n&quot;;
+}
+</pre>
+<p>Il codice in questione, oltre ad essere poco elegante &ndash; vedi l'uso del terminatore arbitrario <span class="code">-1</span> &ndash;, contiene un errore alla linea indicata, perché evidentemente il compilatore tenta di istanziare la funzione con <span class="code">T</span> pari a <span class="code">int</span> che ovviamente non supporta l'operatore <span class="term">function call</span>. Fortunatamente il problema si risolve proprio con l'ultima trasformazione proposta da Matteo.</p>
+<h3>Eliminazione dell'operatore ternario</h3>
+<p>L'<span class="code">if</span> nascosto nell'operatore ternario è l'ultimo retaggio non funzionale del programma. Come eliminarlo? Anche in questo caso si sfrutta una <span class="code">dependency injection</span>, ovvero si specifica dall'esterno l'operazione da compiere in funzione del contesto nel quale si sta operando. Essendo due le situazioni da discriminare, <em>lista vuota</em> e <em>lista non vuota</em>, utilizziamo delle funzioni binarie. Il primo argomento verrà valutato in corrispondenza di una lista vuota:</p>
+<pre class="code">
+const auto empty_list = [](auto when_empty, auto) { return when_empty(); };
+</pre>
+<p>Il secondo argomento viene invece nel caso di una lista non vuota. Per semplicità, introduciamo una nuova funzione:</p>
+<pre class="code">
+const auto node = [](auto, auto unless_empty) { return unless_empty(...); };
+</pre>
+<p><span class="code">unless_empty</span> opera sulle componenti della lista:</p>
+<pre class="code">
+const auto node = [](auto, auto unless_empty) { return unless_empty(pair(x)(y)); };
+</pre>
+<p>Le componenti <span class="code">x</span> e <span class="code">x</span> sono passate con una catena di funzioni unarie:</p>
+<pre class="code">
+const auto node = [](auto x) {
+  return [x](auto y) {
+    return [x, y](auto, auto unless_empty) {
+      return unless_empty(pair(x)(y));
+    };
+  };
+};
+</pre>
+<p>Di seguito la versione finale del codice:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+
+const auto wrap = [](auto x) { return [x](auto) { return x; }; };
+const auto delay = [](auto x) { return x; };
+
+const auto first = wrap;
+const auto rest = wrap(delay);
+
+const auto pair = [](auto x) {
+  return [x](auto y) {
+    return [x, y](auto sel) {
+      return sel(x)(y);
+    };
+  };
+};
+
+<ins>const auto empty_list = [](auto when_empty, auto) { return when_empty(); };
+const auto node = [](auto x) {
+  return [x](auto y) {
+    return [x, y](auto, auto unless_empty) {
+      return unless_empty(pair(x)(y));
+    };
+  };
+};
+const auto one_item_list = node(1)(empty_list);
+const auto many_items_list = node(1)(node(2)(node(3)(empty_list)));</ins>
+
+template &lt;class T&gt;
+int length(T list, int acc) {
+<del>  return list(first) == -1
+    ? acc
+    : length(list(rest), 1 + acc);</del>
+<ins>  return list(
+    [acc]() { return acc; },
+    [acc](auto p) { return length(p(rest), acc+1); });</ins>
+}
+
+template &lt;class T&gt;
+int length(T list) {
+  return length(list, 0);
+}
+
+int main() {
+  std::cout
+    &lt;&lt; length(empty_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(one_item_list) &lt;&lt; &quot; &quot;
+    &lt;&lt; length(many_items_list) &lt;&lt; &quot;\n&quot;;
+}
+
+// output: 0 1 3
+</pre>
+<h2>Codice sorgente</h2>
+<ul>
+<li><a href="files/funny_code/funny_code.cpp">funny_code.cpp</a></li>
+</ul>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Baglini, M. &ldquot;Funny Code&rdquot;. <em>NoSlidesConf</em>. &lt;<a href="https://www.youtube.com/watch?v=KlgyViAbU4k">https://www.youtube.com/watch?v=KlgyViAbU4k</a>&gt;. Visitato il 31 gennaio 2017.</li>
+<a name="ref-2"></a>
+<li class="ref">&ldquot;Linear Recursion and Iteration&rdquot;. <em>Structure and Interpretation of Computer Programs</em>. <a href="https://mitpress.mit.edu/sicp/full-text/sicp/book/node15.html">https://mitpress.mit.edu/sicp/full-text/sicp/book/node15.html</a>. Visitato il 3 febbraio 2017</li>
+<a name="ref-3"></a>
+<li class="ref">Smullyan, R. <em>To Mock a Mockingbird</em>. Knopf, 1985.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 03/02/2017</p>
+</body>
+</html>
