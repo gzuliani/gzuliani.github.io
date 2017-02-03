@@ -30,7 +30,7 @@ template <class T>
 int length(T list, int acc) {
   return list(
     [acc]() { return acc; },
-    [acc](auto p) { return length(p(rest), acc+1); });
+    [acc](auto pair) { return length(pair(rest), 1 + acc); });
 }
 
 template <class T>
