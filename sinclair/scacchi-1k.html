@@ -232,7 +232,7 @@ X = 0100 0000 0110 1101
 
 X = 406D<sub>H</sub> = 16493<sub>D</sub>
 </pre>
-<p>Ecco una nuova sorpresa: il programma non ha inizio all'indirizzo dichiarato, ma all'interno del <span class="term">buffer</span> MEMBOT, dentro l'area delle variabili di sistema. Tenendo conto degli <span class="code">offset</span>, alla locazione di memoria puntata dalla variabile <span class="code">X</span> si trova il seguente codice:</p>
+<p>Ecco una nuova sorpresa: il programma non ha inizio all'indirizzo dichiarato, ma all'interno del <span class="term">buffer</span> MEMBOT, dentro l'area delle variabili di sistema. Tenendo conto degli offset, alla locazione di memoria puntata dalla variabile <span class="code">X</span> si trova il seguente codice:</p>
 <pre class="code">
 00000060  <span class="irrelevant">F6 F4 0C 0A</span> <span class="mark1">21 5D 40 11 0E 40 01 10 00 ED B0 C3
 00000070  82 40</span> <span class="irrelevant">00 00 00 01 A3 02 EA 06 05 3E 08 21 9F 43</span>
