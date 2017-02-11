@@ -16,7 +16,7 @@
 <p>Analizzando il codice sorgente presentato nell'articolo sono ben presto giunto ad un punto piuttosto sospetto, in cui la routine di lettura delle coordinate della mossa dell'utente sfocia in quella dell'analisi della mossa, sovrascrivendo in modo apparentemente insensato il valore del registro <span class="code">A</span>:</p>
 <img src="img/scacchi-1k/wtf.png">
 <p class="illustration">La porzione sospetta di codice</p>
-<p>Ho deciso allora di partire dall'immagine del nastro originale e ricostruendo il codice originale dal formato binario. Fortunatamente qualcuno ci aveva già pensato prima di me<a href="ref-7"><sup>[7]</sup></a>, e il suo lavoro ha facilitato enormemente il mio.</p>
+<p>Ho deciso allora di partire dall'immagine del nastro originale e di disassemblare il codice macchina in esso contenuto. Fortunatamente qualcuno ci aveva già pensato prima di me<a href="ref-7"><sup>[7]</sup></a>, e il suo lavoro ha facilitato enormemente il mio.</p>
 <h2>Prerequisiti</h2>
 <p>Per poter interpretare correttamente i contenuti dell'immagine binaria del nastro che contiene il programma è indispensabile conoscere innanzitutto l'organizzazione della memoria RAM dello ZX81:</p>
 <img src="img/scacchi-1k/memory-map.jpg">
