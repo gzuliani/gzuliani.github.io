@@ -11,6 +11,7 @@
 <p>Nel corso degli anni ho sviluppato un applicativo C++ su Windows per il controllo di uno strumento di misura: il programma si connette allo strumento via Bluetooth e scarica i dati acquisiti attraverso un protocollo di comunicazione binario specifico, ideato dal costruttore del multimetro. I dati raccolti vengono presentati all'utente e archiviati per consentire analisi di varia natura.</p>
 <p>Poco più di un anno fa ho effettuato uno studio di fattibilità circa il <em>porting</em> dell'applicativo su dispositivo mobile, nella fattispecie un terminale Android. Raccolgo qui qualche appunto circa le difficoltà incontrate nell'accedere al trasmettitore Bluetooth di un dispositivo Android da una libreria nativa.</p>
 <h2>Premessa</h2>
+<p class="todo">DIRE CHE L'EMULATORE DI ANDROID STUDIO NON SUPPORTA BLUETOOTH</p>
 <p>Considerando la complessità dell'implementazione del protocollo di comunicazione, il presupposto iniziale è stato quello di riutilizzare il codice C++ di acquisizione dei dati, lasciando all'applicativo Java la responsabilità della loro visualizzazione e memorizzazione. La reimplementazione del protocollo di comunicazione in Java è stato escluso a priori.</p>
 <h2>Interfaccia Java/C++</h2>
 <p>Ho prima di tutto riorganizzato il codice C++ di comunicazione ed elaborazione dei dati in una libreria dinamica <span class="library">myLib</span>, che successivamente ho portato in ambiente Linux.</p>
@@ -127,69 +128,52 @@ public:
 <img src="img/bluetooth-cpp-android/invoke-class-diagram.png" width="500"/>
 </a>
 <p class="illustration">Accesso al Bluetooth &mdash; <em>Class diagram</em> (click sull'immagine per ingrandirla).</p>
-<p>Nel diagramma si possono notare due oggetti fittizi: <span class="code">Facade</span> rappresenta l'interfaccia C della libreria nativa <span class="library">myLib</span>, mentre <span class="code">Wrapper</span> rappresenta l'adattatore (colui che si occupa del marshalling) tra Java e C.</p>
+<p>Nel diagramma sono stati inseriti due oggetti fittizi: il primo, <span class="code">Facade</span>, rappresenta l'interfaccia C della libreria nativa <span class="library">myLib</span>, mentre il secondo, <span class="code">Wrapper</span>, raggruppa le funzioni di marshalling dei parametri tra Java e C.</p>
+<h2>Sequenza di chiamate</h2>
+<p>L'utilizzo della libreria nativa si svolge in tre fasi distinte: il caricamento e l'inizializzazione della libreria, che comprende il passaggio di un'istanza della classe Java <span class="code">BluetoothConnection</span>, l'invocazione dei metodi necessari al raggiungimento dell'obiettivo prefissato, quindi lo scaricamento della libreria:</p>
+<pre class="code">
+  // initialization
+  NativeAPI aNativeAPI = new NativeAPI(...);
+  BluetoothConnection connection = new BluetoothConnection(...);
+  aNativeAPI.initialize(connection);
+  ...
+
+  // using the native API
+  String result = aNativeAPI.method(anIntValue);
+  ...
+
+  // finalization
+  aNativeAPI.finalize();
+  ...
+</pre>
+<p>Il diagramma che segue illustra la sequenza di chiamate in ognuna delle tre fasi:</p>
+<a href="img/bluetooth-cpp-android/invoke-sequence-diagram.png">
+<img src="img/bluetooth-cpp-android/invoke-sequence-diagram.png" width="800"/>
+</a>
+<p class="illustration"><em>Sequence diagram</em> dei principali casi d'uso dell'API (click sull'immagine per ingrandirla).</p>
+<h3>Inizializzazione</h3>
+<p>La libreria nativa <span class="library">myLib</span> viene caricata in memoria automaticamente dal runtime Java in corrispondenza del primo riferimento alla classe <span class="code">NativeAPI</span> (cfr. messaggi <span class="message">[3]</span> &div; <span class="message">[6]</span>). L'inizializzazione della libreria avviene invece esplicitamente, attraverso il metodo <span class="code">initialize</span> del medesimo oggetto (messaggio <span class="message">[7]</span>), che causa l'esecuzione dell'omonimo metodo della libreria di marshalling (messaggio <span class="message">[8]</span>), che a cascata invoca l'omologo della libreria nativa (messaggio <span class="message">[9]</span>). La libreria nativa...</p>
+<h3>Invocazione di un metodo</h3>
+
+<h3>Scaricamento</h3>
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
 <!--  bluetooth-android.txt
 
-si parte dalla classe java che wrappa la dll nativa:
-
-
-public class Driver {
-    static {
-        System.loadLibrary("driver_wrapper");
-    }
-    public native String connect(BluetoothConnection connection);
-    public native String disconnect();
-
-    public native String f(int param, Callback Callback);
-}
-
-
-
-
-
-
-cos'è connection? l'entry point per l'accesso al bluetooth:
-
-
-
-
-public class BluetoothConnection {
-
-    public void open() throws Exception {
-        socket = device.createRfcommSocketToServiceRecord(serialPortUUID);
-        socket.connect();
-        inputStream = socket.getInputStream();
-        outputStream = socket.getOutputStream();
-    }
-
-    public void close() throws Exception {
-        inputStream = null;
-        outputStream = null;
-        socket.close();
-        socket = null;
-    }
-
-    public int send(byte[] buffer) throws IOException {
-        outputStream.write(buffer);
-        return buffer.length;
-    }
-
-    public byte[] receive(int bytesToRead) throws IOException {
-        int readBytes = inputStream.read(rxBuffer, 0, Math.min(bytesToRead, bufferSize));
-        return Arrays.copyOfRange(rxBuffer, 0, readBytes);
-    }
-}
-
-
-
 
 cos'è Callback? un'interfaccia di notifica/controllo di avanzamento:
-
-
-
-
 
 public class Callback {
     public int invoke(String anEvent, int aData) {
@@ -203,8 +187,6 @@ public class Callback {
 come funziona? l'App istanzia la connessione e la passa alla dll:
 
 
-
-
         BluetoothConnection connection = new BluetoothConnection(...);
         Driver driver = new Driver();
         driver.connect(connection);
@@ -212,21 +194,9 @@ come funziona? l'App istanzia la connessione e la passa alla dll:
         driver.f(anInt, callback);
         driver.disconnect();
 
-
-
-
-
-
 FERMI TUTTI, C'E' UN WRAPPER C++ DELLA DLL NATIVA NEL PROGETTO ANDROID: xray3driver_wrapper.cpp
 
-
-
-
 qual'è l'interfaccia della DLL nativa?
-
-
-
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -639,10 +609,6 @@ Java_xx_company_app_MyLib_method(
 
 
 
-<a href="img/bluetooth-cpp-android/invoke-sequence-diagram.png">
-<img src="img/bluetooth-cpp-android/invoke-sequence-diagram.png" width="800"/>
-</a>
-<p class="illustration">Sequence diagram di una chiamata di funzione nativa (click sull'immagine per ingrandirla).</p>
 
 <a href="img/bluetooth-cpp-android/invoke-callback-sequence-diagram.png">
 <img src="img/bluetooth-cpp-android/invoke-callback-sequence-diagram.png" width="800"/>
