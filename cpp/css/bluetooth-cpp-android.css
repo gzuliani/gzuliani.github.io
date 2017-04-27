@@ -14,3 +14,11 @@ p.illustration {
  margin-left: 5em;
  margin-top: .5em;
 }
+
+span.library {
+ font-weight: bold;
+}
+
+span.message {
+ font-weight: bold;
+}
