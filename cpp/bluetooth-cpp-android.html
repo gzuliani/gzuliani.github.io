@@ -8,14 +8,632 @@
 <body>
 <p class="page-path"><a href="../index.html#bluetooth-cpp-android">risorse</a> | bluetooth c++ e android</p>
 <h1>Bluetooth, C++ e Android</h1>
-<p>There is no direct access to Bluetooth APIs from the NDK. The list of available NDK APIs is inside docs/STABLE-APIS.html from the NDK archive.
+<p>Nel corso degli anni ho sviluppato un applicativo C++ su Windows per il controllo di uno strumento di misura: il programma si connette allo strumento via Bluetooth e scarica i dati acquisiti attraverso un protocollo di comunicazione binario specifico, ideato dal costruttore del multimetro. I dati raccolti vengono presentati all'utente e archiviati per consentire analisi di varia natura.</p>
+<p>Poco più di un anno fa ho effettuato uno studio di fattibilità circa il <em>porting</em> dell'applicativo su dispositivo mobile, nella fattispecie un terminale Android. Raccolgo qui qualche appunto circa le difficoltà incontrate nell'accedere al trasmettitore Bluetooth di un dispositivo Android da una libreria nativa.</p>
+<h2>Premessa</h2>
+<p>Considerando la complessità dell'implementazione del protocollo di comunicazione, il presupposto iniziale è stato quello di riutilizzare il codice C++ di acquisizione dei dati, lasciando all'applicativo Java la responsabilità della loro visualizzazione e memorizzazione. La reimplementazione del protocollo di comunicazione in Java è stato escluso a priori.</p>
+<h2>Interfaccia Java/C++</h2>
+<p>Ho prima di tutto riorganizzato il codice C++ di comunicazione ed elaborazione dei dati in una libreria dinamica <span class="library">myLib</span>, che successivamente ho portato in ambiente Linux.</p>
+<p class="note">Il porting del codice C++ da Windows a Linux è stata un'esperienza particolarmente istruttiva. Per quanto pensassi di aver sviluppato codice tutto sommato indipendente dalla piattaforma utilizzata (Win32), l'operazione ha richiesto un discreto numero di interventi correttivi. Altrettanto formativo è stato compilare lo stesso codice utilizzando compilatori diversi: le sorprese non sono mancate!</p>
+<p>In seconda istanza ho definito un'interfaccia C per agevolare l'accesso alle funzionalità implementate dalla libreria <em>nativa</em> (implementata in C/C++); per comodità ho scelto di utilizzare i tipi primitivi del linguaggio C come parametri di ingresso/uscita, optando per l'utilizzo di stringhe JSON come valore di ritorno per tutte le funzioni:</p>
+<pre class="code">
+extern "C" {
+  const char* method(int param);
+}
+</pre>
+<p class="illustration">Esempio di API C esposta dalla libreria nativa <span class="library">myLib.so</span></p>
+<p>L'accesso all'API nativa da parte dell'applicativo Java avviene attraverso una classe dedicata:</p>
+<pre class="code">
+public class NativeAPI {
+  static {
+    System.loadLibrary("myLib_wrapper");
+  }
+  public native String method(int aParam);
+  ...
+}
+</pre>
+<p>Come si può dedurre dal frammento di codice, l'applicazione Java accede alla libreria nativa attraverso una libreria ausiliaria, denominata <span class="library">myLib_wrapper</span>, che si occupa di effettuare il <em>marshalling</em> dei parametri di ingresso e del valore di ritorno, oltre ovviamente dell'invocazione del metodo nativo:</p>
+<pre class="code">
+extern "C" {
+  JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_method(
+    JNIEnv* env, jobject thiz, jint param) {
+      return env->NewStringUTF(method(param));
+  }
+}
+</pre>
+<p class="illustration">Esempio di <em>wrapping</em> dell'API nativa <span class="code">method</span> &mdash; notare il <em>mangling</em> (decorazione) del nome del metodo</p>
+<h2>Accesso al Bluetooth</h2>
+<p>La compilazione della libreria nativa <span class="library">myLib.so</span> con l'NDK per Android non va a buon fine, perché il Bluetooth su quella piattaforma non è (ancora?) disponibile &mdash; cfr. <a href="https://developer.android.com/ndk/guides/stable_apis.html">Android NDK Native APIs</a>.</p>
+<p>Il problema è noto, e il suggerimento più comune è quello di fornire alla libreria nativa un accesso al Bluetooth attraverso un oggetto Java.</p>
+<p>Fortunatamente il codice C++ già astraeva dalla natura della connessione fisica, dato che il protocollo faceva uso di una classe astratta <span class="code">Connection</span>, dovendo supportare la doppia modalità di connessione Bluetooth/Seriale. Estenderlo per supportare un terzo tipo di connessione non avrebbe dovuto rivelarsi troppo difficile:</p>
+<pre class="code">
+class Connection {
+public:
+  virtual ~Connection() = default;
+  virtual int send(const char* data, int count) = 0;
+  virtual int receive(char* data, int expected) = 0;
+};
 
-But that doesn't mean that you shouldn't use Bluetooth from the NDK. You can directly call Java Android APIs and manipulate Java objects from C/C++ using JNI.</p>
-http://stackoverflow.com/questions/26046795/android-ndk-and-bluetooth
-<br>
-<br>
-<br>
-<br>
+class SerialConnection : public Connection {
+    ...
+};
+
+class BluetoothConnection : public Connection {
+    ...
+};
+</pre>
+<p class="illustration">L'interfaccia <span class="code">Connection</span> e le due implementazioni originali</p>
+<p>Ispirandomi a quest'interfaccia ho definito quella della connessione Bluetooth Java:</p>
+<pre class="code">
+public class BluetoothConnection {
+  public BluetoothConnection(String address, int timeout) throws IOException
+  public boolean isOpen() ...
+  public boolean open() throws Exception ...
+  public boolean close() throws Exception ...
+  public int send(byte[] buffer) throws IOException ...
+  public byte[] receive(int bytesToRead) throws IOException ...
+  ...
+}
+</pre>
+<p class="illustration">La classe Java per l'accesso al Bluetooth</p>
+<p>Occorre a questo punto arricchire l'API Java/C++ per consentire all'applicativo di passare alla libreria nativa sottostante un'istanza di <span class="code">BluetoothConnection</span>:</p>
+<pre class="code">
+// myLib
+extern "C" {
+  const char* method(int param);
+  <strong>const char* initialize(JNIEnv* env, jobject connection);</strong>
+}
+</pre>
+<pre class="code">
+// Java
+public class NativeAPI {
+  static {
+    System.loadLibrary("myLib_wrapper");
+  }
+  public native String method(int aParam);
+  <strong>public native String initialize(BluetoothConnection connection);</strong>
+  ...
+}
+</pre>
+<pre class="code">
+// myLib_wrapper
+extern "C" {
+  JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_method(
+    JNIEnv* env, jobject thiz, jint param) {
+      return env->NewStringUTF(method(param));
+  }
+  <strong>JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_initialize(
+    JNIEnv* env, jobject thiz, jobject connection) {
+    return env->NewStringUTF(initialize(env, connection));
+  }</strong>
+}
+</pre>
+<p>Resta da specializzare l'oggetto C++ <span class="code">Connection</span> fornendone un'implementazione basata sull'oggetto Java <span class="code">BluetoothConnection</span>:</p>
+<pre class="code">
+<strong>class JavaConnection : public Connection {
+  JNIEnv* env_;
+  jobject connection_;
+  ...
+public:
+  JavaConnection(JNIEnv* env, jobject connection);
+  ~JavaConnection();
+  int send(const char* data, int count) override;
+  int receive(char* data, int expected) override;
+  ...
+};</strong>
+</pre>
+<p>La situazione, giunti a questo punto, è riassunta dal seguente diagramma:</p>
+<a href="img/bluetooth-cpp-android/invoke-class-diagram.png">
+<img src="img/bluetooth-cpp-android/invoke-class-diagram.png" width="500"/>
+</a>
+<p class="illustration">Accesso al Bluetooth &mdash; <em>Class diagram</em> (click sull'immagine per ingrandirla).</p>
+<p>Nel diagramma si possono notare due oggetti fittizi: <span class="code">Facade</span> rappresenta l'interfaccia C della libreria nativa <span class="library">myLib</span>, mentre <span class="code">Wrapper</span> rappresenta l'adattatore (colui che si occupa del marshalling) tra Java e C.</p>
+
+
+<!--  bluetooth-android.txt
+
+si parte dalla classe java che wrappa la dll nativa:
+
+
+public class Driver {
+    static {
+        System.loadLibrary("driver_wrapper");
+    }
+    public native String connect(BluetoothConnection connection);
+    public native String disconnect();
+
+    public native String f(int param, Callback Callback);
+}
+
+
+
+
+
+
+cos'è connection? l'entry point per l'accesso al bluetooth:
+
+
+
+
+public class BluetoothConnection {
+
+    public void open() throws Exception {
+        socket = device.createRfcommSocketToServiceRecord(serialPortUUID);
+        socket.connect();
+        inputStream = socket.getInputStream();
+        outputStream = socket.getOutputStream();
+    }
+
+    public void close() throws Exception {
+        inputStream = null;
+        outputStream = null;
+        socket.close();
+        socket = null;
+    }
+
+    public int send(byte[] buffer) throws IOException {
+        outputStream.write(buffer);
+        return buffer.length;
+    }
+
+    public byte[] receive(int bytesToRead) throws IOException {
+        int readBytes = inputStream.read(rxBuffer, 0, Math.min(bytesToRead, bufferSize));
+        return Arrays.copyOfRange(rxBuffer, 0, readBytes);
+    }
+}
+
+
+
+
+cos'è Callback? un'interfaccia di notifica/controllo di avanzamento:
+
+
+
+
+
+public class Callback {
+    public int invoke(String anEvent, int aData) {
+        return isCancelRequested() ? 1 : 0;
+    }
+}
+
+
+
+
+come funziona? l'App istanzia la connessione e la passa alla dll:
+
+
+
+
+        BluetoothConnection connection = new BluetoothConnection(...);
+        Driver driver = new Driver();
+        driver.connect(connection);
+        Callback callback = new Callback(...);
+        driver.f(anInt, callback);
+        driver.disconnect();
+
+
+
+
+
+
+FERMI TUTTI, C'E' UN WRAPPER C++ DELLA DLL NATIVA NEL PROGETTO ANDROID: xray3driver_wrapper.cpp
+
+
+
+
+qual'è l'interfaccia della DLL nativa?
+
+
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const char* connect(JNIEnv* env, jobject connection);
+const char* xray3_disconnect();
+
+const char* f(
+    int param,
+    callback_fn callback,
+    void* param);
+
+cos'è callback_fn?
+
+typedef int (*callback_fn)(
+    const char* event,
+    int data,
+    void* param);
+
+
+
+
+
+serve un adattatore per la callback (non fondamentale adesso, ma vabbé):
+
+
+
+class Callback {
+    callback_fn fn_;
+    void* param_;
+public:
+    Callback(callback_fn fn, void* param) : fn_(fn), param_(param) {}
+
+    void onEvent() {
+        fn_("anEvent", 0, param_);
+    }
+};
+
+
+
+
+cosa succede lato C++?
+
+c'è un oggetto JNI che fa il binding tra l'oggetto connection passato alla connect
+e se lo tiene "stretto" (visto che la referenza dev'essere mantenuta tra una chiamata
+e l'altra del driver, bisogna assolutamente evitare che il garbage collector sposti
+l'oggetto Java dalla posizione che occupa in memoria all'atto della connect):
+
+
+
+
+
+using namespace mm;
+using namespace comm;
+
+JavaConnection::JavaConnection(JNIEnv* env, jobject connection)
+ : env_(env)
+ , connection_(nullptr)
+ , open_(nullptr)
+ , close_(nullptr)
+ , send_(nullptr)
+ , receive_(nullptr)
+ , isOpened_(false) {
+    // prevent `connection` object reallocation
+    connection_ = env_->NewGlobalRef(connection);
+    jclass instance = env_->GetObjectClass(connection_);
+    open_ = bind(instance, "open", "()Z");
+    close_ = bind(instance, "close", "()Z");
+    send_ = bind(instance, "send", "([B)I");
+    receive_ = bind(instance, "receive", "(I)[B");
+    open();
+}
+
+JavaConnection::~JavaConnection() {
+    if (isOpened_)
+        close();
+    // release the `connection` object to the java's GC
+    env_->DeleteGlobalRef(connection_);
+}
+
+void JavaConnection::reset() {
+    if (isOpened_) {
+        close();
+        open();
+    }
+}
+
+int JavaConnection::send(const char* data, int count) {
+    jbyteArray buffer = env_->NewByteArray(count);
+    auto local = std::vector<jbyte>(count);
+    for (int i = 0; i < count; ++i)
+        local[i] = data[i];
+    env_->SetByteArrayRegion(buffer, 0, count, local.data());
+    jint sent = env_->CallIntMethod(connection_, send_, buffer);
+    // release java objects as soon as possible
+    env_->DeleteLocalRef(buffer);
+    return static_cast<int>(sent);
+}
+
+int JavaConnection::receive(char* data, int expected) {
+    jbyteArray buffer =
+        static_cast<jbyteArray>(
+            env_->CallObjectMethod(connection_, receive_, expected));
+    jsize length = env_->GetArrayLength(buffer);
+    void* local = env_->GetPrimitiveArrayCritical(buffer, 0);
+    memcpy(data, local, length);
+    env_->ReleasePrimitiveArrayCritical(buffer, local, 0);
+    // release java objects as soon as possible
+    env_->DeleteLocalRef(buffer);
+    return static_cast<int>(length);
+}
+
+void JavaConnection::open() {
+    if (isOpened_)
+        return;
+    isOpened_ = env_->CallBooleanMethod(connection_, open_);
+    if (!isOpened_)
+        MM_THROW(comm::Exception, "\"open\" returned `false`");
+}
+
+void JavaConnection::close() {
+    if (!isOpened_)
+        return;
+    if (!env_->CallBooleanMethod(connection_, close_))
+        MM_THROW(comm::Exception, "\"close\" returned `false`");
+    isOpened_ = false;
+}
+
+jmethodID JavaConnection::bind(
+    jclass instance, const char* name, const char* signature) {
+    jmethodID id = env_->GetMethodID(instance, name, signature);
+    if (id == NULL)
+        MM_THROW(comm::Exception, "\"{}\" method not found", name);
+    return id;
+}
+
+
+quando da Java si chiama f(), l'implementazione lavora in C++ fino a quando arriva
+il momento di effettuare una trasmissione o una chiamata a callback. nel primo caso
+si fa una chiamata all'oggetto JavaConnection che gira la chiamata all'oggetto Java,
+nel secondo caso...
+
+
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- bluetooth-android-2.txt
+
+il problema: codice c++ che comunica via bluetooth (via socket)
+voglio usare lo stesso codice anche in Android.
+ma android non consente di accedere a bluetooth da codice nativo...
+
+idea: offire un accesso al bluetooth a C++ da java.
+
+primo passo: racchiudere il codice C++ in una libreria [mylib.so]
+
+secondo passo: accedere alle funzionalità da Java
+servono due cose: una libreria di wrapping della libreria nativa
+per isolare il marshalling dei parametri [mylib_wrapper.so], e una classe
+Java ad essa agganciata:
+
+*** USARE NOMI CHE FACCIANO CAPIRE SUBITO SE E' ROBA NATIVA, NEL WRAPPER O JAVA ***
+
+public class MyLib {
+    static {
+        System.loadLibrary("mylib_wrapper");
+    }
+    public native ... method1(...);
+}
+
+i sorgenti della libreria di wrapping finiscono in app/jni, e per ogni API
+ci sarà un metodo tipo:
+
+extern "C"
+JNIEXPORT ... JNICALL Java_xx_company_app_MyLib_method1(
+    JNIEnv* env, jobject thiz, ...) {
+    ...
+}
+
+DEPLOY
+dove va messa la libreria nativa?
+dove va il codice c++ della libreria wrapper?
+che file di progetto vanno modificati?
+
+
+
+
+la cosa si complica però perché da Java devo passare un oggetto "connessione"
+per consentire alla libreria di sfruttare il bluetooth.
+per prima cosa la libreria dev'essere abbastanza flessibile da poter utilizzare
+una connessione arbitraria. per fortuna già lo era, dovendo supportare sia il
+bluetooth che la seriale:
+
+
+class Connection {
+public:
+    virtual ~Connection() = default;
+    virtual void reset() = 0;
+    virtual int send(const char* data, int count) = 0;
+    virtual int receive(char* data, int expected) = 0;
+};
+
+class SerialConnection : public Connection {
+    ...
+};
+
+class BluetoothConnection : public Connection {
+    ...
+};
+
+// in realtà più incasinato:
+// class BluetoothConnection : public NonBlockingConnection
+// class SerialConnection : public BlockingRecvConnection
+// ma non ce ne frega...
+
+l'importante è che non costa molto introdurre un nuovo tipo di connessione.
+
+sulla scorta di questa interfaccia si prepara lato Java una classe analoga:
+
+public class BluetoothConnection {
+    public BluetoothConnection(String address, int timeout) throws IOException
+    public boolean isOpen() {
+    public boolean open() throws Exception {
+    public boolean close() throws Exception {
+    public int send(byte[] buffer) throws IOException {
+    public byte[] receive(int bytesToRead) throws IOException {
+
+
+come faccio a passare al C++ questa classe?
+aggiungo un metodo ad-hoc nella libreria nativa:
+
+
+const char* connect(JNIEnv* env, jobject connection);
+
+
+questo viene wrappato nella libreria ponte C++/Java:
+
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_xx_company_app_MyLib_connect(
+    JNIEnv* env, jobject thiz, jobject connection) {
+    return env->NewStringUTF(connect(env, connection));
+}
+
+e viene agganciata dalla classe Java MyLib:
+
+public native String connect(BluetoothConnection connection);
+
+
+
+quel che resta da fare è agganciare l'oggetto Java da C++:
+
+class JavaConnection : public Connection {
+    JNIEnv* env_;
+    jobject connection_;
+    jmethodID open_;
+    jmethodID close_;
+    jmethodID send_;
+    jmethodID receive_;
+	...
+};
+
+ALCUNE COSE INTERESSANTI
+
+1) lock dell'oggetto Java in memoria (se lo il GC lo sposta tra una chiamata e l'altra)
+
+JavaConnection::JavaConnection(JNIEnv* env, jobject connection)
+ : env_(env)
+ , connection_(nullptr)
+ , open_(nullptr)
+ , close_(nullptr)
+ , send_(nullptr)
+ , receive_(nullptr)
+ , isOpened_(false) {
+    // prevent `connection` object reallocation
+    connection_ = env_->NewGlobalRef(connection);
+	// bind dei metodi...
+}
+
+JavaConnection::~JavaConnection() {
+	// cleanup...
+
+    // release the `connection` object to the java's GC
+    env_->DeleteGlobalRef(connection_);
+}
+
+2) release degli oggetti allocati appena possibile, se no si fa presto a raggiungere il limite massimo (256?!)
+
+int JavaConnection::send(const char* data, int count) {
+    jbyteArray buffer = env_->NewByteArray(count);
+    auto local = std::vector<jbyte>(count);
+    for (int i = 0; i < count; ++i)
+        local[i] = data[i];
+    env_->SetByteArrayRegion(buffer, 0, count, local.data());
+    jint sent = env_->CallIntMethod(connection_, send_, buffer);
+    // release java objects as soon as possible
+    env_->DeleteLocalRef(buffer);
+    return static_cast<int>(sent);
+}
+
+
+
+
+CALLBACK!!!
+
+le callback vengono passate come oggetti.
+
+API C (valore di ritorno = break/continue):
+
+typedef int (*callback_fn)(const char* event, int data, void* param);
+const char* method(..., callback_fn callback, void* param);
+
+
+JAVA:
+
+    public native String method(..., Callback aCallback);
+
+
+chiamata:
+
+        MyLib aMyLib = new MyLib(...);
+		BluetoothConnection connection = new BluetoothConnection(...);
+        aMyLib.connect(connection);
+
+        Callback aCallback = new Callback(...);
+        String result = myLib.method(..., aCallback);
+
+implementazione:
+
+public class Callback {
+    public int invoke(String anEvent, int aData) {
+        return ...
+    }
+}
+
+
+
+
+Marshalling:
+
+class Callback {
+    JNIEnv* env_;
+    jobject callbackObject_;
+    jmethodID invokeMethodId_;
+public:
+    Callback()
+     : env_(), callbackObject_(0), invokeMethodId_(0) {}
+    Callback(JNIEnv* env, jobject callback)
+     : env_(env), callbackObject_(callback), invokeMethodId_(0) {
+        jclass cls = env_->FindClass("xx/company/app/Callback");
+        if (cls != 0)
+            invokeMethodId_ =
+                env_->GetMethodID(cls, "invoke", "(Ljava/lang/String;I)I");
+    }
+    int operator()(const char* event, int data) const {
+        if (invokeMethodId_ == 0)
+            return 0;
+        jstring str = env_->NewStringUTF(event);
+        const int result = static_cast<int>(env_->CallIntMethod(
+            callbackObject_,
+            invokeMethodId_,
+            str,
+            data));
+        env_->DeleteLocalRef(str);
+        return result;
+    }
+};
+
+std::map<JNIEnv*, Callback> g_callbacks;
+
+extern "C"
+int wrapper_callback(const char* event, int data, void* param) {
+    JNIEnv* env = reinterpret_cast<JNIEnv*>(param);
+    return g_callbacks[env](event, data);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_xx_company_app_MyLib_method(
+    JNIEnv* env, jobject thiz, ..., jobject callback) {
+    // register the callback for later
+
+// usare una guardia per metterla e toglierla dalla mappa!
+
+    g_callbacks[env] = Callback(env, callback);
+    // start the acquisition procedure
+    return env->NewStringUTF(
+        method(..., wrapper_callback, reinterpret_cast<void*>(env)));
+}
+
+*** USARE NOMI CHE FACCIANO CAPIRE SUBITO SE E' ROBA NATIVA, NEL WRAPPER O JAVA ***
+
+-->
 
 
 
@@ -25,11 +643,6 @@ http://stackoverflow.com/questions/26046795/android-ndk-and-bluetooth
 <img src="img/bluetooth-cpp-android/invoke-sequence-diagram.png" width="800"/>
 </a>
 <p class="illustration">Sequence diagram di una chiamata di funzione nativa (click sull'immagine per ingrandirla).</p>
-
-<a href="img/bluetooth-cpp-android/invoke-class-diagram.png">
-<img src="img/bluetooth-cpp-android/invoke-class-diagram.png" width="500"/>
-</a>
-<p class="illustration">Class diagram per la chiamata di funzione nativa con callback (click sull'immagine per ingrandirla).</p>
 
 <a href="img/bluetooth-cpp-android/invoke-callback-sequence-diagram.png">
 <img src="img/bluetooth-cpp-android/invoke-callback-sequence-diagram.png" width="800"/>

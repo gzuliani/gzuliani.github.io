@@ -1,0 +1,51 @@
+@startuml
+
+skinparam handwritten true
+
+namespace myLib_wrapper {
+
+class Wrapper << (-,orchid) >> #lavender {
+  {static} +method()
+}
+}
+
+namespace myLib {
+
+abstract class Connection {
+  +send()
+  +receive()
+}
+
+class BluetoothConnection
+class SerialConnection
+class JavaConnection #tomato
+Connection <|-- BluetoothConnection
+Connection <|-- SerialConnection
+Connection <|-- JavaConnection
+
+class Facade << (-,orchid) >> #lavender {
+  {static} +method()
+}
+Facade ..> Connection
+}
+
+namespace JavaApp {
+
+class NativeAPI {
+  +method()
+}
+class BluetoothConnection {
+  +isOpen()
+  +open()
+  +close()
+  +send()
+  +receive()
+}
+NativeAPI ..> BluetoothConnection
+}
+
+myLib_wrapper.Wrapper ..> myLib.Facade
+myLib.JavaConnection o--> JavaApp.BluetoothConnection
+JavaApp.NativeAPI ..> myLib_wrapper.Wrapper
+
+@enduml

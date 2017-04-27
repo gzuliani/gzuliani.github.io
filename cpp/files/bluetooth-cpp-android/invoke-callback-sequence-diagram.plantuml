@@ -1,0 +1,108 @@
+@startuml
+
+hide footbox
+autonumber "<b>[0]</b>"
+
+skinparam handwritten true
+
+skinparam BoxPadding 10
+skinparam ParticipantPadding 25
+
+box "JavaApp"
+participant App
+participant NativeAPI
+participant BluetoothConnection
+participant Callback
+end box
+
+box "myLib_wrapper"
+participant Wrapper
+participant WrappedCallback
+end box
+
+box "myLib"
+participant NativeLibrary
+participant JavaConnection
+end box
+
+activate App
+
+App -> App: doSomething
+activate App
+
+create Callback
+App -> Callback: << create >>
+
+App -> NativeAPI: method(callback)
+activate NativeAPI
+
+NativeAPI -> Wrapper: method(callback)
+activate Wrapper
+
+create WrappedCallback
+Wrapper -> WrappedCallback: << create >>
+
+Wrapper -> Wrapper: register(wrappedCallback)
+activate Wrapper
+deactivate Wrapper
+
+Wrapper -> NativeLibrary: method(localCallback)
+activate NativeLibrary
+
+loop isConversationCompleted = false
+NativeLibrary -> JavaConnection: send/receive
+activate JavaConnection
+
+JavaConnection -> BluetoothConnection: send/receive
+activate BluetoothConnection
+
+BluetoothConnection --> JavaConnection
+deactivate BluetoothConnection
+
+NativeLibrary -> Wrapper: localCallback
+activate Wrapper
+
+Wrapper -> Wrapper: find_wrapped_callback(localCallback)
+activate Wrapper
+deactivate Wrapper
+
+Wrapper -> WrappedCallback: invoke
+activate WrappedCallback
+
+WrappedCallback -> Callback: invoke
+activate Callback
+
+Callback --> WrappedCallback
+deactivate Callback
+
+WrappedCallback --> Wrapper
+deactivate WrappedCallback
+
+Wrapper --> NativeLibrary
+deactivate Wrapper
+end
+
+JavaConnection --> NativeLibrary: << response >>
+deactivate JavaConnection
+
+NativeLibrary --> Wrapper: << response >>
+deactivate NativeLibrary
+
+Wrapper -> Wrapper: unregister(wrappedCallback)
+activate Wrapper
+Wrapper -> WrappedCallback: << destroy >>
+activate WrappedCallback
+deactivate WrappedCallback
+destroy WrappedCallback
+deactivate Wrapper
+
+Wrapper --> NativeAPI: << response >>
+deactivate Wrapper
+
+NativeAPI --> App: << response >>
+deactivate NativeAPI
+deactivate App
+
+deactivate App
+
+@enduml

@@ -1,0 +1,202 @@
+@startuml
+
+hide footbox
+autonumber "<b>[0]</b>"
+
+skinparam handwritten true
+
+skinparam BoxPadding 10
+skinparam ParticipantPadding 25
+
+box "JavaApp"
+participant App
+participant NativeAPI
+participant BluetoothConnection
+end box
+
+box "myLib_wrapper"
+participant Wrapper
+end box
+
+box "myLib"
+participant NativeLibrary
+participant JavaConnection
+end box
+
+== Set up ==
+
+[-> App: << start >>
+activate App
+
+App -> App: setUp
+activate App
+
+create NativeAPI
+App -> NativeAPI: << create >>
+
+create BluetoothConnection
+App -> BluetoothConnection: << create >>
+
+create Wrapper
+NativeAPI -> Wrapper: << load >>
+
+create NativeLibrary
+Wrapper -> NativeLibrary: << load >>
+
+App -> NativeAPI: initialize(connection)
+activate NativeAPI
+
+NativeAPI -> Wrapper: initialize(connection)
+activate Wrapper
+
+Wrapper -> NativeLibrary: initialize(connection)
+activate NativeLibrary
+
+create JavaConnection
+NativeLibrary -> JavaConnection: << create >>
+
+NativeLibrary -> JavaConnection: open
+activate JavaConnection
+
+JavaConnection -> BluetoothConnection: open
+activate BluetoothConnection
+
+BluetoothConnection --> JavaConnection
+deactivate BluetoothConnection
+
+JavaConnection --> NativeLibrary
+deactivate JavaConnection
+
+NativeLibrary --> Wrapper
+deactivate NativeLibrary
+
+Wrapper --> NativeAPI
+deactivate Wrapper
+
+NativeAPI --> App
+deactivate NativeAPI
+deactivate App
+
+...
+
+== Usage ==
+
+App -> App: doSomething
+activate App
+
+App -> NativeAPI: method
+activate NativeAPI
+
+NativeAPI -> Wrapper: method
+activate Wrapper
+
+Wrapper -> NativeLibrary: method
+activate NativeLibrary
+
+loop isConversationCompleted = false
+NativeLibrary -> JavaConnection: send
+activate JavaConnection
+
+JavaConnection -> BluetoothConnection: send
+activate BluetoothConnection
+
+BluetoothConnection --> JavaConnection: << result >>
+deactivate BluetoothConnection
+
+JavaConnection --> NativeLibrary: << result >>
+deactivate JavaConnection
+
+NativeLibrary -> JavaConnection: receive
+activate JavaConnection
+
+JavaConnection -> BluetoothConnection: receive
+activate BluetoothConnection
+
+BluetoothConnection --> JavaConnection: << data >>
+deactivate BluetoothConnection
+
+JavaConnection --> NativeLibrary: << data >>
+deactivate JavaConnection
+end
+
+NativeLibrary --> Wrapper: << response >>
+deactivate NativeLibrary
+
+Wrapper --> NativeAPI: << response >>
+deactivate Wrapper
+
+NativeAPI --> App: << response >>
+deactivate NativeAPI
+deactivate App
+
+...
+
+== Tear down ==
+
+App -> App: << exit >>
+activate App
+
+App -> NativeAPI: finalize
+activate NativeAPI
+
+NativeAPI -> Wrapper: finalize
+activate Wrapper
+
+Wrapper -> NativeLibrary: finalize
+activate NativeLibrary
+
+NativeLibrary -> JavaConnection: close
+activate JavaConnection
+
+JavaConnection -> BluetoothConnection: close
+activate BluetoothConnection
+
+BluetoothConnection --> JavaConnection
+deactivate BluetoothConnection
+
+JavaConnection --> NativeLibrary
+deactivate JavaConnection
+
+NativeLibrary -> JavaConnection: << destroy >>
+activate JavaConnection
+deactivate JavaConnection
+destroy JavaConnection
+
+NativeLibrary --> Wrapper
+deactivate NativeLibrary
+
+Wrapper --> NativeAPI
+deactivate Wrapper
+
+NativeAPI --> App
+deactivate NativeAPI
+deactivate App
+deactivate App
+
+[-> App: << dispose >>
+activate App
+
+App -> NativeAPI: << dispose >>
+activate NativeAPI
+
+NativeAPI -> Wrapper: << unload >>
+activate Wrapper
+
+Wrapper -> NativeLibrary: << unload >>
+activate NativeLibrary
+deactivate NativeLibrary
+destroy NativeLibrary
+
+deactivate Wrapper
+destroy Wrapper
+
+destroy NativeAPI
+
+App -> BluetoothConnection: << dispose >>
+activate BluetoothConnection
+deactivate BluetoothConnection
+destroy BluetoothConnection
+
+deactivate App
+
+@enduml
