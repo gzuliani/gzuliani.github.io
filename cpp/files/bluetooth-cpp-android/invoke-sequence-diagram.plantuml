@@ -10,8 +10,8 @@ skinparam ParticipantPadding 25
 
 box "JavaApp"
 participant App
-participant NativeAPI
 participant BluetoothConnection
+participant NativeAPI
 end box
 
 box "myLib_wrapper"
@@ -31,11 +31,11 @@ activate App
 App -> App: setUp
 activate App
 
-create NativeAPI
-App -> NativeAPI: << create >>
-
 create BluetoothConnection
 App -> BluetoothConnection: << create >>
+
+create NativeAPI
+App -> NativeAPI: << create >>
 
 create Wrapper
 NativeAPI -> Wrapper: << load >>

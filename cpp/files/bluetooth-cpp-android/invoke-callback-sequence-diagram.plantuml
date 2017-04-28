@@ -46,7 +46,7 @@ Wrapper -> Wrapper: register(wrappedCallback)
 activate Wrapper
 deactivate Wrapper
 
-Wrapper -> NativeLibrary: method(localCallback)
+Wrapper -> NativeLibrary: method(wrapper_callback)
 activate NativeLibrary
 
 loop isConversationCompleted = false
@@ -59,14 +59,17 @@ activate BluetoothConnection
 BluetoothConnection --> JavaConnection
 deactivate BluetoothConnection
 
-NativeLibrary -> Wrapper: localCallback
+JavaConnection --> NativeLibrary: << response >>
+deactivate JavaConnection
+
+NativeLibrary -> Wrapper: wrapper_callback
 activate Wrapper
 
-Wrapper -> Wrapper: find_wrapped_callback(localCallback)
+Wrapper -> Wrapper: find_callback(param)
 activate Wrapper
 deactivate Wrapper
 
-Wrapper -> WrappedCallback: invoke
+Wrapper -> WrappedCallback: operator()
 activate WrappedCallback
 
 WrappedCallback -> Callback: invoke
@@ -81,9 +84,6 @@ deactivate WrappedCallback
 Wrapper --> NativeLibrary
 deactivate Wrapper
 end
-
-JavaConnection --> NativeLibrary: << response >>
-deactivate JavaConnection
 
 NativeLibrary --> Wrapper: << response >>
 deactivate NativeLibrary
