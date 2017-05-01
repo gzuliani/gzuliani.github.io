@@ -42,10 +42,6 @@ activate Wrapper
 create WrappedCallback
 Wrapper -> WrappedCallback: << create >>
 
-Wrapper -> Wrapper: register(wrappedCallback)
-activate Wrapper
-deactivate Wrapper
-
 Wrapper -> NativeLibrary: method(wrapper_callback)
 activate NativeLibrary
 
@@ -65,10 +61,6 @@ deactivate JavaConnection
 NativeLibrary -> Wrapper: wrapper_callback
 activate Wrapper
 
-Wrapper -> Wrapper: find_callback(param)
-activate Wrapper
-deactivate Wrapper
-
 Wrapper -> WrappedCallback: operator()
 activate WrappedCallback
 
@@ -87,14 +79,6 @@ end
 
 NativeLibrary --> Wrapper: << response >>
 deactivate NativeLibrary
-
-Wrapper -> Wrapper: unregister(wrappedCallback)
-activate Wrapper
-Wrapper -> WrappedCallback: << destroy >>
-activate WrappedCallback
-deactivate WrappedCallback
-destroy WrappedCallback
-deactivate Wrapper
 
 Wrapper --> NativeAPI: << response >>
 deactivate Wrapper
