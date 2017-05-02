@@ -2,14 +2,29 @@
 
 skinparam handwritten true
 
-namespace myLib_wrapper {
+namespace Java_application {
+
+class NativeAPI {
+  +method()
+}
+class BluetoothConnection {
+  +isOpen()
+  +open()
+  +close()
+  +send()
+  +receive()
+}
+NativeAPI ..> BluetoothConnection
+}
+
+namespace wrapper_library {
 
 class Wrapper << (-,orchid) >> #lavender {
   {static} +method()
 }
 }
 
-namespace myLib {
+namespace native_libary {
 
 abstract class Connection {
   +send()
@@ -29,23 +44,11 @@ class Facade << (-,orchid) >> #lavender {
 Facade ..> Connection
 }
 
-namespace JavaApp {
+wrapper_library.Wrapper ..> native_libary.Facade
+native_libary.JavaConnection o--> Java_application.BluetoothConnection
+Java_application.NativeAPI ..> wrapper_library.Wrapper
 
-class NativeAPI {
-  +method()
-}
-class BluetoothConnection {
-  +isOpen()
-  +open()
-  +close()
-  +send()
-  +receive()
-}
-NativeAPI ..> BluetoothConnection
-}
-
-myLib_wrapper.Wrapper ..> myLib.Facade
-myLib.JavaConnection o--> JavaApp.BluetoothConnection
-JavaApp.NativeAPI ..> myLib_wrapper.Wrapper
+' force layout
+Java_application -[hidden]-> wrapper_library
 
 @enduml

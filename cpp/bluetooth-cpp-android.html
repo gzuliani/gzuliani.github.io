@@ -9,40 +9,40 @@
 <p class="page-path"><a href="../index.html#bluetooth-cpp-android">risorse</a> | bluetooth c++ e android</p>
 <h1>Bluetooth, C++ e Android</h1>
 <p>Nel corso degli anni ho sviluppato un applicativo C++/Win32 per il controllo di uno strumento di misura: il programma si connette allo strumento via Bluetooth e scarica i dati acquisiti attraverso un protocollo di comunicazione binario ideato dal costruttore del multimetro. I dati raccolti vengono presentati all'utente e archiviati per consentire di condurre analisi a posteriori di varia natura.</p>
-<p>Poco più di un anno fa ho effettuato uno studio di fattibilità circa il <em>porting</em> dell'applicativo su dispositivo mobile, nella fattispecie un terminale Android. Raccolgo qui qualche appunto circa le difficoltà incontrate nell'accedere al trasmettitore Bluetooth di un dispositivo Android da una libreria nativa C++.</p>
+<p>Poco più di un anno fa ho effettuato uno studio di fattibilità del <em>porting</em> dell'applicativo su dispositivo mobile, nella fattispecie un terminale Android. Raccolgo qui qualche appunto circa le difficoltà incontrate nell'accedere al trasmettitore Bluetooth di un dispositivo Android da una libreria nativa C++.</p>
 <h2>Premessa</h2>
-<p>Considerata la complessità dell'implementazione del protocollo di comunicazione, il presupposto iniziale è stato quello di riutilizzare il codice C++ di acquisizione dei dati, lasciando all'applicativo Java la responsabilità della loro visualizzazione e memorizzazione. La reimplementazione del protocollo di comunicazione in Java è stato escluso a priori.</p>
+<p>Considerata la complessità dell'implementazione del protocollo di comunicazione, ho scelto di riutilizzare il codice C++ di acquisizione dei dati, lasciando all'applicativo Java la responsabilità della loro visualizzazione e memorizzazione. La reimplementazione del protocollo di comunicazione in Java è stata esclusa a priori.</p>
 <h2>Interfaccia Java/C++</h2>
-<p>Ho prima di tutto riorganizzato il codice C++ di comunicazione ed elaborazione dei dati in una libreria dinamica <span class="library">myLib</span>, che successivamente ho portato in ambiente Linux.</p>
+<p>Ho prima di tutto riorganizzato il codice C++ di comunicazione ed elaborazione dei dati in una libreria dinamica che successivamente ho portato in ambiente Linux.</p>
 <p class="note">Il porting del codice C++ da Windows a Linux è stata un'esperienza particolarmente istruttiva. Per quanto pensassi di aver sviluppato codice tutto sommato indipendente dalla piattaforma utilizzata (Win32), l'operazione ha richiesto un discreto numero di interventi correttivi. Altrettanto formativo è stato il sottoporre lo stesso sorgente a compilatori diversi (VC su Windows, GCC/Clang su Linux): le sorprese non sono mancate!</p>
 <p>In seconda istanza ho definito un'interfaccia C per agevolare l'accesso alle funzionalità implementate dalla libreria <em>nativa</em> (l'originale, implementata in C/C++); per comodità ho scelto di utilizzare i tipi primitivi del linguaggio C come parametri di ingresso/uscita, optando invece per l'utilizzo di stringhe JSON come valore di ritorno:</p>
 <pre class="code">
 extern "C"
 const char* method(int value);
 </pre>
-<p class="illustration">Esempio di API C esposta dalla libreria nativa <span class="library">myLib</span></p>
+<p class="illustration">Esempio di API C esposta dalla libreria nativa</p>
 <p>L'accesso all'API nativa da parte dell'applicativo Java avviene attraverso una classe dedicata:</p>
 <pre class="code">
 public class NativeAPI {
   static {
-    System.loadLibrary("myLib_wrapper");
+    System.loadLibrary("LIB-NAME_wrapper");
   }
   public native String method(int aValue);
   ...
 }
 </pre>
-<p>Come si può dedurre dal frammento di codice, l'applicazione Java accede alla libreria nativa attraverso una libreria ausiliaria, denominata <span class="library">myLib_wrapper</span>, che si occupa di effettuare il <em>marshalling</em> dei parametri di ingresso e del valore di ritorno, oltre ovviamente dell'invocazione del metodo nativo:</p>
+<p>Come si può dedurre dal frammento di codice, l'applicazione Java accede alla libreria nativa attraverso una libreria ausiliaria, denominata <span class="library">*_wrapper</span>, che si occupa di effettuare il <em>marshalling</em> dei parametri di ingresso e del valore di ritorno, oltre ovviamente dell'invocazione del metodo nativo:</p>
 <pre class="code">
 extern "C"
-JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_method(
+JNIEXPORT jstring JNICALL Java_xx_company_product_LIB-NAME_method(
   JNIEnv* env, jobject thiz, jint value) {
   return env->NewStringUTF(method(value));
 }
 </pre>
 <p class="illustration">Esempio di <em>wrapping</em> dell'API nativa <span class="code">method</span> &mdash; notare la decorazione del metodo</p>
 <h2>Accesso al Bluetooth</h2>
-<p>La compilazione della libreria nativa <span class="library">myLib</span> con l'NDK per Android non va a buon fine, perché il Bluetooth su quella piattaforma non è (ancora?) disponibile &mdash; cfr. <a href="https://developer.android.com/ndk/guides/stable_apis.html">Android NDK Native APIs</a>. Il problema è noto, e il suggerimento più comune è quello di fornire alla libreria nativa un accesso al Bluetooth attraverso un oggetto Java.</p>
-<p>Fortunatamente il codice C++ originale già astraeva dalla tipologia di connessione: il modulo che implementa il protocollo di comunicazione infatti, dovendo supportare la doppia modalità di connessione Bluetooth/seriale, già basava il suo funzionamento su una classe astratta denominata <span class="code">Connection</span>. Estenderlo per supportare un terzo tipo di connessione non avrebbe dovuto rivelarsi troppo difficile:</p>
+<p>La compilazione della libreria nativa con l'NDK per Android non va a buon fine, perché il Bluetooth su quella piattaforma non è (ancora?) disponibile &mdash; cfr. <a href="https://developer.android.com/ndk/guides/stable_apis.html">Android NDK Native APIs</a>. Il problema è noto, e il suggerimento più comune è quello di fornire alla libreria nativa un accesso al Bluetooth attraverso un oggetto Java.</p>
+<p>Fortunatamente il codice C++ originale già astrae dalla tipologia di connessione: il modulo che implementa il protocollo di comunicazione infatti, dovendo supportare la doppia modalità di connessione Bluetooth/seriale (la seconda utilizzata come backup della prima nelle sessioni di debug del firmware), fa uso di una classe astratta <span class="code">Connection</span>. Estenderlo per supportare un terzo tipo di connessione è stato così relativamente semplice:</p>
 <pre class="code">
 class Connection {
 public:
@@ -75,17 +75,17 @@ public class BluetoothConnection {
 <p class="illustration">La classe Java per l'accesso al Bluetooth</p>
 <p>Occorre a questo punto arricchire l'API Java/C++ per consentire all'applicativo di passare alla libreria nativa sottostante un'istanza di questa classe:</p>
 <pre class="code">
-// myLib
+// native library
 extern "C" {
   const char* method(int value);
   <strong>const char* initialize(JNIEnv* env, jobject connection);</strong>
 }
 </pre>
 <pre class="code">
-// Java
+// Java application
 public class NativeAPI {
   static {
-    System.loadLibrary("myLib_wrapper");
+    System.loadLibrary("LIB-NAME_wrapper");
   }
   public native String method(int aValue);
   <strong>public native String initialize(BluetoothConnection connection);</strong>
@@ -93,19 +93,19 @@ public class NativeAPI {
 }
 </pre>
 <pre class="code">
-// myLib_wrapper
+// native library wrapper
 extern "C" {
-  JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_method(
+  JNIEXPORT jstring JNICALL Java_xx_company_product_LIB-NAME_method(
     JNIEnv* env, jobject thiz, jint value) {
     return env->NewStringUTF(method(value));
   }
-  <strong>JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_initialize(
+  <strong>JNIEXPORT jstring JNICALL Java_xx_company_product_LIB-NAME_initialize(
     JNIEnv* env, jobject thiz, jobject connection) {
     return env->NewStringUTF(initialize(env, connection));
   }</strong>
 }
 </pre>
-<p>Resta da specializzare l'oggetto C++ <span class="code">Connection</span> fornendo un'implementazione basata sull'oggetto Java <span class="code">BluetoothConnection</span>:</p>
+<p>Resta da specializzare l'interfaccia C++ <span class="code">Connection</span> fornendone un'implementazione basata sull'oggetto Java <span class="code">BluetoothConnection</span>:</p>
 <pre class="code">
 <strong>class JavaConnection : public Connection {
   JNIEnv* env_;
@@ -130,13 +130,13 @@ extern "C" {
   }</strong>
 }
 </pre>
-<p class="note">Le implementazioni non sono mostrate nella loro completezza poiché tutto il codice sorgente sviluppato è sottoposto a vincoli di non divulgazione.</p>
+<p class="note">Le implementazioni non sono mostrate nella loro completezza poiché tutto il codice sorgente sviluppato è sottoposto ad accordi di non divulgazione.</p>
 <p>Il diagramma che segue illustra le classi e le interfacce fin qui descritte, con le rispettive dipendenze:</p>
 <a href="img/bluetooth-cpp-android/invoke-class-diagram.png">
 <img src="img/bluetooth-cpp-android/invoke-class-diagram.png" width="500"/>
 </a>
 <p class="illustration"><em>Class diagram</em> dell'implementazione (click sull'immagine per ingrandirla).</p>
-<p>Nel diagramma appaiono due oggetti fittizi di comodo: il primo, <span class="code">Facade</span>, rappresenta l'interfaccia C della libreria nativa <span class="library">myLib</span>, mentre il secondo, <span class="code">Wrapper</span>, raggruppa le funzioni di marshalling dei parametri contenute nella libreria ausiliaria <span class="library">myLib_wrapper</span>.</p>
+<p>Nel diagramma appaiono due oggetti fittizi di comodo: il primo, <span class="code">Facade</span>, rappresenta l'interfaccia C della libreria nativa, mentre il secondo, <span class="code">Wrapper</span>, raggruppa le funzioni di marshalling dei parametri contenute nella libreria <span class="library">LIB-NAME_wrapper</span>.</p>
 <h2>Sequenza di chiamate</h2>
 <p>L'utilizzo della libreria nativa si articola in tre fasi: il caricamento e l'inizializzazione della libreria, che comprende il passaggio di un'istanza della classe Java <span class="code">BluetoothConnection</span>, l'invocazione dei metodi necessari al raggiungimento dell'obiettivo prefissato, quindi lo scaricamento della libreria:</p>
 <pre class="code">
@@ -162,9 +162,9 @@ extern "C" {
 </a>
 <p class="illustration"><em>Sequence diagram</em> del tipico caso d'uso dell'API (click sull'immagine per ingrandirla).</p>
 <h3>Inizializzazione &ndash; &ldquo;Set up&rdquo;</h3>
-<p>La libreria nativa <span class="library">myLib</span> viene caricata in memoria dal <em>runtime</em> Java in corrispondenza del primo riferimento alla classe <span class="code">NativeAPI</span> (cfr. messaggi <span class="message">[4]</span>, <span class="message">[5]</span> e <span class="message">[6]</span>). L'inizializzazione della libreria avviene esplicitamente, con la chiamata <span class="code">initialize</span> del medesimo oggetto (<span class="message">[7]</span>), che causa l'esecuzione dell'omonimo metodo della libreria di marshalling (<span class="message">[8]</span>), il quale a sua volta chiama in causa la libreria nativa (<span class="message">[9]</span>). Il codice C++ riceve così un riferimento all'oggetto Java <span class="code">BluetoothConnection</span>, che viene immediatamente &ldquo;impacchettato&rdquo; all'interno di un oggetto C++ di tipo <span class="code">JavaConnection</span> (<span class="message">[10]</span>). Con l'occasione, la libreria nativa apre subito il canale di comunicazione Bluetooth (<span class="message">[11]</span>), operazione che viene effettivamente condotta dall'oggetto <span class="code">BluetoothConnection</span> nel contesto dell'applicazione Java (<span class="message">[12]</span>).</p>
+<p>La libreria nativa viene caricata in memoria dal <em>runtime</em> Java in corrispondenza del primo riferimento alla classe <span class="code">NativeAPI</span> (cfr. messaggi <span class="message">[4]</span>, <span class="message">[5]</span> e <span class="message">[6]</span>). L'inizializzazione della libreria avviene esplicitamente, con la chiamata <span class="code">initialize</span> del medesimo oggetto (<span class="message">[7]</span>), che causa l'esecuzione dell'omonimo metodo della libreria di wrapping (<span class="message">[8]</span>), il quale a sua volta chiama in causa la libreria nativa (<span class="message">[9]</span>). Il codice C++ riceve così un riferimento all'oggetto Java <span class="code">BluetoothConnection</span>, che viene immediatamente &ldquo;impacchettato&rdquo; all'interno di un oggetto C++ di tipo <span class="code">JavaConnection</span> (<span class="message">[10]</span>). Con l'occasione, la libreria nativa apre subito il canale di comunicazione Bluetooth (<span class="message">[11]</span>), operazione che viene effettivamente condotta dall'oggetto <span class="code">BluetoothConnection</span> nel contesto dell'applicazione Java (<span class="message">[12]</span>).</p>
 <h3>Uso dell'API &ndash; &ldquo;Usage&rdquo;</h3>
-<p>La chiamata di un metodo nativo segue un tragitto analogo: il codice applicativo invoca un metodo dell'oggetto <span class="code">NativeAPI</span> (messaggio <span class="message">[19]</span>), che attiva il codice di marshalling ad esso associato (<span class="message">[20]</span>), il quale invoca l'omologo nativo (<span class="message">[21]</span>) che a sua volta sfrutta l'oggetto <span class="code">JavaConnection</span> per colloquiare con lo strumento remoto per mezzo dell'oggetto Java <span class="code">BluetoothConnection</span>  (messaggi <span class="message">[22]</span>, <span class="message">[23]</span> e <span class="message">[26]</span>, <span class="message">[27]</span>). Il risultato dell'operazione segue il percorso inverso: dalla libreria nativa il responso passa a quella di marshalling (<span class="message">[30]</span>), da questa all'oggetto <span class="code">NativeAPI</span> (<span class="message">[31]</span>), infine all'applicativo (<span class="message">[32]</span>).</p>
+<p>La chiamata di un metodo nativo segue un tragitto analogo: il codice applicativo invoca un metodo dell'oggetto <span class="code">NativeAPI</span> (messaggio <span class="message">[19]</span>), che attiva il codice di marshalling ad esso associato (<span class="message">[20]</span>), il quale invoca l'omologo nativo (<span class="message">[21]</span>) che a sua volta sfrutta l'oggetto <span class="code">JavaConnection</span> per colloquiare con lo strumento remoto per mezzo dell'oggetto Java <span class="code">BluetoothConnection</span>  (messaggi <span class="message">[22]</span>, <span class="message">[23]</span> e <span class="message">[26]</span>, <span class="message">[27]</span>). Il risultato dell'operazione segue il percorso inverso: dalla libreria nativa il responso passa a quella di wrapping (<span class="message">[30]</span>), da questa all'oggetto <span class="code">NativeAPI</span> (<span class="message">[31]</span>), infine all'applicativo (<span class="message">[32]</span>).</p>
 <h3>Scaricamento &ndash; &ldquo;Tear down&rdquo;</h3>
 <p>Quando i servizi della libreria non sono più richiesti, l'applicativo chiama il metodo <span class="code">finalize</span> dell'oggetto <span class="code">NativeAPI</span> (messaggio <span class="message">[34]</span>). La chiamata viene propagata alla libreria nativa (messaggi <span class="message">[35]</span> e <span class="message">[36]</span>) che dapprima provvede a chiudere la connessione (messaggi <span class="message">[37]</span> e <span class="message">[38]</span>), quindi a distruggere l'oggetto <span class="code">JavaConnection</span>. Le librerie verranno scaricate dalla memoria quando il <em>garbage collector</em> di Java reclamerà l'oggetto <span class="code">NativeAPI</span> (messaggi <span class="message">[45]</span>, &hellip; <span class="message">[49]</span>).</p>
 <h2>Callback</h2>
@@ -196,7 +196,7 @@ extern "C" {
 <pre class="code">
 public class NativeAPI {
   static {
-    System.loadLibrary("myLib_wrapper");
+    System.loadLibrary("LIB-NAME_wrapper");
   }
   public native String method(int aValue<strong>, Callback aCallback</strong>);
   public native String initialize(BluetoothConnection connection);
@@ -204,7 +204,7 @@ public class NativeAPI {
 }
 </pre>
 <p class="illustration">Estensione dell'API <span class="code">method</span>: ora prevede un'interfaccia di notifica aggiuntiva</p>
-<p>Serve ora collegare la callback C e la classe <span class="code">Callback</span>; il codice collante, per la sua natura, si trova a suo agio nella libreria di marshalling <span class="library">myLib_wrapper</span>. Si rendono necessari due componenti: un oggetto C++ che modella l'oggetto Java <span class="code">Callback</span> e una funzione di callback C da passare alla libreria nativa, e che si occuperà di inoltrare le notifiche ricevute dalla libreria alla <span class="code">Callback</span> Java. Il codice (semplificato!) del <em>wrapper</em> di <span class="code">Callback</span> è:</p>
+<p>Serve ora collegare la callback C e la classe <span class="code">Callback</span>; il codice collante, per la sua natura, si trova a suo agio nella libreria di wrapping. Si rendono necessari due componenti: un oggetto C++ che modella l'oggetto Java <span class="code">Callback</span> e una funzione di callback C da passare alla libreria nativa, e che si occuperà di inoltrare le notifiche ricevute dalla libreria alla <span class="code">Callback</span> Java. Il codice (semplificato!) del <em>wrapper</em> di <span class="code">Callback</span> è:</p>
 <pre class="code">
 <strong>class WrappedCallback {
   JNIEnv* env_;
@@ -242,7 +242,7 @@ extern &quot;C&quot; {
 extern "C" {
   ...
 
-  <strong>JNIEXPORT jstring JNICALL Java_xx_company_product_MyLib_method(
+  <strong>JNIEXPORT jstring JNICALL Java_xx_company_product_LIB-NAME_method(
     JNIEnv* env, jobject thiz, jint value, jobject callback) {
     WrappedCallback wrappedCallback(env, callback);
     return env-&gt;NewStringUTF(method(
@@ -293,11 +293,11 @@ extern &quot;C&quot; {
 <img src="img/bluetooth-cpp-android/invoke-callback-sequence-diagram.png" width="800"/>
 </a>
 <p class="illustration">Sequence diagram di una chiamata con callback (click sull'immagine per ingrandirla).</p>
-<p>Prima di effettuare la chiamata nativa, l'applicativo Java istanzia l'oggetto <span class="code">Callback</span> (messaggio <span class="message">[2]</span>); prosegue quindi all'attivazione del metodo <span class="code">method</span> della classe <span class="code">NativeAPI</span> (<span class="message">[3]</span>), cui passa un riferimento all'oggetto <span class="code">Callback</span> appena creato. La chiamata viene inoltrata alla libreria di wrapping, che riceve il riferimento e lo deposita all'interno di un oggetto <span class="code">WrappedCallback</span> (<span class="message">[5]</span>).</p>
-<p>A questo punto viene invocato il metodo nativo (<span class="message">[6]</span>), cui viene passata la callback ausiliaria &ndash; <span class="code">wrapper_callback</span> &ndash; propria della libreria di wrapping. Si può presupporre che il codice nativo effettuerà un certo numero di comunicazioni con lo strumento remoto (messaggi <span class="message">[7]</span>, &hellip; <span class="message">[10]</span>), e di tanto in tanto chiamerà la callback locale (<span class="message">[11]</span>). Per tutta risposta, questa attiverà l'oggetto <span class="code">WrappedCallback</span> passato in <span class="code">param</span> con i valori ricevuti dalla libreria nativa (<span class="message">[12]</span>). I medesimi valori saranno quindi inoltrati alla callback Java (<span class="message">[13]</span>), ed il valore di ritorno ottenuto sarà ricondotto alla liberia nativa seguendo il percorso inverso (messaggi <span class="message">[14]</span>, <span class="message">[15]</span> e <span class="message">[16]</span>).</p>
-<h2>Garbage Collection</h2>
-<h3>Riferiementi e indirizzi di memoria</h3>
-<p>A differenza di quanto accade in C++, gli oggetti Java non occupano una posizione fissa in memoria: la <em>garbage collection</em> infatti, per determinare quali di questi possano essere deallocati, li sposta. Questo vuol dire che il riferimento all'oggetto Java <span class="code">BluetoothConnection</span> memorizzato all'interno dell'<em>envelope</em> C++ <span class="code">JavaConnection</span> potrebbe diventare invalido. È quindi indispensabile indicare a runtime Java che l'oggetto Java <span class="code">BluetoothConnection</span> deve essere lasciato al suo posto; un modo per farlo è di acquisire da C++ un riferimento <em>globale</em> all'oggetto Java (cfr. <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html#weak">Weak Global References</a> nella documentazione ufficiale Oracle):</p>
+<p>Prima di effettuare la chiamata nativa, l'applicativo Java istanzia l'oggetto <span class="code">Callback</span> (messaggio <span class="message">[2]</span>); prosegue quindi all'attivazione del metodo <span class="code">method</span> della classe <span class="code">NativeAPI</span> (<span class="message">[3]</span>), cui passa un riferimento all'oggetto <span class="code">Callback</span> appena creato. La chiamata viene inoltrata alla libreria di wrapping, che riceve il riferimento e lo memorizza all'interno di un oggetto <span class="code">WrappedCallback</span> (<span class="message">[5]</span>).</p>
+<p>A questo punto viene invocato il metodo nativo (<span class="message">[6]</span>), cui viene passato un puntatore a <span class="code">wrapper_callback</span>, la callback ausiliaria propria della libreria di wrapping. Si può presupporre che il codice nativo effettuerà un certo numero di comunicazioni con lo strumento remoto (messaggi <span class="message">[7]</span>, &hellip; <span class="message">[10]</span>), e di tanto in tanto chiamerà la callback locale (<span class="message">[11]</span>). Per tutta risposta, questa attiverà l'oggetto <span class="code">WrappedCallback</span> passato in <span class="code">param</span> con i valori ricevuti dalla libreria nativa (<span class="message">[12]</span>). I medesimi valori saranno quindi inoltrati alla callback Java (<span class="message">[13]</span>), ed il valore di ritorno ottenuto sarà ricondotto alla liberia nativa seguendo il percorso inverso (messaggi <span class="message">[14]</span>, <span class="message">[15]</span> e <span class="message">[16]</span>).</p>
+<h2>Garbage Collection e C++</h2>
+<h3>Riferimenti e indirizzi di memoria</h3>
+<p>A differenza di quanto accade in C++, gli oggetti Java non occupano una posizione fissa in memoria: la <em>garbage collection</em> infatti, per determinare quali di questi possano essere deallocati, li sposta. Questo vuol dire che il riferimento all'oggetto Java <span class="code">BluetoothConnection</span> in <span class="code">JavaConnection</span> potrebbe diventare invalido. È quindi indispensabile chiedere al runtime Java di lasciare l'oggetto <span class="code">BluetoothConnection</span> al suo posto; un modo per farlo è di acquisire un riferimento <em>globale</em> (cfr. <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html#weak">Weak Global References</a> nella documentazione ufficiale Oracle):</p>
 <pre class="code">
 JavaConnection::JavaConnection(JNIEnv* env, jobject connection)
  : env_(env), ... {
@@ -313,36 +313,28 @@ JavaConnection::~JavaConnection() {
 }
 </pre>
 <p class="illustration">Acquisizione di un riferimento globale all'istanza di <span class="code">BluetoothConnection</span></p>
-<h3>Riferimenti locali</h3>
-<p>Il runtime Java può gestire solo un numero limitato di riferimenti ad oggetti locali (cfr. <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/design.html#referencing_java_objects">Referencing Java Objects</a> nella documentazione ufficiale Oracle); se il codice nativo ne istanzia troppi, senza mai dare il tempo al runtime di scaricare quelli non più referenziati, si rischia il blocco dell'applicazione con errore &laquo;<span class="code">ReferenceTable overflow (max=512)</span>&raquo; o equivalente. Per scongiurare il problema, ricordarsi di <strong>rilasciare esplicitamente ogni oggetto non più necessario</strong>:</p>
+<h3>Limitazione del numero di riferimenti locali</h3>
+<p>Il runtime Java può gestire solo un numero limitato di riferimenti ad oggetti locali (cfr. <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/design.html#referencing_java_objects">Referencing Java Objects</a> nella documentazione ufficiale Oracle); se il codice nativo ne istanzia troppi, senza mai dare il tempo al runtime di scaricare quelli non più referenziati, si rischia il blocco dell'applicazione con errore &laquo;<span class="code">ReferenceTable overflow (max=512)</span>&raquo; o equivalente. Per scongiurare il problema, bisogna <strong>rilasciare esplicitamente ogni oggetto non più necessario</strong>:</p>
 <pre class="code">
 int JavaConnection::send(const char* data, int count) {
   jbyteArray buffer = env_-&gt;NewByteArray(count);
   auto local = std::vector&lt;jbyte&gt;(count);
-  for (int i = 0; i &lt; count; ++i)
-    local[i] = data[i];
+  ...
+
   env_-&gt;SetByteArrayRegion(buffer, 0, count, local.data());
   jint sent = env_-&gt;CallIntMethod(connection_, send_, buffer);
+
   <strong>// release java objects as soon as possible
   env_-&gt;DeleteLocalRef(buffer);</strong>
+  ...
+
   return static_cast&lt;int&gt;(sent);
 }
-
-int JavaConnection::receive(char* data, int expected) {
-  jbyteArray buffer =
-    static_cast&lt;jbyteArray&gt;(
-      env_-&gt;CallObjectMethod(connection_, receive_, expected));
-  jsize length = env_-&gt;GetArrayLength(buffer);
-  void* local = env_-&gt;GetPrimitiveArrayCritical(buffer, 0);
-  memcpy(data, local, length);
-  env_-&gt;ReleasePrimitiveArrayCritical(buffer, local, 0);
-  <strong>// release java objects as soon as possible
-  env_-&gt;DeleteLocalRef(buffer);</strong>
-  return static_cast&lt;int&gt;(length);
-}
 </pre>
+<p class="illustration">Esempio di rilascio esplicito di un oggetto locale</p>
+<p>Il codice sopra riportato mostra una possibile implementazione del codice di wrapping della funzione <span class="code">send</span>. Come si può notare, l'invio richiede l'allocazione temporanea di un oggetto di tipo <span class="code">jbyteArray</span>. Poiché il codice nativo richiama questo metodo ciclicamente fino all'esaurimento dei dati da trasmettere, non è possibile determinare a priori quante volte il metodo verrà invocato prima di tornare il controllo all'applicativo Java (nella fattispecie, svariate centinaia!). Per questa ragione la variabile <span class="code">buffer</span> viene rilasciata esplicitamente appena possibile.</p>
 <h2>Considerazioni finali</h2>
-<p>Non ho affrontato la questione del <em>build</em> della libreria nativa e di quella di marshalling, che è stato uno scoglio aggiuntivo da superare. Le difficoltà principali sono emerse dalle singolari peculiarità dei vari runtime C distribuiti con l'NDK:</p>
+<p>Non ho affrontato la questione del <em>build</em> della libreria nativa e di quella di wrapping, che è stato uno scoglio aggiuntivo da superare. Le difficoltà principali sono emerse dalle singolari peculiarità dei vari runtime C distribuiti con l'NDK:</p>
 <ul>
 <li>nessuno di essi supporta lo standard C++11 in maniera soddisfacente; alcuni di essi (vedere ad esempio <a href="http://stackoverflow.com/questions/33390658/c-regex-not-working-in-android-nd">C++ regex not working in Android NDK</a>) contengono delle implementazioni bacate che, sebbene compilino correttamente, causano dei <em>segmentation fault</em> in esecuzione;</li>
 <li>il runtime <span class="library">libgnustl</span> è distribuito con una licenza GPLv3 modificata tale per cui non è linkabile staticamente in progetti proprietari;</li>
@@ -351,6 +343,6 @@ int JavaConnection::receive(char* data, int expected) {
 <li><span class="code">libgnustl</span> non supporta un discreto numero di funzioni di utilità della libreria standard, come ad esempio <span class="code">std::to_string</span>, <span class="code">std::stoi</span>, &hellip; (vedere ad esempio <a href="http://stackoverflow.com/questions/22774009/android-ndk-stdto-string-support">Android ndk std::to_string support</a> e <a href="http://stackoverflow.com/questions/17950814/how-to-use-stdstoul-and-stdstoull-in-android/18124627#18124627">How to use std::stoul and std::stoull in Android?</a>).</li>
 </ul>
 <p>Ho risolto gran parte dei problemi abbandonando l'NDK ufficiale a favore di <a href="https://www.crystax.net/">Crystax</a> che, a partire dalla revisione #799 ha il vantaggio di supportare <a href="https://cmake.org/">CMake</a> (cfr. <a href="https://github.com/crystax/android-samples-cmake">Simple CMake-enabled example working with CrystaX NDK</a>, il sistema di build che già usavo per la compilazione della libreria nativa su Windows e Linux.</p>
-<p class="modification-notice">Pagina modificata il 01/05/2017</p>
+<p class="modification-notice">Pagina modificata il 02/05/2017</p>
 </body>
 </html>
