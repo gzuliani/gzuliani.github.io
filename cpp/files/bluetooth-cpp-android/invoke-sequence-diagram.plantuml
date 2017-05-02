@@ -8,17 +8,17 @@ skinparam handwritten true
 skinparam BoxPadding 10
 skinparam ParticipantPadding 25
 
-box "JavaApp"
+box "Java application"
 participant App
 participant BluetoothConnection
 participant NativeAPI
 end box
 
-box "myLib_wrapper"
+box "wrapper library"
 participant Wrapper
 end box
 
-box "myLib"
+box "native library"
 participant NativeLibrary
 participant JavaConnection
 end box

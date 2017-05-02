@@ -2,10 +2,30 @@
 
 skinparam handwritten true
 
-namespace myLib_wrapper {
+namespace Java_application {
+
+class NativeAPI {
+  +method(callback)
+}
+class Callback {
+  +invoke()
+}
+class BluetoothConnection {
+  +isOpen()
+  +open()
+  +close()
+  +send()
+  +receive()
+}
+NativeAPI ..> Callback
+NativeAPI ..> BluetoothConnection
+}
+
+namespace wrapper_library {
 
 class Wrapper << (-,orchid) >> #lavender {
-  {static} +method()
+  {static} +method(callback)
+  {static} -callback()
 }
 
 class WrappedCallback {
@@ -15,10 +35,10 @@ class WrappedCallback {
 Wrapper *--> WrappedCallback
 }
 
-namespace myLib {
+namespace native_library {
 
 class Facade << (-,orchid) >> #lavender {
-  {static} +method()
+  {static} +method(callback)
 }
 
 abstract class Connection {
@@ -35,32 +55,13 @@ Connection <|-- JavaConnection
 Facade ..> Connection
 }
 
-namespace JavaApp {
-
-class NativeAPI {
-  +method()
-}
-class Callback {
-  +invoke()
-}
-class BluetoothConnection {
-  +isOpen()
-  +open()
-  +close()
-  +send()
-  +receive()
-}
-NativeAPI ..> Callback
-NativeAPI ..> BluetoothConnection
-}
-
-myLib.JavaConnection o--> JavaApp.BluetoothConnection
-myLib_wrapper.Wrapper ..> myLib.Facade
-myLib_wrapper.WrappedCallback o--> JavaApp.Callback
-JavaApp.NativeAPI ..> myLib_wrapper.Wrapper
+native_library.JavaConnection o--> Java_application.BluetoothConnection
+wrapper_library.Wrapper ..> native_library.Facade
+wrapper_library.WrappedCallback o--> Java_application.Callback
+Java_application.NativeAPI ..> wrapper_library.Wrapper
 
 ' force layout
-myLib_wrapper -[hidden]-> myLib
-myLib -[hidden]-> JavaApp
+Java_application -[hidden]-> wrapper_library
+Java_application -[hidden]-> wrapper_library
 
 @enduml
