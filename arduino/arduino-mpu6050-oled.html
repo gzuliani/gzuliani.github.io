@@ -36,7 +36,7 @@ Scanning completed, waiting for another run...
 <li><span class="library">Adafruit GFX Library</span><a href="ref-2"><sup>[2]</sup></a>: libreria grafica di base, indipendente dall'hardware;</li>
 <li><span class="library">Adafruit SSD1306</span><a href="ref-3"><sup>[3]</sup></a>: driver per il display OLED in uso.</li>
 </ul>
-<p>Le librerie possono essere installate nell'IDE di Arduino in modo da poter essere utilizzabili anche per eventuali altri progetti:</p>
+<p>Le librerie possono essere installate direttamente dall'IDE di Arduino:</p>
 <ol>
 <li>aprire la maschera di gestione delle librerie con il comando <span class="menu">Sketch</span> &rarr; <span class="menu">Include Library</span> &rarr; <span class="menu">Manage Libraries...</span>;</li>
 <li>selezionare la versione più recente della libreria di interesse (1.1.5 per <span class="library">Adafruit GFX Library</span>, 1.1.2 per <span class="library">Adafruit SSD1306</span>);</li>
@@ -263,8 +263,8 @@ void loop() {
     delay(scan_rate_ms - elapsed);
 }
 </pre>
-<p>Oltre a quanto anticipato, considerato che non è richiesta la visualizzazione dei valori di accelerazione espressi in frazioni di g, si è optato per lavorare con i dati grezzi acquisiti dal sensore, per evitare inutili operazioni in virgola mobile che sono particolarmente onerose per il microcontrollore montato sulla scheda Arduino &mdash; fino a 10 volte più lente rispetto alle operazioni sui numeri interi<a href="#ref-4"><sup>[4]</sup></a><a href="#ref-5"><sup>[5]</sup></a><a href="#ref-6"><sup>[6]</sup></a><a href="#ref-8"><sup>[8]</sup></a>. La variabile <span class="code">accel_a</span> (che contiene ora il quadrato del valore di accelerazione totale) rimane <span class="code">float</span> per evitare condizioni di <span class="term">overflow</span>, quando cioè il dato grezzo è così elevato che il suo quadrato non è rappresentabile con soli 16 bit.</p>
-<p>Perché non si calcola il valore effettivo di accelerazione ma &ldquo;solo&rdquo; il suo quadrato? Poiché questo valore viene usato solo per determinare il campione massimo, calcolarne la radice quadrata sarebbe un inutile spreco di tempo: il massimo tra i quadrati è anche il massimo tra i valori sotto radice.</p>
+<p>Oltre a quanto anticipato, considerato che non è richiesta la visualizzazione dei valori di accelerazione espressi in frazioni di g, si è optato per lavorare con i dati grezzi acquisiti dal sensore, in modo da evitare inutili operazioni in virgola mobile che sono particolarmente onerose per il microcontrollore montato sulla scheda Arduino &mdash; fino a 10 volte più lente rispetto alle operazioni sui numeri interi<a href="#ref-4"><sup>[4]</sup></a><a href="#ref-5"><sup>[5]</sup></a><a href="#ref-6"><sup>[6]</sup></a><a href="#ref-8"><sup>[8]</sup></a>. La variabile <span class="code">accel_a</span> (che contiene ora il quadrato del valore di accelerazione totale) rimane <span class="code">float</span> per evitare condizioni di <span class="term">overflow</span>, quando cioè il dato grezzo è così elevato che il suo quadrato non è rappresentabile con soli 16 bit.</p>
+<p>Perché non si calcola il valore effettivo di accelerazione ma &ldquo;solo&rdquo; il suo quadrato? Poiché questo valore viene usato solo per determinare il campione massimo, calcolarne la radice quadrata sarebbe un inutile spreco di tempo: il massimo dei quadrati è anche il massimo dei valori sotto radice.</p>
 <p>Lo sketch ora acquisisce i dati, ma non li visualizza. Considerando che la risoluzione del display è di 128x64 pixel, conviene mostrare il diagramma cartesiano in prospettiva, in forma di ovale:</p>
 <img src="img/arduino-mpu6050-oled/grid.png">
 <p class="illustration">Il piano grafico visto in prospettiva</p>
@@ -307,7 +307,7 @@ void setup() {
   display.display();</ins>
 }
 </pre>
-<p>L'uso delle librerie grafiche richiede un discreto quantitativo di memoria, tant'è che se si lascia a 100 la dimensione del buffer dove vengono temporaneamente conservati i dati grezzi ottenuti dal sensore la compilazione dello sketch fallisce con errore <span class="code">not enough memory</span>. Conviene perciò diminuire a 20 il numero di campioni memorizzati. Considerando d'altra parte che i tempi di risposta del display OLED sono molto più rapidi di un LCD, si può aumentare la frequenza di campionamento a 200Hz. I 20 campioni acquisiti a 200Hz coprono un intervallo di tempo di 100ms, e questa sarà la durata del ciclo di aggiornamento del display: in questo modo il display verrà aggiornato al completo ricaricamento del buffer.</p>
+<p>L'uso delle librerie grafiche richiede un discreto quantitativo di memoria, tant'è che se si lascia a 100 la dimensione del buffer dove vengono temporaneamente conservati i dati grezzi ottenuti dal sensore la compilazione dello sketch fallisce con errore &laquo;<span class="code">not enough memory</span>&raquo;. Conviene perciò diminuire a 20 il numero di campioni memorizzati. Considerando d'altra parte che i tempi di risposta del display OLED sono molto più rapidi di un LCD, si può aumentare la frequenza di campionamento a 200Hz. I 20 campioni acquisiti a 200Hz coprono un intervallo di tempo di 100ms, e questa sarà la durata del ciclo di aggiornamento del display: in questo modo il display verrà aggiornato al completo ricaricamento del buffer.</p>
 <p>Per semplicità, il ciclo di aggiornamento del display consiste in una cancellazione, seguita dal caricamento dell'immagine della griglia e dal disegno del cursore nella posizione corrispondente ai valori di accelerazione. Ripristinare solo la parte di griglia al di sotto del cursore potrebbe risultare più efficiente rispetto al ridisegno dell'intero schermo ma, consideratane la complessità, l'aggiornamento mirato del display verrà implementato solo se necessario:</p>
 <pre class="code">
 void loop() {
@@ -465,7 +465,7 @@ static const int grid_height =  42;
 <p>La versione dello sketch fin qui ottenuta è scaricabile <a href="files/arduino-mpu6050-oled/basic/mpu6050-oled.ino">qui</a>.</p>
 <h2>Cambio scala manuale</h2>
 <p>Poiché il sensore può funzionare con quattro sensibilità differenti, si può estendere il circuito e il firmware per consentire all'utente di selezionare il fondo scala che preferisce?</p>
-<p>Per impratichirmi con l'uso delle <span class="term">interrupt</span>, ho deciso di comandare il fondo scala via interruzioni: la pressione di un pulsante genera un'interruzione che si occupa di configurare il sensore sul fondo scala successivo, secondo il ciclo &plusmn;2g &rarr; &plusmn;4g &rarr; &plusmn;8g &rarr; &plusmn;16g &rarr; &plusmn;2g &hellip;</p>
+<p>Per impratichirmi con l'uso delle <span class="term">interrupt</span>, ho deciso di comandare il fondo scala con un'interruzione: la pressione di un pulsante genera un'interrupt che si occupa di configurare il sensore sul fondo scala successivo, secondo il ciclo &plusmn;2g &rarr; &plusmn;4g &rarr; &plusmn;8g &rarr; &plusmn;16g &rarr; &plusmn;2g &hellip;</p>
 <p>Sfruttando la possibilità che offre la scheda Arduino di generare un'interruzione in corrispondenza di un cambiamento del livello elettrico presente sul pin <span class="pin">3</span>, il circuito si arricchisce di un pulsante che collega il suddetto pin a massa:</p>
 <img src="img/arduino-mpu6050-oled/wiring-mpu5060-display-button.png">
 <p class="illustration">Il pulsante per il cambio scala</p>
