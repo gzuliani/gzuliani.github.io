@@ -1,4 +1,4 @@
-﻿# Markdown and SciTE
+# Markdown and SciTE
 
 _How to get a live preview (on Firefox) of a markdown file._
 
@@ -14,10 +14,10 @@ Prerequisites:
 
 Optional packages:
 
-* [smarty pants](https://pypi.python.org/pypi/mdx_smartypants/1.3), to emit 
+* [smarty pants](https://pypi.python.org/pypi/mdx_smartypants/1.3), to emit
   typographically nicer ("curly") quotes, proper ("em" and "en") dashes, etc.;
 
-* [del/ins](https://pypi.python.org/pypi/mdx_del_ins/1.0), to support the `del` 
+* [del/ins](https://pypi.python.org/pypi/mdx_del_ins/1.0), to support the `del`
   and `ins` tags;
 
  * [xhtml_wrap](https://bitbucket.org/thinkstorm/xhtml_wrap/src), to wrap the
@@ -25,10 +25,10 @@ Optional packages:
 
 ## SciTE setup
 
-* pick up a temporary folder to host the markdown previews, e.g. 
+* pick up a temporary folder to host the markdown previews, e.g.
 `%UserProfile%\.md` --- put the `markdown.css` file of your choice here;
 
-* define the following variables *before* the inclusion of the lua scripts in 
+* define the following variables *before* the inclusion of the lua scripts in
   your `SciTEUser.properties` file:
 
         python.home=C:\Python26
@@ -75,10 +75,10 @@ Optional packages:
 
 ## Workflow
 
-* Open an exisiting markdown file or begin with an empty, _UTF-8 with BOM_ 
+* Open an exisiting markdown file or begin with an empty, _UTF-8 with BOM_
   encoded file and write some markup text;
 
-* to start the preview, press F7: your default browser should open the temporary 
+* to start the preview, press F7: your default browser should open the temporary
   html preview file;
 
 * to refresh the preview, either:
@@ -86,9 +86,9 @@ Optional packages:
 * save the markdown file in SciTE, then refresh the preview in the browser;
 
 * install an extension to let Firefox reload the modified file automatically
-  --- I currently use the [Auto 
-  Reload](https://addons.mozilla.org/en-US/firefox/addon/auto-reload) extension, 
-  which monitors my `$(SciteUserHome)\.md` folder and reloads any file as it 
+  --- I currently use the [Auto
+  Reload](https://addons.mozilla.org/en-US/firefox/addon/auto-reload) extension,
+  which monitors my `$(SciteUserHome)\.md` folder and reloads any file as it
   changes.
 
 
@@ -97,6 +97,6 @@ Optional packages:
 1) being a lua newby, the `pcall(Render)` call catches the _Editor pane is not
    accessible at this time_ error that occours at SciTE startup;
 
-2) could not find a better method than 
+2) could not find a better method than
    `scite.MenuCommand(tonumber(props["markdown.rendering.command"]))` to fire
    the markdown rendering procedure.
