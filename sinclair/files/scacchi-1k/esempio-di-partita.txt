@@ -1,0 +1,76 @@
+zx81 vs. Aart Bis's Chess for Android al livello 1
+
+"1K ZX Chess" modificato in modo da evitare l'incremento casuale
+(posto 424D a 0 per trasformare l'`and 01` in `and 00` prima dell'`add a,c`).
+
+d2-d3 e7-e5
+a2-a4 f8-c5
+f2-f3 c5-g1
+h1-g1 d8-h4
+e1-d2 h4-h2
+g2-g4 h2-g1
+f1-h3 g1-d1
+d2-d1 h7-h5
+g4-h5 h8-h5
+h3-g2 h5-h2
+g2-f1 g8-e7
+e2-e3 b8-c6
+c2-c3 d7-d5
+b2-b3 c8-d7
+a1-a3 e8-f8 Aart Bis's Chess qui proponeva l'arrocco - forzato la mossa del re
+d1-e1 h2-c2
+c1-b2 c2-b2
+b1-d2 b2-c2
+d2-b1 c2-c1
+e1-e2 c1-b1
+f1-g2 b1-b2
+e2-e1 b2-g2
+a3-a1 g2-g1
+e1-e2 g1-a1
+e2-d2 a1-a2
+d2-d1 c6-a5
+b3-b4 d7-a4
+d1-c1 a2-c2
+c1-b1 a5-c6
+c3-c4 c6-b4
+c4-d5 b4-d5
+e3-e4 d5-c3
+b1-a1 c2-a2
+
+
+La partita in notazione algebrica:
+
+1. d3 e5
+2. a4 Bc5
+3. f3 Bxg1
+4. Rxg1 Qh4+
+5. Kd2 Qxh2
+6. g4 Qxg1
+7. Bh3 Qxd1+
+8. Kxd1 h5
+9. gxh5 Rxh5
+10. Bg2 Rh2
+11. Bf1 Ne7
+12. e3 Nbc6
+13. c3 d5
+14. b3 Bd7
+15. Ra3 Kf8
+16. Ke1 Rc2
+17. Bb2 Rxb2
+18. Nd2 Rc2
+19. Nb1 Rc1+
+20. Ke2 Rxb1
+21. Bg2 Rb2+
+22. Ke1 Rxg2
+23. Ra1 Rg1+
+24. Ke2 Rxa1
+25. Kd2 Ra2+
+26. Kd1 Na5
+27. b4 Bxa4+
+28. Kc1 Rc2+
+29. Kb1 Nac6
+30. c4 Nxb4
+31. cxd5 Nbxd5
+32. e4 Nc3+
+33. Ka1 Ra2# 0-1
+
