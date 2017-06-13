@@ -1,0 +1,287 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Avventura nel castello</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/avventura-nel-castello.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#avventura-nel-castello">risorse</a> | avventura nel castello</p>
+<h1>Avventura nel castello</h1>
+<h2>Introduzione</h2>
+<p>Non ho resistito alla tentazione di affrontare la celeberrima avventura di Enrico Colombini (per la precisione la 4<sup>a</sup> edizione restaurata rilasciata nel 1996) a distanza di decenni dall'ultima volta, e ho avuto ancora una volta il mio bel daffare a completarla. Raccolgo qui qualche appunto a futura memoria, dovessi rigiocarla tra qualche anno!</p>
+<h2>Indicazioni di massima</h2>
+<ul>
+<li>tracciare una mappa delle ambientazioni;</li>
+<li>alcuni suggerimenti vanno presi alla lettera, altri sono decisamente fuorvianti;</li>
+<li>alcuni oggetti sono inutili o pericolosi, altri hanno molteplici usi;</li>
+<li>azioni apparentemente innocue possono impedire il completamento dell'avventura;</li>
+<li>morire è un'eventualità tutt'altro che remota: salvare spesso!</li>
+</ul>
+<h2>Mappe</h2>
+<p>Le frecce indicano i passaggi da un piano all'altro, quelle tratteggiate un senso unico.</p>
+<a href="img/avventura-nel-castello/piano-terra.png">
+<img bgcolor=#ffffff src="img/avventura-nel-castello/piano-terra.png" width="800"></img>
+</a>
+<p class="illustration">Il piano terra (click sull'immagine per ingrandirla).</p>
+<a href="img/avventura-nel-castello/piano-terra.png">
+<img src="img/avventura-nel-castello/primo-piano.png" width="800"></img>
+</a>
+<p class="illustration">Il primo piano con la torre (click sull'immagine per ingrandirla).</p>
+<a href="img/avventura-nel-castello/piano-terra.png">
+<img src="img/avventura-nel-castello/sotterranei.png" width="800"></img>
+</a>
+<p class="illustration">I sotterranei (click sull'immagine per ingrandirla).</p>
+<h2>Obiettivi</h2>
+<ul>
+<li>salvarsi dallo schianto dell'aeroplano;</li>
+<li>recuperare e decodificare la pergamena nella sala del trono;</li>
+<li>imparare l'incantesimo dell'alchimista;</li>
+<li>uccidere l'orco che si trova nei cunicoli;</li>
+<li>prendere il corno dopo aver aperto il forziere;</li>
+<li>prendere la chiave per caricare l'orologio della stanza segreta;</li>
+<li>raggiungere la stanza segreta all'interno del labirinto;</li>
+<li>salire in cima alla torre;</li>
+<li>chiamare soccorso dallo scoglio del lago di Loch Ness.</li>
+</ul>
+<h2>Oggetti utili</h2>
+<p>Elenco dei principali oggetti dell'avventura e lo scopo che vi rivestono:</p>
+<ul>
+<li><strong>blasone</strong>: causa la caduta nelle segrete;</li>
+<li><strong>chiave</strong>: carica l'orologio;</li>
+<li><strong>colonna</strong>: reca una parte di un incantesimo;</li>
+<li><strong>coppa di lattemiele</strong>: permette di pronunciare il sortilegio;</li>
+<li><strong>cornamusa</strong>: apre il volume nella cella dell'alchimista;</li>
+<li><strong>corno</strong>: consente di lasciare il castello e lo scoglio.</li>
+<li><strong>diamante</strong>: contiene la chiave;</li>
+<li><strong>foglietto bruciacchiato</strong>: reca una parte di un incantesimo;</li>
+<li><strong>forziere</strong>: contiene il corno;</li>
+<li><strong>gatto</strong>: mangia l'orco;</li>
+<li><strong>libro</strong>: contiene il foglietto bruciacchiato, permette la traduzione della pergamena;</li>
+<li><strong>mazza</strong>: rompe il diamante;</li>
+<li><strong>nano</strong>: possiede il diamante;</li>
+<li><strong>orologio</strong>: consente l'accesso alla cima della torre;</li>
+<li><strong>osso</strong>: permette di uscire dalle segrete;</li>
+<li><strong>paracadute</strong>: permette di saltare dall'aeroplano e di lasciare il castello;</li>
+<li><strong>pergamena</strong>: indica come uscire dal labirinto;</li>
+<li><strong>spada</strong>: reca il sortilegio;</li>
+<li><strong>tavola rotonda</strong>: reca una scritta;</li>
+<li><strong>trono</strong>: contiene la pergamena;</li>
+<li><strong>volume</strong>: contiene un incantesimo.</li>
+</ul>
+<h2>Soluzione completa</h2>
+<a name="aeroplano"></a>
+<p>Per salvarsi dall'aeroplano:</p>
+<pre class="code">
+PRENDI PARACADUTE
+SALTA
+</pre>
+<p>Una volta atterrati nella piazza d'armi non c'è altro da fare che entrare nel castello:</p>
+<pre class="code">
+APRI PORTONE
+ENTRA
+</pre>
+<p>Conviene scendere subito nelle segrete per recuperare la mazza:</p>
+<pre class="code">
+GUARDA BLASONE
+PRENDI OSSO
+INFILA OSSO
+POSA OSSO
+OVEST
+PRENDI MAZZA
+ALTO
+</pre>
+<a name="iotaid"></a>
+<p>È tempo di attuare il primo incantesimo:</p>
+<pre class="code">
+EST
+NORD
+GUARDA COLONNA
+</pre>
+<p><span class="code">ID</span> è una parte dell'incantesimo, la seconda si trova nella bibioteca.</p>
+<p>Prima di dirigersi verso la biblioteca, lasciare il paracadute nell'atrio (tornerà utile nel finale):</p>
+<pre class="code">
+SUD
+EST
+POSA PARACADUTE
+OVEST
+OVEST
+ALTO
+EST
+BASSO
+OVEST
+NORD
+APRI LIBRO
+PRENDI FOGLIO
+LEGGI FOGLIO
+POSA FOGLIO
+</pre>
+<p><span class="code">IOTA</span> è la seconda parte dell'incantesimo. È ora di metterlo in pratica:</p>
+<pre class="code">
+IOTAID
+</pre>
+<a name="pergamena"></a>
+<p>L'incantesimo <span class="code">IOTAID</span> apre la strada verso la sala del trono, che riserva una sorpresa:</p>
+<pre class="code">
+OVEST
+SIEDI SUL TRONO
+PRENDI CUSCINO
+POSA CUSCINO
+APRI ASTUCCIO
+PRENDI PERGAMENA
+</pre>
+<p>La pergamena contiene le indicazioni per uscire dal labirinto. È tuttavia necessario tradurla.</p>
+<p>Il dizionario necessario per tradurre la pergamena è nella bibiloteca:</p>
+<pre class="code">
+EST
+LEGGI LIBRO
+TRADUCI PERGAMENA
+POSA PERGAMENA
+</pre>
+<p>La tavola rotonda della sala del consiglio presenta un'incisione particolarmente utile:</p>
+<pre class="code">
+OVEST
+NORD
+GUARDA TAVOLA
+</pre>
+<a name="alchimista"></a>
+<p>È giunta l'ora di imparare l'incantesimo dell'alchimista. Per aprire il suo volume occorre lo <em>strumento</em> giusto, che si trova nella sala da musica:</p>
+<pre class="code">
+SUD
+EST
+EST
+NORD (*)
+OVEST
+NORD
+PRENDI CORNAMUSA
+OVEST
+OVEST
+OVEST
+SUD
+SUONA CORNAMUSA
+POSA CORNAMUSA
+LEGGI VOLUME
+</pre>
+<p><span class="code">(*)</span> può essere necessario impartire il comando più volte. Insistere fino a quando non si esce dalla sala degli specchi e si giunge nella stanza del Re.</p>
+<a name="orco"></a>
+<p>L'incantesimo <span class="code">BIGMEOW</span> ci permette di sbarazzarci dell'orco; prima di raggiungerlo nei cunicoli sotterranei bisogna però prendere il gatto:</p>
+<pre class="code">
+NORD
+EST
+SUD
+OVEST
+PRENDI GATTO
+SUD
+EST
+SUD
+OVEST
+ALTO
+EST
+BASSO
+BASSO
+NORD
+BIGMEOW
+</pre>
+<a name="forziere"></a>
+<p>Senza più l'orco ad ostruire il passaggio si può raggiungere la camera del tesoro e il forziere lì custodito. È tuttavia necessario prima procurarsi l'occorrente per eliminare il fantasma che protegge il forziere, ovvero la coppa di lattemiele:</p>
+<pre class="code">
+SUD
+ALTO
+ALTO
+NORD
+BASSO
+OVEST
+OVEST
+PRENDI COPPA
+</pre>
+<p>quindi la spada:</p>
+<pre class="code">
+SUD
+OVEST
+NORD
+GUARDA ARMATURA
+PRENDI SPADA
+GUARDA SPADA
+</pre>
+<p>Ora si può aprire il forziere:</p>
+<pre class="code">
+NORD
+EST
+EST
+EST
+ALTO
+SUD
+BASSO
+BASSO
+NORD
+NORD
+OVEST
+SUD
+APRI FORZIERE
+BEVI LATTEMIELE
+LEGGI SORTILEGIO
+SI
+APRI FORZIERE
+GUARDA FORZIERE
+PRENDI CORNO
+POSA SPADA
+</pre>
+<a name="chiave"></a>
+<p>Manca un ultimo oggetto per lasciare il castello, che si trova all'interno del diamante che ci regalerà il nano se saremo gentili con lui:</p>
+<pre class="code">
+NORD
+OVEST
+SALUTA NANO
+PRENDI DIAMANTE
+ROMPI DIAMANTE
+PRENDI CHIAVE
+POSA MAZZA
+</pre>
+<a name="labirinto"></a>
+<p>È tempo di entrare nel labirinto e raggiungere la cima della torre:</p>
+<pre class="code">
+EST
+EST
+SUD
+SUD
+ALTO
+ALTO
+OVEST
+BASSO
+EST
+EST
+PRENDI PARACADUTE
+ALTO
+SPINGI PARETE
+</pre>
+<p>Per uscire dal labirinto occorre &ldquo;senno&rdquo;, in altre parole <span class="code">S</span>-<span class="code">E</span>-<span class="code">N</span>-<span class="code">N</span>-<span class="code">O</span>:</p>
+<pre class="code">
+SUD
+EST
+NORD
+NORD
+OVEST
+</pre>
+<p>L'orologio è fermo, perciò lo carichiamo con la chiave di cristallo:</p>
+<pre class="code">
+CARICA OROLOGIO
+</pre>
+<p>Attendiamo la fatidica mezzanotte:</p>
+<pre class="code">
+GUARDA OROLOGIO
+GUARDA OROLOGIO
+GUARDA OROLOGIO
+GUARDA OROLOGIO
+</pre>
+<p>Finalmente si può salire in cima alla torre:</p>
+<pre class="code">
+ALTO
+SUONA CORNO
+</pre>
+<p>Suonare nuovamente il corno per chiamare soccorso:</p>
+<pre class="code">
+SUONA CORNO
+</pre>
+<p class="modification-notice">Pagina modificata il 13/06/2017</p>
+</body>
+</html>
