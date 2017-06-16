@@ -59,10 +59,34 @@
 <img src="img/arduino-centronix/first-print.jpg">
 <p class="illustration">La prima stampa di prova</p>
 <p class="todo">Il nastro è ok dopo più di 20 anni!!!</p>
+<p>stty solo se serve!!!</p>
+<pre class="code">
+$ sudo stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
+$ cat my-file.txt > /dev/ttyACM0
+</pre>
 <h3>Sorgenti</h3>
 <ul>
 <li><a href="files/arduino-centronix/centronix.ino">centronix.ino</a></p>
 </ul>
+
+
+EPSON ESC/P
+<a href="https://files.support.epson.com/pdf/general/escp2ref.pdf">https://files.support.epson.com/pdf/general/escp2ref.pdf</a>
+
+
+ESC x -> NLQ/DRAFT
+ESC P -> 10cpi
+ESC M -> 12cpi
+ESC g -> 15cpi
+ESC p -> proportional on/off
+ESC E -> start bold
+ESC F -> end bold
+ESC 4 -> start italic
+ESC 5 -> end italic
+ESC G -> start double strike  (sovrapposizione verticale)
+ESC H -> end double strike
+ESC - -> underline on/off
+
 <p class="modification-notice">Pagina modificata il 13/06/2017</p>
 </body>
 </html>
