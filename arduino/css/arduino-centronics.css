@@ -18,6 +18,10 @@ span.pin {
  font-size: .85em;
 }
 
+span.signal {
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+}
+
 td.pin {
  font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  padding-right: 2em;
