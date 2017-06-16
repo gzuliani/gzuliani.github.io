@@ -1,0 +1,80 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Porta parallela con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-centronics.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-mpu6050">risorse</a> | porta parallela con arduino</p>
+<h1>Porta parallela con Arduino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Giorni fa, rovistando in soffitta, mi è capitata tra le mani la stampante ad aghi che usavo a cavallo degli anni 80/90. Si tratta di una Facit B1200, compatibile Epson FX-80. Assieme alla stampante ho trovato pure il cavo per connetterla al PC, ovviamente alla porta parallela. Curioso di sapere se funziona ancora, ho pensato di collegarla al computer portatile che uso a casa, che però non ha la porta parallela. Ho deciso allora di provare a pilotarla con Arduino.</p>
+<h2>Compatibilità elettrica</h2>
+<p>Essendo i segnali di controllo della porta parallela TTL, risultano perfettamente compatibili con i livelli elettrici delle porte digitali di Arduino: non serve predisporre alcun circuito adattatore. Questa circostanza mi ha definitivamente convinto a procedere con l'esperimento.</p>
+<h2>Materiali</h2>
+<p>Oltre alla stampante e ad Arduino, mi sono procurato un connettore D-sub a 25 poli femmina e alcuni cavetti colorati per semplificare il lavoro di cablatura:</p>
+<img src="img/arduino-centronics/components.jpg">
+<p class="illustration">L'hardware occorrente per l'esperimento</p>
+<h2>Connessioni</h2>
+<p>Il bus di interconnessione è costituito da 12 linee, 11 segnali più la massa:</p>
+<table>
+<img src="img/arduino-centronics/wiring.png">
+<p class="illustration">Circuito di interfacciamento</p>
+<p>La tabella che segue riporta la posizione dei vari segnali:</p>
+<tr><th>Signal</th><th>Arduino</th><th>D-sub 25</th><th class="wire"></th></tr>
+<tr><td class="signal">nStrobe</td><td class="pin">2</td><td class="pin">1</td><td class="wire">nero</td></tr>
+<tr><td class="signal">Data 0</td><td class="pin">3</td><td class="pin">2</td><td class="wire">bianco</td></tr>
+<tr><td class="signal">Data 1</td><td class="pin">4</td><td class="pin">3</td><td class="wire">grigio</td></tr>
+<tr><td class="signal">Data 2</td><td class="pin">5</td><td class="pin">4</td><td class="wire">viola</td></tr>
+<tr><td class="signal">Data 3</td><td class="pin">6</td><td class="pin">5</td><td class="wire">blu</td></tr>
+<tr><td class="signal">Data 4</td><td class="pin">7</td><td class="pin">6</td><td class="wire">verde</td></tr>
+<tr><td class="signal">Data 5</td><td class="pin">8</td><td class="pin">7</td><td class="wire">giallo</td></tr>
+<tr><td class="signal">Data 6</td><td class="pin">9</td><td class="pin">8</td><td class="wire">arancio</td></tr>
+<tr><td class="signal">Data 7</td><td class="pin">10</td><td class="pin">9</td><td class="wire">rosso</td></tr>
+<tr><td class="signal">nAck</td><td class="pin">11</td><td class="pin">10</td><td class="wire">marrone</td></tr>
+<tr><td class="signal">Busy</td><td class="pin">12</td><td class="pin">11</td><td class="wire">bianco</td></tr>
+<tr><td class="signal">Ground</td><td class="pin">GND</td><td class="pin">25</td><td class="wire">nero</td></tr>
+</table>
+<p>Le linee <span class="signal">Data</span> e <span class="signal">Busy</span> lavorano in logica positiva, sono cioè attive a livello alto, mentre le linee <span class="signal">nStrobe</span> e <span class="signal">nAck</span> in logica negativa, e sono quindi attive a livello basso (da cui il prefisso <span class="signal">n</span>).</p>
+<img src="img/arduino-centronics/circuit.jpg">
+<p class="illustration">Realizzazione del bus di interfacciamento</p>
+<img src="img/arduino-centronics/connector.jpg">
+<p class="illustration">Particolare del bus lato D-sub 25</p>
+<h3>Implementazione del protocollo Centronics</h3>
+<p>Il trasferimento dati attraverso la porta parallela è così descritto:</p>
+<blockquote>When the printer is ready to receive data, it drives BUSY low. The host drives valid data on the data lines, waits a minimum of 500 ns, then pulses STROBE* for a minimum of 500 ns. Valid data must remain on the data lines for a minimum of 500 ns after the rising edge of STROBE*. The printer will receive the data and drive BUSY active to indicate that it is processing the data. When the printer has completed the data transfer, it will pulse the ACK* line active for a minimum of 500 ns and de-assert BUSY, indicating it is ready for the next data byte.</blockquote>
+<p class="illustration">Sorgente: <a href="http://www.ni.com/white-paper/3466/en/">IEEE 1284 - Updating the PC Parallel Port</a></p>
+<p>Per garantire il corretto funzionamento del trasferimento dati, Arduino deve:</p>
+<ul>
+<li>portare inizialmente la linea <span class="pin">nStrobe</span> a 1 (Strobe non attivo);</li>
+<li>per ognuno dei byte da trasferire alla stampante:</li>
+<ol>
+<li>attendere che la linea <span class="pin">Busy</span> vada a 0;</li>
+<li>scrivere il byte sulle linee <span class="pin">Data</span>;</li>
+<li>attendere almeno 0.5&micro;s;</li>
+<li>portare la linea <span class="pin">Strobe</span> a 0 per almeno 0.5&micro;s;</li>
+<li>attendere almeno 0.5&micro;s;</li>
+<li>riportare la linea <span class="pin">Strobe</span> a 1.</li>
+</ol>
+</ul>
+<p>Il diagramma seguente illustra l'andamento dei livelli elettrici durante il trasferimento di un byte:</p>
+<img src="img/arduino-centronics/handshake.png">
+<p class="illustration">Tipico handshake Centronics</p>
+<h2>Test</h2>
+<p class="todo">bla bla bla</p>
+<img src="img/arduino-centronics/first-print.jpg">
+<p class="illustration">La prima stampa di prova</p>
+<p class="todo">Il nastro è ok dopo più di 20 anni!!!</p>
+<p class="code">stty solo se serve!!! FUNZIONA SOLO PER IL PRIMO TRASFERIMENTO DI FILE. PROVARE CON screen</p>
+<pre class="code">
+$ sudo stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
+$ cat my-file.txt > /dev/ttyACM0
+</pre>
+<h3>Sorgenti</h3>
+<ul>
+<li><a href="files/arduino-centronics/centronics.ino">centronics.ino</a></p>
+</ul>
+<p class="modification-notice">Pagina modificata il 13/06/2017</p>
+</body>
+</html>

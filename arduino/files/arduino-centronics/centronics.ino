@@ -1,4 +1,4 @@
-class CentronixPort {
+class CentronicsPort {
     const int nStrobe_;
     const int data0_;
     const int data1_;
@@ -11,7 +11,7 @@ class CentronixPort {
     const int nAck_;
     const int busy_;
 public:
-    CentronixPort(
+    CentronicsPort(
         int nStrobe,
         int data0, int data1, int data2, int data3,
         int data4, int data5, int data6, int data7,
@@ -74,7 +74,7 @@ private:
     }
 };
 
-CentronixPort port(
+CentronicsPort port(
     2,   // nStrobe
     3,   // data0
     4,   // data1
