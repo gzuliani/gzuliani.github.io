@@ -33,14 +33,18 @@ public:
         pinMode(data7, OUTPUT);
         pinMode(nAck, INPUT);
         pinMode(busy, INPUT);
+
+        deassert_strobe();
     }
     void send_char(byte value) {
-        apply_data(value);
         while(is_busy())
             ;
+        apply_data(value);
+        delayMicroseconds(1);
         assert_strobe();
         delayMicroseconds(1);
         deassert_strobe();
+        delayMicroseconds(1);
     }
     bool is_busy() {
         return digitalRead(busy_) == HIGH;
