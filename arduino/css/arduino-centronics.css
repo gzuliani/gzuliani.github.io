@@ -13,6 +13,14 @@ p.illustration {
  margin-top: .5em;
 }
 
+span.keystroke {
+ border-width: 1;
+ border-style: solid;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: 75%;
+ padding: .2em;
+}
+
 span.pin {
  font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
  font-size: .85em;

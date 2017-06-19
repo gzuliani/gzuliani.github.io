@@ -41,7 +41,7 @@
 <p class="illustration">Realizzazione del bus di interfacciamento</p>
 <img src="img/arduino-centronics/connector.jpg">
 <p class="illustration">Particolare del bus lato D-sub 25</p>
-<h3>Implementazione del protocollo Centronics</h3>
+<h3>Handshake Centronics</h3>
 <p>Il trasferimento dati attraverso la porta parallela è così descritto:</p>
 <blockquote>When the printer is ready to receive data, it drives BUSY low. The host drives valid data on the data lines, waits a minimum of 500 ns, then pulses STROBE* for a minimum of 500 ns. Valid data must remain on the data lines for a minimum of 500 ns after the rising edge of STROBE*. The printer will receive the data and drive BUSY active to indicate that it is processing the data. When the printer has completed the data transfer, it will pulse the ACK* line active for a minimum of 500 ns and de-assert BUSY, indicating it is ready for the next data byte.</blockquote>
 <p class="illustration">Sorgente: <a href="http://www.ni.com/white-paper/3466/en/">IEEE 1284 - Updating the PC Parallel Port</a></p>
@@ -61,20 +61,165 @@
 <p>Il diagramma seguente illustra l'andamento dei livelli elettrici durante il trasferimento di un byte:</p>
 <img src="img/arduino-centronics/handshake.png">
 <p class="illustration">Tipico handshake Centronics</p>
-<h2>Test</h2>
-<p class="todo">bla bla bla</p>
-<img src="img/arduino-centronics/first-print.jpg">
-<p class="illustration">La prima stampa di prova</p>
-<p class="todo">Il nastro è ok dopo più di 20 anni!!!</p>
-<p class="code">stty solo se serve!!! FUNZIONA SOLO PER IL PRIMO TRASFERIMENTO DI FILE. PROVARE CON screen</p>
+<h2>Implementazione</h2>
+<p>Ho realizzato un modello minimale della porta in C++ che consente di trasmettere un byte alla volta. L'oggetto <span class="code">CentronicsPort</span> contiene l'associazione tra i segnali Centronics e i pin di Arduino ai quali sono connessi, che viene definita all'atto dell'instanziazione:</p>
 <pre class="code">
-$ sudo stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
-$ cat my-file.txt > /dev/ttyACM0
+class CentronicsPort {
+  const int nStrobe_;
+  const int data0_;
+  const int data1_;
+  const int data2_;
+  const int data3_;
+  const int data4_;
+  const int data5_;
+  const int data6_;
+  const int data7_;
+  const int nAck_;
+  const int busy_;
+public:
+  CentronicsPort(
+    int nStrobe,
+    int data0, int data1, int data2, int data3,
+    int data4, int data5, int data6, int data7,
+    int nAck,
+    int busy)
+      : nStrobe_(nStrobe)
+      , data0_(data0), data1_(data1), data2_(data2), data3_(data3)
+      , data4_(data4), data5_(data5), data6_(data6), data7_(data7)
+      , nAck_(nAck)
+      , busy_(busy) {
+    pinMode(nStrobe, OUTPUT);
+    pinMode(data0, OUTPUT);
+    pinMode(data1, OUTPUT);
+    pinMode(data2, OUTPUT);
+    pinMode(data3, OUTPUT);
+    pinMode(data4, OUTPUT);
+    pinMode(data5, OUTPUT);
+    pinMode(data6, OUTPUT);
+    pinMode(data7, OUTPUT);
+    pinMode(nAck, INPUT);
+    pinMode(busy, INPUT);
+
+    deassert_strobe();
+  }
+  ...
+}
+</pre>
+<p>Come si vede, il costruttore ha anche la responsabilità di disattivare la linea <span class="signal">nStrobe</span>. L'API pubblica di <span class="code">CentronicsPort</span> è costituita da due metodi, <span class="code">send_char</span> e <span class="code">is_busy</span>:</p>
+<pre class="code">
+class CentronicsPort {
+  ...
+public:
+  CentronicsPort(
+    ...
+
+    deassert_strobe();
+  }
+<ins>  void send_char(byte value) {
+    while(is_busy())
+      ;
+    apply_data(value);
+    delayMicroseconds(1);
+    assert_strobe();
+    delayMicroseconds(1);
+    deassert_strobe();
+    delayMicroseconds(1);
+  }
+  bool is_busy() {
+    return digitalRead(busy_) == HIGH;
+  }</ins>
+</pre>
+<p>Il metodo <span class="code">send_char</span> implementa il protocollo IEEE 1284. Le temporizzazioni di 1&micro;s, sebbene non ottimali, sono state scelte perché la libreria di Arduino non consente di realizzarne di minori. Ricorrendo all'assembly sarebbe probabilmente possibile avvicinarsi ai 500ns prescritti dallo standard e aumentare così la velocità di trasferimento dei dati, ma ciò esula dagli scopi dell'esperimento.</p>
+<p>L'implementazione si completa con le funzioni di supporto:</p>
+<pre class="code">
+class CentronicsPort {
+  ...
+<ins>private:
+  void apply_data(byte value) {
+    digitalWrite(data0_, bit_at(value, 0));
+    digitalWrite(data1_, bit_at(value, 1));
+    digitalWrite(data2_, bit_at(value, 2));
+    digitalWrite(data3_, bit_at(value, 3));
+    digitalWrite(data4_, bit_at(value, 4));
+    digitalWrite(data5_, bit_at(value, 5));
+    digitalWrite(data6_, bit_at(value, 6));
+    digitalWrite(data7_, bit_at(value, 7));
+  }
+  void assert_strobe() {
+    set_strobe(LOW);
+  }
+  void deassert_strobe() {
+    set_strobe(HIGH);
+  }
+  void set_strobe(int level) {
+    digitalWrite(nStrobe_, level);
+  }
+  int bit_at(byte value, int pos) {
+    return value &amp; (0x01 &lt;&lt; pos) ? HIGH : LOW;
+  }</ins>
+}
 </pre>
 <h3>Sorgenti</h3>
 <ul>
 <li><a href="files/arduino-centronics/centronics.ino">centronics.ino</a></p>
 </ul>
-<p class="modification-notice">Pagina modificata il 13/06/2017</p>
+<h2>Test</h2>
+<p>Il programma di test invia alla porta parallela i dati ricevuti su quella seriale:</p>
+<pre class="code">
+CentronicsPort port(
+  2,   // nStrobe
+  3,   // data0
+  4,   // data1
+  5,   // data2
+  6,   // data3
+  7,   // data4
+  8,   // data5
+  9,   // data6
+  10,  // data7
+  11,  // nAck
+  12); // busy
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  while (Serial.available())
+    port.send_char(static_cast&lt;byte&gt;(Serial.read()));
+}
+</pre>
+<p>È con una certa emozione che ho inviato alla stampante il sorgente della classe <span class="code">CentronicsPort</span>:</p>
+<img src="img/arduino-centronics/first-print.jpg">
+<p class="illustration">La prima stampa di prova</p>
+<p>Il listato è apparso nitido fin dal primo carattere: notevole, considerando che la stampante è rimasta ferma per più di vent'anni. Anche la cartuccia del nastro ha dato prova di estrema affidabilità!</p>
+<h3>screen</h3>
+<p>Ho inizialmente trasferito i file da stampare ad Arduino con un semplice <span class="code">cat</span>:</p>
+<pre class="code">
+$ cat file.txt > /dev/ttyACM0
+</pre>
+<p>In questo modo tuttavia riuscivo a trasferire un singolo file per volta. Per stampare quello successivo ero costretto a chiudere il terminale ed aprirne un nuovo. Ho provato a configurare nei modi più disparati la porta seriale, senza successo:</p>
+<pre class="code">
+$ stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
+$ cat file.txt > /dev/ttyACM0
+</pre>
+<p class="illustration">Una delle tante configurazioni provate</p>
+<p>Ho scoperto che il problema è noto, e il wiki di Arduino dedica un'intera pagina alla questione (cfr. <a href="https://playground.arduino.cc/Interfacing/LinuxTTY">Arduino and Linux TTY</a>). Personalmente, ho trovato utile il suggerimento di ricorrere a <span class="code">screen</span>. L'installazione avviene nel solito modo:</p>
+<pre class="code">
+$ sudo apt install screen
+</pre>
+<p>Il collegamento alla porta seriale viene stabilito con il comando:</p>
+<pre class="code">
+$ screen /dev/ttyACM0 9600
+</pre>
+<p>La velocità di connessione deve corrispondere a quella impostata per l'oggetto <span class="code">Serial</span> dello sketch caricato in Arduino. A questo punto, ogni carattere battuto sulla tastiera viene immediatamente inoltrato ad Arduino. Per inviare un file, si commuta in modalità comando premendo la combinazione di tasti <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">:</span>, quindi si immette il comando:</p>
+<pre class="code">
+exec !! cat file.txt
+</pre>
+<p>Per abbandonare temporaneamente il programma e tornare al terminale si usa la combinazione <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">d</span> (<em>detach</em>). Per rientrare nel programma, dare il comando:</p>
+<pre class="code">
+$ screen -r
+</pre>
+<p>ove r sta per <em>reattach</em>. Per terminare definitivamente il programma, usare la combinazione di tasti <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">\</span>.</p>
+<p class="modification-notice">Pagina modificata il 19/06/2017</p>
 </body>
 </html>
