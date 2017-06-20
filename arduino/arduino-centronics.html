@@ -6,23 +6,23 @@
 <link href="css/arduino-centronics.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<p class="page-path"><a href="../index.html#arduino-mpu6050">risorse</a> | porta parallela con arduino</p>
+<p class="page-path"><a href="../index.html#arduino-centronics">risorse</a> | porta parallela con arduino</p>
 <h1>Porta parallela con Arduino</h1>
 <p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
-<p>Giorni fa, rovistando in soffitta, mi è capitata tra le mani la stampante ad aghi che usavo a cavallo degli anni 80/90. Si tratta di una Facit B1200, compatibile Epson FX-80. Assieme alla stampante ho trovato pure il cavo per connetterla al PC, ovviamente alla porta parallela. Curioso di sapere se funziona ancora, ho pensato di collegarla al computer portatile che uso a casa, che però non ha la porta parallela. Ho deciso allora di provare a pilotarla con Arduino.</p>
+<p>Giorni fa, rovistando in soffitta, mi è capitata tra le mani la stampante ad aghi che usavo sul finire degli anni '80. Si tratta di una Facit B1200, compatibile Epson FX-80. Assieme alla stampante ho trovato pure il cavo per connetterla al PC, ovviamente alla porta parallela. Curioso di sapere se funziona ancora, ho pensato di collegarla al computer portatile che però non è dotato di porta parallela. Ho deciso allora di provare a pilotarla con Arduino.</p>
 <h2>Compatibilità elettrica</h2>
-<p>Essendo i segnali di controllo della porta parallela TTL, risultano perfettamente compatibili con i livelli elettrici delle porte digitali di Arduino: non serve predisporre alcun circuito adattatore. Questa circostanza mi ha definitivamente convinto a procedere con l'esperimento.</p>
+<p>Essendo i segnali di controllo della porta parallela TTL, sono perfettamente compatibili con i livelli elettrici delle porte digitali di Arduino: non serve predisporre alcun circuito adattatore. Questa circostanza mi ha definitivamente convinto a procedere con l'esperimento.</p>
 <h2>Materiali</h2>
-<p>Oltre alla stampante e ad Arduino, mi sono procurato un connettore D-sub a 25 poli femmina e alcuni cavetti colorati per semplificare il lavoro di cablatura:</p>
+<p>Oltre alla stampante e ad Arduino, mi sono procurato un connettore D-sub a 25 poli femmina e alcuni cavetti colorati per semplificare il lavoro di cablaggio:</p>
 <img src="img/arduino-centronics/components.jpg">
 <p class="illustration">L'hardware occorrente per l'esperimento</p>
-<h2>Connessioni</h2>
-<p>Il bus di interconnessione è costituito da 12 linee, 11 segnali più la massa:</p>
-<table>
+<h2>Cablaggio</h2>
+<p>Il bus minimale è costituito da 12 linee, 11 segnali più la massa:</p>
 <img src="img/arduino-centronics/wiring.png">
 <p class="illustration">Circuito di interfacciamento</p>
 <p>La tabella che segue riporta la posizione dei vari segnali:</p>
-<tr><th>Signal</th><th>Arduino</th><th>D-sub 25</th><th class="wire"></th></tr>
+<table>
+<tr><th>Segnale</th><th>Pin Arduino</th><th>Pin D-sub 25</th><th class="wire">Colore cavo</th></tr>
 <tr><td class="signal">nStrobe</td><td class="pin">2</td><td class="pin">1</td><td class="wire">nero</td></tr>
 <tr><td class="signal">Data 0</td><td class="pin">3</td><td class="pin">2</td><td class="wire">bianco</td></tr>
 <tr><td class="signal">Data 1</td><td class="pin">4</td><td class="pin">3</td><td class="wire">grigio</td></tr>
@@ -36,33 +36,33 @@
 <tr><td class="signal">Busy</td><td class="pin">12</td><td class="pin">11</td><td class="wire">bianco</td></tr>
 <tr><td class="signal">Ground</td><td class="pin">GND</td><td class="pin">25</td><td class="wire">nero</td></tr>
 </table>
-<p>Le linee <span class="signal">Data</span> e <span class="signal">Busy</span> lavorano in logica positiva, sono cioè attive a livello alto, mentre le linee <span class="signal">nStrobe</span> e <span class="signal">nAck</span> in logica negativa, e sono quindi attive a livello basso (da cui il prefisso <span class="signal">n</span>).</p>
+<p>Le linee <span class="signal">Data</span> e <span class="signal">Busy</span> lavorano in logica positiva, sono cioè attive a livello alto, mentre le linee <span class="signal">nStrobe</span> e <span class="signal">nAck</span> lavorano in logica negativa, e sono quindi attive a livello basso (da cui il prefisso <span class="signal">n</span>).</p>
 <img src="img/arduino-centronics/circuit.jpg">
 <p class="illustration">Realizzazione del bus di interfacciamento</p>
 <img src="img/arduino-centronics/connector.jpg">
 <p class="illustration">Particolare del bus lato D-sub 25</p>
 <h3>Handshake Centronics</h3>
-<p>Il trasferimento dati attraverso la porta parallela è così descritto:</p>
+<p>Il trasferimento dati attraverso la porta parallela è così descritto nella documentazione ufficiale:</p>
 <blockquote>When the printer is ready to receive data, it drives BUSY low. The host drives valid data on the data lines, waits a minimum of 500 ns, then pulses STROBE* for a minimum of 500 ns. Valid data must remain on the data lines for a minimum of 500 ns after the rising edge of STROBE*. The printer will receive the data and drive BUSY active to indicate that it is processing the data. When the printer has completed the data transfer, it will pulse the ACK* line active for a minimum of 500 ns and de-assert BUSY, indicating it is ready for the next data byte.</blockquote>
 <p class="illustration">Sorgente: <a href="http://www.ni.com/white-paper/3466/en/">IEEE 1284 - Updating the PC Parallel Port</a></p>
 <p>Per garantire il corretto funzionamento del trasferimento dati, Arduino deve:</p>
 <ul>
-<li>portare inizialmente la linea <span class="pin">nStrobe</span> a 1 (Strobe non attivo);</li>
+<li>portare inizialmente la linea <span class="pin">nStrobe</span> a 1;</li>
 <li>per ognuno dei byte da trasferire alla stampante:</li>
 <ol>
 <li>attendere che la linea <span class="pin">Busy</span> vada a 0;</li>
 <li>scrivere il byte sulle linee <span class="pin">Data</span>;</li>
 <li>attendere almeno 0.5&micro;s;</li>
-<li>portare la linea <span class="pin">Strobe</span> a 0 per almeno 0.5&micro;s;</li>
+<li>portare la linea <span class="pin">nStrobe</span> a 0 per almeno 0.5&micro;s;</li>
 <li>attendere almeno 0.5&micro;s;</li>
-<li>riportare la linea <span class="pin">Strobe</span> a 1.</li>
+<li>riportare la linea <span class="pin">nStrobe</span> a 1.</li>
 </ol>
 </ul>
 <p>Il diagramma seguente illustra l'andamento dei livelli elettrici durante il trasferimento di un byte:</p>
 <img src="img/arduino-centronics/handshake.png">
 <p class="illustration">Tipico handshake Centronics</p>
 <h2>Implementazione</h2>
-<p>Ho realizzato un modello minimale della porta in C++ che consente di trasmettere un byte alla volta. L'oggetto <span class="code">CentronicsPort</span> contiene l'associazione tra i segnali Centronics e i pin di Arduino ai quali sono connessi, che viene definita all'atto dell'instanziazione:</p>
+<p>Ho realizzato un modello minimale della porta in C++ che consente di trasmettere un byte alla volta. L'oggetto <span class="code">CentronicsPort</span> contiene l'associazione tra i segnali Centronics e i pin di Arduino, definita all'atto dell'instanziazione dell'oggetto stesso:</p>
 <pre class="code">
 class CentronicsPort {
   const int nStrobe_;
@@ -103,9 +103,9 @@ public:
     deassert_strobe();
   }
   ...
-}
+};
 </pre>
-<p>Come si vede, il costruttore ha anche la responsabilità di disattivare la linea <span class="signal">nStrobe</span>. L'API pubblica di <span class="code">CentronicsPort</span> è costituita da due metodi, <span class="code">send_char</span> e <span class="code">is_busy</span>:</p>
+<p>Oltre a catturare la mappatura del cablaggio, il costruttore ha anche la responsabilità di disattivare la linea <span class="signal">nStrobe</span>. L'API pubblica di <span class="code">CentronicsPort</span> è costituita da due metodi, <span class="code">send_char</span> e <span class="code">is_busy</span>:</p>
 <pre class="code">
 class CentronicsPort {
   ...
@@ -128,9 +128,11 @@ public:
   bool is_busy() {
     return digitalRead(busy_) == HIGH;
   }</ins>
+  ...
+};
 </pre>
 <p>Il metodo <span class="code">send_char</span> implementa il protocollo IEEE 1284. Le temporizzazioni di 1&micro;s, sebbene non ottimali, sono state scelte perché la libreria di Arduino non consente di realizzarne di minori. Ricorrendo all'assembly sarebbe probabilmente possibile avvicinarsi ai 500ns prescritti dallo standard e aumentare così la velocità di trasferimento dei dati, ma ciò esula dagli scopi dell'esperimento.</p>
-<p>L'implementazione si completa con le funzioni di supporto:</p>
+<p>L'implementazione dell'oggetto <span class="code">CentronicsPort</span> si completa con le funzioni di supporto:</p>
 <pre class="code">
 class CentronicsPort {
   ...
@@ -157,7 +159,7 @@ class CentronicsPort {
   int bit_at(byte value, int pos) {
     return value &amp; (0x01 &lt;&lt; pos) ? HIGH : LOW;
   }</ins>
-}
+};
 </pre>
 <h3>Sorgenti</h3>
 <ul>
@@ -203,7 +205,7 @@ $ stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
 $ cat file.txt > /dev/ttyACM0
 </pre>
 <p class="illustration">Una delle tante configurazioni provate</p>
-<p>Ho scoperto che il problema è noto, e il wiki di Arduino dedica un'intera pagina alla questione (cfr. <a href="https://playground.arduino.cc/Interfacing/LinuxTTY">Arduino and Linux TTY</a>). Personalmente, ho trovato utile il suggerimento di ricorrere a <span class="code">screen</span>. L'installazione avviene nel solito modo:</p>
+<p>Ho scoperto che il problema è noto, tant'è che il wiki di Arduino dedica un'intera pagina alla questione (cfr. <a href="https://playground.arduino.cc/Interfacing/LinuxTTY">Arduino and Linux TTY</a>). Non ho voluto dedicare troppo tempo alla soluzione del problema, mi bastava trovare un metodo che non mi costringesse a chiudere il terminale dopo la trasmissione di un file, per non rendere le prove si stampa troppo macchinose. Dopo qualche tentativo infruttuoso, alla fine ho optato per <span class="code">screen</span>. L'installazione del programma, che non fa parte della distribuzione di Ubuntu che sto utilizzando, avviene nel solito modo:</p>
 <pre class="code">
 $ sudo apt install screen
 </pre>
@@ -211,7 +213,7 @@ $ sudo apt install screen
 <pre class="code">
 $ screen /dev/ttyACM0 9600
 </pre>
-<p>La velocità di connessione deve corrispondere a quella impostata per l'oggetto <span class="code">Serial</span> dello sketch caricato in Arduino. A questo punto, ogni carattere battuto sulla tastiera viene immediatamente inoltrato ad Arduino. Per inviare un file, si commuta in modalità comando premendo la combinazione di tasti <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">:</span>, quindi si immette il comando:</p>
+<p>La velocità di connessione deve corrispondere a quella impostata per l'oggetto <span class="code">Serial</span> dello sketch caricato in Arduino. A questo punto, ogni carattere battuto sulla tastiera viene immediatamente inoltrato ad Arduino che provvede ad inviarlo alla stampante. Per inviare un file, si commuta in modalità comando premendo la combinazione di tasti <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">:</span>, quindi si immette il comando:</p>
 <pre class="code">
 exec !! cat file.txt
 </pre>
@@ -220,6 +222,6 @@ exec !! cat file.txt
 $ screen -r
 </pre>
 <p>ove r sta per <em>reattach</em>. Per terminare definitivamente il programma, usare la combinazione di tasti <span class="keystroke">Ctrl</span>+<span class="keystroke">A</span>, <span class="keystroke">\</span>.</p>
-<p class="modification-notice">Pagina modificata il 19/06/2017</p>
+<p class="modification-notice">Pagina modificata il 20/06/2017</p>
 </body>
 </html>
