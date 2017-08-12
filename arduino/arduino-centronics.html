@@ -205,7 +205,7 @@ $ stty -F /dev/ttyACM0 ispeed 9600 ospeed 9600 -ignpar cs8 -cstopb -echo
 $ cat file.txt > /dev/ttyACM0
 </pre>
 <p class="illustration">Una delle tante configurazioni provate</p>
-<p>Ho scoperto che il problema è noto, tant'è che il wiki di Arduino dedica un'intera pagina alla questione (cfr. <a href="https://playground.arduino.cc/Interfacing/LinuxTTY">Arduino and Linux TTY</a>). Non ho voluto dedicare troppo tempo alla soluzione del problema, mi bastava trovare un metodo che non mi costringesse a chiudere il terminale dopo la trasmissione di un file, per non rendere le prove si stampa troppo macchinose. Dopo qualche tentativo infruttuoso, alla fine ho optato per <span class="code">screen</span>. L'installazione del programma, che non fa parte della distribuzione di Ubuntu che sto utilizzando, avviene nel solito modo:</p>
+<p>Ho scoperto che il problema è noto, tant'è che il wiki di Arduino dedica un'intera pagina alla questione (cfr. <a href="https://playground.arduino.cc/Interfacing/LinuxTTY">Arduino and Linux TTY</a>). Non ho voluto dedicare troppo tempo alla soluzione del problema, mi bastava trovare un metodo che non mi costringesse a chiudere il terminale dopo la trasmissione di un file, per non rendere le prove di stampa troppo macchinose. Dopo qualche tentativo infruttuoso, alla fine ho optato per <span class="code">screen</span>. L'installazione del programma, che non fa parte della distribuzione di Ubuntu che sto utilizzando, avviene nel solito modo:</p>
 <pre class="code">
 $ sudo apt install screen
 </pre>
