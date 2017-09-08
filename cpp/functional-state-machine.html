@@ -1,0 +1,938 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Macchina a stati funzionale</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/functional-state-machine.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#functional-state-machine">risorse</a> | macchina a stati funzionale</p>
+<h1>Macchina a stati funzionale</h1>
+<p>Negli ultimi anni si fa un gran parlare di programmazione funzionale. Tra gli svariati articoli che si trovano in rete sull'argomento, uno in particolare ha attirato la mia attenzione in questi giorni: <a href="https://dev.to/tmr232/a-functional-style-state-machine-in-c">A Functional-Style State Machine in C++</a>, di Tamir Bahar. Ho voluto cimentarmi anch'io nell'impresa di realizzare una macchina a stati finiti in C++ secondo i dettami del paradigma funzionale.</p>
+<p>Ho trovato questo esercizio in rete:</p>
+<blockquote>
+<p>Design a virtual cat by constructing a state machine.
+The cat should behave as follows:</p>
+<ul>
+<li>it starts out happy;</li>
+<li>if you pet it, it purrs;</li>
+<li>if you feed it, it throws up;</li>
+<li>if time passes, it gets hungry and rubs against your legs;</li>
+<li>if you feed it when it is hungry, it purrs and gets happy;</li>
+<li>if you pet it when it is hungry, it bites you;</li>
+<li>if time passes when it is hungry, it dies.</li>
+</ul>
+</blockquote>
+<p>Graficamente, la macchina a stati che sovrintende il funzionamento del gatto virtuale si presenta così:</p>
+<img src="img/functional-state-machine/fsm.png" width="400"/>
+<p class="illustration">Funzionamento del gatto virtuale</p>
+<h2>Implementazione procedurale</h2>
+<p>La classica implementazione procedurale mappa stati, input e output su costanti. La funzione di transizione fa uso di due <span class="code">switch</span> annidati per determinare, a partire dall'accoppiata stato di partenza/input quali debbano essere l'output e lo stato di arrivo:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+#include &lt;stdexcept&gt;
+
+enum State {
+  HAPPY,
+  HUNGRY,
+  DEAD,
+};
+
+enum Input {
+  PET,
+  FEED,
+  WAIT,
+};
+
+enum Output {
+  PURRS,
+  THROWS_UP,
+  RUBS,
+  BITES,
+  UNDEFINED
+};
+
+static State state;
+
+Output cat(Input input) {
+  switch (state) {
+    case HAPPY:
+      switch (input) {
+        case PET:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case FEED:
+          state = HAPPY;
+          return THROWS_UP;
+          break;
+        case WAIT:
+          state = HUNGRY;
+          return RUBS;
+          break;
+      }
+      break;
+    case HUNGRY:
+      switch (input) {
+        case PET:
+          state = HUNGRY;
+          return BITES;
+          break;
+        case FEED:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case WAIT:
+          state = DEAD;
+          return UNDEFINED;
+          break;
+      }
+      break;
+    case DEAD:
+      throw std::runtime_error(&quot;cat is dead&quot;);
+  }
+  throw std::runtime_error(&quot;ops!&quot;);
+}
+
+int main() {
+  state = HAPPY;
+
+  assert(cat(PET) == PURRS);
+  assert(state == HAPPY);
+
+  assert(cat(FEED) == THROWS_UP);
+  assert(state == HAPPY);
+
+  assert(cat(WAIT) == RUBS);
+  assert(state == HUNGRY);
+
+  assert(cat(PET) == BITES);
+  assert(state == HUNGRY);
+
+  assert(cat(FEED) == PURRS);
+  assert(state == HAPPY);
+
+  assert(cat(WAIT) == RUBS);
+  assert(state == HUNGRY);
+
+  assert(cat(WAIT) == UNDEFINED);
+  assert(state == DEAD);
+}
+</pre>
+<p>A volte conviene sostituire lo <span class="code">switch</span> a due livelli, obiettivamente poco elegante, con una tabella che contiene tutte le transizioni di stato previste. La funzione di transizione di stato si riduce in questo caso ad una banale ricerca della corretta transizione da attivare. Di seguito un'implementazione in cui la tabella delle transizioni è un vettore, mentre le transizioni sono rappresentate dalla quadrupla (stato-di-partenza, input, stato-di-arrivo, output):</p>
+<pre class="code">
+<ins>#include &lt;algorithm&gt;</ins>
+#include &lt;cassert&gt;
+#include &lt;stdexcept&gt;
+...
+
+<ins>struct Entry {
+  State source_;
+  Input input_;
+  State destination_;
+  Output output_;
+  bool matches(State source, Input input) const
+    { return source_ == source &amp;&amp; input_ == input; }
+};
+
+const Entry table[] = {
+  { HAPPY,  PET,  HAPPY,  PURRS     },
+  { HAPPY,  FEED, HAPPY,  THROWS_UP },
+  { HAPPY,  WAIT, HUNGRY, RUBS      },
+  { HUNGRY, FEED, HAPPY,  PURRS     },
+  { HUNGRY, PET,  HUNGRY, BITES     },
+  { HUNGRY, WAIT, DEAD,   UNDEFINED },
+};
+
+const int entries = sizeof(table) / sizeof(table[0]);</ins>
+
+<del>Output cat(Input input) {
+  switch (state) {
+    case HAPPY:
+      switch (input) {
+        case PET:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case FEED:
+          state = HAPPY;
+          return THROWS_UP;
+          break;
+        case WAIT:
+          state = HUNGRY;
+          return RUBS;
+          break;
+      }
+      break;
+    case HUNGRY:
+      switch (input) {
+        case PET:
+          state = HUNGRY;
+          return BITES;
+          break;
+        case FEED:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case WAIT:
+          state = DEAD;
+          return UNDEFINED;
+          break;
+      }
+      break;
+    case DEAD:
+      throw std::runtime_error(&quot;cat is dead&quot;);
+  }
+  throw std::runtime_error(&quot;ops!&quot;);
+}</del>
+
+<ins>Output cat(Input input) {
+  const auto entry = std::find_if(
+    std::begin(table), std::end(table),
+    [&amp;](const Entry&amp; entry) { return entry.matches(state, input); });
+
+  if (entry == std::end(table))
+    throw std::runtime_error(&quot;ops!&quot;);
+
+  state = entry-&gt;destination_;
+  return entry-&gt;output_;
+}</ins>
+...
+</pre>
+<p>Nei casi in cui sia richiesto generare degli effetti collaterali durante una transizione di stato, la tabella delle transizioni viene arricchita con un puntatore a funzione che viene tipicamente invocata direttamente dalla funzione di transizione.</p>
+<p>Rispetto all'implementazione basata su <span class="code">switch</span>, questa è decisamente più flessibile: per modificare o estendere la macchina a stati è sufficiente agire sulla sua definizione, mentre la funzione di transizione rimane inalterata.</p>
+<h2>Implementazione a oggetti</h2>
+<p>La tipica implementazione di una macchina a stati secondo il paradigma a oggetti si rifà al pattern <span class="term">State</span> della <span class="term">Gang of Four</span>. Si definisce dapprima la classe astratta per modellare lo stato:</p>
+<pre class="code">
+enum Output {
+  PURRS,
+  THROWS_UP,
+  RUBS,
+  BITES,
+  UNDEFINED
+};
+
+class Cat;
+
+class State {
+public:
+  virtual Output pet(Cat&amp; cat) = 0;
+  virtual Output feed(Cat&amp; cat) = 0;
+  virtual Output wait(Cat&amp; cat) = 0;
+};
+</pre>
+<p><span class="code">Cat</span> è un oggetto che rappresenta il contesto nel quale la macchina a stati sta operando (ci potrebbero essere più istanze della stessa macchina che operano su contesti differenti e che devono procedere autonomamente &mdash; potremmo avere a che fare con più di un gatto).</p>
+<p>Si prosegue con l'implementazione degli stati concreti, la cui responsabilità è di attuare il comportamento associato e indicare al contesto lo stato successivo:</p>
+<pre class="code">
+class Happy : public State {
+public:
+  Output pet(Cat&amp; cat) override;
+  Output feed(Cat&amp; cat) override;
+  Output wait(Cat&amp; cat) override;
+};
+
+class Hungry : public State {
+public:
+  Output pet(Cat&amp; cat) override;
+  Output feed(Cat&amp; cat) override;
+  Output wait(Cat&amp; cat) override;
+};
+
+class Dead : public State {
+public:
+  Output pet(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output feed(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output wait(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+};
+
+class Cat {
+  ...
+};
+
+Output Happy::pet(Cat&amp; cat) {
+  cat.setState&lt;Happy&gt;();
+  return PURRS;
+}
+
+Output Happy::feed(Cat&amp; cat) {
+	cat.setState&lt;Happy&gt;();
+	return THROWS_UP;
+}
+
+Output Happy::wait(Cat&amp; cat) {
+	cat.setState&lt;Hungry&gt;();
+	return RUBS;
+}
+
+Output Hungry::pet(Cat&amp; cat) {
+	cat.setState&lt;Hungry&gt;();
+	return BITES;
+}
+
+Output Hungry::feed(Cat&amp; cat) {
+	cat.setState&lt;Happy&gt;();
+	return PURRS;
+}
+
+Output Hungry::wait(Cat&amp; cat) {
+  cat.setState&lt;Dead&gt;();
+  return UNDEFINED;
+}
+</pre>
+<p><span class="code">Cat</span> infine è l'oggetto che si occupa di fornire l'interfaccia d'accesso alla macchina a stati e di tener traccia dello stato corrente (<span class="code">Context</span> nella terminologia GoF):</p>
+<pre class="code">
+class Cat {
+  std::unique_ptr&lt;State&gt; state_;
+public:
+  Cat() : state_(std::make_unique&lt;Happy&gt;()) {}
+  Output pet() { return state_-&gt;pet(*this); }
+  Output feed() { return state_-&gt;feed(*this); }
+  Output wait() { return state_-&gt;wait(*this); }
+  template &lt;class T&gt;
+  void setState() { state_ = std::make_unique&lt;T&gt;(); }
+};
+</pre>
+<p>Anche se non esplicitamente richiesto dal pattern, aggiungiamo alcuni metodi per identificare lo stato corrente, utili però per il test; la versione definitiva diventa perciò:</p>
+<pre class="code">
+#include &lt;cassert&gt;
+#include &lt;memory&gt;
+#include &lt;stdexcept&gt;
+
+enum Output {
+  PURRS,
+  THROWS_UP,
+  RUBS,
+  BITES,
+  UNDEFINED
+};
+
+class Cat;
+
+class State {
+public:
+<ins>  virtual bool is_happy() const { return false; }
+  virtual bool is_hungry()const { return false; }
+  virtual bool is_dead() const { return false; }</ins>
+  virtual Output pet(Cat&amp; cat) = 0;
+  virtual Output feed(Cat&amp; cat) = 0;
+  virtual Output wait(Cat&amp; cat) = 0;
+};
+
+class Happy : public State {
+public:
+<ins>  bool is_happy() const override { return true; }</ins>
+  Output pet(Cat&amp; cat) override;
+  Output feed(Cat&amp; cat) override;
+  Output wait(Cat&amp; cat) override;
+};
+
+class Hungry : public State {
+public:
+<ins>  bool is_hungry() const override { return true; }</ins>
+  Output pet(Cat&amp; cat) override;
+  Output feed(Cat&amp; cat) override;
+  Output wait(Cat&amp; cat) override;
+};
+
+class Dead : public State {
+public:
+<ins>  bool is_dead() const override { return true; }</ins>
+  Output pet(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output feed(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output wait(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+};
+
+class Cat {
+  std::unique_ptr&lt;State&gt; state_;
+public:
+  Cat() : state_(std::make_unique&lt;Happy&gt;()) {}
+<ins>  bool is_happy() const { return state_-&gt;is_happy(); }
+  bool is_hungry() const { return state_-&gt;is_hungry(); }
+  bool is_dead() const { return state_-&gt;is_dead(); }</ins>
+  Output pet() { return state_-&gt;pet(*this); }
+  Output feed() { return state_-&gt;feed(*this); }
+  Output wait() { return state_-&gt;wait(*this); }
+  template &lt;class T&gt;
+  void setState() { state_ = std::make_unique&lt;T&gt;(); }
+};
+
+Output Happy::pet(Cat&amp; cat) {
+  cat.setState&lt;Happy&gt;();
+  return PURRS;
+}
+
+Output Happy::feed(Cat&amp; cat) {
+  cat.setState&lt;Happy&gt;();
+  return THROWS_UP;
+}
+
+Output Happy::wait(Cat&amp; cat) {
+  cat.setState&lt;Hungry&gt;();
+  return RUBS;
+}
+
+Output Hungry::pet(Cat&amp; cat) {
+  cat.setState&lt;Hungry&gt;();
+  return BITES;
+}
+
+Output Hungry::feed(Cat&amp; cat) {
+  cat.setState&lt;Happy&gt;();
+  return PURRS;
+}
+
+Output Hungry::wait(Cat&amp; cat) {
+  cat.setState&lt;Dead&gt;();
+  return UNDEFINED;
+}
+
+int main() {
+  Cat cat;
+  assert(cat.is_happy());
+
+  assert(cat.pet() == PURRS);
+  assert(cat.is_happy());
+
+  assert(cat.feed() == THROWS_UP);
+  assert(cat.is_happy());
+
+  assert(cat.wait() == RUBS);
+  assert(cat.is_hungry());
+
+  assert(cat.pet() == BITES);
+  assert(cat.is_hungry());
+
+  assert(cat.feed() == PURRS);
+  assert(cat.is_happy());
+
+  assert(cat.wait() == RUBS);
+  assert(cat.is_hungry());
+
+  assert(cat.wait() == UNDEFINED);
+  assert(cat.is_dead());
+}
+</pre>
+<p>Nella soluzione ad oggetti si perde traccia della selezione della transizione da eseguire, perché implicitamente risolta a <em>run-time</em> grazie al polimorfismo. Si assiste inoltre una &ldquo;diffusione&rdquo; del codice che viene partizionato tra le diverse specializzazioni della classe <span class="code">State</span>.</p>
+<p>Alterare la macchina a stati vuol dire in questo caso intervenire sugli stati concreti ed eventualmente aggiungerne di nuovi. Rispetto all'implementazione procedurale basata sulla tabella, dove le correzioni erano limitate al vettore delle transizioni, in questo caso le modifiche vanno apportate a tutti gli stati coinvolti. L'oggetto <span class="code">Cat</span> e l'interfaccia <span class="code">State</span> sono senza dubbio i componenti più stabili della soluzione.</p>
+<h2>Implementazione funzionale</h2>
+<!--
+/*
+
+una funzione che ritorna una funzione con la sua stessa signature
+(per semplicità si può pensare che ritorni sè stessa) non è dichiarabile
+in C++, perché non sono ammesse ricorsioni nella definizione.
+
+supponiamo di voler chiamare la signature "State"; la nostra funzione
+dovrebbe dunque ritornare un valore di tipo State:
+
+State happy() {
+    return happy;
+}
+
+il tipo della funzione è  State (*)();
+
+ma in C++ non si può scrivere
+
+typedef State (*State)();
+
+o equivalentemente
+
+using State = State (*)();
+
+
+con un oggetto-funzione però si può, in linea di principo:
+
+struct State {
+    virtual State operator()() = 0;
+};
+
+struct happy : public State {
+    virtual State operator()() { return *this; }
+};
+
+sennonché happy::operator()() non può convertire *this (che è un happy) in State
+tocca passare ai puntatori
+*/
+
+
+
+#include <cassert>
+#include <stdexcept> // runtime_error
+#include <tuple> // tie
+
+/*
+struct State {
+    using StatePtr = std::unique_ptr<State>;
+    virtual StatePtr operator()() = 0;
+    virtual ~State() {}
+};
+
+struct happy : public State {
+    virtual StatePtr operator()() { return std::make_unique<happy>(); }
+};
+
+int main() {
+    auto cat = happy();
+}
+*/
+
+// aggiungiamo l'input:
+
+
+/*
+enum Input {
+    PET,
+    FEED,
+    WAIT,
+};
+
+struct state {
+    using state_ptr = std::unique_ptr<state>;
+    virtual state_ptr operator()(Input input) = 0;
+    virtual ~state() {}
+};
+
+using state_ptr = state::state_ptr;
+
+struct happy : public state {
+    virtual state_ptr operator()(Input input);
+};
+
+state_ptr happy::operator()(Input input) {
+    return std::unique_ptr<happy>();
+}
+
+int main() {
+    // devo togliere l'auto, se no cat è un unique_ptr<happy> e non posso
+    // assegnarlo a state_ptr
+    state_ptr cat = std::make_unique<happy>();
+
+    cat = (*cat)(PET);
+}
+*/
+
+/*
+// facciamo tutto il giro, return value escluso
+
+enum State {
+    HAPPY,
+    HUNGRY,
+    DEAD,
+};
+
+enum Input {
+    PET,
+    FEED,
+    WAIT,
+};
+
+struct state {
+    using state_ptr = std::unique_ptr<state>;
+    virtual state_ptr operator()(Input input) = 0;
+    virtual State id() const = 0;
+    virtual ~state() {}
+};
+
+using state_ptr = state::state_ptr;
+
+struct happy : public state {
+    virtual State id() const { return HAPPY; }
+    virtual state_ptr operator()(Input input);
+};
+
+struct hungry : public state {
+    virtual State id() const { return HUNGRY; }
+    virtual state_ptr operator()(Input input);
+};
+
+struct dead : public state {
+    virtual State id() const { return DEAD; }
+    virtual state_ptr operator()(Input input);
+};
+
+state_ptr happy::operator()(Input input) {
+    if (input == PET)
+        return std::make_unique<happy>();
+    else if (input == FEED)
+        return std::make_unique<happy>();
+    else if (input == WAIT)
+        return std::make_unique<hungry>();
+    else
+        throw std::runtime_error("ops!");
+}
+
+state_ptr hungry::operator()(Input input) {
+    if (input == PET)
+        return std::make_unique<hungry>();
+    else if (input == FEED)
+        return std::make_unique<happy>();
+    else if (input == WAIT)
+        return std::make_unique<dead>();
+    else
+        throw std::runtime_error("ops!");
+}
+
+state_ptr dead::operator()(Input) {
+    throw std::runtime_error("cat is dead");
+}
+
+int main() {
+    // devo togliere l'auto, se no cat è un unique_ptr<happy> e non posso
+    // assegnarlo a state_ptr
+    state_ptr cat = std::make_unique<happy>();
+
+    cat = (*cat)(PET);
+    assert(cat->id() == HAPPY);
+
+    cat = (*cat)(FEED);
+    assert(cat->id() == HAPPY);
+
+    cat = (*cat)(WAIT);
+    assert(cat->id() == HUNGRY);
+
+    cat = (*cat)(PET);
+    assert(cat->id() == HUNGRY);
+
+    cat = (*cat)(FEED);
+    assert(cat->id() == HAPPY);
+
+    cat = (*cat)(WAIT);
+    assert(cat->id() == HUNGRY);
+
+    cat = (*cat)(WAIT);
+    assert(cat->id() == DEAD);
+}
+*/
+
+
+
+// giro completo, return value incluso
+/*
+
+enum State {
+    HAPPY,
+    HUNGRY,
+    DEAD,
+};
+
+enum Input {
+    PET,
+    FEED,
+    WAIT,
+};
+
+enum Output {
+    PURRS,
+    THROWS_UP,
+    RUBS,
+    BITES,
+    UNDEFINED
+};
+
+struct state {
+    using state_ptr = std::unique_ptr<state>;
+    using result = std::pair<state_ptr, Output>;
+    virtual result operator()(Input input) = 0;
+    virtual State id() const = 0;
+    virtual ~state() {}
+    template <class T>
+    result pair(Output output) {
+        return std::make_pair(std::make_unique<T>(), output);
+    }
+};
+
+using state_ptr = state::state_ptr;
+
+struct happy : public state {
+    virtual State id() const { return HAPPY; }
+    virtual result operator()(Input input);
+};
+
+struct hungry : public state {
+    virtual State id() const { return HUNGRY; }
+    virtual result operator()(Input input);
+};
+
+struct dead : public state {
+    virtual State id() const { return DEAD; }
+    virtual result operator()(Input input);
+};
+
+state::result happy::operator()(Input input) {
+    if (input == PET)
+        return pair<happy>(PURRS);
+    else if (input == FEED)
+        return pair<happy>(THROWS_UP);
+    else if (input == WAIT)
+        return pair<hungry>(RUBS);
+    else
+        throw std::runtime_error("ops!");
+}
+
+state::result hungry::operator()(Input input) {
+    if (input == PET)
+        return pair<hungry>(BITES);
+    else if (input == FEED)
+        return pair<happy>(PURRS);
+    else if (input == WAIT)
+        return pair<dead>(UNDEFINED);
+    else
+        throw std::runtime_error("ops!");
+}
+
+state::result dead::operator()(Input) {
+    throw std::runtime_error("cat is dead");
+}
+
+
+int main() {
+    Output output = UNDEFINED;
+    state_ptr cat = std::make_unique<happy>();
+
+    std::tie(cat, output) = (*cat)(PET);
+    assert(cat->id() == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = (*cat)(FEED);
+    assert(cat->id() == HAPPY);
+    assert(output == THROWS_UP);
+
+    std::tie(cat, output) = (*cat)(WAIT);
+    assert(cat->id() == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = (*cat)(PET);
+    assert(cat->id() == HUNGRY);
+    assert(output == BITES);
+
+    std::tie(cat, output) = (*cat)(FEED);
+    assert(cat->id() == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = (*cat)(WAIT);
+    assert(cat->id() == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = (*cat)(WAIT);
+    assert(cat->id() == DEAD);
+    assert(output == UNDEFINED);
+}
+*/
+
+
+// anziché tanti stati, uno stato solo, che contiene la funzione:
+/*
+enum Input {
+    PET,
+    FEED,
+    WAIT,
+};
+
+enum Output {
+    PURRS,
+    THROWS_UP,
+    RUBS,
+    BITES,
+    UNDEFINED
+};
+
+
+struct State_ {
+    using Result = std::pair<State_, Output>;
+    using Fn = Result(*)(Input);
+    Fn fn_;
+    State_(Fn fn) : fn_(fn) {}
+    Result operator()(Input input) { return fn_(input); }
+    bool operator==(Fn fn) const { return fn_ == fn; }
+};
+
+State_::Result pair_(State_::Fn fn, Output output) {
+    return std::make_pair(State_(fn), output);
+}
+
+State_::Result HAPPY(Input input);
+State_::Result HUNGRY(Input input);
+State_::Result DEAD(Input input);
+
+State_::Result HAPPY(Input input) {
+    if (input == PET)
+        return pair_(HAPPY, PURRS);
+    else if (input == FEED)
+        return pair_(HAPPY, THROWS_UP);
+    else if (input == WAIT)
+        return pair_(HUNGRY, RUBS);
+    else
+        throw std::runtime_error("ops!");
+}
+
+State_::Result HUNGRY(Input input) {
+    if (input == PET)
+        return pair_(HUNGRY, BITES);
+    else if (input == FEED)
+        return pair_(HAPPY, PURRS);
+    else if (input == WAIT)
+        return pair_(DEAD, UNDEFINED);
+    else
+        throw std::runtime_error("ops!");
+}
+
+State_::Result DEAD(Input) {
+    throw std::runtime_error("cat is dead");
+}
+
+
+
+int main() {
+    Output output = UNDEFINED;
+    State_ cat = HAPPY;
+
+    std::tie(cat, output) = cat(PET);
+    assert(cat == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = cat(FEED);
+    assert(cat == HAPPY);
+    assert(output == THROWS_UP);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = cat(PET);
+    assert(cat == HUNGRY);
+    assert(output == BITES);
+
+    std::tie(cat, output) = cat(FEED);
+    assert(cat == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == DEAD);
+    assert(output == UNDEFINED);
+}
+*/
+
+
+
+// già che ci siamo, un po' di pulizia portando fuori Result
+// e pair_ diventa costruttore
+
+enum Input {
+    PET,
+    FEED,
+    WAIT,
+};
+
+enum Output {
+    PURRS,
+    THROWS_UP,
+    RUBS,
+    BITES,
+    UNDEFINED
+};
+
+struct Result;
+
+struct State {
+    using Fn = Result(*)(Input);
+    Fn fn_;
+    State(Fn fn) : fn_(fn) {}
+    Result operator()(Input input);
+    bool operator==(Fn fn) const { return fn_ == fn; }
+};
+
+struct Result {
+    State state_;
+    Output output_;
+    Result(State state, Output output) : state_(state), output_(output) {}
+    operator std::tuple<State&, Output&>() {
+        return std::tie(state_, output_);
+    }
+};
+
+Result State::operator()(Input input) { return fn_(input); }
+
+Result HAPPY(Input input);
+Result HUNGRY(Input input);
+Result DEAD(Input input);
+
+Result HAPPY(Input input) {
+    if (input == PET)
+        return Result(HAPPY, PURRS);
+    else if (input == FEED)
+        return Result(HAPPY, THROWS_UP);
+    else if (input == WAIT)
+        return Result(HUNGRY, RUBS);
+    else
+        throw std::runtime_error("ops!");
+}
+
+Result HUNGRY(Input input) {
+    if (input == PET)
+        return Result(HUNGRY, BITES);
+    else if (input == FEED)
+        return Result(HAPPY, PURRS);
+    else if (input == WAIT)
+        return Result(DEAD, UNDEFINED);
+    else
+        throw std::runtime_error("ops!");
+}
+
+Result DEAD(Input) {
+    throw std::runtime_error("cat is dead");
+}
+
+
+
+int main() {
+    Output output = UNDEFINED;
+    State cat = HAPPY;
+
+    std::tie(cat, output) = cat(PET);
+    assert(cat == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = cat(FEED);
+    assert(cat == HAPPY);
+    assert(output == THROWS_UP);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = cat(PET);
+    assert(cat == HUNGRY);
+    assert(output == BITES);
+
+    std::tie(cat, output) = cat(FEED);
+    assert(cat == HAPPY);
+    assert(output == PURRS);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == HUNGRY);
+    assert(output == RUBS);
+
+    std::tie(cat, output) = cat(WAIT);
+    assert(cat == DEAD);
+    assert(output == UNDEFINED);
+}
+-->
+<p class="todo">Lo switch esplicito della soluzione funzionale è implicito nella soluzione oo, perché se ne fa carico il polimorfismo.</p>
+<p class="todo">Il dispatch esplicito dell'input allo stato corrente della soluzione oo è implicito nella soluzione funzionale, perché lo stato <strong>è</strong> una funzione.</p>
+<p class="todo">Qualche considerazione sui main/test oo vs functional?</p>
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref">Henney, K. &ldquo;Declarative Thinking, Declarative Practice&rdquo;. <em>ACCU 2016</em>. &lt;<a href="https://www.youtube.com/watch?v=nrVIlhtoE3Y">https://www.youtube.com/watch?v=nrVIlhtoE3Y</a>&gt;. Visitato il 06 giugno 2017.</li>
+<a name="ref-2"></a>
+<li class="ref">Tamir, B. &ldquo;A Functional-Style State Machine in C++&rdquo;. <em>dev.to</em>. <a href="https://dev.to/tmr232/a-functional-style-state-machine-in-c">https://dev.to/tmr232/a-functional-style-state-machine-in-c</a>. Visitato il 6 giugno 2017</li>
+<a name="ref-3"></a>
+<li class="ref">&ldquo;Automa a stati finiti&rdquo;. <em>wikipedia</em>. <a href="https://it.wikipedia.org/wiki/Automa_a_stati_finiti">https://it.wikipedia.org/wiki/Automa_a_stati_finiti</a>. Visitato l'8 settembre 2017</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 09/09/2017</p>
+</body>
+</html>
