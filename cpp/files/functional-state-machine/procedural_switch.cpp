@@ -60,7 +60,7 @@ Output cat(Input input) {
         case DEAD:
             throw std::runtime_error("cat is dead");
     }
-    throw std::runtime_error("ops!");
+    throw std::runtime_error("invalid cat state");
 }
 
 int main() {

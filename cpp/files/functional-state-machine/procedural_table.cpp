@@ -50,7 +50,7 @@ Output cat(Input input) {
         [&](const Entry& entry) { return entry.matches(state, input); });
 
     if (entry == std::end(table))
-        throw std::runtime_error("ops!");
+        throw std::runtime_error("unexpected state/input pair");
 
     state = entry->destination_;
     return entry->output_;
