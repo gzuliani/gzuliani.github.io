@@ -4,7 +4,7 @@
 enum Input {
     PET,
     FEED,
-    WAIT,
+    TIME_PASSES,
 };
 
 enum Output {
@@ -33,7 +33,7 @@ State::Result HAPPY(Input input) {
         return State::Result(HAPPY, PURRS);
     else if (input == FEED)
         return State::Result(HAPPY, THROWS_UP);
-    else if (input == WAIT)
+    else if (input == TIME_PASSES)
         return State::Result(HUNGRY, RUBS);
     else
         throw std::runtime_error("invalid cat state");
@@ -44,7 +44,7 @@ State::Result HUNGRY(Input input) {
         return State::Result(HUNGRY, BITES);
     else if (input == FEED)
         return State::Result(HAPPY, PURRS);
-    else if (input == WAIT)
+    else if (input == TIME_PASSES)
         return State::Result(DEAD, UNDEFINED);
     else
         throw std::runtime_error("invalid cat state");
@@ -56,10 +56,9 @@ State::Result DEAD(Input) {
 
 int main() {
     State cat = HAPPY;
-
     Output output = UNDEFINED;
-    std::tie(cat, output) = cat(PET);
 
+    std::tie(cat, output) = cat(PET);
     assert(cat == HAPPY);
     assert(output == PURRS);
 
@@ -67,7 +66,7 @@ int main() {
     assert(cat == HAPPY);
     assert(output == THROWS_UP);
 
-    std::tie(cat, output) = cat(WAIT);
+    std::tie(cat, output) = cat(TIME_PASSES);
     assert(cat == HUNGRY);
     assert(output == RUBS);
 
@@ -79,12 +78,11 @@ int main() {
     assert(cat == HAPPY);
     assert(output == PURRS);
 
-    std::tie(cat, output) = cat(WAIT);
+    std::tie(cat, output) = cat(TIME_PASSES);
     assert(cat == HUNGRY);
     assert(output == RUBS);
 
-    std::tie(cat, output) = cat(WAIT);
+    std::tie(cat, output) = cat(TIME_PASSES);
     assert(cat == DEAD);
     assert(output == UNDEFINED);
 }
-

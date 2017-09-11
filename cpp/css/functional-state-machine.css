@@ -14,3 +14,13 @@ p.illustration {
  margin-left: 5em;
  margin-top: .5em;
 }
+
+span.mark1 {
+ color: #d33682;
+ font-weight: bold;
+}
+
+span.mark2 {
+ color: #6c71c4;
+ font-weight: bold;
+}
