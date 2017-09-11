@@ -10,7 +10,7 @@ enum State {
 enum Input {
     PET,
     FEED,
-    WAIT,
+    TIME_PASSES,
 };
 
 enum Output {
@@ -35,7 +35,7 @@ Output cat(Input input) {
                     state = HAPPY;
                     return THROWS_UP;
                     break;
-                case WAIT:
+                case TIME_PASSES:
                     state = HUNGRY;
                     return RUBS;
                     break;
@@ -51,7 +51,7 @@ Output cat(Input input) {
                     state = HAPPY;
                     return PURRS;
                     break;
-                case WAIT:
+                case TIME_PASSES:
                     state = DEAD;
                     return UNDEFINED;
                     break;
@@ -72,7 +72,7 @@ int main() {
     assert(cat(FEED) == THROWS_UP);
     assert(state == HAPPY);
 
-    assert(cat(WAIT) == RUBS);
+    assert(cat(TIME_PASSES) == RUBS);
     assert(state == HUNGRY);
 
     assert(cat(PET) == BITES);
@@ -81,9 +81,9 @@ int main() {
     assert(cat(FEED) == PURRS);
     assert(state == HAPPY);
 
-    assert(cat(WAIT) == RUBS);
+    assert(cat(TIME_PASSES) == RUBS);
     assert(state == HUNGRY);
 
-    assert(cat(WAIT) == UNDEFINED);
+    assert(cat(TIME_PASSES) == UNDEFINED);
     assert(state == DEAD);
 }

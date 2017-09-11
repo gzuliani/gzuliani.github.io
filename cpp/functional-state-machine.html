@@ -22,11 +22,11 @@
 <li>if time passes when it is hungry, it dies.</li>
 </ul>
 </blockquote>
-<p>Graficamente, la macchina a stati che sovrintende il funzionamento del gatto virtuale si presenta così:</p>
+<p>Graficamente, la macchina a stati si presenta così:</p>
 <img src="img/functional-state-machine/fsm.png" width="400"/>
 <p class="illustration">Funzionamento del gatto virtuale</p>
 <h2>Implementazione procedurale</h2>
-<p>La classica implementazione procedurale mappa stati, input e output su costanti. La funzione di transizione fa uso di due <span class="code">switch</span> annidati per determinare, a partire dall'accoppiata stato di partenza/input quali debbano essere l'output e lo stato di arrivo:</p>
+<p>La classica implementazione procedurale mappa stati, input e output su costanti. La funzione di transizione fa uso di due <span class="code">switch</span> annidati per determinare, a partire dallo stato di partenza e dall'input quali debbano essere l'output e lo stato di arrivo:</p>
 <pre class="code">
 #include &lt;cassert&gt;
 #include &lt;stdexcept&gt;
@@ -40,7 +40,7 @@ enum State {
 enum Input {
   PET,
   FEED,
-  WAIT,
+  TIME_PASSES,
 };
 
 enum Output {
@@ -65,30 +65,30 @@ Output cat(Input input) {
           state = HAPPY;
           return THROWS_UP;
           break;
-        case WAIT:
+        case TIME_PASSES:
           state = HUNGRY;
           return RUBS;
           break;
       }
-    break;
-  case HUNGRY:
-    switch (input) {
-      case PET:
-        state = HUNGRY;
-        return BITES;
-        break;
-      case FEED:
-        state = HAPPY;
-        return PURRS;
-        break;
-      case WAIT:
-        state = DEAD;
-        return UNDEFINED;
-        break;
-    }
-    break;
-  case DEAD:
-    throw std::runtime_error(&quot;cat is dead&quot;);
+      break;
+    case HUNGRY:
+      switch (input) {
+        case PET:
+          state = HUNGRY;
+          return BITES;
+          break;
+        case FEED:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case TIME_PASSES:
+          state = DEAD;
+          return UNDEFINED;
+          break;
+      }
+      break;
+    case DEAD:
+      throw std::runtime_error(&quot;cat is dead&quot;);
   }
   throw std::runtime_error(&quot;invalid cat state&quot;);
 }
@@ -102,7 +102,7 @@ int main() {
   assert(cat(FEED) == THROWS_UP);
   assert(state == HAPPY);
 
-  assert(cat(WAIT) == RUBS);
+  assert(cat(TIME_PASSES) == RUBS);
   assert(state == HUNGRY);
 
   assert(cat(PET) == BITES);
@@ -111,14 +111,14 @@ int main() {
   assert(cat(FEED) == PURRS);
   assert(state == HAPPY);
 
-  assert(cat(WAIT) == RUBS);
+  assert(cat(TIME_PASSES) == RUBS);
   assert(state == HUNGRY);
 
-  assert(cat(WAIT) == UNDEFINED);
+  assert(cat(TIME_PASSES) == UNDEFINED);
   assert(state == DEAD);
 }
 </pre>
-<p>A volte conviene sostituire lo <span class="code">switch</span> a due livelli, obiettivamente poco elegante, con una tabella che contiene tutte le transizioni di stato previste. La funzione di transizione di stato si riduce in questo caso ad una banale ricerca della corretta transizione da attivare. Di seguito un'implementazione in cui la tabella delle transizioni è un vettore, mentre le transizioni sono rappresentate dalla quadrupla (stato-di-partenza, input, stato-di-arrivo, output):</p>
+<p>A volte conviene sostituire il doppio <span class="code">switch</span> annidato, obiettivamente poco elegante, con una tabella che contiene tutte le transizioni di stato previste. La funzione di transizione si riduce ad una banale ricerca della corretta transizione da attivare. Di seguito una possibile implementazione, in cui le transizioni sono rappresentate dalla quadrupla (stato-di-partenza, input, stato-di-arrivo, output):</p>
 <pre class="code">
 <ins>#include &lt;algorithm&gt;</ins>
 #include &lt;cassert&gt;
@@ -136,12 +136,12 @@ int main() {
 };
 
 const Entry table[] = {
-  { HAPPY,  PET,  HAPPY,  PURRS     },
-  { HAPPY,  FEED, HAPPY,  THROWS_UP },
-  { HAPPY,  WAIT, HUNGRY, RUBS      },
-  { HUNGRY, FEED, HAPPY,  PURRS     },
-  { HUNGRY, PET,  HUNGRY, BITES     },
-  { HUNGRY, WAIT, DEAD,   UNDEFINED },
+  { HAPPY,  PET,         HAPPY,  PURRS     },
+  { HAPPY,  FEED,        HAPPY,  THROWS_UP },
+  { HAPPY,  TIME_PASSES, HUNGRY, RUBS      },
+  { HUNGRY, FEED,        HAPPY,  PURRS     },
+  { HUNGRY, PET,         HUNGRY, BITES     },
+  { HUNGRY, TIME_PASSES, DEAD,   UNDEFINED },
 };
 
 const int entries = sizeof(table) / sizeof(table[0]);</ins>
@@ -158,30 +158,30 @@ const int entries = sizeof(table) / sizeof(table[0]);</ins>
           state = HAPPY;
           return THROWS_UP;
           break;
-        case WAIT:
+        case TIME_PASSES:
           state = HUNGRY;
           return RUBS;
           break;
       }
-    break;
-  case HUNGRY:
-    switch (input) {
-      case PET:
-        state = HUNGRY;
-        return BITES;
-        break;
-      case FEED:
-        state = HAPPY;
-        return PURRS;
-        break;
-      case WAIT:
-        state = DEAD;
-        return UNDEFINED;
-        break;
-      }
-    break;
-  case DEAD:
-    throw std::runtime_error(&quot;cat is dead&quot;);
+      break;
+    case HUNGRY:
+      switch (input) {
+        case PET:
+          state = HUNGRY;
+          return BITES;
+          break;
+        case FEED:
+          state = HAPPY;
+          return PURRS;
+          break;
+        case TIME_PASSES:
+          state = DEAD;
+          return UNDEFINED;
+          break;
+        }
+      break;
+    case DEAD:
+      throw std::runtime_error(&quot;cat is dead&quot;);
   }
   throw std::runtime_error(&quot;invalid cat state&quot;);
 }</del>
@@ -199,8 +199,8 @@ const int entries = sizeof(table) / sizeof(table[0]);</ins>
 }</ins>
 ...
 </pre>
-<p>Nei casi in cui sia richiesto generare degli effetti collaterali durante una transizione di stato, la tabella delle transizioni viene arricchita con un puntatore a funzione che viene tipicamente invocata direttamente dalla funzione di transizione.</p>
-<p>Rispetto all'implementazione basata su <span class="code">switch</span>, questa è decisamente più flessibile: per modificare o estendere la macchina a stati è sufficiente agire sulla sua definizione, mentre la funzione di transizione rimane inalterata.</p>
+<p>Nei casi in cui sia richiesto generare degli effetti collaterali durante una transizione di stato, la tabella delle transizioni viene arricchita con un puntatore a funzione che viene invocata direttamente dalla funzione di transizione.</p>
+<p>Rispetto all'implementazione basata su <span class="code">switch</span>, questa è decisamente più flessibile: per modificare o estendere la macchina a stati è sufficiente agire sulla sua definizione, mentre la funzione di transizione <span class="code">cat</span> rimane inalterata.</p>
 <h2>Implementazione a oggetti</h2>
 <p>La tipica implementazione di una macchina a stati secondo il paradigma a oggetti si rifà al pattern State della <span class="term">Gang of Four</span>. Si definisce dapprima la classe astratta per modellare lo stato:</p>
 <pre class="code">
@@ -216,33 +216,39 @@ class Cat;
 
 class State {
 public:
-  virtual Output pet(Cat&amp; cat)  = 0;
+  virtual Output pet(Cat&amp; cat) = 0;
   virtual Output feed(Cat&amp; cat) = 0;
-  virtual Output wait(Cat&amp; cat) = 0;
+  virtual Output time_passes(Cat&amp; cat) = 0;
 };
 </pre>
-<p><span class="code">Cat</span> è un oggetto che rappresenta il contesto nel quale la macchina a stati sta operando (ci potrebbero essere più istanze della stessa macchina che operano su contesti differenti e che devono procedere autonomamente &mdash; potremmo avere a che fare con più di un gatto).</p>
+<p>Mentre gli output conservano la natura di valore, gli input sono modellati come azioni applicate sugli stati, che diventano invece oggetti. <span class="code">Cat</span> è un oggetto che rappresenta il contesto nel quale la macchina a stati sta operando; viene qui dichiarato per rendere compilabile il codice della classe <span class="code">State</span>, e verrà definito più avanti.</p>
 <p>Si prosegue con l'implementazione degli stati concreti, la cui responsabilità è di attuare il comportamento associato e indicare al contesto qual'è il prossimo stato da raggiungere:</p>
 <pre class="code">
 class Happy : public State {
 public:
-  Output pet(Cat&amp; cat)  override;
+  Output pet(Cat&amp; cat) override;
   Output feed(Cat&amp; cat) override;
-  Output wait(Cat&amp; cat) override;
+  Output time_passes(Cat&amp; cat) override;
 };
 
 class Hungry : public State {
 public:
-  Output pet(Cat&amp; cat)  override;
+  Output pet(Cat&amp; cat) override;
   Output feed(Cat&amp; cat) override;
-  Output wait(Cat&amp; cat) override;
+  Output time_passes(Cat&amp; cat) override;
 };
 
 class Dead : public State {
 public:
-  Output pet(Cat&amp;)  override { throw std::runtime_error(&quot;cat is dead&quot;); }
-  Output feed(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
-  Output wait(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output pet(Cat&amp;) override {
+    throw std::runtime_error(&quot;cat is dead&quot;);
+  }
+  Output feed(Cat&amp;) override {
+    throw std::runtime_error(&quot;cat is dead&quot;);
+  }
+  Output time_passes(Cat&amp;) override {
+    throw std::runtime_error(&quot;cat is dead&quot;);
+  }
 };
 
 class Cat {
@@ -259,7 +265,7 @@ Output Happy::feed(Cat&amp; cat) {
   return THROWS_UP;
 }
 
-Output Happy::wait(Cat&amp; cat) {
+Output Happy::time_passes(Cat&amp; cat) {
   cat.setState&lt;Hungry&gt;();
   return RUBS;
 }
@@ -274,25 +280,25 @@ Output Hungry::feed(Cat&amp; cat) {
   return PURRS;
 }
 
-Output Hungry::wait(Cat&amp; cat) {
+Output Hungry::time_passes(Cat&amp; cat) {
   cat.setState&lt;Dead&gt;();
   return UNDEFINED;
 }
 </pre>
-<p><span class="code">Cat</span> infine è l'oggetto che si occupa di fornire l'interfaccia d'accesso alla macchina a stati e di tener traccia dello stato corrente (<span class="code">Context</span> nella terminologia GoF):</p>
+<p><span class="code">Cat</span> infine è l'oggetto che si occupa di fornire l'interfaccia d'accesso alla macchina a stati e di tener traccia dello stato corrente (il <span class="code">Context</span> secondo la terminologia GoF):</p>
 <pre class="code">
 class Cat {
   std::unique_ptr&lt;State&gt; state_;
 public:
   Cat() : state_(std::make_unique&lt;Happy&gt;()) {}
-  Output pet()  { return state_-&gt;pet(*this);  }
+  Output pet() { return state_-&gt;pet(*this); }
   Output feed() { return state_-&gt;feed(*this); }
-  Output wait() { return state_-&gt;wait(*this); }
+  Output time_passes() { return state_-&gt;time_passes(*this); }
   template &lt;class T&gt;
   void setState() { state_ = std::make_unique&lt;T&gt;(); }
 };
 </pre>
-<p>Anche se non esplicitamente richiesto dal pattern, aggiungiamo alcuni metodi per identificare lo stato corrente, utili però per il test; la versione definitiva diventa perciò:</p>
+<p>Anche se non esplicitamente richiesto dal pattern, aggiungiamo alcuni metodi per identificare lo stato corrente, utili per il test della macchina a stati appena completata. La versione definitiva del codice <span class="term">object-oriented</span> diventa perciò:</p>
 <pre class="code">
 #include &lt;cassert&gt;
 #include &lt;memory&gt;
@@ -310,36 +316,36 @@ class Cat;
 
 class State {
 public:
-<ins>  virtual bool is_happy()  const { return false; }
+<ins>  virtual bool is_happy() const { return false; }
   virtual bool is_hungry() const { return false; }
-  virtual bool is_dead()   const { return false; }</ins>
-  virtual Output pet(Cat&amp; cat)  = 0;
+  virtual bool is_dead() const { return false; }</ins>
+  virtual Output pet(Cat&amp; cat) = 0;
   virtual Output feed(Cat&amp; cat) = 0;
-  virtual Output wait(Cat&amp; cat) = 0;
+  virtual Output time_passes(Cat&amp; cat) = 0;
 };
 
 class Happy : public State {
 public:
 <ins>  bool is_happy() const override { return true; }</ins>
-  Output pet(Cat&amp; cat)  override;
+  Output pet(Cat&amp; cat) override;
   Output feed(Cat&amp; cat) override;
-  Output wait(Cat&amp; cat) override;
+  Output time_passes(Cat&amp; cat) override;
 };
 
 class Hungry : public State {
 public:
 <ins>  bool is_hungry() const override { return true; }</ins>
-  Output pet(Cat&amp; cat)  override;
+  Output pet(Cat&amp; cat) override;
   Output feed(Cat&amp; cat) override;
-  Output wait(Cat&amp; cat) override;
+  Output time_passes(Cat&amp; cat) override;
 };
 
 class Dead : public State {
 public:
 <ins>  bool is_dead() const override { return true; }</ins>
-  Output pet(Cat&amp;)  override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output pet(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
   Output feed(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
-  Output wait(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
+  Output time_passes(Cat&amp;) override { throw std::runtime_error(&quot;cat is dead&quot;); }
 };
 
 class Cat {
@@ -349,9 +355,9 @@ public:
 <ins>  bool is_happy()  const { return state_-&gt;is_happy(); }
   bool is_hungry() const { return state_-&gt;is_hungry(); }
   bool is_dead()   const { return state_-&gt;is_dead(); }</ins>
-  Output pet()  { return state_-&gt;pet(*this);  }
+  Output pet() { return state_-&gt;pet(*this); }
   Output feed() { return state_-&gt;feed(*this); }
-  Output wait() { return state_-&gt;wait(*this); }
+  Output time_passes() { return state_-&gt;time_passes(*this); }
   template &lt;class T&gt;
   void setState() { state_ = std::make_unique&lt;T&gt;(); }
 };
@@ -366,7 +372,7 @@ Output Happy::feed(Cat&amp; cat) {
   return THROWS_UP;
 }
 
-Output Happy::wait(Cat&amp; cat) {
+Output Happy::time_passes(Cat&amp; cat) {
   cat.setState&lt;Hungry&gt;();
   return RUBS;
 }
@@ -381,7 +387,7 @@ Output Hungry::feed(Cat&amp; cat) {
   return PURRS;
 }
 
-Output Hungry::wait(Cat&amp; cat) {
+Output Hungry::time_passes(Cat&amp; cat) {
   cat.setState&lt;Dead&gt;();
   return UNDEFINED;
 }
@@ -396,7 +402,7 @@ int main() {
   assert(cat.feed() == THROWS_UP);
   assert(cat.is_happy());
 
-  assert(cat.wait() == RUBS);
+  assert(cat.time_passes() == RUBS);
   assert(cat.is_hungry());
 
   assert(cat.pet() == BITES);
@@ -405,18 +411,18 @@ int main() {
   assert(cat.feed() == PURRS);
   assert(cat.is_happy());
 
-  assert(cat.wait() == RUBS);
+  assert(cat.time_passes() == RUBS);
   assert(cat.is_hungry());
 
-  assert(cat.wait() == UNDEFINED);
+  assert(cat.time_passes() == UNDEFINED);
   assert(cat.is_dead());
 }
 </pre>
-<p>Nella soluzione ad oggetti si perde traccia della selezione della transizione da eseguire, perché implicitamente risolta a <span class="term">run-time</span> grazie al polimorfismo. Si assiste inoltre una &ldquo;diffusione&rdquo; del codice che viene partizionato tra le diverse specializzazioni della classe <span class="code">State</span>.</p>
-<p>Alterare la macchina a stati vuol dire in questo caso intervenire sugli stati concreti ed eventualmente aggiungerne di nuovi. Rispetto all'implementazione procedurale basata sulla tabella, dove le correzioni erano limitate al vettore delle transizioni, in questo caso le modifiche vanno apportate a tutti gli stati coinvolti. L'oggetto <span class="code">Cat</span> e l'interfaccia <span class="code">State</span> sono senza dubbio i componenti più stabili della soluzione.</p>
+<p>Nella soluzione ad oggetti si perde traccia della selezione della transizione da eseguire, perché implicitamente risolta a <span class="term">run-time</span> dal polimorfismo. Si assiste inoltre una &ldquo;diffusione&rdquo; del codice che viene suddiviso tra le diverse specializzazioni della classe <span class="code">State</span>.</p>
+<p>Alterare la macchina a stati vuol dire in questo caso intervenire sugli stati concreti ed eventualmente aggiungerne di nuovi. Rispetto all'implementazione procedurale basata sulla tabella, dove le correzioni erano limitate al vettore delle transizioni, in questo caso le modifiche vanno apportate a tutti gli stati coinvolti. L'oggetto <span class="code">Cat</span> e l'interfaccia <span class="code">State</span> sono senza dubbio i componenti più stabili della soluzione proposta.</p>
 <h2>Implementazione funzionale</h2>
 <p>In questo caso lo stato è rappresentato da una funzione che, una volta applicata ad un valore di ingresso, produce il valore d'uscita e il nuovo stato, anch'esso rappresentato da una funzione.</p>
-<p>In C++ purtroppo non è possibile definire una funzione che annoveri tra i suoi parametri d'uscita un (puntatore a) funzione con la sua stessa <span class="term">signature</span>. Supponendo infatti di voler denominare il tipo cercato <span class="code">State</span> e pur considerando una versione semplificata della funzione di transizione:</p>
+<p>In C++ purtroppo non è possibile definire una funzione che presenti tra i suoi parametri d'uscita un (puntatore a) funzione con la sua stessa <span class="term">signature</span>. Supponendo infatti di voler denominare il tipo cercato <span class="code">State</span> e considerando temporaneamente una versione semplificata della funzione di transizione:</p>
 <pre class="code">
 State happy() {
   return ...;
@@ -434,7 +440,7 @@ typedef State (*State)();
 <pre class="code">
 using State = State (*)();
 </pre>
-<p>La ricorsione si può spezzare introducendo un <span class="code">function-object</span> (tralasciamo per il momento l'implementazione e concentriamoci sulla compilabilità del codice):</p>
+<p>La ricorsione si può tuttavia spezzare introducendo un <span class="code">function-object</span> (sempre tralasciando per il momento l'implementazione e concentrandoci invece sulla compilabilità del codice):</p>
 <pre class="code">
 struct State {
   State operator()() { return *this; }
@@ -446,14 +452,14 @@ int main() {
   cat = cat();
 }
 </pre>
-<p>Ricordando che la transizione di stato avviene a fronte di un valore di ingresso e che la stessa produce un valore d'uscita, la classe <span class="code">State</span> diventa:</p>
+<p>Ricordando che la transizione di stato avviene a fronte di un valore di ingresso e che la stessa produce un valore d'uscita che va accoppiato allo stato d'arrivo, la classe <span class="code">State</span> diventa:</p>
 <pre class="code">
 <ins>#include &lt;tuple&gt;</ins>
 
 <ins>enum Input {
   PET,
   FEED,
-  WAIT,
+  TIME_PASSES,
 };</ins>
 
 <ins>enum Output {
@@ -479,7 +485,7 @@ int main() {
   std::tie(cat, output) = cat(PET);</ins>
 }
 </pre>
-<p>Il valore di ritorno della funzione di transizione non è più lo stato successivo ma la coppia (stato successivo, valore d'uscita). La funzione di transizione può essere ora agevolmente iniettata in <span class="code">State</span> all'atto della costruzione:</p>
+<p>La funzione di transizione vera e propria può essere iniettata in <span class="code">State</span> all'atto della costruzione:</p>
 <pre class="code">
 ...
 
@@ -506,7 +512,7 @@ int main() {
   std::tie(cat, output) = cat(PET);
 }
 </pre>
-<p class="todo">bla bla bla</p>
+<p>Il codice che implementa la macchina a stati richiesta è quindi:</p>
 <pre class="code">
 <ins>#include &lt;cassert&gt;</ins>
 #include &lt;tuple&gt;
@@ -514,7 +520,7 @@ int main() {
 enum Input {
   PET,
   FEED,
-  WAIT,
+  TIME_PASSES,
 };
 
 enum Output {
@@ -544,7 +550,7 @@ State::Result HAPPY(Input input) {
     return State::Result(HAPPY, PURRS);
   else if (input == FEED)
     return State::Result(HAPPY, THROWS_UP);
-  else if (input == WAIT)
+  else if (input == TIME_PASSES)
     return State::Result(HUNGRY, RUBS);
   else
     throw std::runtime_error(&quot;invalid cat state&quot;);</ins>
@@ -555,7 +561,7 @@ State::Result HAPPY(Input input) {
     return State::Result(HUNGRY, BITES);
   else if (input == FEED)
     return State::Result(HAPPY, PURRS);
-  else if (input == WAIT)
+  else if (input == TIME_PASSES)
     return State::Result(DEAD, UNDEFINED);
   else
     throw std::runtime_error(&quot;invalid cat state&quot;);
@@ -577,7 +583,7 @@ int main() {
   assert(cat == HAPPY);
   assert(output == THROWS_UP);
 
-  std::tie(cat, output) = cat(WAIT);
+  std::tie(cat, output) = cat(TIME_PASSES);
   assert(cat == HUNGRY);
   assert(output == RUBS);
 
@@ -589,18 +595,55 @@ int main() {
   assert(cat == HAPPY);
   assert(output == PURRS);
 
-  std::tie(cat, output) = cat(WAIT);
+  std::tie(cat, output) = cat(TIME_PASSES);
   assert(cat == HUNGRY);
   assert(output == RUBS);
 
-  std::tie(cat, output) = cat(WAIT);
+  std::tie(cat, output) = cat(TIME_PASSES);
   assert(cat == DEAD);
   assert(output == UNDEFINED);</ins>
 }
 </pre>
-<p class="todo">Lo switch esplicito della soluzione funzionale è implicito nella soluzione oo, perché se ne fa carico il polimorfismo.</p>
-<p class="todo">Il dispatch esplicito dell'input allo stato corrente della soluzione oo è implicito nella soluzione funzionale, perché lo stato <strong>è</strong> una funzione.</p>
-<p class="todo">Qualche considerazione sui main/test oo vs functional?</p>
+<p>Riappare in questo caso lo <span class="code">switch</span> esplicito sul valore d'ingresso, che nella soluzione a oggetti è risolto dall'interfaccia <span class="code">State</span>. della soluzione funzionale è implicito nella soluzione oo, perché se ne fa carico il polimorfismo:</p>
+<pre class="code">
+<span class="mark1">// Object-oriented `happy`</span>             <span class="mark2">// Functional `happy`</span>
+
+<span class="mark1">class Happy : public State {</span>           <span class="mark2">State::Result HAPPY(Input input) {</span>
+<span class="mark1">public:</span>
+<span class="mark1">  ...</span>
+<span class="mark1">  Output pet(Cat&amp; cat) {</span>           <span class="mark2">      if (input == PET)</span>
+<span class="mark1">    cat.setState&lt;Happy&gt;();</span>       <span class="mark2">          return State::Result(HAPPY, PURRS);</span>
+<span class="mark1">    return PURRS;</span>
+<span class="mark1">  }</span>
+<span class="mark1">  Output feed(Cat&amp; cat) {</span>          <span class="mark2">      else if (input == FEED)</span>
+<span class="mark1">    cat.setState&lt;Happy&gt;();</span>       <span class="mark2">          return State::Result(HAPPY, THROWS_UP);</span>
+<span class="mark1">    return THROWS_UP;</span>
+<span class="mark1">  }</span>
+<span class="mark1">  Output time_passes(Cat&amp; cat) {</span>   <span class="mark2">      else if (input == TIME_PASSES)</span>
+<span class="mark1">    cat.setState&lt;Hungry&gt;();</span>      <span class="mark2">          return State::Result(HUNGRY, RUBS);</span>
+<span class="mark1">    return RUBS;</span>
+<span class="mark1">  }</span>
+<span class="mark1"></span>                                       <span class="mark2">  else</span>
+<span class="mark1"></span>                                       <span class="mark2">    throw std::runtime_error(&quot;...&quot;);</span>
+<span class="mark1">};</span>                                     <span class="mark2">}</span>
+</pre>
+<p>D'altro canto, il <span class="term">dispatch</span> esplicito dell'input allo stato corrente della soluzione object-oriented è implicito nella soluzione funzionale, perché <strong>lo stato corrente è la funzione di transizione</strong>:</p>
+<pre class="code">
+<span class="mark1">int main() {</span>                           <span class="mark2">int main() {</span>
+<span class="mark1">  Cat cat;</span>                             <span class="mark2">  State cat = HAPPY;</span>
+<span class="mark1">  assert(cat.is_happy());</span>              <span class="mark2">  Output output = UNDEFINED;</span>
+
+<span class="mark1">  assert(cat.pet() == PURRS);</span>          <span class="mark2">  std::tie(cat, output) = cat(PET);</span>
+<span class="mark1">  assert(cat.is_happy());</span>              <span class="mark2">  assert(cat == HAPPY);</span>
+<span class="mark1"></span>                                       <span class="mark2">  assert(output == PURRS);</span>
+
+<span class="mark1">  assert(cat.feed() == THROWS_UP);</span>     <span class="mark2">  std::tie(cat, output) = cat(FEED);</span>
+<span class="mark1">  assert(cat.is_happy());</span>              <span class="mark2">  assert(cat == HAPPY);</span>
+<span class="mark1"></span>                                       <span class="mark2">  assert(output == THROWS_UP);</span>
+<span class="mark1">  ...</span>                                  <span class="mark2">  ...</span>
+
+<span class="mark1">}</span>                                      <span class="mark2">}</span>
+</pre>
 <h2>Sorgenti</h2>
 <ul>
 <li>Implementazione procedurale basata su <span class="code">switch</span>: <a href="files/functional-state-machine/procedural_switch.cpp">procedural_switch.cpp</a></li>
@@ -617,6 +660,6 @@ int main() {
 <a name="ref-3"></a>
 <li class="ref">&ldquo;Automa a stati finiti&rdquo;. <em>wikipedia</em>. <a href="https://it.wikipedia.org/wiki/Automa_a_stati_finiti">https://it.wikipedia.org/wiki/Automa_a_stati_finiti</a>. Visitato l'8 settembre 2017</li>
 </ol>
-<p class="modification-notice">Pagina modificata il 09/09/2017</p>
+<p class="modification-notice">Pagina modificata il 10/09/2017</p>
 </body>
 </html>

@@ -11,7 +11,7 @@ enum State {
 enum Input {
     PET,
     FEED,
-    WAIT,
+    TIME_PASSES,
 };
 
 enum Output {
@@ -29,17 +29,18 @@ struct Entry {
     Input input_;
     State destination_;
     Output output_;
-    bool matches(State source, Input input) const
-        { return source_ == source && input_ == input; }
+    bool matches(State source, Input input) const {
+        return source_ == source && input_ == input;
+    }
 };
 
 const Entry table[] = {
-    { HAPPY,  PET,  HAPPY,  PURRS     },
-    { HAPPY,  FEED, HAPPY,  THROWS_UP },
-    { HAPPY,  WAIT, HUNGRY, RUBS      },
-    { HUNGRY, FEED, HAPPY,  PURRS     },
-    { HUNGRY, PET,  HUNGRY, BITES     },
-    { HUNGRY, WAIT, DEAD,   UNDEFINED },
+    { HAPPY,  PET,         HAPPY,  PURRS     },
+    { HAPPY,  FEED,        HAPPY,  THROWS_UP },
+    { HAPPY,  TIME_PASSES, HUNGRY, RUBS      },
+    { HUNGRY, FEED,        HAPPY,  PURRS     },
+    { HUNGRY, PET,         HUNGRY, BITES     },
+    { HUNGRY, TIME_PASSES, DEAD,   UNDEFINED },
 };
 
 const int entries = sizeof(table) / sizeof(table[0]);
@@ -65,7 +66,7 @@ int main() {
     assert(cat(FEED) == THROWS_UP);
     assert(state == HAPPY);
 
-    assert(cat(WAIT) == RUBS);
+    assert(cat(TIME_PASSES) == RUBS);
     assert(state == HUNGRY);
 
     assert(cat(PET) == BITES);
@@ -74,9 +75,9 @@ int main() {
     assert(cat(FEED) == PURRS);
     assert(state == HAPPY);
 
-    assert(cat(WAIT) == RUBS);
+    assert(cat(TIME_PASSES) == RUBS);
     assert(state == HUNGRY);
 
-    assert(cat(WAIT) == UNDEFINED);
+    assert(cat(TIME_PASSES) == UNDEFINED);
     assert(state == DEAD);
 }
