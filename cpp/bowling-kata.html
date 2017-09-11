@@ -514,8 +514,8 @@ public:
   }
   bool is_completed() const override {
     return state_ == e_complete
-       || (state_ == e_spare    &amp;&amp; bonus_rolls_ == 1)
-       || (state_ == e_strike   &amp;&amp; bonus_rolls_ == 2);
+       || (state_ == e_spare  &amp;&amp; bonus_rolls_ == 1)
+       || (state_ == e_strike &amp;&amp; bonus_rolls_ == 2);
   }
 };</ins>
 </pre>
