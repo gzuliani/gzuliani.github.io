@@ -1,0 +1,129 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Monadi in C++</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/functional-state-machine.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#monads-in-cpp">risorse</a> | monadi in c++</p>
+<h1>Monadi in C++</h1>
+<p class="todo">bla bla bla</p>
+<p>Concetti base (da Milewski):</p>
+<ul>
+<li>morfismo: funzioni da un tipo C++ ad un altro; la teoria richiede che i morfismi siano componibili, e la componibilità dev'essere associativa; inoltre, deve esistere la funzione identità. trascuriamo per il momento le funzioni a più valori (si può usare il curring) e quelle polimorfiche (famiglie di funzioni)</li>
+<li>functor: entità che trasforma tipi e morfismi, mantenendone le caratteristiche essenziali (cfr. diagramma), ovvero componibilità e esistenza dell'identità.</li>
+</ul>
+<p>mappare tipi in tipi è facile in C++: aggregati (class e struct) e template. Ma, le funzioni? Prendere una funzione che opera sui tipi primitivi e trasformarla in modo che operi analogamente sui tipi "nuovi" si chiama "lifting".</p>
+<p><strong>Monade = endofunctor + unit + join (endofunctor = type constructor + lifting fn)</strong></p>
+<p>unit=promozione di un valore primitivo (va verso l'alto)</p>
+<p>join=da doppia applicazione a singola (va verso il basso)</p>
+<p>unit e join devono avere particolari proprietà (es. si elidono a vicenda)</p>
+<p>unit fa la parte dell'unità, join della moltiplicazione</p>
+<p>Nella seconda parte spiega perché le monadi sono utili: nei linguaggi funzionali consentono di aggirare i limiti delle funzioni totali, assenza di effetti collaterali, eccezioni, funzioni non deterministiche, etc.</p>
+<p>Implementa Maybe (Optional) e usa come esempio safe_find come versione sicura di find su stringa. Mostra come sia prolisso combinare funzioni safe_, perché richiedono il controllo del risultato prima di chiamare la funzione successiva e ritorna il Maybe giusto. Il trucco è definire una funzione bind che prende un Maybe e una funzione (una continuation, come la chiama lui) e si occupa di fare l'if. Alla fine, se viene prodotto un valore primitivo concreto, ecco che serve una funzione per wrapparlo in un Maybe. Questa funzione è return (pure). bind in Haskell è >>= (operatore che può essere sovrascritto anche in C++). Ma Maybe è veramente una monade? Intanto il functor: c'è il type constructor (il template Maybe), ma la funzione di lifting? Sì che c'è (anche se qui la chiama fmap), e si ottiene combinando bind e return:</p>
+<pre class="code">
+g ma = bind ma (return . f)
+</pre>
+<p>(g è il lifting di f)</p>
+<p>Certo non basta, bisognerebbe verificare che fmap soddisfi tutte le proprietà necessarie, ma non lo facciamo:</p>
+<blockquote>Of course, fmap must obey some axioms, in particular it must preserve function composition and interact correctly with unit (which I will discuss shortly). These axioms translate back into corresponding conditions on bind and return, which I’m not going to discuss here. </blockquote>
+<p>Il functor è ok, ma come la mettiamo con join e unit? unit è return, mentre join è bind applicata all'identità:</p>
+<pre class="code">
+join :: M (M a) -> M a
+join mmx = mmx >>= id
+</pre>
+
+<p>MSDN la mette giù in modo più pragmatico:</p>
+<blockquote>Monads are a triple consisting of a type, a Unit function, and a Bind function.  Furthermore, to be a monad, the triple must satisfy three laws:
+
+    1.  Left Identity
+
+         Bind(Unit(e), k) = k(e)
+
+    2.  Right Identity
+
+         Bind(m, Unit) = m
+
+    3.  Associative
+
+         Bind(m, x => Bind(k(x), y => h(y)) = Bind(Bind(m, x => k(x)), y => h(y))
+</blockquote>
+<p>D'altra parte, con bind e unit si ottiene sia join che fmap.</p>
+<p>Lippert dice che la monade è un pattern, alla stessa stregua del singleton.</p>
+<p>Infinity la prende più larga: nella terza parte afferma:</p>
+<blockquote>
+    The first rule of the monad pattern is that there’s always an easy way to go from a value of the “underlying” type to a value of the “wrapped” type.
+    The second rule of the monad pattern is that adding one to a wrapped int somehow produces another wrapped int, and does so in a way that preserves the desired “amplification”.
+</blockquote>
+<p>Poi aggiunge (parte 5)</p>
+<blockquote>Rule three of the monad pattern is that if you have a function from A to M&lt;R&gt; then you can apply that function to an instance of M&lt;A&gt; and obtain an instance of M&lt;R&gt;. We represented this by requiring that there be a helper method:</blockquote>
+<p>Sennonché, poco dopo:</p>
+<blockquote>Are these actually the rules of the monad pattern? There seems to be a small problem here: these three rules contain a redundancy. Rule two need not be stated as a rule; it is implied by rules one and three!
+</blockquote>
+<p>Poi comunque cita il fatto che la monade potrebbe essere definita in termini di join anziché bind:</p>
+<blockquote>
+Aside: There is a second equivalent way to characterize the rules of a monad: that our original ApplyFunction operation exists and that there is a way to collapse an M&lt;M&lt;R&gt;&gt; into an M&lt;R&gt;. Though it should be fairly obvious how such a thing would work given my explanation so far, this is not the usual way to characterize the requirements of the monad pattern and so I’m going to say no more about it in this series.
+</blockquote>
+<p>E accenna all'esistenza di alcuni vincoli per le funzioni di supporto:</p>
+<blockquote>There are actually a few additional invariants that the ApplySpecialFunction (bind) must ensure in order to be a correct implementation of the monad pattern.</blockquote>
+<p>Nella parte sei entra nel dettaglio dei vincoli:</p>
+<blockquote>
+Specifically: the construction helper function can be thought of as “wrapping up” a value, and the application helper function knows how to “unwrap” a value; it seems reasonable that we require that wrapping and unwrapping operations preserve the value.</blockquote>
+<p class="todo">non ho ancora capito se quel che segue è un rifrasare la regola di sopra, oppure una nuova (mi sembra di no, comunque):</p>
+<blockquote>Applying the “make a simple wrapper around this value” function to a monad value must produce the same monad value. [omissis] In some implementations of the monad pattern it might be cheap and easy to ensure that the two instances be referentially identical, and obviously that would be great. But all that is actually required is that the original and resulting instances be semantically identical when the simple construction function is applied to an existing monad.</blockquote>
+<p>Infine, nella settima parte:</p>
+<blockquote>The last rule is: the ApplySpecialFunction helper must ensure that composition works.</blockquote>
+<p>Ecco come riassume la cosa:</p>
+<blockquote>
+A monad is a generic type M&lt;T&gt; such that:
+
+    There is some sort of construction mechanism that takes a T and returns an M&lt;T&gt;. We’ve been characterizing this as a method with signature
+
+static M&lt;T&gt; CreateSimpleM&lt;T&gt;(T t)  // questa è unit!!!
+
+    Also there is some way of applying a function that takes the underlying type to a monad of that type. We’ve been characterizing this as a method with signature:
+
+static M&lt;R&gt; ApplySpecialFunction&lt;A, R&gt;(
+  M&lt;A&gt; monad, Func&lt;A, M&lt;R&gt;&gt; function)  // questa è bind!!!
+
+Finally, both these methods must obey the monad laws, which are:
+
+    Applying the construction function to a given instance of the monad produces a logically identical instance of the monad.
+    Applying a function to the result of the construction function on a value, and applying that function to the value directly, produces two logically identical instances of the monad.
+    Applying to a value a first function followed by applying to the result a second function, and applying to the original value a third function that is the composition of the first and second functions, produces two logically identical instances of the monad.
+
+
+</blockquote>
+<h2>Riferimenti</h2>
+<h3>Bartosz Milewski's Programming Cafe</h3>
+<ul>
+<li class="ref">&ldquo;Monads for the Curious Programmer, Part 1&rdquo;. &lt;<a href="http://bartoszmilewski.com/2011/01/09/monads-for-the-curious-programmer-part-1/">http://bartoszmilewski.com/2011/01/09/monads-for-the-curious-programmer-part-1/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads for the Curious Programmer: Part 2&rdquo;. &lt;<a href="http://bartoszmilewski.com/2011/03/14/monads-for-the-curious-programmer-part-2/">http://bartoszmilewski.com/2011/03/14/monads-for-the-curious-programmer-part-2/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads for the Curious Programmer: Part 3&rdquo;. &lt;<a href="http://bartoszmilewski.com/2011/03/17/monads-for-the-curious-programmer-part-3/">http://bartoszmilewski.com/2011/03/17/monads-for-the-curious-programmer-part-3/</a>&gt;.</li>
+</ul>
+<h3>Fabulous adventures in coding</h3>
+<ul>
+<li class="ref">&ldquo;Monads, part one&rdquo;. &lt;<a href="https://ericlippert.com/2013/02/21/monads-part-one/">http://ericlippert.com/2013/02/21/monads-part-one/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part two&rdquo;. &lt;<a href="https://ericlippert.com/2013/02/25/monads-part-two/">https://ericlippert.com/2013/02/25/monads-part-two/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part three&rdquo;. &lt;<a href="https://ericlippert.com/2013/02/28/monads-part-three/">https://ericlippert.com/2013/02/28/monads-part-three/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part four&rdquo;. &lt;<a href="https://ericlippert.com/2013/03/04/monads-part-four/">https://ericlippert.com/2013/03/04/monads-part-four/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part five&rdquo;. &lt;<a href="https://ericlippert.com/2013/03/07/monads-part-five/">https://ericlippert.com/2013/03/07/monads-part-five/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part six&rdquo;. &lt;<a href="https://ericlippert.com/2013/03/11/monads-part-six/">https://ericlippert.com/2013/03/11/monads-part-six/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part seven&rdquo;. &lt;<a href="https://ericlippert.com/2013/03/14/monads-part-seven/">https://ericlippert.com/2013/03/14/monads-part-seven/</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, part eight&rdquo;. &lt;<a href="https://ericlippert.com/2013/03/18/monads-part-eight/">https://ericlippert.com/2013/03/18/monads-part-eight/</a>&gt;.</li>
+</ul>
+<h3>A Neighborhood of Infinity</h3>
+<ul>
+<li class="ref">&ldquo;You Could Have Invented Monads! (And Maybe You Already Have.)&rdquo;. &lt;<a href="http://blog.sigfpe.com/2006/08/you-could-have-invented-monads-and.html">http://blog.sigfpe.com/2006/08/you-could-have-invented-monads-and.html</a>&gt;.</li>
+<li class="ref">&ldquo;Monads in C, pt. II&rdquo;. &lt;<a href="http://blog.sigfpe.com/2007/02/monads-in-c-pt-ii.html">http://blog.sigfpe.com/2007/02/monads-in-c-pt-ii.html</a>&gt;.</li>
+<li class="ref">&ldquo;Monads in C pt. III&rdquo;. &lt;<a href="http://blog.sigfpe.com/2007/03/monads-in-c-pt-iii.html">http://blog.sigfpe.com/2007/03/monads-in-c-pt-iii.html</a>&gt;.</li>
+<li class="ref">&ldquo;Monads, a Field Guide&rdquo;. &lt;<a href="http://blog.sigfpe.com/2006/10/monads-field-guide.html">http://blog.sigfpe.com/2006/10/monads-field-guide.html</a>&gt;.</li>
+</ul>
+<h3>MSDN</h3>
+<ul>
+<li class="ref">&ldquo;The Marvels of Monads&rdquo;. &lt;<a href="http://blogs.msdn.com/b/wesdyer/archive/2008/01/11/the-marvels-of-monads.aspx">http://blogs.msdn.com/b/wesdyer/archive/2008/01/11/the-marvels-of-monads.aspx</a>&gt;.</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 15/09/2017</p>
+</body>
+</html>
