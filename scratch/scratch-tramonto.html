@@ -30,7 +30,7 @@ tramonto in scratch</p>
 <p>L'acquisizione del valore di luminosità (sappiamo ora trattarsi in realtà di un valore di tensione che dipende dalla quantità di luce che colpisce il fotoresistore) avviene per mezzo del modulo S2A_fm, descritto a suo tempo <a href="scratch-arduino.html#S2A_fm">qui</a>. Il progetto consta di tre sprite principali:</p>
 <ul>
 <li><strong>Sole</strong>, che si sposta verticalmente in funzione del livello di luminosità, tanto più in alto quanta più luce c'è;</li>
-<li><strong>Notte</strong>, che simula lo scendere della notte: è uno sprite , completamente nero, delle stesse dimensioni dello schermo, il cui livello di trasparenza varia al variare del livello di luminosità;</li>
+<li><strong>Notte</strong>, che simula lo scendere della notte: è uno sprite completamente nero, delle stesse dimensioni dello schermo, il cui livello di trasparenza varia al variare del livello di luminosità;</li>
 <li><strong>Cespuglio</strong>, puramente decorativo, ha lo scopo di nascondere <strong>Sole</strong> nella parte terminale del suo cammino, per consentirgli di tramontare.</li>
 </ul>
 <p>Per comodità, nel progetto il valore della luminosità è stato normalizzato nell'intervallo 0&div;1, con 0 che indica il livello minimo di luminosità (il buio), 1 quello massimo (fotoresistore in piena luce). In questo modo è relativamente facile programmare il moto dello sprite <strong>Sole</strong> tra due coordinate y prefissate:</p>
