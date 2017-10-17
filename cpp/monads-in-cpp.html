@@ -9,6 +9,25 @@
 <p class="page-path"><a href="../index.html#monads-in-cpp">risorse</a> | monadi in c++</p>
 <h1>Monadi in C++</h1>
 <p class="todo">bla bla bla</p>
+<p>ultimamente, Milewski ha detto:</p>
+<blockquote>By now you should be pretty familiar with the definition of a monad as a monoid in the category of endofunctors. [https://bartoszmilewski.com/2017/09/06/monads-monoids-and-categories/]</blockquote>
+<p>Cosa è un monoide?</p>
+<blockquote>
+Un monoide è un insieme M munito di una singola operazione binaria, chiamata prodotto, che ad ogni coppia di elementi a, b di M associa l'elemento a*b, rispettando i seguenti assiomi:
+
+Chiusura
+
+    Per ogni a, b appartenenti a M, l'elemento a*b appartiene ancora a M, vale a dire che M è chiuso rispetto al prodotto (l'insieme che soddisfa questa proprietà si chiama magma)
+
+Associatività
+
+    Il prodotto è associativo: dati a, b, c appartenenti a M, vale (ab)c = a(bc) (l'insieme che soddisfa questa proprietà e la chiusura si chiama semigruppo)
+
+Elemento neutro
+
+    Esiste in M {\displaystyle M} M un elemento neutro e {\displaystyle e} e tale che a e = e a = a {\displaystyle ae=ea=a} a e = e a = a per ogni a {\displaystyle a} a in M {\displaystyle M} M. 
+</blockquote>
+<p>vedere anche: https://stackoverflow.com/questions/3870088/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-whats-the-proble%E2%85%BF</p>
 <p>Concetti base (da Milewski):</p>
 <ul>
 <li>morfismo: funzioni da un tipo C++ ad un altro; la teoria richiede che i morfismi siano componibili, e la componibilità dev'essere associativa; inoltre, deve esistere la funzione identità. trascuriamo per il momento le funzioni a più valori (si può usare il curring) e quelle polimorfiche (famiglie di funzioni)</li>
