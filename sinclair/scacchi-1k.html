@@ -592,11 +592,11 @@ Addr  Data
 -+-----+-----+-----+-----+-----+-
  |     |     |     |     |     |
 </pre>
-<p>Le prime otto mosse rappresentano gli spostamenti del <span class="mark1">cavallo</span>, le quattro successive rappresentano le direzioni di movimento della <span class="mark2">torre</span>, le ultime quattro quelle dell'<span class="mark3">alfiere</span>. L'unione di queste ultime due sequenze rappresentano gli spostamenti del re e le direzioni di movimento della regina. La lista contiene anche la sequenza delle mosse del <span class="mark4">pedone bianco</span>, che può solo &ldquo;scendere&rdquo;:</p>
+<p>Le prime otto mosse rappresentano gli spostamenti del <span class="mark1">cavallo</span>, le quattro successive rappresentano le direzioni di movimento della <span class="mark2">torre</span>, le ultime quattro quelle dell'<span class="mark3">alfiere</span>. L'unione di queste ultime due sequenze rappresentano gli spostamenti del re e le direzioni di movimento della regina. La lista contiene anche la sequenza delle mosse del <span class="mark4">pedone nero</span>, che può solo &ldquo;salire&rdquo;:</p>
 <pre class="code">
 +13 -13 +21 -21 +23 -23 -9 +9 +1 +11 -1 <span class="mark4">-11 -10 -12</span> +12 +10
 </pre>
-<p>La lista delle mosse del <span class="mark5">pedone nero</span>, che invece può solo &ldquo;salire&rdquo;, sono memorizzate nelle prime posizioni del dump binario, e vengono perciò caricate nelle variabili di sistema <span class="code">VERS</span> e <span class="code">E_PPC</span>:</p>
+<p>La lista delle mosse del <span class="mark5">pedone bianco</span>, che invece può solo &ldquo;scendere&rdquo;, sono memorizzate nelle prime posizioni del dump binario, e vengono perciò caricate nelle variabili di sistema <span class="code">VERS</span> e <span class="code">E_PPC</span>:</p>
 <pre class="code">
 Addr  Data
 -------------------------------------------------------------------------------
