@@ -1,0 +1,439 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /20</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/cpp.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /20</h1>
+<p>Questa parte (la ventesima; qui la <a href="gut-1.html">prima</a>, qui la <a href="gut-2.html">seconda</a>, qui la <a href="gut-3.html">terza</a>, qui la <a href="gut-4.html">quarta</a>, qui la <a href="gut-5.html">quinta</a>, qui la <a href="gut-6.html">sesta</a>, qui la <a href="gut-7.html">settima</a>, qui l'<a href="gut-8.html">ottava</a>, qui la <a href="gut-9.html">nona</a>, qui la <a href="gut-10.html">decima</a>, qui l'<a href="gut-11.html">undicesima</a>, qui la <a href="gut-12.html">dodicesima</a>, qui la <a href="gut-13.html">tredicesima</a>, qui la <a href="gut-14.html">quattordicesima</a>, qui la <a href="gut-15.html">quindicesima</a>, qui la <a href="gut-16.html">sedicesima</a>, qui la <a href="gut-17.html">diciasettesima</a>, qui la <a href="gut-18.html">diciottesima</a> e qui la <a href="gut-19.html">diciannovesima</a>) introduce il supporto alle <em>initialization list</em>.</p>
+<h2>Introduzione</h2>
+<p>Le macro di gut non gestiscono l'inizializzazione con le parentesi graffe:</p>
+<pre class="code">
+// file test-gut.cpp
+...
+
+<ins>struct Point {
+  int x_;
+  int y_;
+  Point(int x, int y) : x_(x), y_(y) {
+    if (x &lt; 0 || y &lt; 0)
+        throw std::runtime_error(&quot;point out of domain&quot;);
+    }
+  bool operator==(const Point&amp; p) const { 
+    return x_ == p.x_ &amp;&amp; y_ == p.y_; 
+  }
+};
+
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Point&amp; pt) {
+  return os &lt;&lt; &quot;(&quot; &lt;&lt; pt.x_ &lt;&lt; &quot;, &quot; &lt;&lt; pt.y_ &lt;&lt; &quot;)&quot;; 
+}</ins>
+...
+
+int main() {
+  ...
+
+<ins>  // initialization lists
+  Point pt(1, 2);
+
+  CHECK(pt == Point(1, 2));
+  CHECK(pt == Point{1, 2}); // does not compile!</ins>
+}
+</pre>
+<p>Il messaggio d'errore emesso dal compilatore è il seguente:</p>
+<pre class="code">
+test-gut.cpp:621:26: error: macro "CHECK" passed 2 arguments, but takes just 1
+   CHECK(pt == Point{1, 2});
+                          ^
+</pre>
+<p>Ciò è dovuto al fatto che il preprocessore, trovando una virgola al di fuori delle parentesi tonde, la considera come il separatore tra due parametri della macro, anziché come separatore tra gli elementi della lista. L'espressione:</p>
+<pre class="code">
+  CHECK(pt == Point{1, 2});
+</pre>
+<p>viene così interpretata dal processore:</p>
+<pre class="code">
+  CHECK(A, B);
+</pre>
+<p>dove:</p>
+<pre class="code">
+  A = `pt == Point{1`
+  B = `2}`
+</pre>
+<p>Racchiudendo l'espressione all'interno della macro tra parentesi il codice compila:</p>
+<pre class="code">
+int main() {
+  ...
+
+  // initialization lists
+  Point pt(1, 2);
+
+  CHECK(pt == Point(1, 2));
+  CHECK(<ins>(</ins>pt == Point{1, 2}<ins>)</ins>);
+}
+</pre>
+<p>L'aggiunta delle parentesi rende però la diagnostica in caso d'errore meno esplicativa, poiché trasforma l'espressione booleana in un valore booleano. La libreria, invece di espandere i due termini a sinistra e a destra dell'uguaglianza, registra semplicemente il valore di verità complessivo:</p>
+<pre class="code">
+CHECK(pt == Point(0, 0));   // pt == Point(0, 0) evaluates to (1, 2) == (0, 0)
+
+CHECK((pt == Point{0, 0})); // (pt == Point{0, 0}) evaluates to false
+</pre>
+<p>Conviene quindi modificare gut in modo da supportare anche il costrutto in questione.</p>
+<h2>CHECK, REQUIRE</h2>
+<p>La modifica per le due asserzioni è immediata, basta infatti trasformarle in macro variadiche:</p>
+<pre class="code">
+// file gut.h
+...
+
+#define CHECK(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    if (!(gut::Capture()-&gt;*<del>expr_</del><ins>__VA_ARGS__</ins>)) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::CheckFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, gut::Expression::last, __FILE__, __LINE__)); \
+...
+
+#define REQUIRE(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    if (!(gut::Capture()-&gt;*<del>expr_</del><ins>__VA_ARGS__</ins>)) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::RequireFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, gut::Expression::last, __FILE__, __LINE__)); \
+      throw gut::AbortTest(); \
+    } \
+  GUT_END
+</pre>
+<h2>THROWS_ANYTHING, THROWS_NOTHING</h2>
+<p>Lo stesso trattamento è applicato alle catture applicate ad una singola espressione, nella fattispecie <span class="code">THROWS_ANYTHING</span>, <span class="code">REQUIRE_THROWS_ANYTHING</span>, <span class="code">THROWS_NOTHING</span> e <span class="code">REQUIRE_THROWS_NOTHING</span>:</p>
+<pre class="code">
+...
+
+#define THROWS_ANYTHING(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::NoThrowFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+    } catch(...) { \
+    } \
+  GUT_END
+
+#define REQUIRE_THROWS_ANYTHING(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    bool threw_ = false; \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+    } catch(...) { \
+      threw_ = true; \
+    } \
+    if (!threw_) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::FatalNoThrowFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+      throw gut::AbortTest(); \
+    } \
+  GUT_END
+...
+
+#define THROWS_NOTHING(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+    } catch(const std::exception&amp; e_) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::UnexpectedExceptionFailure( \
+          e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::UnknownExceptionFailure( \
+          __FILE__, __LINE__)); \
+    } \
+  GUT_END
+
+#define REQUIRE_THROWS_NOTHING(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    bool threw_ = true; \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+      threw_ = false; \
+    } catch(const std::exception&amp; e_) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::FatalUnexpectedExceptionFailure( \
+          e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::FatalUnknownExceptionFailure( \
+          __FILE__, __LINE__)); \
+    } \
+    if (threw_) \
+      throw gut::AbortTest(); \
+  GUT_END
+</pre>
+<h2>THROWS, THROWS_WITH_MESSAGE</h2>
+<p>Il caso delle catture <span class="code">THROWS</span> e <span class="code">THROWS_WITH_MESSAGE</span> richiede più attenzione, perché queste presentano dei parametri aggiuntivi che vanno trattati in modo specifico:</p>
+<pre class="code">
+#define THROWS(expr_, exception_) \
+  ...
+
+#define THROWS_WITH_MESSAGE(expr_, exception_, what_) \
+  ...
+</pre>
+<p>Ora non si può più contare sul fatto che il tipo di eccezione attesa sia il secondo parametro passato alla macro; piuttosto, sarà l'ultimo nel primo caso, il penultimo nel secondo. Le definizioni delle due macro dovrebbero essere così riscritte:</p>
+<pre class="code">
+// does not compile!
+#define THROWS(..., exception_) \
+  ...
+
+// does not compile either!
+#define THROWS_WITH_MESSAGE(..., exception_, what_) \
+  ...
+</pre>
+<p>Il preprocessore vuole tuttavia l'elenco variabile di parametri in coda alla macro, non in testa:</p>
+<pre class="code">
+#define THROWS(exception_, ...) \
+  ...
+
+#define THROWS_WITH_MESSAGE(exception_, what_, ...) \
+  ...
+</pre>
+<p>Invertire l'ordine dei parametri delle due macro vorrebbe dire rendere invalido il codice C++ di test già scritto, oltre a renderne meno agevole la lettura. L'idea è quindi quella di invertire l'ordine dei parametri a livello implementativo, preservando l'ordine originale nelle macro utilizzate dall'utente. Servirà quindi riordinare internamente l'elenco dei parametri. Si inizia con l'adattamento delle macro di supporto esistenti:</p>
+<pre class="code">
+#define THROWS_(<del>expr_, </del>exception_, prefix_, abort_<ins>, ...</ins>) \
+  GUT_BEGIN \
+    bool catched_ = false; \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## NoThrowFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+    } catch(const exception_&amp;) { \
+      catched_ = true; \
+    } catch(const std::exception&amp; e_) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongTypedExceptionFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongExceptionFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+    } \
+    if (!catched_ &amp;&amp; abort_) \
+      throw gut::AbortTest(); \
+  GUT_END
+</pre>
+<p>Si tratta ora di riscrivere <span class="code">THROWS</span> in modo che sposti in testa i parametri che seguono l'espressione da valutare; per esempio, supponendo di avere a disposizione una macro <span class="code">GUT_ROTATE</span> che prende l'ultimo parametro e lo porta in prima posizione, potremmo scrivere:</p>
+<pre class="code">
+#define THROWS(<del>expr_, exception_</del><ins>...</ins>) \
+  THROWS_(<del>expr_, exception_</del> <ins>\</ins>
+    <ins>GUT_ROTATE( \</ins>
+      <ins>GUT_ROTATE( \</ins>
+        <ins>GUT_ROTATE(__VA_ARGS__</ins>, , false)<ins>)))</ins>
+</pre>
+<p>Come vengono riordinati i parametri? Ecco un esempio:</p>
+<pre class="code">
+THROWS(std::vector&lt;int&gt;{1, 2, 3}.at(5), std::out_of_range);
+</pre>
+<p>I parametri della macro <span class="code">THROWS</span> sono, secondo il preprocessore:</p>
+<pre class="code">
+ - std::vector&lt;int&gt;{1
+ - 2
+ - 3}.at(5)
+ - std::out_of_range
+</pre>
+<p>Gli stessi sono passati alla macro <span class="code">GUT_ROTATE</span> più interna, assieme ai due introdotti dalla <span class="code">THROWS</span> stessa:</p>
+<pre class="code">
+ - std::vector&lt;int&gt;{1
+ - 2
+ - 3}.at(5)
+ - std::out_of_range
+ - &lt;NULL&gt;
+ - false
+</pre>
+<p>L'espansione di <span class="code">GUT_ROTATE</span> porta l'ultimo parametro in testa:</p>
+<pre class="code">
+ - false
+ - std::vector&lt;int&gt;{1
+ - 2
+ - 3}.at(5)
+ - std::out_of_range
+ - &lt;NULL&gt;
+</pre>
+<p>L'espansione della seconda <span class="code">GUT_ROTATE</span> ha il medesimo effetto:</p>
+<pre class="code">
+ - &lt;NULL&gt;
+ - false
+ - std::vector&lt;int&gt;{1
+ - 2
+ - 3}.at(5)
+ - std::out_of_range
+</pre>
+<p>L'applicazione per la terza e ultima volta di <span class="code">GUT_ROTATE</span> lascia in coda i <em>token</em> dell'espressione originale:</p>
+<pre class="code">
+ - std::out_of_range
+ - &lt;NULL&gt;
+ - false
+ - std::vector&lt;int&gt;{1   &lt;---
+ - 2                    &lt;--- componenti di expr_, nell'ordine giusto!
+ - 3}.at(5)             &lt;---
+</pre>
+<p>L'espressione da valutare è quindi catturata interamente dai parametri variadici. Serve ora introdurre un ulteriore livello di indirezione per consentire al processore di espandere la macro <span class="code">__VA_ARGS__</span>:</p>
+<pre class="code">
+<ins>#define THROWS__(...) \
+  THROWS_(__VA_ARGS__)</ins>
+
+#define THROWS(...) \
+  <del>THROWS_</del><ins>THROWS__</ins>( \
+    GUT_ROTATE( \
+      GUT_ROTATE( \
+        GUT_ROTATE(__VA_ARGS__, , false))))
+</pre>
+<p>Lo stesso procedimento va applicato alla macro <span class="code">REQUIRE_THROWS</span>:</p>
+<pre class="code">
+#define REQUIRE_THROWS(<del>expr_, exception_</del><ins>...</ins>) \
+  <del>THROWS_(expr_, exception_, Fatal, true)</del>
+  <ins>THROWS__(GUT_ROTATE(GUT_ROTATE(GUT_ROTATE(__VA_ARGS__, Fatal, true))))</ins>
+</pre>
+<p>Si opera allo stesso modo sulla macro <span class="code">THROWS_WITH_MESSAGE</span>, con l'accortezza di effettuare una rotazione in più in considerazione del fatto che ha un parametro in più rispetto a <span class="code">THROWS</span>, <span class="code">what_</span>:</p>
+<pre class="code">
+#define THROWS_WITH_MESSAGE_(<del>expr_, </del>exception_, what_, prefix_, abort_<ins>, ...</ins>) \
+  GUT_BEGIN \
+    bool catched_ = false; \
+    try { \
+      (void)(<del>expr_</del><ins>__VA_ARGS__</ins>); \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## NoThrowFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+    } catch(const exception_&amp; e_) { \
+      if (strcmp(e_.what(), static_cast&lt;const char*&gt;(what_)) != 0) { \
+        GUT_DEBUG_BREAK \
+        gut::theListener.failure( \
+          gut::prefix_ ## WrongExceptionMessageFailure( \
+            #<del>expr_</del><ins>__VA_ARGS__</ins>, e_.what(), what_, __FILE__, __LINE__)); \
+      } else \
+        catched_ = true; \
+    } catch(const std::exception&amp; e_) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongTypedExceptionFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, e_, __FILE__, __LINE__)); \
+    } catch(...) { \
+      GUT_DEBUG_BREAK \
+      gut::theListener.failure( \
+        gut::prefix_ ## WrongExceptionFailure( \
+          #<del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+    } \
+    if (!catched_ &amp;&amp; abort_) \
+      throw gut::AbortTest(); \
+  GUT_END
+
+<ins>#define THROWS_WITH_MESSAGE__(...) \
+  THROWS_WITH_MESSAGE_(__VA_ARGS__)</ins>
+
+#define THROWS_WITH_MESSAGE(<del>expr_, exception_, what_</del><ins>...</ins>) \
+  <del>THROWS_WITH_MESSAGE_(expr_, exception_, what_, , false)</del>
+  <ins>THROWS_WITH_MESSAGE__( \
+    GUT_ROTATE( \
+      GUT_ROTATE( \
+        GUT_ROTATE( \
+          GUT_ROTATE(__VA_ARGS__, , false)))))</ins>
+
+#define REQUIRE_THROWS_WITH_MESSAGE(<del>expr_, exception_, what_</del><ins>...</ins>) \
+  <del>THROWS_WITH_MESSAGE_(expr_, exception_, what_, Fatal, true)</del>
+  <ins>THROWS_WITH_MESSAGE__( \
+    GUT_ROTATE( \
+      GUT_ROTATE( \
+        GUT_ROTATE( \
+          GUT_ROTATE(__VA_ARGS__, Fatal, true)))))</ins>
+</pre>
+<h2>EVAL</h2>
+<p>L'ultima macro soggetta al problema qui affrontato è <span class="code">EVAL</span> che, avendo come unico parametro l'espressione da valutare, subisce la stessa trasformazione cui è stata sottoposta <span class="code">CHECK</span>:</p>
+<pre class="code">
+#define EVAL(<del>expr_</del><ins>...</ins>) \
+  GUT_BEGIN \
+    gut::theListener.info( \
+      gut::Eval(#<del>expr_</del><ins>__VA_ARGS__</ins>, <del>expr_</del><ins>__VA_ARGS__</ins>, __FILE__, __LINE__)); \
+  GUT_END
+</pre>
+<h2>GUT_ROTATE</h2>
+<p>Come effettuare la rotazione dei parametri? Se il numero di parametri fosse noto, il problema si potrebbe risolverebbe definendo una macro per ogni numerosità supportata:</p>
+<pre class="code">
+// file rotate.h
+...
+
+#define GUT_ROTATE_3(_1, _2, _3)         _3, _1, _2
+#define GUT_ROTATE_4(_1, _2, _3, _4)     _4, _1, _2, _3
+#define GUT_ROTATE_5(_1, _2, _3, _4, _5) _5, _1, _2, _3, _4
+#define GUT_ROTATE_6&hellip;
+...
+#define GUT_ROTATE_98&hellip;
+#define GUT_ROTATE_99&hellip;
+#define GUT_ROTATE_100&hellip;
+</pre>
+<p>Se si accetta questo compromesso (un limite superiore prefissato di parametri gestiti), non è difficile selezionare la macro giusta in funzione del numero di parametri passati. Supponendo di avere a disposizione la macro <span class="code">NARGS</span> (di esempi in rete ce <a href="http://smackerelofopinion.blogspot.it/2011/10/determining-number-of-arguments-in-c.html">ne</a> <a href="https://gist.github.com/aprell/3722962">sono</a> <a href="https://stackoverflow.com/questions/11317474/macro-to-count-number-of-arguments">diversi</a>) che ritorna il numero di parametri passati, la soluzione è a portata di mano, anzi, di macro:</p>
+<pre class="code">
+// file rotate.h
+...
+
+#define NARGS(...) \
+  NARGS_(__VA_ARGS__, 100, 99, 98, &hellip;, 3, 2, 1)
+
+#define NARGS_(_100, _99, _98, &hellip; _3, _2, _1, N, ...) N
+
+
+#define GUT_ROTATE(...) \
+  GUT_ROTATE_(NARGS(__VA_ARGS__), __VA_ARGS__)
+
+#define GUT_ROTATE_(N, ...) \
+  GUT_ROTATE__(N, __VA_ARGS__)
+
+#define GUT_ROTATE__(N, ...) \
+  GUT_ROTATE_##N(__VA_ARGS__)
+</pre>
+<p>Si noti che anche in questo caso si è reso necessario introdurre un livello di indirezione per permettere al preprocessore di espandere la macro <span class="code">__VA_ARGS__</span>.</p>
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-w0/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-20/colors.h">colors.h</a></li>
+	<li><a href="files/gut/part-20/debugger.h">debugger.h</a></li>
+	<li><a href="files/gut/part-20/math.h">math.h</a></li>
+	<li><a href="files/gut/part-20/rotate.h">rotate.h</a></li>
+	<li><a href="files/gut/part-20/tap.h">tap.h</a></li>
+	<li><a href="files/gut/part-20/timing.h">timing.h</a></li>
+	<li><a href="files/gut/part-20/timing-chrono.h">timing-chrono.h</a></li>
+	<li><a href="files/gut/part-20/timing-custom.h">timing-custom.h</a></li>
+	<li><a href="files/gut/part-20/utils.h">utils.h</a></li>
+	<li><a href="files/gut/part-20/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-20/linux/debugger.h">linux/debugger.h</a></li>
+	<li><a href="files/gut/part-20/linux/timing-custom.h">linux/timing-custom.h</a></li>
+	<li><a href="files/gut/part-20/windows/colors.h">windows/colors.h</a></li>
+	<li><a href="files/gut/part-20/windows/debugger.h">windows/debugger.h</a></li>
+	<li><a href="files/gut/part-20/windows/timing-custom.h">windows/timing-custom.h</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-20/test-gut.cpp">test-gut.cpp</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-20/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-20/example-breakpoint.cpp">example-breakpoint.cpp</a></li>
+	<li><a href="files/gut/part-20/example-tap.cpp">example-tap.cpp</a></li>
+	<li><a href="files/gut/part-20/example-timing.cpp">example-timing.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 22/03/2016</p>
+</body>
+</html>
