@@ -9,18 +9,18 @@
 <p class="page-path"><a href="../index.html#scacchi-1k">risorse</a> | scacchi in 1K</p>
 <h1>Scacchi in 1K</h1>
 <h2>Introduzione</h2>
-<p>Da tempo mi ero prefisso di studiare il codice del celebre programma di scacchi &ldquo;1K ZX Chess&rdquo; scritto per lo ZX81 con 1K di memoria RAM. L'occasione è arrivata quando mi sono imbattuto per caso nell'archivio on-line della rivista <em>Your Computer</em> che pubblicò a suo tempo una serie di articoli ad esso dedicati<a href="ref-3"><sup>[3]</sup></a><a href="ref-4"><sup>[4]</sup></a><a href="ref-5"><sup>[5]</sup></a>.</p>
+<p>Da tempo mi ero prefisso di studiare il codice del celebre programma di scacchi &ldquo;1K ZX Chess&rdquo; scritto per lo ZX81 con 1K di memoria RAM. L'occasione è arrivata quando mi sono imbattuto per caso nell'archivio on-line della rivista <em>Your Computer</em> che pubblicò a suo tempo una serie di articoli ad esso dedicati<a href="#ref-3"><sup>[3]</sup></a><a href="#ref-4"><sup>[4]</sup></a><a href="#ref-5"><sup>[5]</sup></a>.</p>
 <p>Dei tre articoli, il primo affronta il problema della visualizzazione della scacchiera, il secondo quello della validazione delle mosse di una partita giocata tra due avversari umani, il terzo quello dell'implementazione della strategia di gioco.</p>
 <p>L'ultimo articolo della serie è sicuramente il più interessante. Gran parte dell'attenzione è posta nell'illustrare nel dettaglio la procedura da seguire per ottenere una versione del programma utilizzabile da uno ZX81 con 1K di RAM utilizzandone uno espanso, ma non entra nel merito di come il programma funziona se non per sommi capi, descrivendo brevemente lo scopo delle <span class="term">routine</span> principali.</p>
-<p>Una revisione dell'articolo<a href="ref-1"><sup>[1]</sup></a> mette in evidenza alcuni errori presenti nel listato nonché alcune mancanze nella preparazione del programma finale, su tutte la pre-impostazione della mossa iniziale del computer.</p>
+<p>Una revisione dell'articolo<a href="#ref-1"><sup>[1]</sup></a> mette in evidenza alcuni errori presenti nel listato nonché alcune mancanze nella preparazione del programma finale, su tutte la pre-impostazione della mossa iniziale del computer.</p>
 <p>Analizzando il codice sorgente presentato nell'articolo sono ben presto giunto ad un punto piuttosto sospetto, in cui la routine di lettura delle coordinate della mossa dell'utente sfocia in quella dell'analisi della mossa, sovrascrivendo in modo apparentemente insensato il valore del registro <span class="code">A</span>:</p>
 <img src="img/scacchi-1k/wtf.png">
 <p class="illustration">La porzione sospetta di codice</p>
-<p>Ho deciso allora di partire dall'immagine del nastro originale e di disassemblare il codice macchina in esso contenuto. Fortunatamente qualcuno ci aveva già pensato prima di me<a href="ref-7"><sup>[7]</sup></a>, e il suo lavoro ha facilitato enormemente il mio.</p>
+<p>Ho deciso allora di partire dall'immagine del nastro originale e di disassemblare il codice macchina in esso contenuto. Fortunatamente qualcuno ci aveva già pensato prima di me<a href="#ref-7"><sup>[7]</sup></a>, e il suo lavoro ha facilitato enormemente il mio.</p>
 <h2>Prerequisiti</h2>
 <p>Per poter interpretare correttamente i contenuti dell'immagine binaria del nastro che contiene il programma è indispensabile conoscere innanzitutto l'organizzazione della memoria RAM dello ZX81:</p>
 <img src="img/scacchi-1k/memory-map.jpg">
-<p class="illustration">Suddivisione della memoria RAM dello ZX81 (fonte: <a href="ref-6">[6]</a>, cap. 27)</p>
+<p class="illustration">Suddivisione della memoria RAM dello ZX81 (fonte: <a href="#ref-6">[6]</a>, cap. 27)</p>
 <p>La porzione di interesse è quella destinata al BASIC, ovvero il segmento iniziale che va da <span class="code">4000<sub>H</sub></span> (<span class="code">16384<sub>D</sub></span>) fino al marcatore <span class="code">80<sub>H</sub></span>.</p>
 <p>Il primo segmento, denominato <span class="term">System variables</span>, è un'area di memoria ad uso e consumo del sistema operativo; <span class="term">Program</span> è invece la zona ove si trova il listato BASIC del programma attualmente in memoria; <span class="term">Display file</span> è la memoria video, mentre in <span class="term">Variables</span> sono memorizzate le variabili del programma BASIC. Le aree di memoria dello ZX81 sono dinamiche, e vengono espanse o ristrette in modo da ottimizzare l'uso della RAM disponibile.</p>
 <p class="note">Quando si salva un programma su nastro, lo ZX81 produce una copia del contenuto della memoria RAM dall'indirizzo <span class="code">4009<sub>H</sub></span> = <span class="code">16393<sub>D</sub></span> fino al marcatore <span class="code">80<sub>H</sub></span> incluso. In pratica, quasi tutta l'area di pertinenza del sistema operativo più quella dedicata al programma BASIC, con l'eccezione dei primi 9 byte delle variabili di sistema. <strong>Questa informazione è di fondamentale importanza per la corretta interpretazione del contenuto binario del nastro originale.</strong></p>
@@ -210,7 +210,7 @@ Now add the variable X by typing:<br>
 <span class="code">LET X = 16959</span><br>
 This sets up the variable X for the Basic program. Line 3 <span class="code">RAND USR X</span> actually calls the driver routine.
 </blockquote>
-<p>In realtà il valore di X è (fonte: <a href="ref-6">[6]</a>, cap. 27):</p>
+<p>In realtà il valore di X è (fonte: <a href="#ref-6">[6]</a>, cap. 27):</p>
 <pre class="code">
 X = mantissa * 2<sup>(esponente - 80<sub>H</sub>)</sup>
 
