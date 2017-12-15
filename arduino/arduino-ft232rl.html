@@ -1,0 +1,130 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test del chip FT232RL con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-ft232rl.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-ft232rl">risorse</a> | test del chip ft232rl con arduino</p>
+<h1>Test del chip FT232RL con Arduino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<h2>Introduzione</h2>
+<p>Il chip in oggetto è un convertitore da Seriale TTL a USB che potrebbe tornarmi utile in un progetto di più ampio respiro. Ho acquistato una scheda che lo contiene per verificarne le caratteristiche:</p>
+<img src="img/arduino-ft232rl/ft232rl.jpg">
+<p class="illustration">La scheda FT232RL ricevuta</p>
+<p>La scheda supporta due livelli di tensione sull'interfaccia seriale, 3.3V e 5V. Prima di utilizzarla è necessario selezionare il livello desiderato inserendo il ponticello in dotazione nella posizione opportuna. Dovendola collegare ad un Arduino UNO, la scelta è ricaduta sui 5V.</p>
+<h2>Installazione dei driver</h2>
+<h3>Ubuntu 16.04 64 bit</h3>
+<p>Non è stato necessario installare alcun software aggiuntivo: Ubuntu ha riconosciuto la scheda e l'ha montata automaticamente sulla porta <strong>ttyUSB0</strong>. Il sistema operativo non ha mostrato nessuna notifica quando ho collegato la scheda ad una delle porte USB, ma il contenuto del buffer del kernel conferma l'avvenuto riconoscimento:</p>
+<pre class="code">
+$ dmesg | tail
+
+...
+[21773.304538] usb 6-1: Manufacturer: FTDI
+[21773.304544] usb 6-1: SerialNumber: A50285BI
+[21774.367119] usbcore: registered new interface driver usbserial
+[21774.367153] usbcore: registered new interface driver usbserial_generic
+[21774.367180] usbserial: USB Serial support registered for generic
+[21774.374653] usbcore: registered new interface driver ftdi_sio
+[21774.374735] usbserial: USB Serial support registered for FTDI USB Serial Device
+[21774.374858] ftdi_sio 6-1:1.0: FTDI USB Serial Device converter detected
+[21774.375486] usb 6-1: Detected FT232RL
+[21774.378159] usb 6-1: FTDI USB Serial Device converter now attached to ttyUSB0
+</pre>
+<p class="illustration">Ubuntu ha riconosciuto e montato automaticamente la scheda FT232RL</p>
+<h3>Windows 7 64 bit SP1</h3>
+<p>Windows non è stato in grado di riconoscere la scheda. Una volta collegata infatti, è comparso il seguente messaggio d'errore:</p>
+<img src="img/arduino-ft232rl/win7-error.png">
+<p class="illustration">Windows 7 non ha riconosciuto la scheda FT232RL</p>
+<p>La finestra di <em>Gestione dispositivi</em> conferma il mancato riconoscimento:</p>
+<img src="img/arduino-ft232rl/win7-device-manager.png">
+<p class="illustration">La situazione vista da <em>Gestione dispositivi</em></p>
+<p>I driver e le istruzioni di installazione sono scaricabili dalla pagina <a href="http://www.ftdichip.com/Drivers/VCP.htm">ufficiale</a> Fare attenzione a scaricare i driver corretti, perché ce ne sono di due tipi: i <em>D2XX Direct drivers</em> consentono di accedere alla scheda via DLL, i <em>VCP</em> attraverso una porta seriale virtuale: sono questi quelli giusti. Per sicurezza ho fatto una copia locale sia del <a href="files/arduino-ft232rl/win7/CDM v2.12.28 WHQL Certified.zip">driver</a> che delle <a href="files/arduino-ft232rl/win7/AN_119_FTDI_Drivers_Installation_Guide_for_Windows7.pdf">istruzioni</a> di installazione.</p>
+<p>Una volta completata l'installazione dei driver, il sistema ha una porta seriale aggiuntiva denominata <strong>USB Serial Port</strong>, in questo caso identificata come COM16 (l'indice numerico potrebbe cambiare):</p>
+<img src="img/arduino-ft232rl/win7-vcp.png">
+<p class="illustration">COM16 è la porta seriale associata alla scheda FT232RL da Windows 7</p>
+<h3>Windows 10 64 bit</h3>
+<p>Il procedimento da seguire è stato analogo a quello applicato per Windows 7, dato che anche in questo caso la scheda non è stata riconosciuta. Dopo aver installato il driver VCP per Windows 10 64 bit dalla pagina <a href="http://www.ftdichip.com/Drivers/VCP.htm">ufficiale</a> (qui le copie locali del <a href="files/arduino-ft232rl/win10/CDM21228_Setup.zip">driver</a> e delle <a href="files/arduino-ft232rl/win10/AN_396 FTDI Drivers Installation Guide for Windows 10.pdf">istruzioni</a>), la scheda è accessibile attraverso una porta seriale virtuale denominata <strong>USB Serial Port</strong>, in questo caso identificata come COM4:</p>
+<img src="img/arduino-ft232rl/win10-vcp.png">
+<p class="illustration">COM4 è la porta seriale associata alla scheda FT232RL da Windows 10</p>
+<h2>Test della scheda</h2>
+<p>Per verificare il funzionamento della scheda ho deciso di implementare un servizio di <em>echo</em> seriale su Arduino. Collegando Arduino al PC tramite la scheda in esame, userò un terminale per inviargli alcuni caratteri; se tutto funziona a dovere, gli stessi caratteri appariranno nel terminale. Il codice sorgente del servizio di echo è banale:</p>
+<pre class="code">
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  while (Serial.available())
+    Serial.write(Serial.read());
+}
+</pre>
+<p class="illustration">Lo sketch del servizio di echo seriale</p>
+<p>Il collegamento tra Arduino e il convertitore Seriale/USB avviene per mezzo di tre connettori: la linea di massa (<span class="signal">GND</span>) e le due di trasmissione, <span class="signal">RX</span> e <span class="signal">TX</span>, che ovviamente vanno incrociate:</p>
+<table>
+<tr><th>Segnale</th><th>Pin Arduino</th><th>Pin FT232RL</th><th class="wire">Colore cavo</th></tr>
+<tr><td class="signal">GND</td><td class="pin">GND</td><td class="pin">GND</td><td class="wire">nero</td></tr>
+<tr><td class="signal">TX</td><td class="pin">1</td><td class="pin">RX</td><td class="wire">blu</td></tr>
+<tr><td class="signal">RX</td><td class="pin">0</td><td class="pin">TX</td><td class="wire">viola</td></tr>
+</table>
+<img src="img/arduino-ft232rl/wiring-diagram.png">
+<p class="illustration">Lo schema elettrico della connessione</p>
+<p>La scheda FT232RL si collega infine al PC con un cavo USB con attacco USB-mini.</p>
+<img src="img/arduino-ft232rl/circuit.jpg">
+<p class="illustration">Il circuito di prova completo</p>
+<h3>Test su Ubuntu 16.04 64 bit</h3>
+<p>Per verificare il corretto funzionamento del circuito, avvio un terminale, lo collego a <strong>/dev/ttyUSB0</strong>, digito alcuni caratteri e mi accerto che questi appaiano sullo schermo:</p>
+<pre class="code">
+$ screen /dev/ttyUSB0 9600 
+</pre>
+<img src="img/arduino-ft232rl/ubuntu-test.png">
+<p class="illustration">L'apparizione dei caratteri digitati conferma il funzionamento della scheda</p>
+<h3>Test su Windows 7/10 64 bit</h3>
+<p>Windows non dispone di un terminale, per cui ne scarico uno minimale, ma particolarmente efficace (<a href="https://www.compuphase.com/software_termite.htm">termite</a>, di cui conservo una <a href="files/arduino-ft232rl/termite-3.3.zip">copia locale</a>); lanciato, lo collego alla porta seriale virtuale associata alla scheda, invio alcuni caratteri alla porta e verifico che questi vengano rispediti indietro dal servizio di echo che sta girando su Arduino:</p>
+<img src="img/arduino-ft232rl/win7-test.png">
+<p class="illustration">L'effetto dell'echo su Windows 7</p>
+<img src="img/arduino-ft232rl/win10-test.png">
+<p class="illustration">L'effetto dell'echo su Windows 10</p>
+<p>L'esperimento ha dunque avuto successo su tutte e tre le piattaforme utilizzate!</p>
+<!--
+se su ubuntu non dovesse essere montata automaticamente:
+
+$ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 003: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+Bus 002 Device 002: ID 0e0f:0003 VMware, Inc. Virtual Mouse
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
+// attacco il dispositivo
+
+$ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 004: ID 0403:dd02 Future Technology Devices International, Ltd 
+Bus 002 Device 003: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+Bus 002 Device 002: ID 0e0f:0003 VMware, Inc. Virtual Mouse
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
+$ dmesg
+[  130.569837] usb 2-2.1: new full-speed USB device number 4 using uhci_hcd
+[  131.059725] usb 2-2.1: New USB device found, idVendor=0403, idProduct=dd02
+[  131.059727] usb 2-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[  131.059728] usb 2-2.1: Product: TUSC01
+[  131.059729] usb 2-2.1: Manufacturer: TEXA
+
+$ sudo modprobe usbserial vendor=0x0403 product=0xdd02
+
+$ dmesg
+[  277.339651] usbcore: registered new interface driver usbserial
+[  277.339661] usbcore: registered new interface driver usbserial_generic
+[  277.339668] usbserial: USB Serial support registered for generic
+[  277.339699] usbserial_generic 2-2.1:1.0: The "generic" usb-serial driver is only for testing and one-off prototypes.
+[  277.339700] usbserial_generic 2-2.1:1.0: Tell linux-usb@vger.kernel.org to add your device to a proper driver.
+[  277.339701] usbserial_generic 2-2.1:1.0: generic converter detected
+[  277.339855] usb 2-2.1: generic converter now attached to ttyUSB0
+
+cfr. ad esempio https://www.youtube.com/watch?v=DXgvaibDJzo
+-->
+<p class="modification-notice">Pagina modificata il 15/12/2017</p>
+</body>
+</html>
