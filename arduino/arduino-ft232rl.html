@@ -10,9 +10,9 @@
 <h1>Test del chip FT232RL con Arduino</h1>
 <p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
 <h2>Introduzione</h2>
-<p>Il chip in oggetto è un convertitore da Seriale TTL a USB che potrebbe tornarmi utile in un progetto di più ampio respiro. Ho acquistato una scheda che lo contiene per verificarne le caratteristiche:</p>
+<p>Il chip in oggetto, prodotto dalla Future Technology Devices International &ndash; <a href="http://www.ftdichip.com/">FTDI</a>, è un convertitore Seriale TTL/USB che potrebbe tornarmi utile in un progetto di più ampio respiro. Ho quindi acquistato una scheda che lo contiene, per verificarne le caratteristiche:</p>
 <img src="img/arduino-ft232rl/ft232rl.jpg">
-<p class="illustration">La scheda FT232RL ricevuta</p>
+<p class="illustration">La scheda ricevuta, una AZDelivery FT232RL</p>
 <p>La scheda supporta due livelli di tensione sull'interfaccia seriale, 3.3V e 5V. Prima di utilizzarla è necessario selezionare il livello desiderato inserendo il ponticello in dotazione nella posizione opportuna. Dovendola collegare ad un Arduino UNO, la scelta è ricaduta sui 5V.</p>
 <h2>Installazione dei driver</h2>
 <h3>Ubuntu 16.04 64 bit</h3>
@@ -44,7 +44,7 @@ $ dmesg | tail
 <p>Una volta completata l'installazione dei driver, il sistema ha una porta seriale aggiuntiva denominata <strong>USB Serial Port</strong>, in questo caso identificata come COM16 (l'indice numerico potrebbe cambiare):</p>
 <img src="img/arduino-ft232rl/win7-vcp.png">
 <p class="illustration">COM16 è la porta seriale associata alla scheda FT232RL da Windows 7</p>
-<h3>Windows 10 64 bit</h3>
+<h3>Windows 10 1709 64 bit</h3>
 <p>Il procedimento da seguire è stato analogo a quello applicato per Windows 7, dato che anche in questo caso la scheda non è stata riconosciuta. Dopo aver installato il driver VCP per Windows 10 64 bit dalla pagina <a href="http://www.ftdichip.com/Drivers/VCP.htm">ufficiale</a> (qui le copie locali del <a href="files/arduino-ft232rl/win10/CDM21228_Setup.zip">driver</a> e delle <a href="files/arduino-ft232rl/win10/AN_396 FTDI Drivers Installation Guide for Windows 10.pdf">istruzioni</a>), la scheda è accessibile attraverso una porta seriale virtuale denominata <strong>USB Serial Port</strong>, in questo caso identificata come COM4:</p>
 <img src="img/arduino-ft232rl/win10-vcp.png">
 <p class="illustration">COM4 è la porta seriale associata alla scheda FT232RL da Windows 10</p>
@@ -125,6 +125,6 @@ $ dmesg
 
 cfr. ad esempio https://www.youtube.com/watch?v=DXgvaibDJzo
 -->
-<p class="modification-notice">Pagina modificata il 15/12/2017</p>
+<p class="modification-notice">Pagina modificata il 18/12/2017</p>
 </body>
 </html>
