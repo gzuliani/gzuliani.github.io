@@ -1,0 +1,79 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Upgrade del firwmare dell'oscilloscopio DSO 138</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/firmware-upgrade.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#dso138-firmware-upgrade">risorse</a> | dso138 &ndash; upgrade del firmware</p>
+<h1>Upgrade del firwmare dell'oscilloscopio DSO 138</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<h2>Introduzione</h2>
+<p>Ho da poco acquistato la versione pre-assemblata dell'oscilloscopio <a href="https://www.jyetech.com/Products/LcdScope/e138.php">DSO 138</a> per portare a termine un piccolo progetto personale:</p>
+<img src="img/firmware-upgrade/dso138.jpg">
+<p class="illustration">L'oscilloscopio nel suo guscio in plexiglas, acquistato a parte</p>
+<p>Il rapporto qualità/prezzo dello strumento è davvero notevole, tuttavia ho riscontrato un piccolo problema: il salvataggio della forma d'onda non funziona, sebbene il manuale riporti le istruzioni per farlo.</p>
+<img src="img/firmware-upgrade/waveform-save.jpg">
+<p class="illustration">Estratto del manuale con le istruzioni per catturare una forma d'onda</p>
+<p>Consultando la <a href="https://www.jyetech.com/Products/LcdScope/Firmwares_138.php">pagina ufficiale</a> relativa al firmware del kit in oggetto, scopro che il salvataggio della forma d'onda è stato introdotto nella versione 113-13801-050, rilasciata il 20 novembre 2015. Purtroppo, il kit che ho acquistato ne monta uno precedente, come indicato dalla schermata d'avvio del software:</p>
+<img src="img/firmware-upgrade/firmware-042.jpg">
+<p class="illustration">La schermata iniziale che riporta la versione del firmware in uso</p>
+<p>Considerato il costo ridotto dello strumento, ho deciso di provare ad aggiornare il firmware.</p>
+<h2>Prerequisiti</h2>
+<p>La procedura di aggiornamento del firmware per questo kit non è proprio banale, richiedendo in particolare la disponibilità di un adattatore seriale TTL 3.3V/USB che il caso vuole abbia da poco acquistato (un FT232RL della AZDelivery, cfr. <a href="../arduino/arduino-ft232rl.html">Test del chip FT232RL con Arduino</a>). Complessivamente, per poter aggiornare il firmware dell'oscilloscopio, occorre:</p>
+<ul>
+<li>le istruzioni ufficiali, scaricabili dal <a href="https://www.jyetech.com/Products/LcdScope/DSO138_oscilloscope_upgrade.pdf">sito del produttore</a> (<a href="files/firmware-upgrade/DSO138_oscilloscope_upgrade.pdf">qui</a> una copia locale);</li>
+<li>l'immagine del firmware più recente disponibile sulla <a href="https://www.jyetech.com/Products/LcdScope/Firmwares_138.php">pagina ufficiale</a> del produttore (<a href="files/firmware-upgrade/113-13801-061.zip">qui</a> una copia locale del firmware v. 113-13801-061)</a>;</li>
+<li>un adattatore seriale TTL 3.3V/USB per connettere l'oscilloscopio al PC;</li>
+<li>un programma per il trasferimento dell'immagine del firmware dal PC all'oscilloscopio; il produttore mette a disposizione il programma &ldquo;Flash Loader Demonstrator&rdquo; di STMicroelectronics, scaricabile direttamente dal loro <a href="http://www.jyetech.com/Support/STM32_FlashLoaderDemonstrator_v2.7.zip">sito</a> (funziona solo su Windows).</li>
+</ul>
+<h2>Predisposizione del PC</h2>
+<p>Scaricare ed installare il programma di trasferimento del firmware; scaricare, scompattare e tenere a portata di mano il file del firmare (nell'archivio <strong>.zip</strong> che si scarica dal sito del produttore ciò che serve è il file con estensione <strong>.hex</strong>).</p>
+<h2>Predisposizione dell'oscilloscopio</h2>
+<p>Per attivare il <em>bootloader</em> e rimuovere la protezione in scrittura della zona di memoria che contiene il firmware è necessario cortocircuitare i <em>jumper</em> JP1 e JP2. Le istruzioni consigliano di chiudere il circuito con dello stagno; essendo il mio stagnatore piuttosto vecchiotto, ho optato per una soluzione più spartana: ho sfregato leggermente i contatti dei due ponticelli con la punta di un cacciavite da orologiaio per rimuovere l'eventuale isolante presente, ho quindi ricavato due piccoli rettangoli di carta stagnola di circa 2&times;4mm l'uno che ho fissato sopra i contatti con dello scotch di carta.</p>
+<img src="img/firmware-upgrade/jumpers.jpg">
+<p class="illustration">I jumper JP1 e JP2 cortocircuitati</p>
+<h2>Collegamento dell'oscilloscopio al PC</h2>
+<p>Fortunatamente già disponevo di un adattatore seriale/USB che supporta segnali a 3.3V; il PC era inoltre già equipaggiato con i relativi driver e il corretto funzionamento del dispositivo era già stato verificato. Il collegamento PC/oscilloscopio è stato stabilito con la seguente procedura:</p>
+<ul>
+<li>ho impostato la tensione di funzionamento a 3.3V sul chip FT232RL;</li>
+<li>ho collegato l'adattatore alla porta USB del PC;</li>
+<li>ho collegato l'oscilloscopio all'adattatore utilizzando la porta seriale che si trova a destra della presa USB, facendo attenzione ad incrociare i terminali <span class="pin">RX</span>/<span class="pin">TX</span>:
+<table cellspacing="0">
+<tr><th>FT232RL</th><th>DSO138</th><th class="wire">Colore cavo</th></tr>
+<tr><td class="pin">GND</td><td class="pin">GND</td><td class="wire">nero</td></tr>
+<tr><td class="pin">TX</td><td class="pin">RX</td><td class="wire">bianco</td></tr>
+<tr><td class="pin">RX</td><td class="pin">TX</td><td class="wire">marrone</td></tr>
+</table>
+<img src="img/firmware-upgrade/dso138-ft232rl.jpg">
+<p class="illustration">Il collegamento seriale oscilloscopio/adattatore</p>
+</li>
+</ul>
+<h2>Caricamento del nuovo firmware</h2>
+<p>Avviato il programma per il trasferimento del firmware consigliato, ho configurato la porta seriale come richiesto dalle istruzioni (115200 baud, 8 bit di dati, parità pari, echo disabilitato). Ho acceso l'oscilloscopio e ho confermato il trasferimento del nuovo firmware, non prima di aver richiesto l'azzeramento delle sole pagine di memoria necessarie, l'ottimizzazione e la verifica del download.</p>
+<p>Al termine della procedura, che dura qualche secondo, ho chiuso il programma, scollegato l'oscilloscopio dall'adattatore seriale/USB. Ho quindi spento l'oscilloscopio e rimosso i ponticelli di carta stagnola. Ho infine riavviato l'oscilloscopio, verificando che nella schermata iniziale apparisse il numero di versione del nuovo firmware:</p>
+<img src="img/firmware-upgrade/firmware-061.jpg">
+<p class="illustration">Il nuovo firmware è operativo!</p>
+<p>Ho infine potuto verificare, con un segnale campione generato con Arduino, che il salvataggio della forma d'onda funzionasse come specificato sul manuale.</p>
+<h2>Un'amara sorpresa...</h2>
+<p>Dopo qualche istante di euforia, mi sono accorto che qualcosa non andava sulla scala delle tensioni: un tipico segnale TTL a 5V veniva rappresentato come fosse di poco superiore a 1V (1.28V circa):</p>
+<img src="img/firmware-upgrade/v-scale-error.jpg">
+<p class="illustration">Rappresentazione di un segnale TTL: notare la scala delle tensioni</p>
+<p>Escluso il danneggiamento della scheda e l'esaurimento della batteria di alimentazione, ho effettuato qualche ricerca in rete, ed ho scoperto che è un problema piuttosto comune, e dipende dal fatto che i firmware precedenti alla versione 113-13801-050 richiedono un valore della resistenza R11 di 1.5K&ohm;, mentre i firmware più recenti, per lo stesso resistore, ne richiedono 150&ohm;.</p>
+<p class="note">Se R11 ha un valore 1.5K&ohm; è possibile che il kit in dotazione sia particolarmente vecchio (modello 13801K/02K), o più probabilmente che si tratti di un clone non ufficiale. Il produttore ha predisposto un <a href="https://www.jyetech.com/Products/LcdScope/DSO138_Fake_vs_Genuine.pdf">documento</a> che indica come stabilire se il kit acquistato è originale o un clone non autorizzato. Purtroppo quello in mio possesso, pur acquistato su Amazon, si è rivelato essere un clone.</p>
+<p>Le note in calce alla <a href="https://www.jyetech.com/Products/LcdScope/e138.php">pagina ufficiale</a> del kit, così come diverse discussioni sui forum del produttore (per esempio <a href="https://www.jyetech.com/forum/viewtopic.php?f=18&t=704">Error in voltage reading</a>, o <a href="https://www.jyetech.com/forum/viewtopic.php?f=18&t=586">R11 R38 - incorrect Amplitude on Test Signal</a>) propongono come soluzione al problema la sostituzione della resistenza R11 con una da 150&ohm;. Così ho fatto, anche se con un po' di timore a causa della poca confidenza che ho con lo stagnatore:</p>
+<img src="img/firmware-upgrade/r11-original.jpg">
+<p class="illustration">La resistenza R11 originale</p>
+<img src="img/firmware-upgrade/r11-150ohm.jpg">
+<p class="illustration">La nuova resistenza da 150&ohm;, leggermente più grande perché da 1/4W</p>
+<p>A dispetto delle bande colorate (marrone-verde-nero?), al tester la resistenza R11 originale risulta effettivamente essere da 1.5K&ohm;:</p>
+<img src="img/firmware-upgrade/r11-original-alone.jpg">
+<p class="illustration">Dettaglio della resistenza R11 originale</p>
+<p>La sostituzione ha sortito l'effetto sperato: l'oscilloscopio ha ricominciato a indicare le tensioni corrette, come si può notare dall'immagine seguente, in cui è rappresentato il solito segnale TTL a 5V:</p>
+<img src="img/firmware-upgrade/v-scale-ok.jpg">
+<p class="illustration">La scala delle tensioni con le proporzioni ripristinate</p>
+<p>L'oscilloscopio è ora di nuovo funzionante!</p>
+<p class="modification-notice">Pagina modificata il 02/01/2018</p>
+</body>
+</html>
