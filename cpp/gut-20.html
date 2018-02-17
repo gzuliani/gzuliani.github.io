@@ -22,13 +22,13 @@
     if (x &lt; 0 || y &lt; 0)
         throw std::runtime_error(&quot;point out of domain&quot;);
     }
-  bool operator==(const Point&amp; p) const { 
-    return x_ == p.x_ &amp;&amp; y_ == p.y_; 
+  bool operator==(const Point&amp; p) const {
+    return x_ == p.x_ &amp;&amp; y_ == p.y_;
   }
 };
 
 std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Point&amp; pt) {
-  return os &lt;&lt; &quot;(&quot; &lt;&lt; pt.x_ &lt;&lt; &quot;, &quot; &lt;&lt; pt.y_ &lt;&lt; &quot;)&quot;; 
+  return os &lt;&lt; &quot;(&quot; &lt;&lt; pt.x_ &lt;&lt; &quot;, &quot; &lt;&lt; pt.y_ &lt;&lt; &quot;)&quot;;
 }</ins>
 ...
 
@@ -406,34 +406,75 @@ THROWS(std::vector&lt;int&gt;{1, 2, 3}.at(5), std::out_of_range);
 <p>Si noti che anche in questo caso si è reso necessario introdurre un livello di indirezione per permettere al preprocessore di espandere la macro <span class="code">__VA_ARGS__</span>.</p>
 <h2>Codice sorgente</h2>
 <ul>
-	<li><a href="files/gut/part-w0/gut.h">gut.h</a></li>
-	<li><a href="files/gut/part-20/colors.h">colors.h</a></li>
-	<li><a href="files/gut/part-20/debugger.h">debugger.h</a></li>
-	<li><a href="files/gut/part-20/math.h">math.h</a></li>
-	<li><a href="files/gut/part-20/rotate.h">rotate.h</a></li>
-	<li><a href="files/gut/part-20/tap.h">tap.h</a></li>
-	<li><a href="files/gut/part-20/timing.h">timing.h</a></li>
-	<li><a href="files/gut/part-20/timing-chrono.h">timing-chrono.h</a></li>
-	<li><a href="files/gut/part-20/timing-custom.h">timing-custom.h</a></li>
-	<li><a href="files/gut/part-20/utils.h">utils.h</a></li>
-	<li><a href="files/gut/part-20/linux/colors.h">linux/colors.h</a></li>
-	<li><a href="files/gut/part-20/linux/debugger.h">linux/debugger.h</a></li>
-	<li><a href="files/gut/part-20/linux/timing-custom.h">linux/timing-custom.h</a></li>
-	<li><a href="files/gut/part-20/windows/colors.h">windows/colors.h</a></li>
-	<li><a href="files/gut/part-20/windows/debugger.h">windows/debugger.h</a></li>
-	<li><a href="files/gut/part-20/windows/timing-custom.h">windows/timing-custom.h</a></li>
+	<li><a href="files/gut/part-20.a/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-20.a/colors.h">colors.h</a></li>
+	<li><a href="files/gut/part-20.a/debugger.h">debugger.h</a></li>
+	<li><a href="files/gut/part-20.a/math.h">math.h</a></li>
+	<li><a href="files/gut/part-20.a/rotate.h">rotate.h</a></li>
+	<li><a href="files/gut/part-20.a/tap.h">tap.h</a></li>
+	<li><a href="files/gut/part-20.a/timing.h">timing.h</a></li>
+	<li><a href="files/gut/part-20.a/timing-chrono.h">timing-chrono.h</a></li>
+	<li><a href="files/gut/part-20.a/timing-custom.h">timing-custom.h</a></li>
+	<li><a href="files/gut/part-20.a/utils.h">utils.h</a></li>
+	<li><a href="files/gut/part-20.a/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-20.a/linux/debugger.h">linux/debugger.h</a></li>
+	<li><a href="files/gut/part-20.a/linux/timing-custom.h">linux/timing-custom.h</a></li>
+	<li><a href="files/gut/part-20.a/windows/colors.h">windows/colors.h</a></li>
+	<li><a href="files/gut/part-20.a/windows/debugger.h">windows/debugger.h</a></li>
+	<li><a href="files/gut/part-20.a/windows/timing-custom.h">windows/timing-custom.h</a></li>
 </ul>
 <br>
 <ul>
-	<li><a href="files/gut/part-20/test-gut.cpp">test-gut.cpp</a></li>
+	<li><a href="files/gut/part-20.a/test-gut.cpp">test-gut.cpp</a></li>
 </ul>
 <br>
 <ul>
-	<li><a href="files/gut/part-20/example.cpp">example.cpp</a></li>
-	<li><a href="files/gut/part-20/example-breakpoint.cpp">example-breakpoint.cpp</a></li>
-	<li><a href="files/gut/part-20/example-tap.cpp">example-tap.cpp</a></li>
-	<li><a href="files/gut/part-20/example-timing.cpp">example-timing.cpp</a></li>
+	<li><a href="files/gut/part-20.a/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-20.a/example-breakpoint.cpp">example-breakpoint.cpp</a></li>
+	<li><a href="files/gut/part-20.a/example-tap.cpp">example-tap.cpp</a></li>
+	<li><a href="files/gut/part-20.a/example-timing.cpp">example-timing.cpp</a></li>
 </ul>
+<br>
+<p class="update"><strong>Aggiornamento [17/02/2018]</strong></p>
+<p>Il codice non compila con Visual Studio 2017 (probabilmente nemmeno con le versioni precedenti) a causa della logica secondo la quale il compilatore Microsoft espande la macro <span class="code">__VA_ARGS__</span> (maggiori dettagli <a href="https://stackoverflow.com/questions/5134523/msvc-doesnt-expand-va-args-correctly">qui</a>). Gli interventi correttivi sono comunque minimi:</p>
+<pre class="code">
+[file rotate.h]
+
+#ifndef GUT_ROTATE_H
+#define GUT_ROTATE_H
+
+<ins>#define GUT_EXPAND(x) x</ins>
+
+#define GUT_NARGS(...) \
+    <ins>GUT_EXPAND( \</ins>
+        GUT_NARGS_( \
+            __VA_ARGS__, \
+            100, 99, 98, 97, 96, 95, 94, 93, 92, 91, \
+             90, 89, 88, 87, 86, 85, 84, 83, 82, 81, \
+             80, 79, 78, 77, 76, 75, 74, 73, 72, 71, \
+             70, 69, 68, 67, 66, 65, 64, 63, 62, 61, \
+             60, 59, 58, 57, 56, 55, 54, 53, 52, 51, \
+             50, 49, 48, 47, 46, 45, 44, 43, 42, 41, \
+             40, 39, 38, 37, 36, 35, 34, 33, 32, 31, \
+             30, 29, 28, 27, 26, 25, 24, 23, 22, 21, \
+             20, 19, 18, 17, 16, 15, 14, 13, 12, 11, \
+             10,  9,  8,  7,  6,  5,  4,  3,  2,  1)<ins>)</ins>
+...
+
+#define GUT_ROTATE__(N, ...) \
+    <ins>GUT_EXPAND(</ins>GUT_ROTATE_##N(__VA_ARGS__)<ins>)</ins>
+</pre>
+<pre class="code">
+[file gut.h]
+...
+
+#define THROWS__(...) \
+    <ins>GUT_EXPAND(</ins>THROWS_(__VA_ARGS__)<ins>)</ins>
+...
+
+#define THROWS_WITH_MESSAGE__(...) \
+    <ins>GUT_EXPAND(</ins>THROWS_WITH_MESSAGE_(__VA_ARGS__)<ins>)</ins>
+</pre>
 <p class="modification-notice">Pagina modificata il 22/03/2016</p>
 </body>
 </html>
