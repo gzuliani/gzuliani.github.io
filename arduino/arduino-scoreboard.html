@@ -1,0 +1,1923 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Controllo di un tabellone segnapunti con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-scoreboard.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-segnapunti">risorse</a> | tabellone segnapunti con arduino</p>
+<h1>Controllo di un tabellone segnapunti con Arduino</h1>
+<h2>Introduzione</h2>
+<p>La palestra dove gioca la squadra di pallamano locale è dotata di un tabellone luminoso segnapunti controllato da una consolle che ultimamente manifesta più di qualche problema: il pulsante per arrestare il contaminuti non sempre funziona, viceversa il pulsante per farlo partire è oltremodo sensibile; è accaduto inoltre più volte che il tempo si azzerasse da sè durante le ultime partite di campionato.</p>
+<p>Immagino che tutto ciò sia dovuto a problemi di usura: l'impianto è stato installato più di 30 anni fa e diversi pulsanti della consolle presentano una corsa paurosamente limitata, a tal punto che viene il sospetto che la molla di ritorno abbia perso la sua elasticità e non apra il contatto una volta rilasciato il pulsante.</p>
+<img src="img/arduino-scoreboard/scoreboard.jpg">
+<p class="illustration">Il tabellone segnapunti</p>
+<img src="img/arduino-scoreboard/consolle.jpg">
+<p class="illustration">La consolle di comando</p>
+<p>Mi è venuta l'idea di sostituire la consolle con un computer. Ho già sviluppato un programmino che aiuta i refertisti a tener traccia degli eventi di gioco che vanno registrati nei documenti ufficiali, ma resta il fatto che l'addetto al tabellone ha le sue belle difficoltà a mantenere allineati il punteggio e il tempo di gioco. Non dovrebbe essere troppo difficile estendere il programma in modo che si occupi di gestire il tabellone, una volta capito come consolle e tabellone comunicano tra di loro.</p>
+<p>Ho contattato l'assistenza tecnica del produttore del tabellone, ma trattandosi di un modello fuori produzione dai primi anni '90 i tecnici non sono stati in grado di fornirmi la documentazione relativa al protocollo di comunicazione. A loro giudizio dovrebbe comunque trattarsi di una trasmissione seriale TTL.</p>
+<h2>Il sistema tabellone/consolle</h2>
+<p>Il tabellone è vincolato al muro della palestra ed è collegato ad una presa di corrente raggiungibile solo con una scala. Per questa ragione è sempre acceso, 24 ore su 24 (ignoro se si possa spegnere da uno dei quadri della palestra, ma di sicuro nessuno lo spegne mai). Dal tabellone scende un cavo di tipo telefonico a 6 vie, lungo una ventina di metri, che termina con un connettore RJ25 (6P6C). Un adattatore RJ25/DSUB25 consente di collegare tra loro tabellone e consolle. La consolle è normalmente scollegata dal tabellone, il quale in questa modalità mostra alternativamente la data (mese/giorno) e l'ora corrente (ora/minuto).</p>
+<p>La consolle è normalmente spenta, e si accende non appena si stabilisce il collegamento con il tabellone. <strong>Da ciò credo di poter dedurre che l'alimentazione proviene dal tabellone.</strong> Se l'interruttore OD/SPS della consolle è in posizione OD, il tabellone mostra la data e l'ora corrente (OD = <strong>O</strong>ra/<strong>D</strong>ata?), mentre quando è in posizione SPS entra in modalità segnapunti (SPS=<strong>S</strong>egna<strong>P</strong>unti?).</p>
+<p>Una volta collegata, la consolle risulta operativa sia in modalità OD che SPS: agendo sui pulsanti il punteggio e il tempo mostrati dal display LCD della consolle &ndash; il cui contenuto ricalca quello del tabellone &ndash; cambiano di conseguenza. Sembra quindi che l'interruttore OD/SPS serva solo per decidere se la configurazione della consolle debba essere mostrata anche sul tabellone.</p>
+<p>Il sistema è dotato di memoria: quando la consolle viene alimentata, il display mostra la situazione presente prima che venisse scollegata (il punteggio della partita giocata la settimana precedente, per indentersi): non ho idea di chi mantenga la memoria dell'ultimo punteggio, se la consolle o il tabellone. Non mi risulta ci siano batterie dentro la consolle.</p>
+<p>La tentazione di aprire la consolle è forte, d'altra parte non vorrei rischiare di peggiorare la situazione: come si vede dalla foto della zona della presa DSUB25 della consolle, si vede che è tenuta insieme con svariate stratificazioni di scotch/nastro adesivo/cerotti. In secondo luogo mi risulta essere proprietà del comune, forse bisognerebbe richiedere un permesso esplicito per intervenire. Un tentativo di <em>reverse-engineering</em> non invasivo mi pare meno pericoloso.</p>
+<img src="img/arduino-scoreboard/consolle-dsub25.jpg">
+<p class="illustration">Il sistema di chiusura della consolle</p>
+<h2>Novembre 2017</h2>
+<p>In questo caso la rete non mi è stata molto d'aiuto, se non a rintracciare l'indirizzo e-mail dell'assistenza tecnica del produttore. La ricerca del codice del modello dell'impianto (SPS-HC20) non ha dato nessun frutto. Ho scoperto che SPS potrebbe stare per <em>Speicherprogrammierbare Steuerung</em>, cioè PLC in tedesco(?!), mentre HC20 potrebbe forse riferirsi ad un vecchio PLC della Festo; il più citato in rete sembra essere il "PS1-HC20-60-FST", ma ce ne sono diversi altri. Dopo qualche serata di tentativi infruttuosi ho deciso di abbandonare le ricerche e iniziare con le misurazioni sul campo.</p>
+<p>Ho effettuato le prime prove con un multimetro, per verificare i livelli di tensione sulle diverse coppie di conduttori del cavo di collegamento. Ho eseguito le misure a vuoto (senza collegare la consolle), ma non sono riuscito ad ottenere nulla di definitivo, nè in AC, nè in DC.</p>
+<p>Forte dell'indicazione avuta dall'assistenza tecnica sulla tipologia di comunicazione, e conscio che un multimetro non potrà essermi d'aiuto nell'analisi dei segnali che consolle e tabellone usano per comunicare, ho ordinato il seguente materiale:</p>
+<ul>
+	<li>uno sdoppiatore RJ25 per derivare una connessione attraverso la quale poter monitorare il traffico;</li>
+	<li>una presa RJ25 per accedere più comodamente ai connettori del cavo di collegamento;</li>
+	<li>un piccolo <a href="../dso138/firmware-upgrade.html">oscilloscopio monotraccia</a> per visualizzare le forme d'onda dei segnali;</li>
+	<li>un <a href="arduino-ft232rl.html">adattatore USB/Seriale TTL</a> per pilotare il tabellone semmai riuscirò a ricostruire il protocollo di comunicazione.</li>
+</ul>
+
+
+
+<!--
+
+
+
+​
+
+E' ormai più di un mese che studio la questione, smanettando mezz'ora qua, mezz'ora là, durante gli allenamenti, quando posso. Alla fine, dopo settimane di scervellamento, credo di avere capito che è il tabellone che alimenta la consolle con 24V alternati; è la centralina che comanda il tabellone, con un segnale digitale che però non è seriale (ho sprecato non so quante sere a cercare di decodificare inutilmente i dati che avevo catturato col terminale). Per ora sono giunto alla conclusione che ogni 16ms o giù di lì la centralina invia al tabellone una sequenza di 96 bit (12 byte, quanti sono i display), in cui ogni bit controlla un segmento sul tabellone. Ogni bit dura all'incirca 20us, e questo è un tipico pacchetto:
+
+
+​
+
+Non avendo altro per le mani che un Arduino, ho provato a generare lo stesso segnale con questo trabicoletto. A casa la cosa mi sembra funzionare, se lo collego invece al tabellone, il segnale viene completamente distorto:
+
+
+
+​
+Vedo in particolare che i fronti di discesa fanno fatica a raggiungere il livello di massa. E' un problema di poca potenza di Arduino (leggo che al massimo può erogare 40mA)? Chiedo perché mi è venuto il dubbio che forse è proprio questo segnale che viene usato per accendere il singolo segmento, ognuno dei quali è composto da un bel po' di led.
+
+O invece dipende della lunghezza del cavo del tabellone (a occhio direi che siamo sui 20/25 metri)? Mi ricordo vagamente di problemi legati alla resistenza e alle capacità parassite... Hai qualche idea di se e come si potrebbe sistemare la cosa?
+
+Grazie!
+
+
+
+
+Entrando nel dettaglio, dell'intelligenza c'è anche nel tabellone: di solito infatti è scollegato dalla console, che viene usata solo durante le partite. Quando è scollegato (la maggior parte del tempo quindi) sui quattro display del timer mostra alternativamente data e ora. Sui 6 cavetti della spina RJ11 che scende vedo sui primi due pin la sinusoide a 24V, mentre sulle altre coppie solo rumore (ho conservato alcune foto).
+
+Se noti la consolle ha un interruttore con le indicazioni SPS/OD: se posto in OD, per il tabellone è come se non fosse collegata (lui continua a mostrare data e ora), ma la consolle è accesa e funzionante, nel senso che se operi sui pulsanti il display LCD -- che replica i dati del tabellone -- il punteggio e il tempo cambiano di conseguenza. Quando sposti l'interruttore su SPS i dati visualizzati sul display della consolle appaiono anche sul tabellone, così come appare il treno di impulsi sul pin 4 della presa RJ. A consolle scollegata dal tabellone, l'effetto dell'interruttore SPS/OD (o meglio, almeno uno degli effetti) è quello di cortocircuitare il pin 2 della presa RJ (quello dove ritengo esserci il neutro dell'alimentazione) con il pin 5 -- provato con un tester. Cortocircuitare il pin 2 e 5 sulla spina del tabellone non basta per farlo commutare da orologio a segnapunti: serve anche il treno di impulsi sul pin 4 (magari basta anche solo una tensione di 5V, questa prova non l'ho fatta).
+
+
+
+
+Quando ho capito che la cosa non era immediata, ho cominciato a tener traccia di tutte le prove fatte, le ipotesi valutate e scartate, con un buon numero di foto dei vari segnali a corredo; sono abbastanza certo della logica di controllo (intendo il significato dei bit del treno di impulsi), ma sono completamente perso dal punto di vista dell'hardware, per cui accetto molto volentieri il tuo aiuto!
+
+PS: già che ci sono, ti allego intanto il "diario" (sps-hc20.txt); se hai voglia e tempo dagli una letta. Non allego le immagini che tutte quante pesano quasi 300MB. set-locali_digits.pdf sono dieci catture che ho fatto cambiando di volta in volta in numero del set locali (il display giallo in basso a sinistra nel tabellone): dall'alto in basso ci sono le forme d'onda dello zero, dell'uno, ... fino al nove. Ci ho messo un pò per capire che non si trattava di una codifica numerica o comunque arbitraria ma che ogni bit, escluso il primo che è sempre zero, corrisponde a un segmento (nell'ordine gfedcba). 8-bit-per-digit.pdf mostra invece come il segnale sia composto esattamente da 12 byte. Se la cosa ti interessa magari te le faccio vedere di persona o facciamo un salto in palestra assieme.
+
+Ciao e grazie!
+
+
+
+
+
+
+
+
+
+Allora... come ipotizzavi tu all'inizio non è un problema di pilotaggio in corrente in quanto se diamo all'uscita dell'Arduino il tempo di stabilizzarsi il livello lo raggiunge.
+
+I fronti di salita e di discesa sono lenti, ma tu hai fatto le prove con 100nF e non hai notato lo stesso effetto (confermi?).
+
+Quindi non è un problema di impedenza di ingresso del tabellone.
+
+A questo punto potrebbe essere un problema di riflessione della linea: se è questa la causa potresti provare a inserire una resistenza da 50 o 100ohm in serie all'uscita dell'Arduino, ovvero tra l'uscita dell'Arduino e l'ingresso del tabellone e vedi se la forma d'onda del segnale cambia.
+
+
+
+
+
+
+Risultati dai test di ieri sera...
+
+Segnale sull'uscita di Arduino, a vuoto:
+
+
+​
+Attaccato il tabellone, attraverso la resistenza da 50Ohm:
+
+
+​
+A me pare identico! Segnale a valle della resistenza (tra resistenza e tabellone):
+
+
+​
+Vedo una caduta di 0,5V circa (due/tre tacche). Direi quindi che sulla resistenza, quando il segnale è alto, scorrono più o meno 10mA.
+Visto comunque che sul tabellone si accendevano segmenti un po' a caso, ho ricollegato la consolle e acquisito il segnale "vero":
+
+
+​
+Concentrandosi sui primi tre impulsi, che definiscono lo stato del primo display, effettivamente il segnale generato da Arduino è leggermente più stretto di quello della consolle; ho provato ad introdurre svariati ritardi per allungare la durata del singolo bit, avvicinandomi e poi anche superando la durata apparente degli impulsi del segnale "vero", ma non sono riuscito a vedere il "2" che mi aspettavo apparisse sul primo display. Non so se quelle creste sul segnale vero possano avere qualche influenza, o se invece mi è sfuggito un segnale di sincronismo su qualche altro pin. Giovedì sera, se combino, ricontrollo i segnali su tutti e 6 i conduttori. Mi è venuto il dubbio che consolle e tabellone potessero sincronizzarsi sull'onda sinusoidale di alimentazione, ma è a 50Hz, mentre i treni di impulsi distano tra loro poco più di 16ms.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[//]: # (encoding=utf-8)
+
+# Hardware
+
+Il tabellone segnapunti è della IBLE negli anni 90, ed è comandato da una
+console cui è collegato tramite cavo telefonico a 6 conduttori (presa RJ12 6p6c)
+
+La consolle ha un interruttore SPS/OD: su OD il tabellone mostra ora/data,
+esattamente come fa quando la consolle è scollegata, su SPS va in modalità
+segnapunti. La consolle sembra passiva, si accende cioè solo quando collegata
+al tabellone (spostare l'interruttore su OD/SPS ). Evidentemente l'alimentazione
+arriva dal tabellone.
+
+xx/11/2017
+
+Provato inizialmente con un tester a verificare i livelli di tensione sulle
+diverse coppie di conduttori in uscita al pannello (a vuoto, senza consolle
+collegata), ma non sono riuscito ad ottenere nulla di definitivo, nè in AC,
+nè in DC (puntali troppo grossi?). Ho contattato il produttore
+(assistenza@ible.it), il quale ha così risposto (22/11/2017):
+
+> il display SPS HC 20 SN. 20787 in suo possesso è un modello fuori
+> produzione da circa 15 anni dunque non siamo più in grado di fornire
+> qualsiasi genere di supporto tecnico. Possiamo confermare che poteva
+> essere pilotato solo tramite consolle e la CPU all’interno è dotata
+> solo di seriale TTL dunque non collegabile a PC.
+
+Chiesto delucidazioni in merito ad un possibile interfacciamento diy (23/11):
+
+> considerato che il display SPS HC 20 SN. 20787 è stato progettato nei primi
+> anni 90 la documentazione era solo cartacea ma è stata buttata nel trasloco
+> del 2016, dunque purtroppo non siamo in grado di fornire documentazioni o
+> dati tecnici.
+
+(comprensibile...)
+
+
+19/12/2017
+
+## Tabellone/Consolle collegati
+
+Munito di oscilloscopio, a consolle collegata:
+
+  |                                            |
+  |              TABELLONE                     |
+  +--------------------------------------------+
+     | |
+     | |
+     ---
+    /   \  <--- sdoppiatore 8p con incrocio
+   /X ^ X\
+   --- ---
+   | | | |
+   | | | | <--- cavi 6p incrociati
+   | | | |
+    X   X
+   | | | |          +-----+        +--------------
+   | | | +----------|     |<-------|
+   | | +------------|     |<-------|  oscilloscopio
+   | |              +-----+        +--------------
+  +--------------+  presa RJ12
+  |  Consolle    |  a saldare
+  |              |
+
+
+Il doppio incrocio sdoppiatore/cavo risitema tutto!
+
+
+vista dal basso, la presa è fatta così:
+
+   +--------+
+   |  o o o | pin 2, 4, 6
+   | o o o  | pin 1, 3, 5  (denominazione arbitraria!)
+   |        |
+   |        |
+   +--------+
+
+       ^
+       |
+
+
+     ||||||
+     |    |
+     |    |
+     +----+
+      |  |
+      |  |
+      |  |
+
+Al momento, a consolle accesa, i segnali più sensati li vedo tra i pin 1 e 2
+(alternato 50Hz 12Vpp,  cfr. IMG_20171219_195501.jpg) e 4-5 (segnale impulsivo
+TTL, cfr. IMG_20171219_195610.jpg).
+Difficile trovare un'interpretazione non ambigua del segnale. Dovrebbe esserci
+uno stop bit, 7/8 bit di dati, forse uno di parità, ed (almeno) un bit di stop.
+E se 4 e 5 fossero tx e rx? Allora vedrei una loro combinazione...
+
+
+Ad ogni modo, l'impulso più breve (il primo da sinistra) sembra avere ampiezza
+pari a circa una tacca dell'asse orizzontale, ovvero 0,1ms/5 = 20us, che
+corrisponde ad una frequenza intorno ai 50KHz, quindi si può ipotizzare una
+velocità di trasmissione di 57600 baud (periodo 17.36us). Che sia un 8N1?
+
+Di norma lo start bit è uno 0, lo stop bit è un 1 (il livello alto della linea
+indica lo stato di idle), mentre i bit di dati sono inviati a partire da
+quello meno significativo (lsb-first).
+
+Più che di seriale TTL, sarebbe il caso di parlare di UART -- Universal
+Asynchronous Receiver-Transmitter:
+
+If he uses only Tx and Rx, and you also remove its levels, then there's nothing
+RS232 anymore about it! Call it UART
+[https://electronics.stackexchange.com/questions/6889/how-does-ttl-serial-work]
+
+
+Qui [http://www.insegneelettroniche.com/pannelli_sportivi.htm] c'è un pannello
+molto simile a quello in questione (indicatori aggiuntivi T3 e P3). Nella
+pagina, tra l'altro si legge:
+
+> CONSOLLE DI PROGRAMMAZIONE
+>
+> La consolle di controllo permette di trasferire in tempo reale la situazione
+> di gioco gestita attraverso un display alfanumerico a cristalli liquidi (LCD)
+> riportante tutte le informazioni contenute nel pannello segnapunti. Il
+> trasferimento dati dalla consolle al pannello segnapunti avviene attraverso
+> comunicazione seriale a bassa tensione con tre fili di collegamento.
+
+I modelli presentati sono SPS HC 14, 22 e 29 (quindi anche la sigla è simile)
+
+
+A proposito di consolle: se è veramente COMPLETAMENTE PASSIVA, si può studiare
+l'effetto dell'interruttore OD/SPS e del pulsante della sirena con il controllo
+di continuità del multimetro.
+
+
+
+21/12/2017
+
+Riverificate tutte le forme d'onda sulle coppie; confermate le osservazioni
+fatte la volta precedente:
+
+ -  + segnale
+ 1  2 IMG_20171221_185716.jpg
+ 1  6 IMG_20171221_190047.jpg
+ 1  5 IMG_20171221_190127.jpg
+ 3  4 IMG_20171221_190512.jpg
+ 3  6 IMG_20171221_190629.jpg
+ 4  5 IMG_20171221_190951.jpg
+ 5  4 IMG_20171221_192744.jpg + IMG_20171221_192806.jpg + IMG_20171221_192821.jpg
+
+Sulla coppia 1/6 vedo una sinusoide più "sinusoide" del segnale alternato 1/2.
+Sulle altre coppie solo rumore, comunque nulla di intelligibile.
+Sulla coppia 4/5 (massa oscilloscopio su 4), su OD il livello è fisso a 0V,
+su SPS scende a -5V (quindi 5/4 va a +5V).
+
+
+## Consolle a vuoto
+
+
+                    +-----+        +--------------
+   +----------------|     |<-------|
+   | +--------------|     |<-------|  tester
+   | |              +-----+        +--------------
+    X               presa RJ12
+   | |              a saldare
+   | |
+  +--------------+
+  |  Consolle    |
+  |              |
+
+Occhio, cavo incrociato!
+
+Guardando il connettore da sotto, con la presa in basso e i pin in alto, il pin
+in alto a sinistra (2) e quello in basso a destra (5) sono aperti quando il
+selettore è su OD, sono in corto quando posto su SPS (essendoci di mezzo un
+cavo incrociato, la corrispondenza effettiva rispetto alla numerazione
+arbitraria usata finora è 5-2 (il 2 in realtà corrisponde a 5, il 5 a 2). Il
+pulsante della sirena sembra non avere effetti di "chiusura" su nessuna delle
+coppie di terminali.
+
+22/12/2017: Claudia mi ha detto che la sirena non ha praticamente mai
+funzionato. Provare col corto su 1/2?
+
+ 1 - 2 ~800Ohm su SPS, aperto su OD
+ 1 - 5 ~800Ohm su SPS e OD
+
+## Tabellone a vuoto
+
+
+  |                                            |
+  |              TABELLONE                     |
+  +--------------------------------------------+
+     | |
+     | |
+     | |          +-----+        +--------------
+     | +----------|     |<-------|
+     +------------|     |<-------|  oscilloscopio
+                  +-----+        +--------------
+                  presa RJ12
+                  a saldare
+
+Nessun incrocio, in questo caso!
+
+ 1  2 IMG_20171222_184705.jpg    sinusoide 50Hz 12Vpp (rumore?!)
+ 1  3/5                          idem
+ 1  6 IMG_20171222_184831.jpg
+ 2  *                            sinusoidi sporche
+ 3  6                            sinusoide +/-8/9V
+ 4  *                            rumore
+ 5  *                            rumore
+
+
+## Connessioni
+
+RJ12
+
+1 - bianco
+2 - nero
+3 - rosso
+4 - verde
+5 - giallo
+6 - azzurro
+
+            |     |
+            |     |
+            |     |
+            |     |
+            |     |
+            |     |
+         +-----------+
+         |           |
+         |   +---+   |    vista del connettore
+         |   |   |   |    maschio dall'alto
+         |   |   |   |
+         |   |   |   |
+         |  ++   ++  |
+         |  |     |  |
+         +--|     |--+
+            +-----+
+
+          1 2 3 4 5 6
+
+
+PRESA A SALDARE
+
+vista da sotto
+
+   +--------+
+   |  o o o | pin 5(giallo), 3(rosso), 1(bianco)
+   | o o o  | pin 6(azzurro), 4(verde), 2(nero)
+   |        |
+   |        |
+   +--------+
+
+
+## RIASSUNTO
+
+pin RJ12      6   5   4   3   2   1
+pin GZ        1   2   3   4   5   6
+
+              |   |       |   |   |
+              +---(-------(---(---+----- alimentazione
+                  |       |   |
+                  |       |   |
+                  |       +---+--------- segnale TTL (5 massa)
+                  |           |
+                  |     /     |
+                  +----o o----+--------- aperto su OD, chiuso su SPS
+
+* se 3/4 è un vero corto, allora il segnale TTL si dovrebbe vedere anche su 2/4
+
+* il confronto 1/4 e 6/4 dovrebbe dire quale tra 1 e 6 è massa e quale onda,
+  ammesso e non concesso che ci sia collegamento elettrico tra la massa del
+  segnale 5(2) e quella dell'alimentazione; non è detto, probabilmente c'è un
+  trasformatore di mezzo.
+
+29/12/2017
+
+Effettivamente i segnali 5/4 e 2/4 sono molto simili (forse i 5V sul 4 sono
+più stabili? non ci giurerei).
+
+Verificata la presenza del segnale TTL sui pin 4/5, per sicurezza.
+Verificato che all'accensione, il dato è stabile (cfr. IMG_20171229_180412.jpg).
+Verificato che durante il conteggio (dopo aver dato lo start), il dato cambia
+(cfr. IMG_20171229_180440.jpg, IMG_20171229_180500.jpg, IMG_20171229_180528.jpg,
+VID_20171229_180603.mp4).
+
+Predisposto il solito circuito con la presa Y, collegato il PC con
+l'adattatore Seriale/USB (con Windows 7: scoperto che va collegato alla
+stessa presa sulla quale era stato collegato quando è stato installato,
+altrimenti Windows non lo riconosce).
+
+Massa (pin GZ 5 della presa a saldare) sul pin GND, segnale (pin GZ 4) su RX.
+
+Aperto Termite e subito si vede "sporcizia". Provato da 9600 a 56700 8N1, mai
+visto ASCII puro; provato 56700 7N1 e tutte le parità (8*1), mai visto ASCII.
+
+Effettuato due catture a 57600 8N1 (cfr. bin-1.log e bin-2.log in .\sniffs):
+
+1) tabellone azzerato
+    RESET (tabellone indica 0.00)
+    +1 LOCALI
+    +1 LOCALI
+    +1 LOCALI
+    -1 LOCALI
+    -1 LOCALI
+    -1 LOCALI
+    +1 OSPITI
+    +1 OSPITI
+    +1 OSPITI
+    -1 OSPITI
+    -1 OSPITI
+    -1 OSPITI
+    START (tabellone indica 20.00)
+    STOP (tabellone indica 19.54)
+
+2) tabellone indica 19.50, LOCALI 3, OSPITI 3
+    RESET (tabellone indica 0.00, LOCALI 3, OSPITI 3)
+    -1 LOCALI
+    -1 LOCALI
+    -1 LOCALI
+    -1 OSPITI
+    -1 OSPITI
+    -1 OSPITI
+    START (tabellone indica 20.00)
+    STOP (tabellone indica 19.50)
+    +1 LOCALI
+    +1 OSPITI
+    RESET (tabellone indica 0.00, LOCALI 1, OSPITI 1)
+    +1 LOCALI
+    -1 LOCALI
+    -1 LOCALI
+    -1 OSPITI
+
+30/12/2017
+
+Le catture non sono molto chiare, sembra a volte che ci siano errori di
+interpretazione dei bit (tra l'altro la maggioranza sono 1); per esempio
+all'inizio, a tabellone fermo:
+
+7F FE FE FE
+7F FE FE FE
+7E 3F FE FE
+7E 3F FE FE
+7F FE FE FE
+7E 3F FE FE
+7F FE FE FE
+7F FE FE FE
+7F FE FE FE
+7E 3F FE FE
+7F FE FE FE
+7E 3F FE FE
+7F FE FE FE
+7E 3F FE FE
+7F FE FE FE
+
+7E, 7F, 3F...
+
+e anche alla fine, durante il conteggio del tempo:
+
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 99 FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 CE 81 FE FE
+30 DE 81 FE FE
+30 DE 81 FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE F9 FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE F9 FE FE
+30 DE F9 FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 CE F9 FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE FD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE D9 FE FE
+30 DE DD FE FE
+30 DE D9 FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 CE DD FE FE
+30 DE DD FE FE
+30 CE D9 FE FE
+30 DE DD FE FE
+30 DE CD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE CD FE FE
+30 DE CD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE CD FE FE
+30 DE DD FE FE
+30 DE DD FE FE
+30 DE CD FE FE
+30 CE DD FE FE
+30 DE DD FE FE
+30 DE D9 FE FE
+30 CE CD FE FE
+30 CE D9 FE FE
+30 DE DD FE FE
+30 DE 9D FE FE
+30 CE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 8D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 8D FE FE
+30 DE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 99 FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 99 FE FE
+30 CE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 CE 99 FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 CE 9D FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 99 FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 99 FE FE
+30 CE 8D FE FE
+30 CE 8D FE FE
+30 DE 8D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 8D FE FE
+30 DE 99 FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 DE 9D FE FE
+30 CE 8D FE FE
+30 DE 9D FE FE
+
+Tra l'altro, da ciò che mostra l'oscilloscopio sembra che vengano spediti
+pacchetti da tre byte l'uno (cfr.
+segnali/tabellone---console/baudrate-from-signal.odg).
+
+
+Sirena: non è che il buzz che ho sentito quando ho incidentalmente
+cortocircuitato i primi due pin della presa a saldare fosse in realtà il modo
+che il tabellone ha di segnalare che qualcosa non va? E' accaduto anche oggi,
+buzz e tabellone spento finché non ho disinserito e reinserito il cavo
+proveniente dal tabellone nello sdoppiatore.
+
+31/12/2017
+
+Perché non provare a ricostruire uno dei segnali catturati con l'oscilloscopio
+con la seriale di Arduino?
+
+[serial-tx.ino]
+
+void setup() {
+	// 110, 150, 300, 600, 1200, 2400, 4800,
+	// 9600, 19200, 38400, 56000, 57600, 115200
+    Serial.begin(9600);
+}
+
+void loop() {
+	Serial.print("\xaa\xaa\xaa");
+	delay(20);
+}
+
+
+Tutto riferito alla scala 0.2ms
+
+a 9600 un bit occupa mezza tacca (1/9600 = 104us ~ 0.1ms)
+a 19200 un bit occupa un quinto di tacca (1/19200 = 52us ~ 0.05ms)
+a 38400 un bit occupa un decimo di tacca (1/38400 = 26us ~ 0.02ms)
+
+Da questo concluderei che la trasmissione avviene a 19200.
+
+Anche le immagini parlano abbastanza chiaro (57600, 38400, 19200, 9600).
+cfr. immagini IMG_20171231_172216.jpg e successive.
+
+
+02/01/2018
+
+Acquisito la solita forma d'onda con il nuovo firmware dell'oscilloscopio.
+Fatti diversi scatti:
+
+IMG_20180102_175616.jpg: circuito di acquisizione
+IMG_20180102_175626.jpg: tabellone azzerato, orologio fermo su 0.00
+IMG_20180102_180847.jpg: idem
+IMG_20180102_180901.jpg: punteggio locali 1
+IMG_20180102_180911.jpg: punteggio locali 2
+IMG_20180102_180922.jpg: punteggio locali 3
+IMG_20180102_180936.jpg: punteggio locali 4
+IMG_20180102_180959.jpg: punteggio locali 5
+IMG_20180102_181022.jpg: punteggio locali 0, punteggio ospiti 1
+IMG_20180102_181031.jpg: punteggio ospiti 2
+IMG_20180102_181037.jpg: punteggio ospiti 3
+IMG_20180102_181109.jpg: set locali 1, punteggio ospiti 0
+IMG_20180102_181117.jpg: set locali 2
+IMG_20180102_181124.jpg: set locali 3
+IMG_20180102_181135.jpg: set locali 4
+IMG_20180102_181143.jpg: set locali 5
+IMG_20180102_181216.jpg: set locali 0, set ospiti 1
+IMG_20180102_181231.jpg: set ospiti 2
+IMG_20180102_181240.jpg: set ospiti 3
+IMG_20180102_181337.jpg: set ospiti 0, punteggio locali 199
+
+Direi che la trasmissione seriale è una 38400 8N1 (cfr.
+sniffs/catture-20180102/catture.txt).
+
+
+04/01/2018
+
+anatomia del segnale:
+
+-----+ +---+          +---+   + +---+ +---+ +---+          +---+ +----------
+     | |   |          |   |   | |   | |   | |   |          |   | |
+     | |   |          |   |   | |   | |   | |   |          |   | |
+     | |   |          |   |   | |   | |   | |   |          |   | |
+     | |   |          |   |   | |   | |   | |   |          |   | |
+     | |   |          |   |   | |   | |   | |   |          |   | |
+     +-+   +----------+   +---+-+   +-+   +-+   +----------+   +-+
+       AAAAA     BBBBBBBBBB   C DDDDDDDDDDDDDDDDD     EEEEEEEEEE FFFFF
+
+A: set locali
+B: goal locali
+C: separatore minuti/secondi
+D: timer
+E: goal ospiti
+F: set ospiti
+
+nota su F: per set=1 e set=4 al segnale viene applicata una coda a 0V variabile
+(mi pare di poter dire che di aver visto due lunghezze diverse, una il doppio
+dell'altra, la più corta lunga all'incirca lo spazio tra la fine di A e la fine
+di B).
+
+distanza tra due treni di impulsi: ~16 ms (cfr. IMG_2018014_175940.jpg)
+(qualcosa a che fare con l'intero 16383?!)
+
+parte iniziale del segnale, scala x: 50us
+
+IMG_20180104_183822.jpg: set locali: 0
+IMG_20180104_183925.jpg: set locali: 1
+IMG_20180104_183935.jpg: set locali: 2
+IMG_20180104_183945.jpg: set locali: 3
+IMG_20180104_183954.jpg: set locali: 4
+IMG_20180104_184007.jpg: set locali: 5
+IMG_20180104_184345.jpg: set locali: 6
+IMG_20180104_184353.jpg: set locali: 7
+IMG_20180104_184400.jpg: set locali: 8
+IMG_20180104_184410.jpg: set locali: 9
+IMG_20180104_184415.jpg: set locali: 9
+
+seconda parte del segnale, scala x: 50us
+
+IMG_20180104_184609.jpg: goal locali: 0
+IMG_20180104_184616.jpg: goal locali: 1
+IMG_20180104_184632.jpg: goal locali: 2
+IMG_20180104_184640.jpg: goal locali: 3
+IMG_20180104_184649.jpg: goal locali: 4
+IMG_20180104_184658.jpg: goal locali: 5
+IMG_20180104_184711.jpg: goal locali: 199
+IMG_20180104_184803.jpg: goal locali: 10
+IMG_20180104_184826.jpg: goal locali: 20
+IMG_20180104_184841.jpg: goal locali: 21
+
+parte centrale del segnale, scala x: .1ms
+
+IMG_20180104_185437.jpg: timer: 0.00
+IMG_20180104_185437.jpg: timer: 4.56
+IMG_20180104_190917.jpg: timer: 10.21
+
+
+cifra set locali, un carattere = una tacca (50us)
+
+0: 00011 11111 1111?
+1: 00000 00001 11?00
+2: 0?110 01111 01111
+3: 0?110 00011 11111
+4: 00111 10000 11110
+5: 00111 10011 110?1
+6: 00111 11111 0011?
+7: 00000 00001 11111
+8: 00111 11111 11111
+9: 00111 10000 1111?
+
+1 e 4 sono gli unici che terminano con 0, questo torna col discorso della coda
+del segnale quando il n. di set ospiti è 1 o 4 (probabilmente bisogna far
+"sentire" lo zero finale al tabellone -- cfr. IMG_20180102_181216.png); se
+raggruppo per coppie di bit, ottengo:
+
+0: 00 00 11 11 11 11 11 ?
+1: 00 00 00 00 01 11 ?0 0
+2: 0? 11 00 11 11 01 11 1
+3: 0? 11 00 00 11 11 11 1
+4: 00 11 11 00 00 11 11 0
+5: 00 11 11 00 11 11 0? 1
+6: 00 11 11 11 11 00 11 ?
+7: 00 00 00 00 01 11 11 1
+8: 00 11 11 11 11 11 11 1
+9: 00 11 11 00 00 11 11 ?
+
+sono quasi tutte coppie di bit uguali; ne prendo uno solo:
+
+0: 0 0 1 1 1 1 1 ?
+1: 0 0 0 0 ? 1 ? 0
+2: 0 1 0 1 1 ? 1 1
+3: 0 1 0 0 1 1 1 1
+4: 0 1 1 0 0 1 1 0
+5: 0 1 1 0 1 1 ? 1
+6: 0 1 1 1 1 0 1 ?
+7: 0 0 0 0 ? 1 1 1
+8: 0 1 1 1 1 1 1 1
+9: 0 1 1 0 0 1 1 ?
+
+il primo bit posso considerarlo uno start bit, e lo ignoro; i ? finali li prendo
+come 1, sempre per il discorso dell'1/4 dei set ospiti:
+
+0: 0 1 1 1 1 1 1
+1: 0 0 0 ? 1 ? 0
+2: 1 0 1 1 ? 1 1
+3: 1 0 0 1 1 1 1
+4: 1 1 0 0 1 1 0
+5: 1 1 0 1 1 ? 1
+6: 1 1 1 1 0 1 1
+7: 0 0 0 ? 1 1 1
+8: 1 1 1 1 1 1 1
+9: 1 1 0 0 1 1 1
+
+facendo un minimo di aggiustamenti (cfr set-locali_digits.odg):
+
+0: 0 1 1 1 1 1 1
+1: 0 0 0 1 1 0 0    ? -> 1, se no l'impulso sarebbe troppo breve /1
+1: 0 0 0 0 1 1 0    ? -> 1, se no l'impulso sarebbe troppo breve /2
+2: 1 0 1 1 0 1 1    ? -> 0, ci sono tre impulsi
+3: 1 0 0 1 1 1 1
+4: 1 1 0 0 1 1 0
+5: 1 1 0 1 1 0 1    ? -> 0, ci sono tre impulsi
+6: 1 1 1 1 0 1 1    # più probabile 1111101 (la pausa sembra da 1 -- due tacche)
+7: 0 0 0 0 1 1 1    ? -> 0, sembra un impulso da 3 più che da quattro
+8: 1 1 1 1 1 1 1
+9: 1 1 0 0 1 1 1
+
+I codici non sono additivi, nemmeno in OR (1+2!=3, 1|2!=3
+
+Cavoli: 7 bit come i sette segmenti del display!
+mi sono accorto ragionando sull'8 e sullo zero, che differiscono per un solo bit;
+poi l'uno che ha due soli bit, mentre il 7 ne ha tre!
+
+La nomenclatura standard dei display 7 segmenti è:
+
+
+       --a--
+      |     |
+      f     b
+      |     |
+       --g--
+      |     |
+      e     c
+      |     |
+       --d--
+
+con un po' di considerazioni, la sequenza corrispondente segmento/bit è:
+
+   g x x x x x x (unico segmento presente in 8 e non in 0)
+
+1 e 7 hanno i tre bit più a dx in comune; vuoi vedere che la sequenza è:
+
+   g f e d c b a
+
+ci sta; se è vero, allora si confermano
+
+1: 0 0 0 0 1 1 0 (e non 0 0 0 1 1 0 0)
+6: 1 1 1 1 1 0 1 (e non 1 1 1 1 0 1 1)
+
+Anche gli altri indici rispettano questo formato?
+
+queste sì:
+
+IMG_20180104_184609.jpg: goal locali: 0
+IMG_20180104_184616.jpg: goal locali: 1
+IMG_20180104_184632.jpg: goal locali: 2
+IMG_20180104_184640.jpg: goal locali: 3
+IMG_20180104_184649.jpg: goal locali: 4
+IMG_20180104_184658.jpg: goal locali: 5
+
+qui si notano le cifre in sequenza (1 9 9, 1 0, 2 0, 2 1)
+
+IMG_20180104_184711.jpg: goal locali: 199
+IMG_20180104_184803.jpg: goal locali: 10
+IMG_20180104_184826.jpg: goal locali: 20
+IMG_20180104_184841.jpg: goal locali: 21
+
+anche per il timer vale lo stesso discorso:
+
+IMG_20180104_185437.jpg: timer: 0.00
+(impulso del punto separatore, tre zeri in sequenza)
+
+IMG_20180104_185437.jpg: timer: 4.56
+
+(separatore assente?, quattro, cinque e sei)
+
+IMG_20180104_190917.jpg: timer: 10.21
+
+(zero -- quello dei punti locali?, uno, separatore?, zero, due, uno)
+
+verificare cosa si vede all'oscillscopio quando i minuti sono in doppia cifra
+al lampeggiare del separatore; sembra che si trovi tra la cifra delle decine
+e quella delle unità dei minuti.
+
+05/01/2015
+
+non riesco a visualizzare la parte del timer a risoluzione superiore ai .2ms,
+l'auto-trigger evidentemente viene ingannato dalla natura del segnale. Ho girato
+un breve video (cfr. VID_20180105_192630.mp4), in cui si vede il timer contare
+all'indietro per una ventina di secondi, fino a 16.37 (quindi segnava 16.57
+o giù di lì all'inizio del video). Si riconosce e si vede oscillare una volta
+al secondo il bit che segue l'1 delle unità dei minuti e precede le decine
+di secondi.
+
+
+06/01/2018
+
+quindi gli impulsi hanno una durata di due tacche sulla scala 50us, quindi
+pari a 50/5*2 = 20us. resta da capire se c'è e quanto dura lo spazio tra una
+cifra e l'altra.
+
+in IMG_20180102_181337.jpg, lo spazio tra lo zero dei set locali e il fronte di
+salita del primo segmento dell'uno delle centinaia del punteggio locale 199 è
+di circa .2/5*2 = 80us, ma prima del primo segmento dell'uno ci dovrebbero
+(potrebbero) essere altri quattro bit, che guarda caso equivalgono a 4 * 20us.
+Come se non ci fossero pause, ma una sequenza di bit senza soluzione di
+continuità.
+
+ un bit di start
+ set locali: 7 bit
+ goal locali: 3 * 7 bit
+ timer: 4 * 7 bit + 1 bit per il separatore
+ goal ospiti: 3 * 7 bit
+ set ospiti: 7 bit
+
+totale: 86 bit -> 1680us = 1.68ms
+no, il segnale dura di più, almeno 1.8ms, si vede chiaramente.
+
+e se invece fossero sequenze da 8, con il dot nel bit non utilizzato di uno dei
+byte del timer (e il bit di start quello del set locali?
+
+ 12 * 8 * 20us = 1920us = 1.92ms... ci potrebbe anche stare!
+ cfr. 8-bit-per-digit.odg, l'ipotesi sembra reggere.
+
+resta la codifica del timer, byte dal quinto all'ottavo.
+nello schema, il primo bit del sesto byte è a uno; che sia il dot?
+
+il video inizia con un 9 nelle unità dei secondi, per passare a un 8, 7, etc.
+se ci concentriamo sui primi frame (cfr. 8-bit-per-digit-timer.odg), le cifre
+del timer non cambiano, ma cambia il primo bit del sesto byte, che non può
+essere che il dot del timer:
+
+ 1° byte: 0 (set locali)
+ 2° byte:   (centinaia goal locali)
+ 3° byte:   (decine goal locali)
+ 4° byte: 0 (unità goal locali)
+ 5° byte: 1 (decine dei minuti)
+ 6° byte: 6 (unità minuti) <---- contiene il bit di controllo del dot!
+ 7° byte: 5 (decine dei secondi)
+ 8° byte: 9 (unità dei secondi)
+ 9° byte:   (centinaia goal ospiti)
+10° byte:   (decine goal ospiti)
+11° byte: 0 (unità goal ospiti)
+12° byte: 0 (set ospiti)
+
+manca il discorso dei 7 falli e dei timeout, che per adesso tralascio
+(che siano forse anche loro codificati nei bit extra dei byte locali/ospiti?).
+
+Ricostruzione del segnale del video con Arduino, aggiungendo allo sketch
+sps-hc20.ino le seguenti istruzioni in coda alla funzione setup (cfr.
+IMG_20180106_210713.jpg):
+
+tx_buffer[ 0] = 0xfc; // 0
+tx_buffer[ 1] = 0x00;
+tx_buffer[ 2] = 0x00;
+tx_buffer[ 3] = 0xfc; // 0
+tx_buffer[ 4] = 0x60; // 1
+// tx_buffer[ 5] = 0xbe; // 6
+tx_buffer[ 5] = 0xbf; // 6.
+tx_buffer[ 6] = 0xb6; // 5
+tx_buffer[ 7] = 0xe6; // 9
+tx_buffer[ 8] = 0x00;
+tx_buffer[ 9] = 0x00;
+tx_buffer[10] = 0xfc; // 0
+tx_buffer[11] = 0xfc; // 0
+
+oppure con il seguente programma Python:
+
+import serial
+import time
+
+with serial.Serial('/dev/ttyACM0', 57600, timeout=1) as port:
+    for i in range(10):
+        port.write('\xfc\x00\x00\xfc\x60\xbe\xb6\xe6\x00\x00\xfc\xfc')
+        time.sleep(.5)
+        port.write('\xfc\x00\x00\xfc\x60\xbf\xb6\xe6\x00\x00\xfc\xfc')
+        time.sleep(.5)
+
+
+[sps-hc20.ino]
+
+const int TX_PIN = 2;
+
+const int BIT_WIDTH = 14; // microseconds (us)
+                          // should be 20, but we must take into account
+                          // the digitalWrite fn execution time
+
+const int TX_PERIOD = 15; // milliseconds (ms)
+
+const int BUFFER_SIZE = 12;
+
+uint8_t rx_buffer[BUFFER_SIZE]; // data received from the host
+uint8_t tx_buffer[BUFFER_SIZE]; // data to be transmitted to the SPS HC20
+
+int rx_buffer_pos = 0;
+unsigned long last_tx_time = 0;
+
+void setup() {
+    pinMode(TX_PIN, OUTPUT);
+    DDRD |= B00000100;
+    digitalWrite(TX_PIN, HIGH);
+    Serial.begin(57600);
+}
+
+void transmit_bit(int value) {
+    if (value)
+        digitalWrite(TX_PIN, HIGH);
+    else
+        digitalWrite(TX_PIN, LOW);
+    delayMicroseconds(BIT_WIDTH);
+}
+
+void transmit_byte(uint8_t value) {
+    for (int i = 0; i < 8; i++)
+        transmit_bit(value & (1 << i));
+}
+
+void transmit_buffer(const uint8_t* buffer, int size) {
+    for (int i = 0; i < size; i++)
+        transmit_byte(buffer[i]);
+}
+
+void loop() {
+
+    while (Serial.available() && (rx_buffer_pos < BUFFER_SIZE))
+        rx_buffer[rx_buffer_pos++] = static_cast<uint8_t>(Serial.read());
+
+    if (rx_buffer_pos == BUFFER_SIZE) {
+        memcpy(tx_buffer, rx_buffer, BUFFER_SIZE);
+        rx_buffer_pos = 0;
+    }
+
+    unsigned long curr_time = millis();
+
+    if (curr_time - last_tx_time >= TX_PERIOD) {
+        transmit_buffer(tx_buffer, BUFFER_SIZE);
+        digitalWrite(TX_PIN, HIGH);
+        last_tx_time = curr_time;
+    }
+}
+
+cfr. immagini IMG_20180106_204115.jpg (con dot) e IMG_20180106_204146.jpg (senza
+dot). BIT_WIDTH a 14 è stato ricavato sperimentalmente, ed è il valore che produce
+una larghezza di bit il più vicino possibile ai 20us reali, tenendo conto dei
+tempi di esecuzione del codice dello sketch; 13 è troppo poco, 15 è troppo.
+
+
+Resta da capire come interfacciare Arduino al tabellone; basta la massa sul 5
+della presa RJ12 a saldare e il Pin digitale 2 sul 4? Bisogna anche
+cortocircuitare il pin 2 col 5 sulla presa RJ12?
+
+09/01/2018
+
+Prima di provare a collegare il tabellone ad Arduino, ho nuovamente verificato
+le linee 2, 4 e 5 con la consolle in OD: su tutte le coppie si vede del rumore.
+Quindi, finché non si va su SPS, 2 e 5 non sono in corto, e su 4 non viene
+trasmesso nulla.
+
+Inserito lo spinotto nella presa non ancora collegata ad Arduino, ho
+cortocircuitato 2 e 5 e (se non ricordo male) è rimasta la data.
+
+Collegato il 5 alla massa di Arduino, il 4 al pin digitale n. 2, sul tabellone
+resta ancora la data. Collegato il 2 alla massa di Arduino, la data sparisce
+e si accende qualche segmento qua e là. Evidentemente il segnale non viene
+interpretato correttamente. Visto all'oscilloscopio il segnale fa schifo!
+(cfr. IMG_20180109_190936.jpg). Gli impulsi brevi non scendono fino a 0V.
+Dato un treno di impulsi tipo:
+
+    for (int i = 0; i < 8; i++) {
+        PORTD |= 0x04;
+        delayMicroseconds(BIT_WIDTH);
+        PORTD &= ~0x04;
+        delayMicroseconds(BIT_WIDTH);
+    }
+
+BIT_WIDTH deve superare 20 per vedere il segnale che scende a 0V, e comunque
+con un fronte tutt'altro che verticale (cfr. IMG_20180109_192018.jpg, scattata
+a BIT_WIDTH=30).
+
+Strano, però: lo stesso codice, riprovato a casa, la forma d'onda è quella che
+mi ricordavo (cfr. IMG_20180109_215330.jpg). Come si spiega?!?
+
+Ad ogni modo ho trovato questo:
+
+https://www.codeproject.com/Articles/732646/Fast-digital-I-O-for-Arduino
+https://github.com/Locoduino/DIO2
+
+Installare dall'IDE (Sketch -> Include Library -> Manage Libraries, cercare DIO2)
+ce n'è solo una, di Jan Dolinay -- io ho trovato la v. 1.4.0!
+andare in ~/Arduino/libraries/DIO2/board e prendere nella cartella della scheda
+in uso il file pins2_arduino.h e copiarlo nella cartella dello sketch.
+Effettivamente è più veloce (cfr. IMG_20180109_221213.jpg digitalWrite con
+BIT_WIDTH ripristinato a 14, e IMG_20180109_221753.jpg, con digitalWrite2),
+resta da vedere se migliora il segnale. Che sia un problema di rumore
+elettromagnetico in palestra? Provare qualche schermatura? Proviene forse dal
+tabellone? Che ci sia da mettere una resistenza verso massa sul pin digitale?
+
+10/01/2018
+
+Il problema può dipendere dalla mancata sincronizzazione con segnale di
+alimentazione? Non direi, quello è un 50Hz, il periodo sulla linea digitale
+è intorno ai 16/17ms. La distorsione può essere dovuta ad una richiesta di
+corrente troppo elevata? Arduino può erogare al max 40mA (consigliati 20mA),
+magari serve un driver che aumenti la potenza del segnale. D'altra parte la
+distorsione mi pare sia più forte sul fronte di discesa (sarà vero?). Può
+dipendere dalla lunghezza del cavo (>20m)? Capacità/resistenza troppo elevata?
+Forse può valere la pena provare... Ad ogni modo, alimentato con il PC via
+USB Arduino riesce a fornire al max 500mA sulla linea +5V (1A con alimentatore).
+Altro esperimento possibile: vedere cosa succede al segnale se viene richiesta
+troppa corrente, basta mettere un potenziometro in serie a una resistenza che
+limiti la corrente max tipo a 50mA.
+
+12/01/2018
+
+Provo a simulare una richiesta di corrente esagerata su Arduino.
+
+Rmin = Vcc / Imax
+
+se pongo Imax = 50mA, Rmin = 100Ohm (250mW)
+
+Nel kit non c'è una resistenza da 100, ne metterò in parallelo due da 220.
+
+In serie a Rmin pongo un potenziometro (nel kit ce n'è uno da 10K).
+
+
+ Arduino
+      ---+
+         |
+         .
+         .
+         .               +-----+
+         |               |     |
+         |       (+)     v     |           (-)
+   Pin 2 o--------o--/\/\/\/\--o--/\/\/\/\--o
+         |            10KOhm       110Ohm   |
+         |                                  |
+      ---+                                -----
+                                           ---
+                                            -
+
+Oscilloscopio su (+) e (-), col potenziometro cortocircuitato il segnale cala
+di tensione (Vcc scende intorno ai 4V) ma non viene distorto. Provato anche
+ad inserire un condensatore da 100pF e poi da 100nF, ma di distorsione nemmeno
+l'ombra (mi pare di capire che le capacità parassite sono dell'ordine di
+qualche pF/m, al max un centinaio).
+
+15/01/2018
+
+Alla luce degli esperimenti un amico esperto elettronico mi consiglia di
+provare a mettere in serie una resistenza di 50/100Ohm, ritenendo che i disturbi
+più che ad una richiesta di corrente troppo elevata possano essere dovuti
+a rimbalzi; in prima battuta dice:
+
+> Ok, ho visto le curve di carico degli output del micro e, per quanto riguarda
+> il sink, a 20mA va poco sotto 1V.
+>
+> Pensavo che il micro avesse una impostazione di slew rate degli output,
+> presente in altri micro, ma ad una lettura veloce non mi risulta.
+>
+> Però dal segnale che hai acquisito tu va su bene a 5V, come se l'ingresso del
+> tabellone avesse un pull-up molto basso.
+>
+> Non rimane che provare a mettere un buffer, come si diceva, adesso vedo cosa
+> ho in casa ;-)
+
+Poi aggiunge:
+
+> Reset...
+>
+> Allora... come ipotizzavi tu all'inizio non è un problema di pilotaggio in
+> corrente in quanto se diamo all'uscita dell'Arduino il tempo di stabilizzarsi
+> il livello lo raggiunge.
+>
+> I fronti di salita e di discesa sono lenti, ma tu hai fatto le prove con
+> 100nF e non hai notato lo stesso effetto (confermi?).
+>
+> Quindi non è un problema di impedenza di ingresso del tabellone.
+>
+> A questo punto potrebbe essere un problema di riflessione della linea: se è
+> questa la causa potresti provare a inserire una resistenza da 50 o 100ohm in
+> serie all'uscita dell'Arduino, ovvero tra l'uscita dell'Arduino e l'ingresso
+> del tabellone e vedi se la forma d'onda del segnale cambia.
+
+Proverò inviando un 2 o un 5 come cifra dei set locali, in modo da avere la
+possibilità di vedere almeno 3/4 impulsi sulla scala temporale dei 50us.
+
+Provato a collegare un vecchio cavo telefonico (15m ca), ma il segnale rimane
+stabile, sia col cavo a vuoto sia collegando a valle un vecchio modem analogico
+(spento!). Se a valle ci metto una resistenza da 500Ohm, il segnale cala di
+circa 0,4V, ma non si distorce. Con una resistenza da 50Ohm, il calo è di 1,4V,
+ma senza distorsioni. Non si può escludere il cavo (può essere che il mio abbia
+un'impedenza completamente diversa da quella del tabellone), ad ogni modo non
+rimane che provare con la resistenza in serie.
+
+Ho però trovato un errore nella codifica: creavo i byte con il segmento 'a'
+nel bit meno significativo, che però poi spedivo per primo (cfr. cartella
+code/sps-hc20-1); sistemato in code/sps-hc20. Che fosse questo il problema?
+Non credo, la distorsione comunque c'era!
+
+16/01/2018
+
+Provato a mettere in serie la resistenza da 50Ohm (4x220 in parallelo, al
+tester misuravano -- ieri -- 54Ohm).
+Ha funzionato!
+
+IMG_20180116_184052.jpg uscita Arduino a vuoto
+IMG_20180116_184709.jpg uscita Arduino a tabellone collegato
+IMG_20180116_184723.jpg uscita Arduino a tabellone collegato (bis)
+IMG_20180116_184929.jpg tra resistenza e tabellone
+
+Confrontando IMG_20180116_184723 e IMG_20180116_184929 si può determinare la
+caduta sulla resistenza, pari a circa 0,6V (tre tacche sulle ordinate).
+Quanta corrente scorre allora sulla resistenza? 0,6/54 ~ 11mA.
+
+IMG_20180116_190857.jpg uscita Consolle (a tabellone collegato)
+
+Se ho capito bene, la resistenza di terminazione (il cui scopo è eliminare le
+riflessioni del segnale) è necessaria solo se la durata dell'impulso più breve
+è minore di 10 volte il tempo di propagazione; se è maggiore, il segnale ha il
+tempo per stabilizzarsi sulla linea, e le riflessioni non si verificano.
+Conto della serva: la velocità di propagazione di un segnale elettrico in un
+conduttore è 2/3 la velocità della luce; se il cavo è lungo 20m, il tempo di
+propagazione è di 1 / (0.66 * 3E8) * 20 = 100ns. Altro che 10 volte più lungo,
+l'impulso più breve che viene trasferito dura solo 20ns, 1/5 del tempo di
+propagazione!
+
+Sul tabellone si sono illuminati dei display a caso, in particolare solo quelli
+dell'orologio, più il segmento 'a' dei set locali (che corrisponde all'ultimo
+bit trasmesso). Ho provato solo lo sketch con i digitalWrite, con BIT_WIDTH pari
+a 13, con un numero variabile di NOP, da 0 fino a oltre 20. Solo una volta si
+sono illuminati i segmenti del punteggio degli ospiti, altrimenti sempre e solo
+quelli del timer (in una manciata di configurazioni diverse, non moltissime);
+il segmento 'a' del set degli ospiti acceso è stata l'unica costante.
+Rifare di nuovo il giro dei segnali (ora che si sa che 2 e 5 fanno da massa) per
+cercare un segnale di sincronismo?
+
+18/01/2018
+
+Alla ricerca del segnale di sincronismo
+
+5(-) - 4(+) -> segnale (un po' ballerino come sempre, ma è lui)
+5(-) - 2(+) -> massa (un po' ballerina, ma sempre lei)
+5(-) - 1(+) -> alimentazione, a ben guardare non proprio una sinusoide
+               (cfr. IMG_20180118_184523.jpg, IMG_20180118_184550.jpg)
+               si vede bene il periodo di 20ms
+               Tra l'altro, mi viene il dubbio che il treno di impulsi 5/4
+               sia in realtà sincronizzato con questa onda (cfr.
+               IMG_20180118_184737.jpg)
+5(-) - 6(+) -> come 5/1 (cfr. IMG_20180118_184938.jpg)
+5(-) - 3(+) -> sembrano picchi spurii (IMG_20180118_185508.jpg), ma a ben
+               guardare... è un clock! (IMG_20180118_185708.jpg)
+               il clock (IMG_20180118_185847.jpg) è presente solo durante il
+               segnale (IMG_20180118_190048.jpg).
+
+
+Un impulso ogni otto è più lungo degli altri! E' indispensabile?
+
+Non ho avuto modo di catturare il clock in dettaglio, non so di quanti impulsi
+sia costituito e quale sia la logica sottostante: comanderà il fronte di salita
+o quello di discesa? Il numero di impulsi potrebbe dare delle indicazioni. La
+questione forse non è nemmeno fondamentale, basterà qualche esperimento in
+diretta, spostando il clock in avanti o indietro di +/- uno o mezzo impulso.
+
+19/01/2018
+
+Ora il dubbio è: il clock è generato dal tabellone o dalla consolle?
+Spero di sì, spiegherebbe anche l'accensione "casuale" dei segmenti del
+tabellone nelle prove di trasmissione con Arduino. Se è così, lo genera sempre
+o solo quando la consolle è collegata? Sia in modalità OD che SPS?
+
+Dovesse essere generato dal tabellone, mi sa che non riuscirò a starci
+dietro con Arduino... a occhio, la frequenza del segnale di clock si aggira
+sui 1 / (50us/3) ~ 60KHz -- ricordarsi che c'è la possibilità di assegnare una
+interrupt al cambiamento di stato di un pin digitale (anzi, è la tecnica
+consigliata per questo tipo di applicazioni) --. Che rischio c'è di perdere
+dati dalla seriale con le interruzioni? Potrei sempre abbassare la velocità di
+trasmissione, o usare due byte extra (STX/ETX) per rigettare trasmissioni
+incomplete. Converrà disabilitare le interruzioni durante il memcpy? Anche no,
+vorrà dire che solo parte dei display del tabellone saranno aggionrnati in
+questo ciclo -- meglio non perdere cicli di refresh, non so come reagisce il
+tabellone in questi casi (troverebbe la linea dati sempre alta).
+
+Tempi di digitalRead vs lettura PORTD
+
+[https://jeelabs.org/2010/01/06/pin-io-performance/]
+
+ * 10 analog 10-bit readings per millisecond with analogRead()
+ * 128 pwm settings per millisecond with analogWrite()
+ * 220 pin reads per millisecond with digitalRead()
+ * 224 pin writes per millisecond with digitalWrite()
+ * 1056 pin reads per millisecond with direct port reads
+ * 1059 pin writes per millisecond with direct port writes
+
+(in un for loop senza nient'altro che la read!)
+
+Interruzioni con Arduino:
+
+https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+http://gammon.com.au/interrupts
+(le ho già usate nell'accelerometro grafico)
+
+Posso collegare un interrupt al cambio di livello logico dei soli pin digitali
+2 e 3, su qualunque condizione (fronte di salita, di discesa, livello alto,
+livello basso, cambio di stato). Ricordarsi di disabilitare le interrupt nel
+setup(), potrebbero già arrivare gli impulsi del clock!
+
+Servirà la resistenza interna di pull-up? Direi di no, non c'è nulla di
+flottante. Collegare la linea di clock del tabellone (ammesso e non concesso
+che sia lui a generarlo) provocherà distorsioni come sulla linea del segnale?
+
+Quanto ci mette Arduino a servire un'interrupt?
+
+> [...] 2.9375 µS before entering your interrupt handler, and another 2.1875 µS
+> after it returns.
+
+Il dubbio è quello di perdere qualche carattere dalla seriale. Supponendo una
+trasmissione 8N1, 1 byte = 10bit trasmessi. a 9600, per trasmettere 10 bit
+servono 1.04ms; a 57600, 0.17ms. Sapendo quanto dura l'ISR, posso capire fin
+dove spingermi. Da valutare anche quanto spesso avvengono le trasmissioni,
+di norma una al secondo (10 al secondo, se si conta di mostrare i decimi di
+secondo durante l'ultimo minuto del periodo di gioco), più qualche sporadica
+trasmissione extra al cambiamento del set/punteggio.
+
+---
+
+Come non detto, il tabellone non genera il clock, nè con la connessione 2/5
+aperta, nè chiusa. D'altra parte, la memoria dell'ultima configurazione sembra
+sia nel tabellone: appena collegata la consolle e spostato l'interruttore su
+SPS (tra l'altro, può essere OD=ora/data, SPS=segnapunti?!) per un attimo è
+apparsa una configurazione causale molto simile a quella che si presentava
+durante le ultime prove effettuate con Arduino.
+
+Poiché con il tabellone a vuoto il segnale sul pin 3 della presa RJ era
+flottante sia con 2/5 aperto che chiuso, appurato che il clock appare solo a
+consolle collegata, e solo quando su SPS (se su OD la linea rimane bassa),
+concludo a questo punto che sia la consolle a generarla. La prova del nove
+sarebbe alimentare la consolle sui soli pin 1/2, porla in modalità SPS e
+verificare se il clock c'è. Ma non è semplice trasferire solo le prime due
+linee dal tabellone alla consolle...
+
+
+Catturate alcune nuove immagini del clock:
+
+IMG_20180119_185315.jpg: treno completo, a bassa risoluzione
+IMG_20180119_185605.jpg: parte finale del treno: si nota l'impulso più lungo,
+seguito da altri sette impulsi brevi;
+IMG_20180119_185657.jpg: come sopra;
+IMG_20180119_185919.jpg: segnale di clock completo (salvato nella memoria
+dell'oscilloscopio, per contare gli impulsi totali); si distinguono gli
+impulsi più lunghi;
+IMG_20180119_190117.jpg: dettaglio alla massima risoluzione, comprende un
+impulso lungo.
+
+20/01/2018
+
+IMG_20180120_141841.jpg, IMG_20180120_142210.jpg: primi sette impulsi del clock
+IMG_20180120_142128.jpg, IMG_20180120_142315.jpg: ultimi sei/sette impulsi
+
+La sequenza completa è (7 brevi, uno largo){11}, 7 brevi
+
+L'impulso breve dura all'incirca 18us, quello lungo all'incirca 24us. Il duty
+cycle è di gran lunga maggiore del 50% (cfr. IMG_20180119_190117.jpg).
+
+La scommessa è: quando viene acquisito il livello logico del segnale? Sul fronte
+di discesa? Sul livello basso? Sul fronte di salita? Sul livello alto? Il fatto
+che quando il segmento g del display ospiti è spento il segnale si protragga
+per una durata equivalente a svariati impulsi mi fa pensare che o è il fronte
+di salita o il livello alto. Del resto, la linea è normalmente a livello alto,
+quindi lo escluderei, così come il caso del cambiamento logico: essendoci un
+impulso per bit, ci sono due cambiamenti di stato per bit.
+
+21/01/2018
+
+A proposito della memoria dell'ultima configurazione: forse non c'è nessuna
+memoria, è semplicemente il fatto che il tabellone non viene mai spento!
+Ad ulteriore prova del fatto che il clock non arriva dal tabellone c'è il fatto
+che durante le prove con Arduino la configurazione dei segmenti era sì causale,
+ma stabile: all'accensione/collegamento al circuitino il tabellone accendeva
+una configurazione casuale di segmenti, che rimaneva però stabile.
+
+22/01/2018
+
+Sovrapposti clock (IMG_20180119_185919.jpg) e segnale (IMG_20180116_190857.jpg)
+facendo corrispondere il primo fronte di discesa (clock-vs-signal.xcf e
+clock-vs-signal.png): fossero le due forme d'onda effettivamente sincronizzate
+su quel fronte, allora il campionamento da parte del tabellone avverrebbe sul
+fronte di salita. La cresta del segnale sembra poi intimamente correlata con il
+segnale di clock.
+
+---
+
+Provato a ricostruire il clock con Arduino, sincronizzandolo con il segnale
+(cfr. IMG_20180122_210449.jpg -- segnale, IMG_20180122_210515.jpg -- clock).
+A lungo andare, mi sono accorto che a volte si perde qualche byte (lavoro a
+57600, incrementando da 0 a 9 il set locali). Il risultato finale era che il
+treno di impulsi si spostava lentamente verso dx, a occupare prima il punteggio
+locale, poi il timer, ... (cfr. IMG_20180122_220247.jpg -- posizione corretta,
+IMG_20180122_220940.jpg -- posizione shiftata). Sembra risolto introducendo una
+coppia di byte STX/ETX, annullando l'intero pacchetto se il primo non è STX
+o l'ultimo un ETX. Dopo una decina di minuti di funzionamento, il display
+comandato è ancora quello del set locali. In corso un test con aggiornamento
+ogni 20ms, durata prevista: 2h (interrotto dopo una ventina di minuti).
+
+Provare a 9600 senza controllo STX/ETX: ancora problemi?
+Provare a 57600 per almeno due/tre ore.
+
+Dovesse funzionare, ricordarsi di testare l'effetto del bit più significativo
+sui vari display: OCCHIO, C'E' IL RISCHIO DI FAR PARTIRE LA SIRENA (davvero?)
+Provare all'inizio ad attivarlo per qualche frazione di secondo.
+
+23/01/2018
+
+Provare a disabilitare le interruzioni durante la trasmissione di un byte,
+anziché dell'intero buffer; misurare il tasso d'errore nei due casi. Servirà
+un byte di risposta da parte di Arduino (es ACK = 0x06, NAK = 0x15) per
+segnalare al PC se la trasmissione ha avuto buon fine. Implementare la doppia
+trasmissione binario/ascii spostando nello sketch di Arduino la definizione del
+font. Basterà aggiungere un byte dopo l'STX che indica il tipo di trasmissione
+(es. 'A' = ASCII, 'B' = binario). Bello sarebbe che STX ed ETX non fossero
+ambigui (difficile nel binario, a meno di non usare codici oltre 0x7f).
+Certo se se STX, ETX, ACK & NAK fossero caratteri stampabili si potrebbe
+facilmente comandare Arduino con un terminale a caratteri (comodo per debug).
+
+Sovrapposto clock e segnale generati da Arduino: se è vero che è il fronte di
+salita a comandare, forse vale la pena di ritardarlo un pelo, in modo di dare
+tempo al segnale di stabilizzarsi (cfr. clock-vs-signal_arduino.png).
+
+E' poi vero che ci dev'essere quella pausa extra di 6us tra due byte? Fino a
+quanto si può spingere in frequenza? Che effetto fa "rarefare" i pacchetti?
+
+---
+
+Sembra proprio che il campionamento avvenga sul fronte di salita!
+Ecco la prima configurazione impostata con Arduino: cfr. IMG_20180123_182733.jpg
+Il video VID_20180123_183220.mp4 mostra una delle prime animazioni.
+IMG_20180123_190718.jpg mostra invece il circuito. Qui uso 2 resistenze da
+56Ohm, che provocano una caduta di circa 0.6/0.8V sia sul segnale che sul clock.
+
+
+Sulla memoria c'è qualcosa che non mi torna; ok che il tabellone può ricordarsi
+l'ultima configurazione in modalità SPS; ma la consolle, quando viene
+ricollegata, se la fa dare dal tabellone o ce l'ha anche lei? Provare:
+
+ * collegare la consolle
+ * impostare una configurazione sul tabellone
+ * scollegare la consolle, collegare Arduino
+ * impostare una configurazione DIVERSA sul tabellone
+ * scollegare Arduino, ricollegare la consolle: cosa mostra il suo display?
+   cosa mostra il tabellone?
+
+Riguardo invece alle interruzioni, implementare l'ACK/NAK e contare quanti
+di questi arrivano da Arduino, lavorando a 57600 per qualche minuto con
+periodo 20ms (lo standard del tabellone):
+
+ * senza bloccare le interruzioni;
+ * con interruzioni bloccate durante la trasmissione di un bit;
+ * con interruzioni bloccate durante la trasmissione di un byte;
+ * con interruzioni bloccate durante la trasmissione dell'intero pacchetto.
+
+La frequenza di trasmissione risultante quanto dista dai 50Hz? Che tasso di
+errori di trasmissione si registra?
+
+Ad ogni modo, con le interruzioni sul singolo byte, il conteggio sul set locali
+già a 2Hz perdeva anche due cifre al colpo (1, 2, 4, 8, 9, 0, 1, ...)
+Senza interruzioni le animazioni erano fluide anche quelle spinte (es. 10Hz),
+e il tabellone non ha perso un colpo.
+
+Ho provato poi ad attivare i bit più significativi, sperando di riuscire ad
+accendere gli indicatori dei 7 falli e dei timeout; nulla da fare, però, oltre
+a confermare che quello del sesto byte comanda il punto che separa minuti e
+secondi, ho scoperto che quello del quarto comanda la sirena!
+
+Gli indicatori sono invece comandati dal byte del display delle centinaia del
+punteggio:
+
+LOCALI
+
+b0 = -
+b1 = segmento b
+b2 = segmento c
+b3 = -
+b4 = timeout 2
+b5 = timeout 1
+b6 = 7 falli
+b7
+
+OSPITI
+
+b0 = -
+b1 = segmento b
+b2 = segmento c
+b3 = -
+b4 = 7 falli
+b5 = timeout 2
+b6 = timeout 1
+b7
+
+24/01/2018
+
+situazione tabellone ignota (non mi ricordo come l'ho lasciato dopo gli
+smanettamenti di ieri); attacco la consolle in OD, e mostra sul suo display
+0 34 0:00 28 0; vado in SPS e questi dati appaiono sul tabellone. Attacco
+Arduino, e vedo 2 3 45:07 9 0. Riattacco la consolle, sempre in OD, e vedo
+di nuovo 0 34 0:00 28 0 sul suo display LCD. Vado in SPS e questi appaiono sul
+tabellone. Concludo che è la consolle ad avere la memoria, posso perciò
+escludere una comunicazione tabellone -> consolle.
+
+Approfittato per sostituire le resistenze da 56Ohm con quelle da 33; la caduta
+si è ridotta a 0.4V circa (cfr. IMG_20180124_185439.jpg e
+IMG_20180124_185510.jpg).
+
+25/01/2018
+
+Nota: se la pausa inter-byte di 6us non è fondamentale, si potrebbe pensare di
+implementare la trasmissione via SPI [https://www.arduino.cc/en/Reference/SPI],
+anche se non so se ci possano essere conflitti con Serial: entrambe usano le
+interruzioni. L'ATTiny85 lo supporterà? Sull'Arduino Uno le linee sono presenti
+anche su un connettore dedicato, l'ICSP.
+
+    // https://www.arduino.cc/en/Reference/SPI
+    // P = 20us -> f = 50KHz
+    // clock polarity = 1 (idle when high)
+    // clock phase = 1 (sample on rising edge)
+    SPI.begin();
+
+    SPISettings(50000, MSBFIRST, SPI_MODE3);
+    SPI.beginTransaction();
+    SPI.transfer(...); // byte, word, (ptr, size)
+    SPI.endTransaction();
+
+    // connections:
+    // MISO (Master In Slave Out) -> not used
+    // MOSI (Master Out Slave In) -> pin 11
+    // SCK (Serial Clock)         -> pin 13
+
+Usare le interruzioni per evitare l'accumulo di errore sui 20ms
+(è così problematico, poi?). Si può: si attiva un'interruzione da CTC, nella
+routine di servizio dell'interruzione si alza un flag e nel loop principale
+si attende che il flag si alzi, si trasmette e lo si riabbassa.
+
+Capire come programmare le interruzioni, non è banale! Qualcosa si trova qui:
+[http://forum.arduino.cc/index.php?topic=97610.15]
+
+No, SPI non lo posso usare; lavora con una frequenza che è sotto-multiplo della
+frequenza di sistema (16MHz), ma il massimo divisore è 128, che vuol dire che
+non posso scendere sotto i 16MHz/128 = 125KHz (T=8us, periodo confermato dallo
+oscilloscopio). Servirebbe un divisore pari a 16MHz/50KHz = 320.
+
+Riguardo all'ACK/NAK, non so quando rispondere: non posso farlo quando mi
+arriva un ETX (potrebbe essere un dato, non il marcatore); al massimo potrei
+farlo quando arrivo in fondo al buffer... chi spedisce però deve prepararsi
+a non ricevere nulla (andare in timeout).
+
+Test 15000 trasmissioni intervallate di 20ms, con timeout di 1ms in lettura
+(durata del test ~5 min, cfr. stress-test.py):
+
+Senza disabilitare le interruzioni
+successes.... 14999
+errors....... 0
+timeouts..... 1
+elapsed(s)... 309.442965984
+
+Disabilitando le interruzioni durante la trasmissione dell'intero pacchetto:
+successes.... 12371
+errors....... 1173
+timeouts..... 1456
+elapsed(s)... 310.200143099
+
+Disabilitando le interruzioni durante la trasmissione del singolo byte:
+successes.... 14999
+errors....... 0
+timeouts..... 1
+elapsed(s)... 309.53986001
+
+Disabilitando le interruzioni durante la trasmissione del singolo bit(?!):
+successes.... 14999
+errors....... 0
+timeouts..... 1
+elapsed(s)... 309.623077154
+
+30/01/2018
+
+Predisposto il circuito con i driver TC4427 in uscita (cfr.
+IMG_20180130_211552.jpg e IMG_20180130_211620.jpg).
+
+02/02/2018
+
+Varie prove disastrose: il circuito che sembra non funzionare più(?),
+riscontrato diversi problemi anche al pilotaggio diretto con Arduino
+(sirena intermittente, tempo che non scorre fluido, provato ad allungare i
+tempi di BIT_WIDTH, il periodo a 100ms, eliminare l'ACK/NAK... poi mi rendo
+conto che mi ero dimenticato di inserire le resistenze di terminazione!)
+
+03/02/2018
+
+Ricablato il circuito, provato in palestra (torneo peterpan), la comunicazione
+funziona -- provato giusto un countdown di 20 secondi con sirena finale. La
+caduta sulle resistenze di terminazione si aggira sui 0.4V (cfr.
+IMG_20180203_145023.jpg uscita dell'integrato, IMG_20180203_145121.jpg dopo la
+resistenza).
+
+Non resta che preparare la schedina.
+
+Preparata la schedina (cfr. IMG_20180203_191819.jpg, IMG_20180203_191857.jpg e
+IMG_20180203_191952.jpg), provata in palestra, tutto ok, tranne per il fatto
+che la consolle.py si è bloccata dopo meno di 2 minuti. Pensando si trattasse
+degli ACK/NAK che hanno saturato il buffer (scoreboard.py non fa nessuna lettura
+sulla seriale), modificato lo sketch commentando le Serial.write; la console
+ha funzionato per 4/5 minuti, dopodiché si è esaurita la batteria del portatile.
+
+Provato di nuovo a casa con la trasmissione degli ACK/NAK da parte dello sketch
+e ignorati lato Python. Dovrei riprodurre il problema, che non ha niente a che
+vedere con la presenza del tabellone... TRA L'ALTRO, TUTTE LE PROVE SOFTWARE
+FATTE CON PYTHON 2.7.12 SU UBUNTU 16.04 64 bit.
+Effettivamente si nota un rallentamento, dopo un po' (atteso 7 minuti di
+conteggio, spostato l'orologio all'ultimo minuto, i decimi procedevano molto
+lentamente!). Sembra corretta anche l'ipotesi del riempimento del buffer;
+aggiungendo la linea
+
+        if response and ord(response) == self._ACK:
+            self._last_transmitted_data = data
+
+nel codice della Scoreboard, il problema non si ripresenta. Se si aggiunge
+inoltre a scopo di debug:
+
+        else:
+            global error
+            error += 1
+            print "error n.", error, " ", response
+
+si nota che gli errori si verificano solo all'inizio, ed il loro numero dipende
+dal timeout impostato sull'oggetto Serial. con 20ms, se ne contano 2 o 3, a 5m
+siamo sui 7/8. Sempre e solo all'inizio. Si tratta sempre e comunque ti errori
+di timeout (response == None), mai di NAK o altri caratteri strani ricevuti.
+Due test su un tempo da 30min, ha tenuto il passo con il cronometro del
+telefonino senza generare più nessun errore.
+
+04/02/2018
+
+Test su Windows della Consolle, su un tempo da 30min. 10 errori di timeout
+iniziali, poi tutto ok, in sincrono con il cronometro del telefonino.
+Test su Windows del Referto, su un tempo da 30min. 9 errori di timeout
+iniziali, poi tutto ok, in sincrono con il cronometro del telefonino.
+
+06/02/2018
+
+Simulati due tempi da 30, uno con la consolle, uno con il referto. Le cadute
+sulle resistenze di terminazione del circuito definitivo si confermano sui 0,3V.
+Preparata la scatola, incollata la presa prima con della resina bicomponente
+epossidica, aggiunto poi della colla a caldo come riempitivo (cfr.
+IMG_20180206_222107.jpg, IMG_20180206_222802.jpg). A parte dei prevedibili fix
+da apportare al software, se al collaudo finale di venerdì tutto funziona, per
+me l'avventura si chiude qui.
+
+08/02/2018
+
+Provato a collegare la scatolina alimentata con una batteria da 9V al tabellone,
+è comparsa la configurazione 0 0 0:00 0 0, quindi corti non ce ne dovrebbero
+essere. Domani l'ultimo test.
+
+09/02/2018
+
+Provato il py2exe, funziona. Non ho risolto invece il problema del reset di
+Arduino a causa della gestione del DTR da parte di pyserial (cfr. file
+readme-ubuntu.txt e readme-win-xp.txt). Da affrontare con calma a casa.
+
+ALTRO PROBLEMA APERTO: impostazione data/ora del tabellone: -> fuori scopo!
+
+10/02/2018
+
+Testato report.py durante una partita di campionato (cfr.
+partita-del-2018-02-10.txt). L'edit degli eventi ci vuole: assegnato un goal
+ad un giocatore (B27), dopo un po' è emerso che il 27 non c'era, e aveva
+segnato il 37. Ma ormai era già accaduto un altro evento. In più, è stato
+ammonito l'allenatore, cosa che il programma non prevede.
+
+Testato consolle.py su Windows 10 durante la seconda partita di campionato.
+Tutto è andato per il meglio, con tanto di sirena di fine tempo.
+
+Nelle categorie superiori sembra sia richiesto il tempo cumulativo di partita.
+-->
+
+<p class="modification-notice">Pagina modificata il 16/02/2018</p>
+</body>
+</html>
