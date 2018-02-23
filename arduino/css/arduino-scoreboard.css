@@ -13,26 +13,23 @@ p.illustration {
  margin-top: .5em;
 }
 
-span.pin {
- font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
- font-size: .85em;
+td.header {
+ font-weight: bold;
+ text-align: center;
 }
 
-span.signal {
- font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+td.label {
+ text-align: center;
 }
 
-td.pin {
- font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
- padding-right: 2em;
+td.number {
  text-align: right;
 }
 
-td.signal {
- font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
- text-align: left;
-}
-
-td.wire {
- font-style: italic;
+video {
+ border: 1px solid #073642;
+ display: block;
+ margin-left: 3em;
+ margin-top: 2em;
+ margin-bottom: 0em;
 }
