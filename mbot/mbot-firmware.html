@@ -1,0 +1,207 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Studio del firmware di mBot</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/mbot-firmware.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mbot-firmware">risorse</a> | studio del firmware di mBot</p>
+<h1>Studio del firmware di mBot</h1>
+<h2>Introduzione</h2>
+<p>Una volta assemblato, mBot può essere subito utilizzato secondo tre modalità: telecomandato (modo A), scansa-ostacoli (modo B) e inseguimento della linea (modo C). Lo sketch del firmware è scaricabile dal <a href="https://github.com/Makeblock-official/Makeblock-Libraries/blob/master/makeblock/examples/Firmware_For_mBlock/mbot_factory_firmware/mbot_factory_firmware.ino">sito ufficiale</a> (<a href="files/mbot-firmware/mbot_factory_firmware.ino">qui</a> una copia locale del sorgente a maggio 2017). È possibile realizzare le tre funzionalità utilizzando la programmazione a blocchi di mBlock?</p>
+<p>Prima di cominciare, un paio di premesse.</p>
+<h3>Identificazione dei motori</h3>
+<p>Se mBot è stato montato correttamente, nell'ambiente mBlock <span class="code">M1</span> rappresenta il motore di sinistra, <span class="code">M2</span> quello di destra. Quando si assegna un valore di velocità positivo ad un motore, questo gira in modo da far avanzare il robot &ndash; <span class="code">M1</span> in senso orario, <span class="code">M2</span> in senso antiorario &ndash;, viceversa per valori di velocità negativi.</p>
+<h3>Tecniche di sterzata</h3>
+<p>Nel firmware originale le curve in avanti vengono effettuate riducendo la velocità di rotazione della ruota interna a un quinto della velocità nominale, quelle in retromarcia a un ottavo:</p>
+<pre class="code">
+[file mbot_factory_firmware.ino]
+...
+
+void Forward()
+{
+  MotorL.run(-moveSpeed);
+  MotorR.run(moveSpeed);
+}
+void Backward()
+{
+  MotorL.run(moveSpeed);
+  MotorR.run(-moveSpeed);
+}
+void TurnLeft()
+{
+  MotorL.run(-moveSpeed/5);
+  MotorR.run(moveSpeed);
+}
+void TurnRight()
+{
+  MotorL.run(-moveSpeed);
+  MotorR.run(moveSpeed/5);
+}
+void BackwardAndTurnLeft()
+{
+  MotorL.run(moveSpeed/8 );
+  MotorR.run(-moveSpeed);
+}
+void BackwardAndTurnRight()
+{
+  MotorL.run(moveSpeed);
+  MotorR.run(-moveSpeed/8);
+}
+void Stop()
+{
+  rgb.setColor(0,0,0);
+  rgb.show();
+  MotorL.run(0);
+  MotorR.run(0);
+}
+</pre>
+<p class="illustration">Le routing di controllo del movimento del robot</p>
+<p>Notare come nella programmazione a basso livello si debba tener conto del fatto che i due motori sono contrapposti: per esempio per far avanzare il robot è necessario far girare il motore di sinistra, <span class="code">MotorL</span>, in senso orario &ndash; impostando un valore di velocità negativo &ndash; mentre quello di destra, <span class="code">MotorR</span>, in senso antiorario &ndash; specificando un valore di velocità positivo. mBlock ci risparmia questa complicazione!</p>
+<h2>Guida manuale telecomandata</h2>
+<p>La modalità di funzionamento di guida manuale è realizzata dalle due procedure <span class="code">get_ir_command</span> e <span class="code">modeA</span>: la prima si occupa di stabilire velocità e direzione del robot sulla base dei tasti che l'utente ha premuto sul telecomando, la seconda di attivare i motori.</p>
+<p>Interessante la logica di arresto del robot: si ferma automaticamente quando sono trascorsi più di 120ms dall'ultima pressione di un tasto. Non è troppo complicato implementare lo stesso criterio con i blocchi: sarebbe sufficiente azzerare il timer di cui è dotato mBot ogniqualvolta si registra la pressione di un tasto del telecomando e introdurre una variabile che indica se il robot è in movimento oppure è fermo; il robot andrebbe fermato se risulta in movimento e il valore del timer è superiore a 0,12s:</p>
+<img src="img/mbot-firmware/remote-manual-control-timer.png">
+<p class="illustration">Una possibile implementazione dell'arresto temporizzato</p>
+<p>La semplice soluzione di arrestare il robot non appena si riscontra che nessuno dei tasti direzionali del telecomando è premuto è tuttavia più intuitiva e l'effetto finale praticamente indistinguibile:</p>
+<pre class="code">
+  imposta [velocità] a [150]
+  per sempre
+    se &lt;tasto avanti premuto&gt; allora
+      imposta (M1) a (velocità)
+      imposta (M2) a (velocità)
+      accendi led (entrambi) sul (verde)
+    altrimenti
+      se &lt;tasto destra premuto&gt; allora
+        imposta (M1) a (velocità)
+        imposta (M2) a (velocità / 5)
+        spegni led (sinistro)
+        accendi led (destro) sul (giallo)
+      altrimenti
+        se &lt;tasto indietro premuto&gt; allora
+          imposta (M1) a (-velocità)
+          imposta (M2) a (-velocità)
+          accendi led (entrambi) sul (rosso)
+        altrimenti
+          se &lt;tasto sinistra premuto&gt; allora
+            imposta (M1) a (velocità / 5)
+            imposta (M2) a (velocità)
+            accendi led (sinistro) sul (giallo)
+            spegni led (destro)
+          altrimenti
+            imposta (M1) a (0)
+            imposta (M2) a (0)
+            spegni led (entrambi)
+            ...
+</pre>
+<p>Il codice prosegue con 9 blocchi <span class="code">se/allora</span> associati ai tasti 1&div;9 del telecomando per il controllo della velocità. Ricordando che la massima velocità consentita è 255 e tenendo conto che se le batterie non sono perfettamente cariche un valore inferiore a 50~60 potrebbe non essere sufficiente per far muovere il robot, assegnamo il valore 50 alla prima velocità e proseguiamo per incrementi di 25 fino ad arrivare a 250 per la velocità 9 (il firmware originale parte da 71 e procede a passi 23 per giungere a 255). Un breve suono conferma l'avvenuto cambio di velocità:</p>
+<pre class="code">
+            ...
+            se &lt;tasto 1 premuto&gt; allora
+              imposta [velocità] a [50]
+              suona la nota (C4) durata (minima)
+            se &lt;tasto 2 premuto&gt; allora
+              imposta [velocità] a [75]
+              suona la nota (D4) durata (minima)
+            se &lt;tasto 3 premuto&gt; allora
+              imposta [velocità] a [100]
+              suona la nota (E4) durata (minima)
+            ...
+            se &lt;tasto 9 premuto&gt; allora
+              imposta [velocità] a [250]
+              suona la nota (D5) durata (minima)
+</pre>
+<p>Il progetto in mBlock si presenta all'incirca così (per brevità sono stati omessi blocchi relativi ai cambi di velocità associati ai tasti <span class="code">R3</span>, <span class="code">R4</span>, ... <span class="code">R8</span>):</p>
+<img src="img/mbot-firmware/remote-manual-control.png">
+<p>Il progetto della guida manuale telecomandata è scaricabile <a href="files/mbot-firmware/remote-manual-control.sb2">qui</a>.</p>
+<h2>Scansa-ostacoli</h2>
+<p>La seconda modalità di funzionamento, realizzata dalla procedura <span class="code">modeB</span>, prevede che il robot si muova autonomamente sul pavimento lungo traiettorie rettilinee cambiando direzione quando è in prossimità di un ostacolo. A tal scopo sfrutta il sensore ultrasonico di cui è dotato, grazie al quale è in grado di rilevare la distanza dell'oggetto più prossimo.</p>
+<p>Si possono verificare tre situazioni:</p>
+<ul>
+<li>nessun ostacolo nelle vicinanze &rarr; si procede dritto;</li>
+<li>c'è un ostacolo, ma è relativamente lontano &rarr; si svolta mantenendo il senso
+di marcia;</li>
+<li>c'è un ostacolo nelle immediate vicinanze &rarr; si sterza retrocedendo.</li>
+</ul>
+<p>In pseudo codice:</p>
+<pre class="code">
+imposta la velocità del robot
+per sempre
+  distanza = distanza misurata dal sensore ultrasonico
+  se &lt;distanza &gt; 40&gt; allora
+    prosegui dritto
+  altrimenti
+    se &lt;distanza &gt; 15&gt; allora
+      effettua una breve svolta a sinistra o destra
+    altrimenti
+      effettua una lunga sterzata in retromarcia verso sinistra o destra
+</pre>
+<p>La pratica mi ha insegnato che è bene fare in modo che inizialmente il robot stia fermo: ho rischiato più volte di vederlo cadere dal tavolo al termine del trasferimento del programma &ndash; il robot inizia ad eseguire i programmi che gli vengono inviati non appena ricevuti, senza attendere alcunché. Ho quindi aggiunto un'istruzione che avvia il robot solo in seguito alla pressione del pulsante presente sulla sua scheda:</p>
+<img src="img/mbot-firmware/wall-avoidance.png">
+<p class="illustration">Il programma scansa-ostacoli completo</p>
+<p>Si riconoscono i parametri caratteristici delle svolte in avanti e in retromarcia precedentemente discussi (velocità della ruota interna ridotta rispettivamente a 1/5 e 1/8 rispetto a quella esterna). Le durate effettive delle svolte brevi e di quelle lunghe (300 e 800 millisecondi rispettivamente) sono state ricavate direttamente dal codice sorgente dello sketch originale. La pausa finale garantisce il corretto funzionamento del sensore ultrasonico che non può essere interrogato troppo frequentemente (cfr. sezione &ldquo;Uso del sensore&rdquo; in <a href="../scratch/mblock-hysrf05.html">Uso del sensore ultrasonico HY-SRF05 con mBlock</a>).</p>
+<p>Il progetto scansa-ostacoli è scaricabile <a href="files/mbot-firmware/wall-avoidance.sb2">qui</a>.</p>
+<h2>Segui la linea</h2>
+<p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="code">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span>quello di destra):</p>
+<table cellspacing="0">
+<tr><td class="header">S1</td><td class="header">S2</td><td class="header">Valore</td></tr>
+<tr><td>Nero</td><td>Nero</td><td>0</td></tr>
+<tr><td>Nero</td><td>Bianco</td><td>1</td></tr>
+<tr><td>Bianco</td><td>Nero</td><td>2</td></tr>
+<tr><td>Bianco</td><td>Bianco</td><td>3</td></tr>
+</table>
+<p>La procedura di inseguimento della linea è implementata dalla funzione <span class="code">modeC</span>, ed è per certi versi sorprendente. Mi sarei aspettato qualcosa di simile a:</p>
+<pre class="code">
+per sempre
+  se entrambi i sensori sono sulla linea allora
+    procedi dritto
+  altrimenti se solo il sensore di sinistra è sulla linea allora
+    gira a sinistra
+  altrimenti se solo il sensore di destra è sulla linea allora
+    gira a destra
+  altrimenti
+    fai retromarcia
+</pre>
+<p>In sostanza il robot prosegue dritto finché si trova sulla linea guida, curvando non appena uno dei due sensori finisce fuori dalla linea stessa; la svolta viene effettuata verso il sensore che si trova ancora sulla linea:</p>
+<img src="img/mbot-firmware/line-follower-naive-algorithm.png">
+<p class="illustration">Il funzionamento dell'inseguitore di linea naif</p>
+<p>Il programma originale segue invece una logica diversa: la svolta correttiva viene rimandata al momento in cui anche il secondo sensore finisce fuori dalla linea, curvando viene nella direzione del sensore che per ultimo è uscito dalla linea. Il programma tiene traccia della storia recente dei valori registrati dai sensori per mezzo di una variabile numerica (denominata <span class="code">Flag</span> nel codice sorgente originale) che può assumere un qualunque valore compreso tra 0 e 20. Posta a 10 quando entrambi i sensori sono sulla linea, viene decrementata quando il sensore destro esce dalla linea, incrementata quando
+esce quello sinistro. Nell'istante in cui entrambi i sensori escono dalla linea, il programma consulta il valore della variabile e comanda una svolta a sinistra se il valore è inferiore a 10, a destra se maggiore. In pseudo codice:</p>
+<pre class="code">
+direzione = 0
+per sempre
+  se entrambi i sensori sono sulla linea allora
+    prosegui dritto
+    direzione = 10
+  altrimenti se solo il sensore sinistro è sulla linea allora
+    prosegui dritto
+    se direzione &gt; 0 allora decrementa direzione
+  altrimenti se solo il sensore destro è sulla linea allora
+    prosegui dritto
+    se direzione &lt; 20 allora incrementa direzione
+  altrimenti se entrambi i sensori sono fuori dalla linea allora
+    se direzione &lt; 10 allora
+      svolta a sinistra
+    altrimenti se direzione &lt; 10 allora
+      svolta a sinistra
+    altrimenti
+      fai marcia indietro
+</pre>
+<p>Il valore iniziale della variabile <span class="code">direzione</span> è direttamente mutuato dallo sketch originale, ed è tale per cui se all'inizio il robot non è sulla linea guida questi effettuerà una svolta verso sinistra nella speranza di incontrarla prima o poi.</p>
+<img src="img/mbot-firmware/line-follower-algorithm.png">
+<p class="illustration">Il funzionamento dell'inseguitore di linea originale</p>
+<p>Inizialmente il robot si trova sulla linea guida, e la direzione è posta a 10; quando il sensore di sinistra esce dalla linea, il robot prosegue dritto ma il valore della direzione comincia ad aumentare; quando anche il sensore di destra esce dalla linea inizia la manovra correttiva, che in questo caso consiste in una svolta verso destra, essendo il valore della direzione maggiore di 10; quando entrambi i sensori rientrano sulla linea, il valore della direzione viene riportato a 10.</p>
+<video width="600" controls>
+ <source src="img/mbot-firmware/line-follower-naive.mp4" type="video/mp4">
+</video>
+<p class="illustration">L'inseguitore semplificato</p>
+<video width="600" controls>
+ <source src="img/mbot-firmware/line-follower.mp4" type="video/mp4">
+</video>
+<p class="illustration">L'inseguitore originale</p>
+<p>Dai filmati si può notare come nella versione semplificata i due sensori non finiscono quasi mai contemporaneamente fuori dalla linea guida (i sensori si illuminano quando la superficie sottostante è bianca), a differenza di quanto accade quando è in funzione il programma originale. Sul circuito di prova le due strategie si dimostrano ugualmente efficienti, consentendo entrambe di completare un giro in 13 secondi circa.</p>
+<p>Il progetto dell'inseguitore della linea è scaricabile <a href="files/mbot-firmware/line-follower.sb2">qui</a> (quello semplificato <a href="files/mbot-firmware/line-follower-naive.sb2">qui</a>).</p>
+<p class="modification-notice">Pagina modificata il 29/03/2018</p>
+</body>
+</html>
