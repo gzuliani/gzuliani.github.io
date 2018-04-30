@@ -1,0 +1,149 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Analisi del moto di mBot</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/mbot-firmware.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mbot-motion">risorse</a> | analisi del moto di mBot</p>
+<h1>Studio del moto di mBot</h1>
+<h2>Introduzione</h2>
+<p>È possibile controllare con precisione il moto di un mBot? In particolare, è possibile fargli percorrere delle traiettorie predefinite?</p>
+<p>Il movimento del robot è determinato dalle velocità di rotazione dei due motori di cui è dotato. Trattandosi di due motori indipendenti, già si può supporre che il controllo applicabile sarà limitato, non essendo tra loro perfettamente identici. Su percorsi brevi tuttavia qualcosa si dovrebbe riuscire ad ottenere.</p>
+<h2>Velocità lineare</h2>
+<p>mBot monta dei motori in corrente continua da 9V non calibrati con velocità massima a vuoto di 185giri/min, come chiarisce il supporto tecnico nella discussione <a href="http://forum.makeblock.com/t/mbot-motors-not-in-sync/6741/6">mBot motors not in sync</a> sul forum ufficiale:</p>
+<blockquote>
+The motor speed is in term of rpm.
+But in mBlock program, set to speed 100 doesn’t mean that the motor speed is 100 rpm, the 100 is actual a proportion, its actual speed is determined by the load and power provided by the Mainboard.
+
+Take this condition as example: the mainboard can provide full power to the motor and there is no load on a motor which has 185 ±10%rpm no-load speed, when you set to speed 100, the actual speed of this motor is 100/255*185 (rpm).
+</blockquote>
+<p class="note">Notare il margine di incertezza sulla velocità di rotazione: &plusmn;10%.</p>
+<p>Per determinare la corrispondenza tra i valori di velocità impostati nel programma mBlock e le velocità lineari effettive si può misurare il tempo di percorrenza del robot di 1m a varie velocità, per esempio attraverso il seguente programma:</p>
+<img src="img/mbot-motion/linear-speed-program.png">
+<p class="illustration">Il programma per la determinazione della velocità lineare</p>
+<p>Eseguendo 5 misurazioni per ognuna delle velocità utilizzate (rispettivamente 255, 200, 150 e 100), si sono ottenuti i seguenti tempi di percorrenza:</p>
+<table cellspacing="0">
+<tr><th>Velocità</th><th>t<sub>1</sub></th><th>t<sub>2</sub></th><th>t<sub>3</sub></th><th>t<sub>4</sub></th><th>t<sub>5</sub></th><th>t<sub>medio</sub></th></tr>
+<tr><td>255</td><td>3.15</td><td>3.08</td><td>3.10</td><td>3.08</td><td>3.04</td><td>3.09</td></tr>
+<tr><td>200</td><td>3.75</td><td>3.85</td><td>3.77</td><td>3.78</td><td>3.71</td><td>3.77</td></tr>
+<tr><td>150</td><td>4.99</td><td>5.00</td><td>4.97</td><td>5.00</td><td>5.05</td><td>5.00</td></tr>
+<tr><td>100</td><td>7.55</td><td>7.64</td><td>7.56</td><td>7.76</td><td>7.70</td><td>7.64</td></tr>
+</table>
+<p>Per escludere possibili spurie dovute allo spunto iniziale del robot conviene far partire il robot una ventina di centimetri prima della zona di misurazione:</p>
+<img src="img/mbot-motion/linear-speed-measure.png">
+<p class="illustration">Misurazione del tempo di percorrenza di 1 metro lineare</p>
+<p>Considerando che il diametro delle ruote di mBot è di circa 6.5cm, si determina facilmente la velocità di rotazione dei motori:</p>
+<pre class="code">
+giri/min = 100 / (&pi; &times; d<sub>ruota</sub>) / t<sub>medio</sub> &times; 60
+</pre>
+<p>La tabella perciò diventa:</p>
+<table cellspacing="0">
+<tr><th>Velocità</th><th>t<sub>1</sub></th><th>t<sub>2</sub></th><th>t<sub>3</sub></th><th>t<sub>4</sub></th><th>t<sub>5</sub></th><th>t<sub>medio</sub></th><th>giri/min</th></tr>
+<tr><td>255</td><td>3.15</td><td>3.08</td><td>3.10</td><td>3.08</td><td>3.04</td><td>3.09</td><td>95.09</td></tr>
+<tr><td>200</td><td>3.75</td><td>3.85</td><td>3.77</td><td>3.78</td><td>3.71</td><td>3.77</td><td>77.90</td></tr>
+<tr><td>150</td><td>4.99</td><td>5.00</td><td>4.97</td><td>5.00</td><td>5.05</td><td>5.00</td><td>58.74</td></tr>
+<tr><td>100</td><td>7.55</td><td>7.64</td><td>7.56</td><td>7.76</td><td>7.70</td><td>7.64</td><td>38.49</td></tr>
+</table>
+<p>Siamo quindi ben al di sotto delle velocità di rotazione nominali. Certo, c'è da considerare che i motori non stanno girando a vuoto, che il livello di carica delle batterie potrebbe non essere ottimale (seppur cariche, si tratta comunque di batterie ricaricabili da 2100mAh con alle spalle decine di cicli di ricarica), e che bisogna tener conto dei vari attriti meccanici, non ultimo quello di rotolamento sul pavimento. Ciò detto, vale la pena chiedersi se almeno i tempi di percorrenza sono proporzionali alla velocità impostata nel programma mBot:</p>
+<img src="img/mbot-motion/time-vs-speed-1.png">
+<p class="illustration">Linearità tempo di percorrenza/velocità impostata</p>
+<p>La dipendenza non è lineare, per cui non è facile stabilire a priori quali debbano essere i tempi di accensione dei motori per far percorrere al robot una distanza prefissata ad una data velocità. Ci si dovrà perciò rassegnare escogitando qualche euristica o procedendo per tentativi.</p>
+<p>La scelta delle batterie incide sul tempo di percorrenza? Sostituendo il pacco batterie con una serie di accumulatori più prestanti (2500mAh) e praticamente nuovi, avendo subito appena un paio di cicli di ricarica, i tempi di percorrenza si riducono sensibilmente, anche se la non-linearità permane &ndash; cfr. traccia verde:</p>
+<img src="img/mbot-motion/time-vs-speed-2.png">
+<p class="illustration">Effetto delle batterie sul tempo di percorrenza</p>
+<p>Per completezza, i dati raccolti con il pacco di batterie più potente:</p>
+<table cellspacing="0">
+<tr><th>Velocità</th><th>t<sub>1</sub></th><th>t<sub>2</sub></th><th>t<sub>3</sub></th><th>t<sub>4</sub></th><th>t<sub>5</sub></th><th>t<sub>medio</sub></th><th>giri/min</th></tr>
+<tr><td>255</td><td>2.08</td><td>2.16</td><td>2.09</td><td>2.10</td><td>2.07</td><td>2.10</td><td>139.92</td></tr>
+<tr><td>200</td><td>2.73</td><td>2.64</td><td>2.60</td><td>2.62</td><td>2.61</td><td>2.64</td><td>111.30</td></tr>
+<tr><td>150</td><td>3.61</td><td>3.64</td><td>3.61</td><td>3.61</td><td>3.58</td><td>3.61</td><td>81.39</td></tr>
+<tr><td>100</td><td>5.59</td><td>5.61</td><td>5.61</td><td>5.68</td><td>5.57</td><td>5.61</td><td>52.36</td></tr>
+</table>
+<h2>Raggio di curvatura</h2>
+<p>mBot effettua le sterzate impostando velocità di rotazione diverse sulle due ruote. È possibile determinare il raggio di curvatura del robot note le velocità di rotazione dei suoi motori? Il seguente programma fa muovere mBot su una traiettoria circolare:</p>
+<img src="img/mbot-motion/turn-program.png">
+<p class="illustration">Il programma per la determinazione del raggio di curvatura</p>
+<p>La tabella sottostante raccoglie i diametri delle circonferenze descritte dal robot al variare delle velocità di rotazione dei due motori (d<sub>m</sub> sta per <em>diametro misurato</em>):</p>
+<table cellspacing="0">
+<tr><th>Velocità M1</th><th>Velocità M2</th><th>rapporto</th><th>d<sub>m</sub> (cm)</th></tr>
+<tr><td>200</td><td>100</td><td>2:1</td><td>46</td></tr>
+<tr><td>100</td><td>50</td><td>2:1</td><td>46</td></tr>
+<tr><td>200</td><td>67</td><td>3:1</td><td>34.5</td></tr>
+<tr><td>200</td><td>50</td><td>4:1</td><td>31</td></tr>
+<tr><td>100</td><td>25</td><td>4:1</td><td>n/a<sup>(*)</sup></td></tr>
+<tr><td>200</td><td>25</td><td>8:1</td><td>n/a<sup>(*)</sup></td></tr>
+<tr><td>100</td><td>12</td><td>8:1</td><td>n/a<sup>(*)</sup></td></tr>
+<tr><td>200</td><td>132</td><td>3:2</td><td>68.5</td></tr>
+<tr><td>200</td><td>150</td><td>4:3</td><td>93</td></tr>
+<tr><td>200</td><td>0</td><td>&infin;</td><td>23</td></tr>
+<tr><td>200</td><td>-200</td><td>-1</td><td>13.5</td></tr>
+</table>
+<p class="illustration"><sup>(*)</sup> la velocità per M2 è inferiore al valore di spunto e la ruota non gira.</p>
+<p>Il diametro misurato riportato in tabella è quello della circonferenza descritta dal bordo esterno della ruota esterna ed evidenziato nella figura sottostante, che è il più semplice da rilevare:</p>
+<img src="img/mbot-motion/turn-diameters.png">
+<p class="illustration">Circonferenze caratteristiche di una traiettoria circolare</p>
+<p>Quel che interessa è il rapporto tra la circonferenza descritta dalla ruota esterna (in neretto) e quella descritta dalla ruota interna (linea sottile). Considerando che l'interasse delle ruote è di 11.5cm e la larghezza di uno pneumatico è all'incirca 1.5cm, i conti son presto fatti:</p>
+<pre class="code">
+P = 1.5
+I = 11.5
+d<sub>est</sub> = d<sub>m</sub> - P
+d<sub>int</sub> = d<sub>est</sub> - 2I
+</pre>
+<p>In questo caso i risultati sono decisamente promettenti. Il rapporto tra le circonferenze percorsa dalle due ruote è prossimo a quello tra le relative velocità:</p>
+<table cellspacing="0">
+<tr><th>Velocità M1</th><th>Velocità M2</th><th>rapporto</th><th>d<sub>est</sub> (cm)</th><th>d<sub>int</sub> (cm)</th><th>d<sub>est</sub>/d<sub>int</sub></th></tr>
+<tr><td>200</td><td>100</td><td>2:1</td><td>44.5</td><td>21.5</td><td>2.07</td></tr>
+<tr><td>100</td><td>50</td><td>2:1</td><td>44.5</td><td>21.5</td><td>2.07</td></tr>
+<tr><td>200</td><td>67</td><td>3:1</td><td>33.0</td><td>10.0</td><td>3.30</td></tr>
+<tr><td>200</td><td>50</td><td>4:1</td><td>39.5</td><td>6.5</td><td>4.54</td></tr>
+<tr><td>200</td><td>132</td><td>3:2</td><td>67.0</td><td>44.0</td><td>1.52</td></tr>
+<tr><td>200</td><td>150</td><td>4:3</td><td>91.5</td><td>68.5</td><td>1.34</td></tr>
+<tr><td>200</td><td>0</td><td>&infin;</td><td>21.5</td><td>-1.5</td><td>---</td></tr>
+<tr><td>200</td><td>-200</td><td>-1</td><td>12.0</td><td>-11</td><td>-1.09</td></tr>
+</table>
+<h3>Determinare le velocità a partire dal raggio della curva</h3>
+<p>Si può determinare le velocità da applicare ai due motori per ottenere il raggio di curvatura desiderato riferito alla circonferenza che passa per il baricentro del robot (cfr. linea tratteggiata in figura). Indicando con <span class="code">R</span> il raggio della curva che si vuole impostare, espresso in centimetri, il rapporto tra le velocità di rotazione delle due ruote dovrà essere pari al rapporto tra le circonferenze descritte dalle ruote del robot:</p>
+<pre class="code">
+v<sub>est</sub> / v<sub>int</sub> = 2&pi;(R + I/2) / 2&pi;(R - I/2)
+</pre>
+<p>che semplificando diventa:</p>
+<pre class="code">
+v<sub>est</sub> / v<sub>int</sub> = (2R + I) / (2R - I)
+</pre>
+<p>Se ad esempio si volesse effettuare una curva di raggio 16.5cm &ndash; corrispondente ad un diametro della circonferenza descritta dalla ruota più esterna pari a 44.5cm &ndash; il rapporto tra le velocità dovrà essere:</p>
+<pre class="code">
+v<sub>est</sub> / v<sub>int</sub> = (33 + 11.5) / (33 - 11.5) = 44.5 / 21.5 = 2
+</pre>
+<p>che corrisponde con quanto riportato nella prima riga della tabella.</p>
+<h3>Determinare il raggio della curva a partire dalle velocità</h3>
+<p>Noto il rapporto tra le velocità di rotazione delle due ruote è possibile determinare il raggio della curva associata. Indicando con <span class="code">r</span> il rapporto tra le due velocità (<span class="code">r</span> &gt; 1) e con <span class="code">D</span> il diametro della curva risultante, si ottiene:</p>
+<pre class="code">
+r = (D + I) / (D - I)
+</pre>
+<p>Moltiplicando per <span class="code">(D - I)</span> e sviluppando:</p>
+<pre class="code">
+r (D - I) = (D + I)
+
+rD - rI = D + I
+</pre>
+<p>Raggruppando i termini su <span class="code">D</span> e <span class="code">I</span>:</p>
+<pre class="code">
+rD - D = rI + I
+
+D (r - 1) = I (r + 1)
+</pre>
+<p>Si ottiene infine:</p>
+<pre class="code">
+D = I (r + 1) / (r - 1)
+</pre>
+<p>Ad esempio, se il rapporto tra le velocità è <span class="code">r</span> = 2, si ricava:</p>
+<pre class="code">
+D = 11.5 * 3 / 1 = 34.5
+</pre>
+<p>Anche in questo caso il risultato è sufficientemente in accordo con quanto precedentemente ricavato, 33cm.</p>
+</pre>
+<p class="modification-notice">Pagina modificata il 30/04/2018</p>
+</body>
+</html>
