@@ -1,0 +1,75 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Good Unit Tests /21</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /21</h1>
+<p>Questa breve parte (la ventunesima; qui l'elenco delle <a href="gut.html#rif-1">precedenti</a>) risolve un piccolo baco relativo alla presentazione dei valori di tipo <span class="code">const char*</span>.</p>
+<p>Il problema si presenta nel momento in cui il <em>framework</em> deve rappresentare un valore nullo per un puntatore di tipo <span class="code">const char*</span>, ad esempio nel caso:</p>
+<pre class="code">
+const char* fn() { return nullptr; }
+
+TEST(&quot;123&quot;)
+{
+    CHECK(fn() != nullptr);
+}
+</pre>
+<p>L'effetto è catastrofico:</p>
+<pre class="code">
+Segmentation fault (core dumped)
+</pre>
+<p>Il problema è che la procedura di renderizzazione non gestisce correttamente il caso del puntatore nullo:</p>
+<pre class="code">
+std::string toString(const char* value) {
+  return std::string(&quot;\&quot;&quot;) + value + &quot;\&quot;&quot;;
+}
+</pre>
+<p>Aggiungendo il trattamento esplicito del caso, il problema sparisce:</p>
+<pre class="code">
+std::string toString(const char* value) {
+  return <ins>value ?</ins> std::string(&quot;\&quot;&quot;) + value + &quot;\&quot;&quot; <ins>: &quot;&lt;nullptr&gt;&quot;</ins>;
+}
+...
+
+/* output:
+ *
+ * example.cpp(80) : [error] fn() != nullptr evaluates to &lt;nullptr&gt; != &lt;nullptr&gt;
+ */
+</pre>
+
+<h2>Codice sorgente</h2>
+<ul>
+	<li><a href="files/gut/part-21/gut.h">gut.h</a></li>
+	<li><a href="files/gut/part-21/colors.h">colors.h</a></li>
+	<li><a href="files/gut/part-21/debugger.h">debugger.h</a></li>
+	<li><a href="files/gut/part-21/math.h">math.h</a></li>
+	<li><a href="files/gut/part-21/rotate.h">rotate.h</a></li>
+	<li><a href="files/gut/part-21/tap.h">tap.h</a></li>
+	<li><a href="files/gut/part-21/timing.h">timing.h</a></li>
+	<li><a href="files/gut/part-21/timing-chrono.h">timing-chrono.h</a></li>
+	<li><a href="files/gut/part-21/timing-custom.h">timing-custom.h</a></li>
+	<li><a href="files/gut/part-21/utils.h">utils.h</a></li>
+	<li><a href="files/gut/part-21/linux/colors.h">linux/colors.h</a></li>
+	<li><a href="files/gut/part-21/linux/debugger.h">linux/debugger.h</a></li>
+	<li><a href="files/gut/part-21/linux/timing-custom.h">linux/timing-custom.h</a></li>
+	<li><a href="files/gut/part-21/windows/colors.h">windows/colors.h</a></li>
+	<li><a href="files/gut/part-21/windows/debugger.h">windows/debugger.h</a></li>
+	<li><a href="files/gut/part-21/windows/timing-custom.h">windows/timing-custom.h</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-21/test-gut.cpp">test-gut.cpp</a></li>
+</ul>
+<br>
+<ul>
+	<li><a href="files/gut/part-21/example.cpp">example.cpp</a></li>
+	<li><a href="files/gut/part-21/example-breakpoint.cpp">example-breakpoint.cpp</a></li>
+	<li><a href="files/gut/part-21/example-tap.cpp">example-tap.cpp</a></li>
+	<li><a href="files/gut/part-21/example-timing.cpp">example-timing.cpp</a></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 30/04/2018</p>
+</body>
+</html>
