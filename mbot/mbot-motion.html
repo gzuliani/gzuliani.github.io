@@ -6,12 +6,25 @@
 <link href="css/mbot-firmware.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<p class="page-path"><a href="../index.html#mbot-motion">risorse</a> | analisi del moto di mBot</p>
+<p class="page-path"><a href="../index.html#mbot-motion">risorse</a> | analisi del moto di mbot</p>
 <h1>Studio del moto di mBot</h1>
-<h2>Introduzione</h2>
 <p>È possibile controllare con precisione il moto di un mBot? In particolare, è possibile fargli percorrere delle traiettorie predefinite?</p>
-<p>Il movimento del robot è determinato dalle velocità di rotazione dei due motori di cui è dotato. Trattandosi di due motori indipendenti, già si può supporre che il controllo applicabile sarà limitato, non essendo tra loro perfettamente identici. Su percorsi brevi tuttavia qualcosa si dovrebbe riuscire ad ottenere.</p>
-<h2>Velocità lineare</h2>
+<h2>Introduzione</h2>
+<!--
+set motor (M1) at speed (100)
+[run forward] at speed (100) -- altre opzioni: run backward, turn left, turn right
+
+wait until <on board button [pressed]>
+reset timer
+[run forward] at speed (100)
+wait until <(timer) > [10]>
+[run forward] at speed (0)
+-->
+<p>Il movimento del robot è determinato dalle velocità di rotazione dei due motori di cui è dotato. Trattandosi di due motori indipendenti, già si può supporre che il controllo applicabile sarà limitato, non potendo prescindere dalle lievi differenze che di certo li caretterizzano. Su percorsi brevi tuttavia qualcosa si dovrebbe riuscire ad ottenere.</p>
+<p>mBlock non ha un comando che consente di far coprire al robot una data distanza, qualcosa tipo &ldquo;<em>run forward for 10 cm</em>&rdquo;. Manca anche un comando per effettuare una sterzata con un'angolazione precisa, per esempio &ldquo;<em>turn left 90&deg; degrees</em>&rdquo;. Il solo comando relativo al moto è &ldquo;<em>set motor &hellip; at speed &hellip;</em>&rdquo; &mdash; trascurando la sua versione semplificata &ldquo;<em>run forward at speed &hellip;</em>&rdquo; &mdash;, che consente solamente il controllo dell'attivazione (indipendente) dei due motori. Gli unici parametri sui cui si può agire sono dunque la velocità di rotazione e il tempo di attivazione di ciascun motore. Di più, il valore di velocità è relativo, essendo <span class="code">0</span> il valore di arresto e <span class="code">&plusmn;255</span> quello associato alla velocità massima nei due sensi di rotazione avanti/indietro</p>
+<p>Ciò posto, è possibile realizzare delle procedure che consentano un controllo più preciso dei movimenti del robot, sia in termini di tratti rettilinei che di archi di circonferenza percorsi?</p>
+<h2>Traiettorie lineari</h2>
+<p>Il primo passo per la costruzione del blocco &ldquo;<em>run forward for &hellip; cm</em>&rdquo; è determinare la velocità lineare del robot espressa in cm/s in funzione del valore numerico relativo applicato ai motori con il comando &ldquo;<em>set motor &hellip; at speed &hellip;</em>&rdquo;.</p>
 <p>mBot monta dei motori in corrente continua da 9V non calibrati con velocità massima a vuoto di 185giri/min, come chiarisce il supporto tecnico nella discussione <a href="http://forum.makeblock.com/t/mbot-motors-not-in-sync/6741/6">mBot motors not in sync</a> sul forum ufficiale:</p>
 <blockquote>
 The motor speed is in term of rpm.
@@ -50,7 +63,7 @@ giri/min = 100 / (&pi; &times; d<sub>ruota</sub>) / t<sub>medio</sub> &times; 60
 <img src="img/mbot-motion/time-vs-speed-1.png">
 <p class="illustration">Linearità tempo di percorrenza/velocità impostata</p>
 <p>La dipendenza non è lineare, per cui non è facile stabilire a priori quali debbano essere i tempi di accensione dei motori per far percorrere al robot una distanza prefissata ad una data velocità. Ci si dovrà perciò rassegnare escogitando qualche euristica o procedendo per tentativi.</p>
-<p>La scelta delle batterie incide sul tempo di percorrenza? Sostituendo il pacco batterie con una serie di accumulatori più prestanti (2500mAh) e praticamente nuovi, avendo subito appena un paio di cicli di ricarica, i tempi di percorrenza si riducono sensibilmente, anche se la non-linearità permane &ndash; cfr. traccia verde:</p>
+<p>La scelta delle batterie incide sul tempo di percorrenza? Sostituendo il pacco batterie con una serie di accumulatori più prestanti (2500mAh) e praticamente nuovi, avendo subito appena un paio di cicli di ricarica, i tempi di percorrenza si riducono sensibilmente, anche se la non-linearità permane &mdash; cfr. traccia verde:</p>
 <img src="img/mbot-motion/time-vs-speed-2.png">
 <p class="illustration">Effetto delle batterie sul tempo di percorrenza</p>
 <p>Per completezza, i dati raccolti con il pacco di batterie più potente:</p>
@@ -61,8 +74,10 @@ giri/min = 100 / (&pi; &times; d<sub>ruota</sub>) / t<sub>medio</sub> &times; 60
 <tr><td>150</td><td>3.61</td><td>3.64</td><td>3.61</td><td>3.61</td><td>3.58</td><td>3.61</td><td>81.39</td></tr>
 <tr><td>100</td><td>5.59</td><td>5.61</td><td>5.61</td><td>5.68</td><td>5.57</td><td>5.61</td><td>52.36</td></tr>
 </table>
-<h2>Raggio di curvatura</h2>
-<p>mBot effettua le sterzate impostando velocità di rotazione diverse sulle due ruote. È possibile determinare il raggio di curvatura del robot note le velocità di rotazione dei suoi motori? Il seguente programma fa muovere mBot su una traiettoria circolare:</p>
+<h2>Archi di circonferenza</h2>
+<p>Venendo a mancare la relazione tra la velocità lineare con cui si muove robot e quella applicata ai suoi motori non si può sperare di riuscire a far percorrere a mBot degli archi di cerchio di lunghezza predefinita. Si può però forse controllarne almeno il raggio di curvatura.</p>
+<h2>Raggi di curvatura</h2>
+<p>mBot effettua le sterzate impostando velocità di rotazione diverse sulle due ruote. È possibile determinare il raggio delle curve tracciate dal robot note le velocità di rotazione dei suoi motori? Il seguente programma fa muovere mBot su una traiettoria circolare:</p>
 <img src="img/mbot-motion/turn-program.png">
 <p class="illustration">Il programma per la determinazione del raggio di curvatura</p>
 <p>La tabella sottostante raccoglie i diametri delle circonferenze descritte dal robot al variare delle velocità di rotazione dei due motori (d<sub>m</sub> sta per <em>diametro misurato</em>):</p>
@@ -112,7 +127,7 @@ v<sub>est</sub> / v<sub>int</sub> = 2&pi;(R + I/2) / 2&pi;(R - I/2)
 <pre class="code">
 v<sub>est</sub> / v<sub>int</sub> = (2R + I) / (2R - I)
 </pre>
-<p>Se ad esempio si volesse effettuare una curva di raggio 16.5cm &ndash; corrispondente ad un diametro della circonferenza descritta dalla ruota più esterna pari a 44.5cm &ndash; il rapporto tra le velocità dovrà essere:</p>
+<p>Se ad esempio si volesse effettuare una curva di raggio 16.5cm &mdash; corrispondente ad un diametro della circonferenza descritta dalla ruota più esterna pari a 44.5cm &mdash; il rapporto tra le velocità dovrà essere:</p>
 <pre class="code">
 v<sub>est</sub> / v<sub>int</sub> = (33 + 11.5) / (33 - 11.5) = 44.5 / 21.5 = 2
 </pre>
