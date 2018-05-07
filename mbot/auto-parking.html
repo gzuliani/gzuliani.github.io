@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Parcheggio automatico con mBot</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/mbot.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#auto-parking">risorse</a> | parcheggio automatico con mbot</p>
+<h1>Parcheggio automatico con mBot</h1>
+<p>È possibile programmare mBot in modo che si parcheggi autonomamente?</p>
+<h2>Introduzione</h2>
+<p>L'idea è che quella di predisporre un'area di parcheggio lungo un tracciato che il robot percorre con il programma &ldquo;insegui la linea&rdquo;; quando il robot raggiunge il posteggio ci entra e si arresta. L'area di parcheggio è rappresentata un breve tratto di linea guida perpendicolare al tracciato principale:</p>
+<img src="img/auto-parking/parking-area.png">
+<p class="illustration">Un'area di parcheggio</p>
+<p>Se il robot si muove lungo la linea guida non ha modo di accorgersi della presenza dell'area di parcheggio. Una breve interruzione della linea principale può tuttavia essere usata per segnalare la presenza del posteggio:</p>
+<img src="img/auto-parking/parking-area-marker.png">
+<p class="illustration">L'interruzione indica la presenza dell'area di parcheggio</p>
+<h2>Strategia di base</h2>
+<p>La procedura di parcheggio prevede:</p>
+<ul>
+<li>raggiungere l'interruzione che indica la presenza dell'area di parcheggio;</li>
+<li>oltrepassare l'interruzione e fermarsi;</li>
+<li>effettuare una rotazione sul posto verso sinistra;</li>
+<li>entrare nell'area di parcheggio;</li>
+<li>raggiungere il limite dell'area di parcheggio ed arrestarsi definitivamente.</li>
+</ul>
+<img src="img/auto-parking/auto-parking-naive.png">
+<p class="illustration">Le cinque fasi del parcheggio</p>
+<h2>Implementazione</h2>
+<p>Il punto di partenza è il programma dell'inseguitore semplificato discusso in <a href="mbot-firmware.html">Studio del firmware di mBot</a>, privato della parte relativa alla situazione in cui entrambi i sensori sono fuori dalla linea guida:</p>
+<img src="img/auto-parking/line-follower.png">
+<p class="illustration">Il programma di partenza</p>
+<p>È stato scelto di lavorare a velocità ridotta per poter analizzare più facilmente il comportamento del robot e valutare di conseguenza la bontà della strategia in fase di implementazione.</p>
+<p>Convenuto che la procedura di parcheggio ha inizio nel momento in cui entrambi i ricettori del sensore di linea indicano l'assenza della linea guida, come si svolge nel dettaglio? Le fasi previste sono le seguenti:</p>
+<ul>
+<li>proseguire in avanti fino a che almeno uno dei due ricettori indica la presenza della linea guida &mdash; in questo modo ci si assicura di aver superato l'interruzione che segnala la presenza del parcheggio;</li>
+<li>si ruota sul posto verso sinistra fino a quando entrambi i ricettori del sensore indicano l'assenza della linea guida &mdash; in questo modo ci si assicura che la linea guida si trova alla destra del robot;</li>
+<li>si continua la rotazione fino a quando entrambi i ricettori del sensore indicano la presenza della linea guida &mdash; in questo modo ci si assicura che il robot è allineato con la linea guida del parcheggio;</li>
+<li>si procede in avanti fino a quando un ricettore del sensore indica l'assenza della linea guida &mdash; in questo modo ci si assicura di arrestare il robot prima di uscire completamente dalla linea guida del parcheggio.</li>
+</ul>
+<p>Tenendo conto che la rotazione sul posto si ottiene facendo girare i due motori in senso opposto alla medesima velocità, la procedura di parcheggio diventa:</p>
+<img src="img/auto-parking/park-procedure-naive.png">
+<p class="illustration">La procedura di parcheggio iniziale</p>
+<p>Come si può notare, il programma utilizza i led per segnalare lo stato in cui si trova:</p>
+<ul>
+<li><strong>verde</strong>: il robot sta seguendo la linea guida;</li>
+<li><strong>rosso</strong>: il robot ha rilevato l'interruzione;</li>
+<li><strong>arancio</strong>: il robot sta effettuando la prima parte della rotazione sul posto, quella per lasciarsi sulla destra la linea guida principale;</li>
+<li><strong>giallo</strong>: il robot sta effettuando la seconda parte della rotazione sul posto, quella per raggiungere la linea guida del parcheggio;</li>
+<li><strong>blu</strong>: il robot sta seguendo la linea guida del parcheggio.</li>
+</ul>
+<p>L'uso delle luci per indicare lo stato nel quale si trova il robot ha permesso di velocizzare lo sviluppo del programma rendendo più semplice l'individuazione e l'eliminazione dei difetti.</p>
+<h3>Verifica sul campo</h3>
+<p>Il buon esito della procedura dipende fortemente dalla posizione dell'interruzione rispetto alla linea guida del parcheggio. Posta inizialmente ad una distanza pari alla distanza tra l'interasse del robot e i ricettori del sensore di linea, alcuni esperimenti hanno dimostrato che la posizione ideale è una leggermente arretrata rispetto a questa.</p>
+<img src="img/auto-parking/IMG_20180429_140907.jpg">
+<p class="illustration">Posizione dell'interruzione rispetto al parcheggio</p>
+<img src="img/auto-parking/IMG_20180429_140831.jpg">
+<p class="illustration">Posizione del robot al riconoscimento dell'interruzione</p>
+<p>Il filmato mostra il programma in azione:</p>
+<video width="600" controls>
+ <source src="img/auto-parking/VID_20180429_144111_naive.mp4" type="video/mp4">
+</video>
+<p class="illustration">Uno dei primi parcheggi completati con successo</p>
+<p>Scarica la <a href="files/auto-parking/auto-parking-naive.sb2">versione iniziale</a> del programma del parcheggio.</p>
+<h3>Irrobustimento</h3>
+<p>Ciò che rende la procedura del parcheggio sensibile alla posizione del marcatore è l'ultima fase, ovvero il criterio di arresto una volta che il robot si è posizionato sulla linea guida del parcheggio e sta entrando nell'area di parcheggio: &ldquo;<em>un ricettore del sensore indica l'assenza della linea guida</em>&rdquo;.</p>
+<img src="img/auto-parking/IMG_20180506_115814.jpg">
+<p class="illustration">Parcheggio incompleto: si nota il ricettore destro del sensore di linea, attivo</p>
+<p>Una soluzione potrebbe essere quella di percorrere la linea guida del parcheggio secondo la logica dell'inseguitore: in questo modo il robot non si ferma se non quando arriva in fondo, curvando se necessario.</p>
+<p>Per non duplicare la sequenza dei blocchi dell'inseguitore semplificato, li si raccoglie in un blocco apposito, denominato &laquo;<span class="code">follow black line</span>&raquo;:</p>
+<img src="img/auto-parking/follow-black-line-block.png">
+<p class="illustration">La definizione del blocco dell'inseguitore semplificato</p>
+<p>Anche la procedura di parcheggio può essere posta in un blocco dedicato, denominato &laquo;<span class="code">park left</span>&raquo;, dato che per il momento quello è l'unico lato verso il quale il robot è capace di parcheggiare:</p>
+<img src="img/auto-parking/park-left-block.png">
+<p class="illustration">La definizione del blocco del parcheggio a sinistra</p>
+<p>Il programma principale diventa ora estremamente compatto e leggibile:</p>
+<img src="img/auto-parking/auto-parking-with-custom-blocks.png">
+<p class="illustration">Il programma principale con i nuovi blocchi</p>
+<p>Scarica la <a href="files/auto-parking/auto-parking.sb2">versione con parcheggio guidato dalla linea</a> del programma.</p>
+<h2>Parcheggi multipli</h2>
+<p>Per complicare la situazione si possono aggiungere più parcheggi; il robot ora dovrà andare ad occupare quello selezionato dall'utente, per esempio attraverso il telecomando in dotazione.</p>
+<img src="img/auto-parking/auto-parking-multiple-slots.png">
+<p class="illustration">Un parcheggio con tre stalli</p>
+<p>La questione non si complica in realtà di molto: se adesso il robot parcheggia in corrispondenza del primo marcatore, dopo non dovrà fare altro che contare le interruzioni che incontra nel suo cammino e parcheggiare nello stallo giusto. Per questo si introduce una variabile denominata &laquo;<span class="code">target area</span>&raquo;, che contiene il numero del parcheggio selezionato dall'utente. Ogniqualvolta incontra un'interruzione sulla linea guida il robot decrementerà la variabile, parcheggiando solo quando la variabile raggiungerà il valore zero:</p>
+<img src="img/auto-parking/auto-parking-remote-control.png">
+<p class="illustration">Il programma con il conteggio delle interruzioni</p>
+<p>L'unica particolarità del programma sta forse nel ciclo iniziale di attesa della selezione dello stallo dove il robot dovrà parcheggiare. La variabile &laquo;<span class="code">target area</span>&raquo; viene inizialmente azzerata, quindi si entra in un ciclo dal quale si esce solo quando questa ha assunto un valore strettamente positivo, cosa che succede solo quando l'utente preme uno dei primi tre tasti del telecomando.</p>
+<h3>Verifica sul campo</h3>
+<p>Il filmato mostra un parcheggio in terza posizione:</p>
+<video width="600" controls>
+ <source src="img/auto-parking/VID_20180430_091659_remote_control.mp4" type="video/mp4">
+</video>
+<p class="illustration">Esempio di parcheggio con selezione dello stallo da telecomando</p>
+<p>Scarica la <a href="files/auto-parking/auto-parking-remote-control.sb2">versione con parcheggio telecomandato</a> del programma.</p>
+<h3>Irrobustimento</h3>
+<p>Si può estendere il programma facendo in modo che il robot controlli che il posteggio sia libero prima di occuparlo. Nel caso lo stallo risulti già in uso, il robot effettuerà un arresto di emergenza facendo lampeggiare le luci rosse ed emettendo un breve segnale sonoro:</p>
+<img src="img/auto-parking/auto-parking-emergency-stop-block.png">
+<p class="illustration">La procedura di arresto di emergenza</p>
+<p>La procedura di parcheggio va estesa aggiungendo il controllo circa la disponibilità del posto. Si ricorre quindi al sensore ultrasonico per verificare che non ci siano oggetti presenti di fronte al robot (il valore preciso dipende dalla lunghezza della linea guida del parcheggio):</p>
+<img src="img/auto-parking/safe-park-left-block.png">
+<p class="illustration">La procedura parcheggio con il controllo di presenza</p>
+<p>La medesima procedura d'arresto può essere utilizzata nel caso il robot perda la linea &mdash; allo stato attuale è sufficiente richiedere al robot di parcheggiare quando già si trova in uno stallo. Si può quindi attivare l'arresto forzato se il robot resta fuori dalla linea per troppo tempo, per esempio un secondo:</p>
+<img src="img/auto-parking/safe-auto-parking-remote-control.png">
+<p class="illustration">L'arresto di emergenza in caso di linea guida persa</p>
+<p>Il filmato mostra l'arresto forzato a causa della presenza di un oggetto estraneo nello stallo di destinazione:</p>
+<video width="600" controls>
+ <source src="img/auto-parking/VID_20180430_092906_safe.mp4" type="video/mp4">
+</video>
+<p class="illustration">Parcheggio fallito per stallo già occupato, in seconda posizione</p>
+<p>Scarica la <a href="files/auto-parking/auto-parking-remote-control-safe.sb2">versione con arresto di emergenza</a> del programma.</p>
+<h2>Considerazioni</h2>
+<p>Al solito, al raggiungimento di un risultato all'apparenza soddisfacente è bene chiedersi se il programma rappresenta a tutti gli effetti una soluzione accettabile o se presenta dei difetti nascosti che andrebbero sistemati. Quali sono le debolezze dell'algoritmo sviluppato? In quali condizioni il robot risponde in modo errato? In quali condizioni in modo inaspettatamente virtuoso?</p>
+<h2>Possibili sviluppi</h2>
+<p>Tra le innumerevoli possibilità di estensione:</p>
+<ul>
+<li>uscita automatica dal parcheggio e riposizionamento sulla linea guida;</li>
+<li>procedura di parcheggio autonomo nel primo stallo libero;</li>
+<li>parcheggio a destra;</li>
+<li>selezione del lato di posteggio mediante telecomando;</li>
+<li>selezione del lato di posteggio mediante marcatori:
+	<ul>
+	<li>interruzione breve &rarr; parcheggio a sinistra</li>
+	<li>interruzione standard &rarr; parcheggio su entrambi i lati</li>
+	<li>interruzione lunga &rarr; parcheggio a destra</li>
+</ul>
+<li>&hellip;</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 07/05/2018</p>
+</body>
+</html>
