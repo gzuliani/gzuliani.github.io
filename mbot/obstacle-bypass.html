@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <title>Aggiramento di ostacoli con mBot</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/mbot-firmware.css" rel="stylesheet" type="text/css"></link>
+<link href="css/mbot.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#obstacle-bypass">risorse</a> | aggiramento di ostacoli con mbot</p>
@@ -60,6 +60,8 @@
 <h2>Considerazioni finali</h2>
 <p>Le variabili in gioco sono molte ed è raccomandabile (suggerire di) applicare una strategia di esplorazione dello spazio dei parametri per non rischiare di girare a vuoto senza riuscire a raggiungere una soluzione accettabile.</p>
 <p>Non è difficile pensare a situazioni in cui la strategia di aggiramento realizzata non funzioni a dovere: l'ostacolo è così basso da non essere rilevato dal sensore ultrasonico, oppure così largo da eccedere l'ampiezza della deviazione, ovvero è posto in corrispondenza di una stretta curva verso destra della linea guida, &hellip; Individuare queste casistiche, verificare il comportamento del robot, studiare delle possibili soluzioni, aggiornare il programma di conseguenza verificandone l'efficacia sul campo può essere un utile esercizio da proporre in un laboratorio.</p>
+<p class="update"><strong>Aggiornamento [07/05/2018]</strong></p>
+<p>Prima di cimentarsi nella realizzazione della procedura di aggiramento dell'ostacolo può essere opportuno affrontare un problema più semplice: in presenza di un oggetto estraneo in traiettoria il robot si ferma e resta in attesa che lo stesso svanisca o si allontani. Avendo a disposizione due mBot si può verificare il buon funzionamento dell'algoritmo facendo precedere il robot più veloce da uno più lento.</p>
 <p class="modification-notice">Pagina modificata il 04/05/2018</p>
 </body>
 </html>
