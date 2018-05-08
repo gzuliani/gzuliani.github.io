@@ -165,7 +165,10 @@ per sempre
 </pre>
 <p>In sostanza il robot prosegue dritto finché si trova sulla linea guida, curvando non appena uno dei due sensori finisce fuori dalla linea stessa; la svolta viene effettuata verso il sensore che si trova ancora sulla linea:</p>
 <img src="img/mbot-firmware/line-follower-naive-algorithm.png">
-<p class="illustration">Il funzionamento dell'inseguitore di linea naif</p>
+<p class="illustration">Il funzionamento immaginato dell'inseguitore di linea</p>
+<p>Segue una possibile realizzazione della versione &ldquo;naif&rdquo; dell'inseguitore:</p>
+<img src="img/mbot-firmware/line-follower-naive.png">
+<p class="illustration">Il programma dell'inseguitore semplificato</p>
 <p>Il programma originale segue invece una logica diversa: la svolta correttiva viene rimandata al momento in cui anche il secondo sensore finisce fuori dalla linea, curvando viene nella direzione del sensore che per ultimo è uscito dalla linea. Il programma tiene traccia della storia recente dei valori registrati dai sensori per mezzo di una variabile numerica (denominata <span class="code">Flag</span> nel codice sorgente originale) che può assumere un qualunque valore compreso tra 0 e 20. Posta a 10 quando entrambi i sensori sono sulla linea, viene decrementata quando il sensore destro esce dalla linea, incrementata quando
 esce quello sinistro. Nell'istante in cui entrambi i sensori escono dalla linea, il programma consulta il valore della variabile e comanda una svolta a sinistra se il valore è inferiore a 10, a destra se maggiore. In pseudo codice:</p>
 <pre class="code">
@@ -192,6 +195,10 @@ per sempre
 <img src="img/mbot-firmware/line-follower-algorithm.png">
 <p class="illustration">Il funzionamento dell'inseguitore di linea originale</p>
 <p>Inizialmente il robot si trova sulla linea guida, e la direzione è posta a 10; quando il sensore di sinistra esce dalla linea, il robot prosegue dritto ma il valore della direzione comincia ad aumentare; quando anche il sensore di destra esce dalla linea inizia la manovra correttiva, che in questo caso consiste in una svolta verso destra, essendo il valore della direzione maggiore di 10; quando entrambi i sensori rientrano sulla linea, il valore della direzione viene riportato a 10.</p>
+<img src="img/mbot-firmware/line-follower.png">
+<p class="illustration">Un'implementazione dell'inseguitore originale</p>
+<h3>Prova sul campo</h3>
+<p>Qual'è la strategia migliore, ammesso ce ne sia una? Entrambe sono state messe alla prova sul circuito che si trova nella confezione di mBot.</p>
 <video width="600" controls>
  <source src="img/mbot-firmware/line-follower-naive.mp4" type="video/mp4">
 </video>
@@ -200,8 +207,15 @@ per sempre
  <source src="img/mbot-firmware/line-follower.mp4" type="video/mp4">
 </video>
 <p class="illustration">L'inseguitore originale</p>
-<p>Dai filmati si può notare come nella versione semplificata i due sensori non finiscono quasi mai contemporaneamente fuori dalla linea guida (i sensori si illuminano quando la superficie sottostante è bianca), a differenza di quanto accade quando è in funzione il programma originale. Sul circuito di prova le due strategie si dimostrano ugualmente efficienti, consentendo entrambe di completare un giro in 13 secondi circa.</p>
+<p>Dai filmati si può notare come nella versione semplificata i due sensori non finiscono quasi mai contemporaneamente fuori dalla linea guida (raramente li si vede simultaneamente accesi), a differenza di quanto accade quando è in funzione il programma originale. Sul circuito di prova le due strategie si dimostrano ugualmente efficienti, consentendo entrambe di completare un giro in 13 secondi circa.</p>
+<p>È lecito presupporre che non ce ne sia una vincente sull'altra, e che invece una possa prevalere sull'altra su certi tipi di tracciati ed essere invece surclassata su altri. È possibile immaginare un circuito che metta in risalto le caratteristiche dell'inseguitore semplificato e al contempo penalizzi quello originale? Esiste un circuito che ribalta la situazione?</p>
 <p>Il progetto dell'inseguitore della linea è scaricabile <a href="files/mbot-firmware/line-follower.sb2">qui</a> (quello semplificato <a href="files/mbot-firmware/line-follower-naive.sb2">qui</a>).</p>
+<p class="update"><strong>Aggiornamento [08/05/2018]</strong></p>
+<p>Entrambi gli inseguitori qui analizzati necessitano di una linea guida larga almeno quanto la distanza che separa i due ricettori del sensore di linea. Potrebbe valer la pena spendere del tempo per realizzare un inseguitore di linea &ldquo;sottile&rdquo;, in cui il robot deve mantiene la linea guida <strong>tra</strong> i sensori. Si potrà sperimentare quanto sia cruciale la scelta della larghezza della linea (non troppo sottile da non essere percepita ma non troppo larga da essere rilevata da entrambi i sensori) nonché la velocità che, se troppo elevata, può causare lo scavalcamento e la conseguente perdita della linea.<img src="img/mbot-firmware/thin-line-follower-naive-algorithm.png">
+<p class="illustration">La strategia di inseguimento di una linea sottile</p>
+<p>La tecnica di inseguimento di una linea sottile segue il principio opposto a quello della linea spessa: se il ricettore di destra finisce sulla linea allora il robot deve sterzare verso destra, per mantenere la linea tra i due sensori (cfr. figura); analogamente se a finire sulla linea è il ricettore di sinistra.</p>
+<p>Il progetto di un inseguitore di linea sottile è scaricabile <a href="files/mbot-firmware/thin-line-follower-naive.sb2">qui</a>.</p>
+</p>
 <p class="modification-notice">Pagina modificata il 29/03/2018</p>
 </body>
 </html>
