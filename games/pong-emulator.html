@@ -1,0 +1,441 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Analisi del gioco Pong</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/pong-emulator.css" rel="stylesheet" type="text/css"></link>
+<script type="text/javascript" language="JavaScript">
+function update_value(id, value)
+{
+	document.getElementById(id).innerHTML = Math.floor(value)
+}
+
+function update_values(axis, ratio)
+{
+	var prefix = "scaled-" + axis + "-"
+	var elements = document.getElementById("test-form").getElementsByTagName("label")
+	for (var i = 0, element; element = elements[i++];) {
+		if (element.id.substring(0, prefix.length) === prefix) {
+			update_value(element.id, ratio * parseInt(document.getElementById("original-" + axis + "-" + element.id.substring(prefix.length)).innerHTML))
+		}
+	}
+}
+
+function recalculate()
+{
+	var new_width = parseInt(document.getElementById('scaled-width').value)
+	var old_width = parseInt(document.getElementById('original-width').innerHTML)
+	update_values('x', new_width / old_width)
+
+	var new_height = parseInt(document.getElementById('scaled-height').value)
+	var old_height = parseInt(document.getElementById('original-height').innerHTML)
+	update_values('y', new_height / old_height)
+}
+</script>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#pong-emulator">risorse</a> | analisi del gioco pong</p>
+<h1>Analisi del gioco Pong</h1>
+<h2>Introduzione</h2>
+<p>Pong è stato il primo videogioco cui abbia mai giocato, verso la fine degli anni settanta, su una consolle molto simile a questa:</p>
+<img src="img/pong-emulator/tenko-pp150.jpg">
+<p class="illustration">Il &ldquo;TV Game&rdquo; della Tenko, modello PP-150 &mdash; una delle tante varianti</p>
+<p>Qualche anno dopo (sarà stato il 2000 o giù di lì), spinto dalla nostaglia, ne comprai una a una fiera dell'antiquariato della zona per 1000 lire, senza garanzia che funzionasse:</p>
+<img src="img/pong-emulator/IMG_20180512_143512_small.jpg">
+<p class="illustration">La consolle acquistata alla fiera &mdash; senza marca, modello nè numero di serie.</p>
+<p>La consolle fortunatamente funzionava. Ora giace inutilizzata, perché le moderne televisioni cui l'ho collegata non riescono ad agganciare il segnale generato dal modulatore.</p>
+<p>Nell'autunno del 2016 ho provato a cimentarmi nella realizzazione di un emulatore della consolle che fosse il più fedele possibile all'originale; di seguito le informazioni raccolte nel frattempo, in attesa di completare il progetto.</p>
+<h2>Il chip AY-3-8500</h2>
+<p>La maggior parte delle consolle del tempo erano basate sul chip <a href="https://en.wikipedia.org/wiki/AY-3-8500">AY-3-8500</a> della General Instrument che implementava la logica di gioco oltre alla generazione del quadro video.</p>
+<p>L'idea di scrivere un emulatore è nata nel momento in cui sono riuscito ad entrare in possesso del manuale del chip (<a href="files/pong-emulator/GIMINI1978.pdf">qui</a> una copia locale). Nel frattempo ho scovato in rete un <a href="http://searle.hostei.com/grant/AVRPong/index.html">remake</a> basato su Arduino a cura di Grant Searle (<a href="files/pong-emulator/70's TV Games on the ATMEGA328.htm">qui</a> una copia locale della pagina, <a href="files/pong-emulator/GameFiles1.4.zip">qui</a> dei sorgenti del progetto), che mi è risultata utile per comprendere meglio alcuni dettagli.</p>
+<h2>Geometria del gioco</h2>
+<p>Il manuale riporta chiaramente le dimensioni dei vari oggetti grafici che fanno parte del gioco: linee di demarcazione del campo, racchette, punteggio e palla.</p>
+<img src="img/pong-emulator/ay-3-8500-specs.png">
+<p class="illustration">La pagina del manuale che descrive la geometria di Pong</p>
+<p>Le dimensioni orizzontali sono espresse in &micro;s, essendo legate alla temporizzazione del segnale che genera l'immagine in bianco e nero; quelle verticali sono invece espresse in numero di linee. Sono riportate sia le dimensioni per la codifica PAL che per la NTSC. Io faccio ovviamente riferimento alla prima.</p>
+<h3>Dimensioni dello schermo</h3>
+<p>L'unità di misura orizzontale è il <em>tick</em>, ovvero la durata di un impulso di clock, che corrisponde a 0.5&micro;s. Poiché il tracciamento di una linea dello schermo dura esattamente 64&micro;s, si conclude che lo schermo è suddiviso in 128 tick/colonne. Essendo il quadro PAL composto da 625 linee, ed essendo la scansione interlacciata, ad ogni ciclo viene disegnato un semi-quadro &mdash; composto alternativamente dall linee pari o dispari &mdash; da 312 linee. Deduco che il secondo semi-quadro sia identico al primo, ad ogni modo sul manuale non ho trovato nulla a riguardo.</p>
+<p>Riassumendo:</p>
+<pre class="code">
+1 tick = 0.5&micro;s
+1 linea = 64&micro;s &rarr; 128 colonne
+
+625 linee per quadro
+1 quadro = 2 semi-quadri &rarr; 312 linee
+
+1 frame = 128&times;312
+</pre>
+<p>Le dimensioni del campo di gioco si ricavano sottraendo dalle dimensioni complessive del quadro video quelle dei bordi, oltre ovviamente ai tempi di <em>retrace</em> (tutti i dati  citati sono facilmente ricavabili dal manuale):</p>
+<pre class="code">
+larghezze (in ticks)
+-------------------------------------
+ larghezza bordo sinistro.......: 27
+ larghezza bordo destro.........: 16
+ tempo di retrace orizzontale...: 12
+ larghezza del campo di gioco...: 128 - 27 - 16 - 12 = 73
+
+altezze (in linee)
+-------------------------------------
+ altezza bordo superiore........: 44
+ altezza bordo inferiore........: 30
+ tempo di retrace verticale.....: 6
+ altezza del campo di gioco.....: 312 - 44 - 30 - 6 = 232
+</pre>
+<p>Se si vuole ricostruire l'aspetto del Pong originale si dovranno rispettare queste propozioni, sacrificando eventualmente la corretta corrispondenza dei bordi.</p>
+<p>Inizialmente pensavo di realizzare l'emulatore con <a href="https://scratch.mit.edu/">Scratch</a>, che ha una risoluzione fissa di 480&times;360 pixel. Per questa ragione ho riscalato la geometria originale di Pong sull'area disponibile in Scratch, raggiungendo il seguente compromesso:</p>
+<pre class="code">
+larghezza massima disponibile...: 480 pixel
+altezza massima disponibile.....: 360 pixel
+
+larghezza del campo di gioco....: 438 pixel (rapporto 6:1)
+altezza del campo di gioco......: 348 pixel (rapporto 3:2)
+bordo verticale.................:   6 pixel
+bordo orizzontale...............:  21 pixel
+</pre>
+<p>Lo schema qui sotto evidenzia posizione e dimensione dei singoli componenti del quadro video di Pong in colori diversi, su un quadro di 480&times;360 pixel:</p>
+<img src="img/pong-emulator/pong-field.png">
+<p class="illustration">Pong riscalato a 480&times;360 per il <em>porting</em> su Scratch</p>
+<p>È possibile scaricare una versione incompleta del progetto Scratch dell'<a href="files/pong-emulator/pong-wip.sb2">emulatore Pong</a> che contiene tutti i componenti grafici ma con una logica di gioco appena abbozzata.</p>
+<p>Avevo anche valutato la possibilità di realizzare l'emulatore su ZX Spectrum, che ha una risoluzione di 256&times;192 pixel; in questo caso una buona approssimazione potrebbe essere:</p>
+<pre class="code">
+larghezza massima disponibile...: 256 pixel
+altezza massima disponibile.....: 192 pixel
+
+larghezza del campo di gioco....: 219 pixel (rapporto 3:1)
+altezza del campo di gioco......: 174 pixel (rapporto 3:4)
+bordo verticale.................:   9 pixel
+bordo orizzontale...............:  18 pixel uno, 19 pixel l'altro
+</pre>
+<p>Per determinare i valori più adatti delle dimensioni del quadro video dell'emulatore avevo preparato un sistema automatico di riscalatura dei valori che riporto qui sotto. È sufficiente impostare le dimensioni del quadro video desiderate e premere il pulsante &laquo;<strong>Ricalcola</strong>&raquo; per vedere come cambiano di conseguenza posizione e dimensione degli oggetti:</p>
+<form id="test-form">
+<table cellspacing="0">
+<tr>
+<tr>
+	<th class="sub-title">dimensioni</th>
+	<th colspan="2" class="original">originale</th>
+	<th colspan="2" class="scaled">nuovo</th>
+</tr>
+<tr>
+	<td>larghezza</td>
+	<td colspan="2" class="original"><label id="original-width">128</label></td>
+	<td colspan="2" class="scaled"><input type="text" id="scaled-width" value="128" size="6"/></td>
+</tr>
+<tr>
+	<td>altezza</td>
+	<td colspan="2" class="original"><label id="original-height">312</label></td>
+	<td colspan="2" class="scaled"><input type="text" id="scaled-height" value="312" size="6"/></td>
+</tr>
+<tr>
+	<th class="sub-title">distanze verticali (linee)</th>
+	<th class="original">inizio</th>
+	<th class="original">fine</th>
+	<th class="scaled">inizio</th>
+	<th class="scaled">fine</th>
+</tr>
+<tr>
+	<td>bordo superiore</td>
+	<td class="original"><label id="original-y-top-border-start">0</label></td>
+	<td class="original"><label id="original-y-top-border-end">43</label></td>
+	<td class="scaled"><label id="scaled-y-top-border-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-top-border-end">-</label></td>
+</tr>
+<tr>
+	<td>linea superiore</td>
+	<td class="original"><label id="original-y-top-wall-start">44</label></td>
+	<td class="original"><label id="original-y-top-wall-end">45</label></td>
+	<td class="scaled"><label id="scaled-y-top-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-top-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>punteggio</td>
+	<td class="original"><label id="original-y-score-start">50</label></td>
+	<td class="original"><label id="original-y-score-end">79</label></td>
+	<td class="scaled"><label id="scaled-y-score-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-score-end">-</label></td>
+</tr>
+<tr>
+	<td>linea laterale superiore</td>
+	<td class="original"><label id="original-y-top-side-wall-start">46</label></td>
+	<td class="original"><label id="original-y-top-side-wall-end">95</label></td>
+	<td class="scaled"><label id="scaled-y-top-side-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-top-side-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>linea laterale inferiore</td>
+	<td class="original"><label id="original-y-bottom-side-wall-start">222</label></td>
+	<td class="original"><label id="original-y-bottom-side-wall-end">273</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-side-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-side-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>linea inferiore</td>
+	<td class="original"><label id="original-y-bottom-wall-start">274</label></td>
+	<td class="original"><label id="original-y-bottom-wall-end">275</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>bordo inferiore</td>
+	<td class="original"><label id="original-y-bottom-border-start">276</label></td>
+	<td class="original"><label id="original-y-bottom-border-end">305</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-border-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-bottom-border-end">-</label></td>
+</tr>
+<tr>
+	<td>tempo di <em>retrace</em> verticale</td>
+	<td class="original"><label id="original-y-retrace-start">306</label></td>
+	<td class="original"><label id="original-y-retrace-end">312</label></td>
+	<td class="scaled"><label id="scaled-y-retrace-start">-</label></td>
+	<td class="scaled"><label id="scaled-y-retrace-end">-</label></td>
+</tr>
+<tr>
+	<th class="sub-title">distanze orizzontali (ticks)</th>
+	<th class="original">inizio</th>
+	<th class="original">fine</th>
+	<th class="scaled">inizio</th>
+	<th class="scaled">fine</th>
+</tr>
+<tr>
+	<td>bordo sinistro</td>
+	<td class="original"><label id="original-x-left-border-start">0</label></td>
+	<td class="original"><label id="original-x-left-border-end">27</label></td>
+	<td class="scaled"><label id="scaled-x-left-border-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-left-border-end">-</label></td>
+</tr>
+<tr>
+	<td>linea sinistra</td>
+	<td class="original"><label id="original-x-left-wall-start">27</label></td>
+	<td class="original"><label id="original-x-left-wall-end">28</label></td>
+	<td class="scaled"><label id="scaled-x-left-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-left-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>prima racchetta giocatore 1</td>
+	<td class="original"><label id="original-x-p1-first-pad-start">29</label></td>
+	<td class="original"><label id="original-x-p1-first-pad-end">30</label></td>
+	<td class="scaled"><label id="scaled-x-p1-first-pad-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p1-first-pad-end">-</label></td>
+</tr>
+<tr>
+	<td>seconda racchetta giocatore 2</td>
+	<td class="original"><label id="original-x-p2-second-pad-start">45</label></td>
+	<td class="original"><label id="original-x-p2-second-pad-end">46</label></td>
+	<td class="scaled"><label id="scaled-x-p2-second-pad-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p2-second-pad-end">-</label></td>
+</tr>
+<tr>
+	<td>decine punteggio giocatore 1</td>
+	<td class="original"><label id="original-x-p1-score-ten-start">48</label></td>
+	<td class="original"><label id="original-x-p1-score-ten-end">50</label></td>
+	<td class="scaled"><label id="scaled-x-p1-score-ten-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p1-score-ten-end">-</label></td>
+</tr>
+<tr>
+	<td>unità punteggio giocatore 1</td>
+	<td class="original"><label id="original-x-p1-score-unit-start">52</label></td>
+	<td class="original"><label id="original-x-p1-score-unit-end">58</label></td>
+	<td class="scaled"><label id="scaled-x-p1-score-unit-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p1-score-unit-end">-</label></td>
+</tr>
+<tr>
+	<td>mezzeria</td>
+	<td class="original"><label id="original-x-mid-line-start">63</label></td>
+	<td class="original"><label id="original-x-mid-line-end">64</label></td>
+	<td class="scaled"><label id="scaled-x-mid-line-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-mid-line-end">-</label></td>
+</tr>
+<tr>
+	<td>decine punteggio giocatore 2</td>
+	<td class="original"><label id="original-x-p2-score-ten-start">66</label></td>
+	<td class="original"><label id="original-x-p2-score-ten-end">68</label></td>
+	<td class="scaled"><label id="scaled-x-p2-score-ten-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p2-score-ten-end">-</label></td>
+</tr>
+<tr>
+	<td>unità punteggio giocatore 2</td>
+	<td class="original"><label id="original-x-p2-score-unit-start">70</label></td>
+	<td class="original"><label id="original-x-p2-score-unit-end">76</label></td>
+	<td class="scaled"><label id="scaled-x-p2-score-unit-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p2-score-unit-end">-</label></td>
+</tr>
+<tr>
+	<td>racchetta giocatore 2 (squash)</td>
+	<td class="original"><label id="original-x-p2-squash-pad-start">79</label></td>
+	<td class="original"><label id="original-x-p2-squash-pad-end">80</label></td>
+	<td class="scaled"><label id="scaled-x-p2-squash-pad-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p2-squash-pad-end">-</label></td>
+</tr>
+<tr>
+	<td>seconda racchetta giocatore 1</td>
+	<td class="original"><label id="original-x-p1-second-pad-start">81</label></td>
+	<td class="original"><label id="original-x-p1-second-pad-end">82</label></td>
+	<td class="scaled"><label id="scaled-x-p1-second-pad-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p1-second-pad-end">-</label></td>
+</tr>
+<tr>
+	<td>prima racchetta giocatore 2</td>
+	<td class="original"><label id="original-x-p2-first-pad-start">97</label></td>
+	<td class="original"><label id="original-x-p2-first-pad-end">98</label></td>
+	<td class="scaled"><label id="scaled-x-p2-first-pad-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-p2-first-pad-end">-</label></td>
+</tr>
+<tr>
+	<td>linea destra</td>
+	<td class="original"><label id="original-x-right-wall-start">99</label></td>
+	<td class="original"><label id="original-x-right-wall-end">100</label></td>
+	<td class="scaled"><label id="scaled-x-right-wall-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-right-wall-end">-</label></td>
+</tr>
+<tr>
+	<td>bordo destro</td>
+	<td class="original"><label id="original-x-right-border-start">100</label></td>
+	<td class="original"><label id="original-x-right-border-end">116</label></td>
+	<td class="scaled"><label id="scaled-x-right-border-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-right-border-end">-</label></td>
+</tr>
+<tr>
+	<td>tempo di <em>retrace</em> orizzontale</td>
+	<td class="original"><label id="original-x-retrace-start">116</label></td>
+	<td class="original"><label id="original-x-retrace-end">128</label></td>
+	<td class="scaled"><label id="scaled-x-retrace-start">-</label></td>
+	<td class="scaled"><label id="scaled-x-retrace-end">-</label></td>
+</tr>
+<tr>
+	<th class="sub-title">oggetti principali</th>
+	<th class="original">larghezza</th>
+	<th class="original">altezza</th>
+	<th class="scaled">larghezza</th>
+	<th class="scaled">altezza</th>
+</tr>
+<tr>
+	<td>racchetta</td>
+	<td class="original"><label id="original-x-pad-width">1</label></td>
+	<td class="original"><label id="original-y-pad-height">28</label></td>
+	<td class="scaled"><label id="scaled-x-pad-width">-</label></td>
+	<td class="scaled"><label id="scaled-y-pad-height">-</label></td>
+</tr>
+<tr>
+	<td>racchetta &laquo;small&raquo;</td>
+	<td class="original"><label id="original-x-small-pad-width">1</label></td>
+	<td class="original"><label id="original-y-small-pad-height">14</label></td>
+	<td class="scaled"><label id="scaled-x-small-pad-width">-</label></td>
+	<td class="scaled"><label id="scaled-y-small-pad-height">-</label></td>
+</tr>
+<tr>
+	<td>palla</td>
+	<td class="original"><label id="original-x-ball-width">2</label></td>
+	<td class="original"><label id="original-y-ball-height">5</label></td>
+	<td class="scaled"><label id="scaled-x-ball-width">-</label></td>
+	<td class="scaled"><label id="scaled-y-ball-height">-</label></td>
+</tr>
+<tr>
+	<td>punteggio</td>
+	<td class="original"><label id="original-x-score-width">10</label></td>
+	<td class="original"><label id="original-y-score-height">30</label></td>
+	<td class="scaled"><label id="scaled-x-score-width">-</label></td>
+	<td class="scaled"><label id="scaled-y-score-height">-</label></td>
+</tr>
+<tr>
+	<td>campo di gioco</td>
+	<td class="original"><label id="original-x-field-width">73</label></td>
+	<td class="original"><label id="original-y-field-height">232</label></td>
+	<td class="scaled"><label id="scaled-x-field-width">-</label></td>
+	<td class="scaled"><label id="scaled-y-field-height">-</label></td>
+</tr>
+<tr>
+	<td colspan="5" class="button"><input type="button" value="Ricalcola" onclick="recalculate()"/></td>
+</tr>
+</table>
+</form>
+<p>In conclusione, alcune osservazioni relative alle linee di demarcazione: quelle verticali hanno spessore pari a 1&micro;s (2 tick), e ogni tratto è alto 1 linea; Quelle orizzontali hanno spessore pari a 2 linee, e ogni tratto è lungo 0.5&micro;s (1 tick). La linea di mezzeria, anch'essa larga 1 tick, è costituita da una sequenza di 28 tratti pieni alternati a 28 vuoti, ognuno dei quali è costituito da 4 linee, e sembra distare 2 linee dalla linea di demarcazione superiore (la linea centrale, essendo compresa tra le due linee superiore ed inferiore, è lunga esattamente 274 - 46 = 228):
+<pre class="code">
+2 + (4 + 4) * 28 + 2 = 228
+</pre>
+</p>
+<h2>Movimento</h2>
+<p>Gli unici oggetti del gioco che si muovono sono le racchette e la palla. Le racchette si muovono solo in verticale, e la loro posizione è determinata dal valore di resistenza del potenziometro di controllo. Il movimento della palla è invece controllato dal chip.</p>
+<h3>Velocità orizzontale della palla</h3>
+<p>Relativamente al moto della palla, il manuale riporta a pag. 6 i tempi di percorrenza dello schermo per le due velocità: 1.3s in &laquo;low speed&raquo;, 0.65s in &laquo;high speed&raquo;. Nello specchietto in fondo a pag. 12 invece si fa riferimento alle velocità angolari, riportando, sempre per la velocità orizzontale, i valori di &plusmn;5&micro;s in &laquo;slow&raquo;, &plusmn;1&micro;s in &laquo;fast&raquo;. Terminologia a parte, i due valori sono coerenti:</p>
+<pre class="code">
+durata di un quadro........: 20 ms
+larghezza di un quadro.....: 64 ticks
+
+low speed
+-------------------------------------
+tempo di attraversamento...: 1.30 s
+spostamento per quadro.....: 64 / (1300 / 20) = 64 / 65 &cong; 1 tick
+
+high speed
+-------------------------------------
+tempo di attraversamento...: 0.65 s
+spostamento per quadro.....: 64 / (650 / 20) = 64 / 32.5 &cong; 2 tick
+</pre>
+<p>Se i tempi dichiarati fossero rispettivamente 1.28s e 0.64s, allora gli spostamenti orizzontali della palla sarebbero dei tick interi. Essendo la palla larga 2 tick, in modalità &laquo;slow&raquo; orizzontale si muove di metà della sua larghezza, esattamente della sua larghezza in modalità &laquo;fast&raquo;.</p>
+<h3>Velocità verticale della palla</h3>
+<p>La palla si può muovere su due angolazioni diverse, &plusmn;20&deg;/&plusmn;40&deg;, in funzione di come è configurata la consolle e il punto in cui la palla impatta sulle racchette.</p>
+<img src="img/pong-emulator/pong-rebounce-20.png">
+<p class="illustration">L'angolazione d'uscita della palla nella modalità 20&deg;</p>
+<img src="img/pong-emulator/pong-rebounce-20-40.png">
+<p class="illustration">L'angolazione d'uscita della palla nella modalità 20&deg;/40&deg;</p>
+<p>Ciò che caratterizza le due angolazioni è la velocità verticale, che cambia a seconda che il gioco stia funzionando il modalità &laquo;slow&raquo; o &laquo;fast&raquo;:</p>
+<pre class="code">
+low speed
+-------------------------------------
+velocità verticale 20°...: &plusmn;1 linea
+velocità verticale 40°...: &plusmn;3 linee
+
+high speed
+-------------------------------------
+velocità verticale 20°...: &plusmn;2 linee
+velocità verticale 40°...: &plusmn;5 linee
+</pre>
+<h3>Movimento</h3>
+<p>Non è chiaro cosa accada alla palla quando un giocatore segna un punto. All'apparenza la palla prosegue la sua corsa, riapparendo dalla parte opposta del campo rispetto a dove è uscita, mantenendo velocità e direzione:</p>
+<img src="img/pong-emulator/pong-ball-after-score.png">
+<p class="illustration">Rientro della palla in campo dopo una segnatura (disegno fuori scala!)</p>
+<p>In rete non ho trovato nulla di definitivo. L'emulatore realizzato da Grant Searle per esempio adotta la seguente strategia (i due valori della coordinata x si riferiscono alle due possibili posizioni iniziali, una sul campo sinistro, una su quello destro):</p>
+<pre class="code">
+all'accensione
+-------------------------------------
+x.............: 0
+y.............: -18
+
+dopo una segnatura
+-------------------------------------
+x.............: 0.3 / 0.7 &times; fieldWidth &rarr; 23 / 55
+y.............: immutata
+</pre>
+<p>L'emulatore <a href="http://amigan.1emu.net/releases/#amiarcadia">WinArcadia</a> invece utilizza i seguenti parametri:</p>
+<pre class="code">
+all'accensione
+-------------------------------------
+x.............: 63
+y.............: 160
+
+dopo una segnatura
+-------------------------------------
+x.............: 32 / 93
+y.............: immutata
+</pre>
+<p>Non sembra dunque esserci una risposta definitva al momento. D'altra parte, questo particolare non dovrebbe impattare troppo sul <em>game play</em>.</p>
+<h2>Suono</h2>
+<p>Durante il gioco vengono emessi diversi suoni, in corrispondenza dei seguenti eventi: quando la palla viene colpita da una racchetta (&laquo;hit&raquo;), quando la palla colpisce una delle linee laterali (&laquo;boundary reflection&raquo;) e quando un giocatore segna un punto (&laquo;score&raquo;). I tre <em>beep</em>, tutti della durata di 32ms, hanno altezza diversa, secondo la tabella seguente (nell'ordine: frequenza emessa dal chip AY-3-8500, caratteristiche della nota del sistema temperato più vicina):</p>
+<table cellspacing="0">
+<tr>
+<th></th><th>frequenza (Hz)</th><th>nota</th><th>ottava</th><th>frequenza (Hz)</th><th>offset (cents)</th>
+</tr>
+<tr>
+<td>hit</td><td class="number">976.0</td><td class="text">B</td><td class="number">5</td><td class="number">987.77</td><td class="number">-20.74</td>
+</tr>
+<tr>
+<td>boundary reflection</td><td class="number">488.0</td><td class="text">B</td><td class="number">4</td><td class="number">493.88</td><td class="number">-20.74</td>
+</tr>
+<tr>
+<td>score</td><td class="number">1952.0</td><td class="text">B</td><td class="number">6</td><td class="number">1975.53</td><td class="number">-20.74</td>
+</tr>
+</table>
+<h2>Conclusioni</h2>
+<p>Segnalo la pagina <a href="http://www.pong-story.com/gi.htm">PONG In A Chip</a> che contiene un'interessante rassegna delle diverse implementazioni del gioco.</p>
+<p class="modification-notice">Pagina modificata il 13/05/2018</p>
+</body>
+</html>
