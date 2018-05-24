@@ -2,7 +2,6 @@
 <head>
 <title>StatHg</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/stat-hg.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#stat-hg">risorse</a> | StatHg</p>
@@ -58,7 +57,7 @@ hg diff --change %REV% %PATH%
     | tag  text    |        | del_lines    integer |
     | desc text    |        +----------------------+
     +--------------+
-</pre>  
+</pre>
 <h4><span class="code">changeset</span></h4>
 <p>Rappresenta un changeset di Hg, ed &egrave; caratterizzato da:</p>
 <ul>
@@ -293,7 +292,7 @@ where
  length(term) > 1
  and cast(term as numeric) = '0'
  and term not in (
-  'a', 'about', 'added', 'after', 'all', 'an', 'and', 'as', 
+  'a', 'about', 'added', 'after', 'all', 'an', 'and', 'as',
   'by',
   'changeset',
   'does',

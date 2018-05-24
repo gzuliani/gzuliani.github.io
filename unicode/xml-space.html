@@ -15,7 +15,7 @@ or&lt;/emphasis&gt; sit amet:&lt;list&gt;&lt;item&gt;consectetur adipiscing elit
 an quis ipsum et leo laoreet congue&lt;/item&gt;&lt;/list&gt;Fusce ultricies ut enim sit ame
 t viverra.&lt;/message&gt;
 </pre>
-<p class="illustration"><strong>Fig. 1</strong>: flusso testuale di un documento XML.</p>
+<p class="illustration">Fig. 1: flusso testuale di un documento XML.</p>
 <pre class="code">
 &lt;message id=&quot;42&quot; class=&quot;confidential&quot;&gt;Lorem ipsum<span class="doc-space">&crarr;</span>
 <span class="doc-space">&middot;</span>&lt;emphasis type=&quot;important&quot;&gt;dolor&lt;/emphasis&gt;<span class="doc-space">&crarr;</span>
@@ -27,7 +27,7 @@ t viverra.&lt;/message&gt;
 <span class="doc-space">&middot;</span>Fusce ultricies ut enim sit amet viverra.<span class="doc-space">&crarr;</span>
 &lt;/message&gt;
 </pre>
-<p class="illustration"><strong>Fig. 2</strong>: lo stesso documento, indentato.</p>
+<p class="illustration">Fig. 2: lo stesso documento, indentato.</p>
 <p>Le due versioni del documento sono differenti, ma il contenuto informativo è equivalente. XML si fa carico di individuare questo tipo di spaziature non significative, sotto certe condizioni.</p>
 <p class="note">La spaziatura alla quale si sta facendo riferimento è quella del documento, non quella quella prevista dalla sintassi XML: la prima si trova al di fuori dei <span class="term">tag</span> XML (indicata in rosso negli esempi), la seconda all'interno, evidenziata qui sotto in azzurro:</p>
 <pre class="code">
@@ -41,7 +41,7 @@ t viverra.&lt;/message&gt;
  Fusce ultricies ut enim sit amet viverra.
 &lt;/message&gt;
 </pre>
-<p class="illustration"><strong>Fig. 3</strong>: spaziature richieste dalla sintassi XML.</p>
+<p class="illustration">Fig. 3: spaziature richieste dalla sintassi XML.</p>
 <p>Riguardo alla gestione della spaziatura del documento, nello standard XML si legge:<a href="#ref-7.b"><sup>[7.b]</sup></a>:</p>
 <blockquote>An XML processor must always pass all characters in a document that are not markup through to the application.</blockquote>
 <p>In altre parole, &laquo;ciò che non è <em>markup</em> è un dato&raquo;, e di conseguenza sembrerebbe che nessun carattere che si trovi al di fuori dei tag venga trascurato, nemmeno gli spazi. In realtà, non è proprio così&hellip; Prima di proseguire, però, è bene stabilire con precisione cosa XML considera <span class="term">spazio</span>.</p>
