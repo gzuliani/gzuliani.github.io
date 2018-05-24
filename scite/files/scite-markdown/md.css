@@ -46,7 +46,7 @@ h1, h2, h3, h4 {
 }
 
 h1 {
- font-size: 2em; 
+ font-size: 2em;
 }
 
 h2 {
@@ -112,13 +112,4 @@ blockquote {
  margin-left: .5em;
  padding-left: .5em;
  padding-right: .5em;
-}
-
-img {
- border: 1px solid #073642;
- display: block;
- margin-bottom: 2em;
- margin-left: auto;
- margin-right: auto;
- margin-top: 1em;
 }
