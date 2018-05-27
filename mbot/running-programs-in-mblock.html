@@ -1,0 +1,118 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Controllo di mBot da mBlock</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#running-programs-in-mblock">risorse</a> | controllo di mbot da mblock</p>
+<h1>Controllo di mBot da mBlock</h1>
+<p>Tutte le precedenti esperienze con mBot (cfr. <a href="mbot-firmware.html">studio del firmware di mBot</a>, <a href="mbot-motion.html">analisi del moto di mBot</a>, <a href="obstacle-bypass.html">aggiramento di ostacoli con mBot</a> e <a href="auto-parking.html">parcheggio automatico con mBot</a>) sono state condotte in modalità &ldquo;Arduino&rdquo;, ovvero caricando il programma direttamente sul robot con il comando &laquo;Upload to Arduino&raquo;. Questo modo di lavorare, che ha l'indubbio vantaggio di produrre alla fine un robot completamente autonomo, rende tuttavia lo sviluppo piuttosto disagevole sotto due punti di vista: innanzitutto richiede che mBot sia connesso fisicamente al computer tramite il cavo USB, in secondo luogo i tempi di compilazione e caricamento del prorgramma non sono trascurabili. Ho sviluppato allora un nuovo piccolo progetto per sperimentare la programmazione di mBot direttamente dall'ambiente mBlock.</p>
+<p class="note">La versione 4.0 di mBlock non funziona correttamente su Ubuntu 16.04: le letture dei sensori ritornano invariabilmente zero. Il problema non si presenta sulla versione 4.0.4, che è però caratterizzata da un'interfaccia completamente rinnovata &mdash; cosa che potrebbe disorientare	, considerato che la <a href="http://learn.makeblock.com/mbot-programming/">guida ufficiale</a> fa riferimento a quella vecchia. Anche la versione 3.4.11 di mBlock su Windows 7 è immune da questo problema.</p>
+<h2>Prerequisiti</h2>
+<p>Per poter controllare mBot dall'ambiente mBlock è necessario prima caricare il firmware apposito. Dopo aver collegato mBot ad una presa USB del computer con il cavo in dotazione, si procede come segue:</p>
+<h3>mBlock v.3.x</h3>
+<ul>
+<li>Connect &rarr; Serial Port &rarr; Refresh</li>
+<li>[l'indirizzo della porta USB viene aggiunto al menu]</li>
+<li>Connect &rarr; Serial Port &rarr; &hellip; (nel mio caso: <strong>/dev/ttyACM0</strong>)</li>
+<li>Connect &rarr; Upgrade Firmware</li>
+</ul>
+<h3>mBlock v.4.0.4</h3>
+<ul>
+<li>Connect &rarr; USB</li>
+<li>appare la maschera &laquo;Connect a Robot&raquo;</li>
+<li>attendere il termine della scansione</li>
+<li>selezionare la porta USB corretta (nel mio caso: <strong>/dev/ttyACM0</strong>)</li>
+<li>premere il pulsante &laquo;connect&raquo; <sup>(*)</sup></li>
+<li>Connected &rarr; Update Firmware (USB) &rarr; For mBlock</li>
+</ul>
+<p class="note"><sup>(*)</sup> il menu &laquo;Connect&raquo; cambia in &laquo;Connected&raquo; e si colora di verde</p>
+<img src="img/running-programs-in-mblock/mblock-connect.png">
+<p class="illustration">Il menu &laquo;Connect&raquo; prima della connessione</p>
+<img src="img/running-programs-in-mblock/mblock-connected.png">
+<p class="illustration">Il menu &laquo;Connected&raquo; a connessione avvenuta</p>
+<p>Una volta che il firmware è stato trasferito con successo è possibile scollegare mBot dal computer. Prima di stabilire la connessione bluetooth conviene spegnere e riaccendere il robot. Procedere quindi come segue:</p>
+<h3>mBlock v.3.x</h3>
+<ul>
+<li>Connect &rarr; Bluetooth &rarr; Clear Bluetooth</li>
+<li>Connect &rarr; Bluetooth &rarr; Discover</li>
+<li>[l'indirizzo del dispositivo bluetooth viene aggiunto al menu]</li>
+<li>Connect &rarr; Bluetooth &rarr; Makeblock(00:00:00:00:00:00) <sup>(*)</sup></li>
+</ul>
+<p class="note"><sup>(*)</sup> l'indirizzo del dispositivo è diverso per ogni mBot</p>
+<h3>mBlock v.4.x</h3>
+<ul>
+<li>Connect &rarr; Bluetooth</li>
+<li>attendere il termine della scansione</li>
+<li>selezionare l'indirizzo corretto</li>
+<li>premere il pulsante &laquo;connect&raquo;</li>
+</ul>
+<img src="img/running-programs-in-mblock/mblock-connect-a-robot.png">
+<p class="illustration">Selezione del dispositivo bluetooth con mBlock 4.0.4</p>
+<p>L'indirizzo bluetooth di norma è riportato sul modulo hardware; non nel mio caso, però:</p>
+<img src="img/running-programs-in-mblock/mbot-bluetooth-top.jpg">
+<p class="illustration">Il lato componenti del modulo bluetooth non riporta alcun indirizzo</p>
+<img src="img/running-programs-in-mblock/mbot-bluetooth-bottom.jpg">
+<p class="illustration">Sul lato connettori è visibile solo l'identificativo FCC</p>
+<p>Poco male, comunque: avendo un solo robot e nessun altro apparato bluetooth nei paraggi, l'unico dispositivo individuato da mBlock non può che essere il mio mBot.</p>
+<h3>Verifica della connessione bluetooth</h3>
+<p>Per accertarsi che la connessione bluetooth è attiva e funzionante basta innescare uno qualunque dei blocchi di controllo degli attuatori di mBot e verificarne l'effetto. È per esempio possibile accendere i led sul rosso a bordo del robot impostando il livello &laquo;red&raquo; del comando &laquo;set led on board &hellip;&raquo; a 255 e facendo un doppio click direttamente sul blocco:</p>
+<img src="img/running-programs-in-mblock/mblock-set-led-on-board-red.png">
+<p class="illustration">Un doppio click sul blocco evidenziato deve causare l'accensione dei led</p>
+<p>Prove analoghe si possono fare attivando i motori con il blocco &laquo;set motor &hellip;&raquo; o il buzzer con il blocco &laquo;play tone on note &hellip;&raquo;. Verificare il corretto funzionamento dei sensori richiede un piccolo sforzo in più, serve infatti preparare un breve programma come questo:</p>
+<img src="img/running-programs-in-mblock/mblock-say-light-sensor.png">
+<p class="illustration">Il programma che verifica la lettura del sensore luminoso</p>
+<p>Il programma interroga il sensore luminoso ogni 3 secondi e mostra la lettura in un fumetto:</p>
+<img src="img/running-programs-in-mblock/mblock-say-light-sensor-test.png">
+<p class="illustration">Il programma in esecuzione</p>
+<h2>Controllo del movimento di mBot</h2>
+<p>Uno dei primi esercizi di programmazione che viene proposto ai CoderDojo è quello di far muovere uno sprite in Scratch utilizzando i tasti cursore del computer. Per dare un senso di concretezza al progetto si può pensare di voler di realizzare un &ldquo;rover&rdquo; il cui movimento è controllato con i tasti direzionali mentre la barra spaziatrice comanda l'acquisizione del livello di luminosità del punto in cui si trova il robot:</p>
+<img src="img/running-programs-in-mblock/move-and-sample.png">
+<p class="illustration">Il programma del rover (<a href="files/running-programs-in-mblock/move-and-sample.sb2">qui</a> il progetto mBlock)</p>
+<p>Il programma sfrutta i led per indicare lo stato del robot: verde per l'avanzamento, giallo per le sterzate, rosso per la retromarcia. Durante l'acquisizione vengono tuttavia spenti: trovandosi molto vicini al sensore di luminosità se accesi potrebbero alterarne le misure.</p>
+<h2>Diagramma dei valori acquisiti</h2>
+<p>In questo secondo esperimento la modalità di acquisizione cambia da manuale ad automatica. Il rover quindi rileva il dato sull'intensità luminosa ad intervalli regolari mentre mBlock ne traccia l'andamento su un grafico:</p>
+<img src="img/running-programs-in-mblock/move-and-plot-move.png">
+<p class="illustration">La parte di programma che si occupa del movimento</p>
+<p>Il sotto-programma che sovrintende il movimento è una versione ridotta del progetto precedente, dal quale sono state eliminate le istruzioni relative all'acquisizione manuale e all'accensione dei led: considerando che la lettura del sensore ora avviene senza soluzione di continuità, è bene che essi rimangano spenti.</p>
+<img src="img/running-programs-in-mblock/move-and-plot-plot.png">
+<p class="illustration">La parte di programma che traccia l'andamento dell'intensità luminosa (<a href="files/running-programs-in-mblock/move-and-plot.sb2">qui</a> il progetto mBlock)</p>
+<p>Due le particolarità del programma degne di nota: la prima è che la traccia viene cancellata automaticamente quando raggiunge il margine destro per ricominciare da capo a sinistra (cfr. blocco &laquo;if x &gt; 240 &hellip;&raquo;); in secondo luogo, la scalatura del valore acquisito. Il valore letto dal sensore è un numero intero compreso tra 0 e 1000; per riportarlo adeguatamente sul grafico esso va rimappato nell'intervallo &plusmn;180, che corrisponde all'estensione dell'asse verticale (cfr. blocco &laquo;set y to &hellip;&raquo;).</p>
+<img src="img/running-programs-in-mblock/light-sensor-plot.png">
+<p class="illustration">Il grafico realizzato durante una &ldquo;passeggiata&rdquo; in cui è stata attraversata una zona d'ombra</p>
+<h2>Conclusioni</h2>
+<p>Fino ad oggi ho sviluppato i programmi di mBot secondo la procedura:</p>
+<ul>
+<li>collego mBot alla presa USB;</li>
+<li>stabilisco la connessione seriale in mBlock;</li>
+<li>modifico il programma;</li>
+<li>carico il programma in mBot;</li>
+<li>scollego mBot per posizionarlo nell'ambiente di test;</li>
+<li>verifico il buon funzionamento del programma;</li>
+<li>in caso di errore o ripensamento ricomincio da capo.</li>
+</ul>
+<p>Questo nuovo approccio si è dimostrato molto più agevole, perché non richiede il caricamento del programma in mBot. Le modifiche apportate possono essere validate immediatamente grazie al fatto che è mBlock che si occupa di inviare a mBot le istruzioni che di volta in volta il robot è chiamato ad eseguire. L'unico svantaggio che ho potuto registrare è il fatto che il robot non è così reattivo come quando ospita il programma vero e proprio e non ha un firmware dedicato che fa da interprete dei comandi ricevuti da mBlocks. La scelta ottimale potrebbe essere quella di sviluppare il programma in mBlocks e trasferirlo su mBot una volta raggiunta la sua veste definitiva.</p>
+<h2>Appendice</h2>
+<h3>Installazione di mBot 4.0.4 su Ubuntu 16.04</h3>
+<p>Scaricare il pacchetto &laquo;deb&raquo; dalla <a href="http://www.mblock.cc/software/mblock/mblock3/">pagina dei download</a> del sito ufficiale (<a href="http://mblock.makeblock.com/mBlock4.0/mBlock_4.0.4_amd64.deb">link diretto</a> al pacchetto). Per installare il pacchetto aprire un terminale e dare il comando:</p>
+<pre class="code">
+sudo dpkg -i path-to-the-deb-file
+</pre>
+<p>Nel caso l'installazione fallisca a causa dell'assenza di qualche dipendenza, rilanciare il comando con il flag <span class="code">-f</span>, come spiegato <a href="https://askubuntu.com/questions/40779/how-do-i-install-a-deb-file-via-the-command-line">qui</a>:</p>
+<blockquote>
+If dpkg reports an error due to dependency problems, you can run sudo apt-get install -f to download the missing dependencies and configure everything.</blockquote>
+<p>Per disinstallare l'applicazione, sempre da terminale dare il comando:</p>
+<pre class="code">
+sudo dpkg -r mBlock
+</pre>
+<h2>Riferimenti</h2>
+<ul>
+<li class="ref">la guida ufficiale alla programmazione mBot: <a href="http://learn.makeblock.com/en/mbot-programming/">mBot-Programming</a>;</li>
+<li class="ref">sulle differenze tra l'eseguire i programmi in mBlock e il caricarli: <a href="http://learn.makeblock.com/en/robot-kits/mbot/run-from-mblock-ide-or-upload-to-board/">Run From mBlock IDE or Upload to Board?</a>;</li>
+<li class="ref">sul perché mBot non può comunicare con mBlock tramite messaggi: <a href="http://learn.makeblock.com/en/robot-kits/mbot/mbot-ir-communications/">mBot IR Communications</a>;</li>
+<li class="ref">sul come comunicare via terminale seriale tra mBlock e mBot: <a href="http://learn.makeblock.com/en/robot-kits/mbot/serial-communications/">Serial Communications</a>.</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 27/05/2018</p>
+</body>
+</html>
