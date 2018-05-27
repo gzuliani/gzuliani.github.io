@@ -8,12 +8,15 @@ span.file-name {
 
 span.function {
  font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .9em;
 }
 
 span.library {
  font-style: italic;
+ font-size: .9em;
 }
 
 span.object {
  font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .9em;
 }
