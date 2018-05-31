@@ -59,6 +59,7 @@ void Stop()
 </pre>
 <p class="illustration">Le routing di controllo del movimento del robot</p>
 <p>Notare come nella programmazione a basso livello si debba tener conto del fatto che i due motori sono contrapposti: per esempio per far avanzare il robot è necessario far girare il motore di sinistra, <span class="code">MotorL</span>, in senso orario &ndash; impostando un valore di velocità negativo &ndash; mentre quello di destra, <span class="code">MotorR</span>, in senso antiorario &ndash; specificando un valore di velocità positivo. mBlock ci risparmia questa complicazione!</p>
+<a name="remote-manual-control"></a>
 <h2>Guida manuale telecomandata</h2>
 <p>La modalità di funzionamento di guida manuale è realizzata dalle due procedure <span class="code">get_ir_command</span> e <span class="code">modeA</span>: la prima si occupa di stabilire velocità e direzione del robot sulla base dei tasti che l'utente ha premuto sul telecomando, la seconda di attivare i motori.</p>
 <p>Interessante la logica di arresto del robot: si ferma automaticamente quando sono trascorsi più di 120ms dall'ultima pressione di un tasto. Non è troppo complicato implementare lo stesso criterio con i blocchi: sarebbe sufficiente azzerare il timer di cui è dotato mBot ogniqualvolta si registra la pressione di un tasto del telecomando e introdurre una variabile che indica se il robot è in movimento oppure è fermo; il robot andrebbe fermato se risulta in movimento e il valore del timer è superiore a 0,12s:</p>
@@ -115,6 +116,7 @@ void Stop()
 <p>Il progetto in mBlock si presenta all'incirca così (per brevità sono stati omessi blocchi relativi ai cambi di velocità associati ai tasti <span class="code">R3</span>, <span class="code">R4</span>, ... <span class="code">R8</span>):</p>
 <img src="img/mbot-firmware/remote-manual-control.png">
 <p>Il progetto della guida manuale telecomandata è scaricabile <a href="files/mbot-firmware/remote-manual-control.sb2">qui</a>.</p>
+<a name="wall-avoidance"></a>
 <h2>Scansa-ostacoli</h2>
 <p>La seconda modalità di funzionamento, realizzata dalla procedura <span class="code">modeB</span>, prevede che il robot si muova autonomamente sul pavimento lungo traiettorie rettilinee cambiando direzione quando è in prossimità di un ostacolo. A tal scopo sfrutta il sensore ultrasonico di cui è dotato, grazie al quale è in grado di rilevare la distanza dell'oggetto più prossimo.</p>
 <p>Si possono verificare tre situazioni:</p>
@@ -142,6 +144,7 @@ per sempre
 <p class="illustration">Il programma scansa-ostacoli completo</p>
 <p>Si riconoscono i parametri caratteristici delle svolte in avanti e in retromarcia precedentemente discussi (velocità della ruota interna ridotta rispettivamente a 1/5 e 1/8 rispetto a quella esterna). Le durate effettive delle svolte brevi e di quelle lunghe (300 e 800 millisecondi rispettivamente) sono state ricavate direttamente dal codice sorgente dello sketch originale. La pausa finale garantisce il corretto funzionamento del sensore ultrasonico che non può essere interrogato troppo frequentemente (cfr. sezione &ldquo;Uso del sensore&rdquo; in <a href="../scratch/mblock-hysrf05.html">Uso del sensore ultrasonico HY-SRF05 con mBlock</a>).</p>
 <p>Il progetto scansa-ostacoli è scaricabile <a href="files/mbot-firmware/wall-avoidance.sb2">qui</a>.</p>
+<a name="line-follower"></a>
 <h2>Segui la linea</h2>
 <p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="code">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span>quello di destra):</p>
 <table cellspacing="0">
