@@ -5,12 +5,12 @@
 <link href="../css/main.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<p class="page-path"><a href="../index.html#mbot-light-follower">risorse</a> | mbot cerca-luce</p>
+<p class="page-path"><a href="../index.html#light-follower">risorse</a> | mbot cerca-luce</p>
 <h1>mBot cerca-luce</h1>
 <h2>Introduzione</h2>
-<p>In <a href="running-programs-in-mblock.html">controllo di mBot da mBlock</a> si utilizza il robot per acquisire il livello di luminosità lungo una traiettoria scelta dal pilota. È possibile programmare mBot in modo che raggiunga autonomamente il posto ove l'intensità luminosa è massima? Un comportamento del genere risulterebbe utile se il robot fosse alimentato ad energia solare: quando il livello delle batterie scende al di sotto della soglia di sicurezza il robot mette in atto questa strategia per ridurre il tempo di carica.</p>
+<p>In <a href="running-programs-in-mblock.html">controllo di mBot da mBlock</a> il robot è stato programmato per acquisire il livello di luminosità lungo una traiettoria determinata dal pilota per mezzo della tastiera del computer. Alla luce di quell'esperienza, è possibile programmare mBot in modo che raggiunga autonomamente il luogo dove l'intensità luminosa è massima? Un comportamento del genere risulterebbe utile se il robot fosse alimentato ad energia solare: quando il livello delle batterie scende al di sotto della soglia di sicurezza il robot potrebbe mettere in atto questa strategia per ottimizzare il tempo di ricarica.</p>
 <h2>Strategia</h2>
-<p>mBot è dotato di un unico sensore luminoso posto tra i due led: questo rende difficile determinare la direzione verso la quale procedere per massimizzare l'irradiazione del robot &mdash; ce ne fossero due, sarebbe &ldquo;sufficiente&rdquo; orientare il robot dal lato del sensore maggiormente illuminato. Ho quindi pensato di basare le scelte sulla direzione da prendere sul cambiamento di luminosità confrontando il livello di irradiazione alla posizione rispetto alla precedente. La stragegia iniziale era così articolata:</p>
+<p>mBot è dotato di un unico sensore luminoso posto tra i due led: questo rende difficile determinare la direzione verso la quale procedere per massimizzare l'irradiazione del robot &mdash; ce ne fossero due, sarebbe sufficiente orientare il robot verso il sensore maggiormente illuminato. Ho quindi pensato di basare le scelte sulla direzione da prendere sul cambiamento di luminosità confrontando il livello di irradiazione nella posizione attuale rispetto alla precedente. La stragegia iniziale era così articolata:</p>
 <pre class="code">
 1. procedi in avanti
 2. se il livello di luminosità è aumentato, vai al punto 1.
@@ -20,8 +20,7 @@
 6. se il livello di luminosità è aumentato, vai al punto 5.
 7. torna al punto 1.
 </pre>
-<p>Alla prova dei fatti questa procedura si è rivelata poco efficace: mBot sembrava vagare senza una meta apparente, quando invece sarebbe stato lecito attendersi una preferenza per le zone più illuminate della stanza.</p>
-<p>Ho provato allora a semplificare la parte della rotazione:</p>
+<p>Alla prova dei fatti questa procedura si è rivelata poco efficace: mBot sembrava vagare senza una meta apparente quando invece sarebbe stato lecito attendersi una preferenza per le zone più illuminate della stanza. Ho provato allora a semplificare la parte della rotazione:</p>
 <pre class="code">
 1. procedi in avanti
 2. se il livello di luminosità è aumentato, vai al punto 1.
@@ -32,29 +31,28 @@
 7. se il livello di luminosità è aumentato, vai al punto 6.
 8. torna al punto 1.
 </pre>
-<p>La modifica è marginale: prima il robot ruotava verso destra e invertiva immediatamente il senso di rotazione se il livello di luminosità era calato; ora prosegue nella rotazione fino a quando il livello di luminosità non aumenta, e a quel punto continua fino a quando non scende.</p>
+<p>La modifica è marginale: prima il robot ruotava verso destra invertendo immediatamente il senso di rotazione nel caso il livello di luminosità fosse diminuito; ora prosegue nella rotazione fino a quando il livello di luminosità non aumenta, e a quel punto continua fino a quando non scende. Questa tecnica, all'apparenza equivalente a quella di partenza, si è dimostrata in realtà più robusta e meno soggetta all'instabilità intrinseca che caratterizza il sensore montato sul mio mBot.</p>
 <img src="img/light-follower/main.png">
 <p class="illustration">La parte di programma che si occupa del movimento</p>
-<p>Il progetto mBlock fa uso di alcuni blocchi personalizzati; i più semplici sono quelli che si occupano della rotazione di mBot, introdotti per rendere più leggibile la sezione principale:</p>
+<p>Il progetto mBlock fa uso di alcuni blocchi personalizzati; i più semplici sono quelli che si occupano della rotazione di mBot, introdotti per rendere più compatta &mdash; e quindi più comprensibile &mdash; la sezione principale:</p>
 <img src="img/light-follower/turns.png">
 <p class="illustration">I blocchi per la rotazione sul posto di mBot</p>
-<p>La parte di acquisizione mostra come viene realizzato l'effetto &ldquo;memoria&rdquo;: dapprima il livello di luminosità della posizione precedente viene copiato nella variabile <em>prev-light</em>, quindi viene acquisito il livello alla posizione attuale e posto nella variabile <em>light</em>. Infine, si procede con l'aggiornamento del diagramma:</p>
+<p>Il blocco che si occupa della rilevazione della misura di luminosità mostra come viene realizzato l'effetto &ldquo;memoria&rdquo;: dapprima il livello di luminosità acquisito precedentemente (che si trova all'interno della variabile <em>light</em>) viene copiato nella variabile <em>prev-light</em>, quindi quello attuale va a sostituire il vecchio, sempre nella variabile <em>light</em>. Infine, si procede con l'aggiornamento del diagramma:</p>
 <img src="img/light-follower/acquire.png">
 <p class="illustration">Il blocco che realizza l'acquisizione del livello di luminosità</p>
-<p>La procedura di aggiornamento del diagramma è analoga a quella già vista in <a href="running-programs-in-mblock.html">controllo di mBot da mBlock</a>, cancellazione automatica compresa:</p>
+<p>La procedura di aggiornamento del diagramma è analoga a quella già vista in <a href="running-programs-in-mblock.html">controllo di mBot da mBlock</a>, con la caratteristica cancellazione automatica della traccia una volta raggiunto il margine destro:</p>
 <img src="img/light-follower/plot.png">
 <p class="illustration">Il blocco per l'aggiornamento del grafico del livello di luminosità</p>
 <p>Il programma cambia il colore della penna in funzione del tipo di movimento in atto: verde per l'avanzamento, arancio per la rotazione verso destra, azzurro per la rotazione verso sinistra. In questo modo è facile, guardando il diagramma, ricostruire la traiettoria seguita da mBot per raggiungere la sua posizione finale:</p>
 <img src="img/light-follower/chart-full.png">
 <p class="illustration">Il colore della traccia indica il tipo di movimento effettuato da mBot in quel frangente</p>
-<p>Come si comporta il programma in un ambiente reale? La composizione sottostante mostra i primi quattro minuti di una passeggiata del robot iniziata sotto il tavolo della cucina(!):</p>
+<p>Come si comporta il programma in un ambiente reale? La composizione sottostante mostra i primi minuti di una passeggiata del robot iniziata da una posizione in penombra (sotto il tavolo della cucina!). Dopo una lieve indecisione iniziale, il robot si muove con una certa determinazione verso la zona più luminosa della stanza:</p>
 <img src="img/light-follower/chart-1-2-3.png">
 <img src="img/light-follower/chart-4-5-6.png">
 <p class="illustration">Il programma sembra funzionare a dovere&hellip;</p>
-<p>Messo alla prova, il programma ha dato buona prova di sè: una volta raggiunta l'area maggiormente illuminata, il robot ha cominciato a girare su sè stesso, come si può verificare analizzando la traccia nella parte finale del quarto quadro, ove il valore di luminosità è massimo e il colore verde praticamente assente. A quel punto ho oscurato di proposito il robot, esattamente in corrispondenza della caduta di luminosità evidenziata qui sotto:</p>
+<p>Messo alla prova, il programma ha dato buona prova di sè: una volta raggiunta l'area maggiormente illuminata, il robot ha cominciato a girare su sè stesso, come si può verificare analizzando la traccia nella parte finale del quarto quadro, ove il valore di luminosità è massimo e il colore verde &mdash; che caratterizza l'avanzamento &mdash; praticamente assente. A quel punto ho oscurato di proposito il robot, esattamente in corrispondenza della caduta di luminosità evidenziata qui sotto:</p>
 <img src="img/light-follower/chart-4-5-6-shadow.png">
-<p>Ebbene, il robot non ci ha messo molto, una volta uscito da una zona d'ombra limitrofa, a riportarsi nella regione di massima illuminazione. Il movimento continuo costituisce comunque un pericolo, perché a volte accade che il robot finisca in aree a minor luminosità &mdash; si veda ad esempio l'attenuazione verificatasi tra il quinto e sesto quadro. Varrebbe forse la pena di arrestare il robot una volta raggiunto un livello di illuminazione ottimale.</p>
-<p>Il filmato sottostante mostra mBot entrare in una zona d'ombra adiacente a quella di massima luminosità per uscirne subito dopo:</p>
+<p>Ebbene, il robot non ci ha messo molto, una volta uscito da una zona d'ombra limitrofa, a riportarsi nella regione di massima illuminazione. Il movimento continuo costituisce comunque un pericolo, perché a volte accade che il robot finisca in aree a minor luminosità &mdash; si veda ad esempio l'attenuazione verificatasi tra il quinto e sesto quadro. Varrebbe forse la pena di arrestare il robot una volta raggiunto un livello di illuminazione ottimale. Il filmato sottostante mostra mBot entrare in una zona d'ombra adiacente a quella di massima luminosità per uscirne subito dopo:</p>
 <video width="600" controls>
  <source src="img/light-follower/VID_20180529_211232.mp4" type="video/mp4">
 </video>
@@ -63,9 +61,11 @@
 <h2>Estensioni</h2>
 <ul>
 <li>per minimizzare il consumo delle batterie potrebbe essere opportuno spegnere i motori quando il livello di luminosità supera un certo livello o si mantiene costante per un certo periodo di tempo;</li>
-<li>il robot gira alla cieca; potrebbe essere il caso di estendere il programma con una procedura &laquo;scansa-ostacoli&raquo; (cfr. sezione omonima in <a href="mbot-firmware.html#wall-avoidance">studio del firmware di mBot</a>). Quando è attiva questa procedura, la traccia del grafico potrebbe colorarsi di rosso;</li>
-<li>l'algoritmo implementato è di tipo <em>greedy</em>, cioè &ldquo;ingordo&rdquo;: il robot cerca ottusamente di massimizzare il livello di luminosità. Questo modo di procedere rende impossibile raggiungere le zone a massima luminosità se queste si trovano al di là di zone a minor luminosità (nel linguaggio matematico si direbbe che il robot è <em>intrappolato in un massimo locale</em>). Lo sviluppo di strategie più robuste richiede tuttavia uno sforzo che va al di là delle pretese di questi appunti.</li>
+<li>il robot gira alla cieca: si potrebbe estendere il programma con una procedura &laquo;scansa-ostacoli&raquo; (cfr. sezione omonima in <a href="mbot-firmware.html#wall-avoidance">studio del firmware di mBot</a>) da attivare in prossimità di un intralcio. Per indicare che il robot è in modalità &laquo;scansa-ostacoli&raquo; si potrebbe cambiare il colore della traccia, per esempio in rosso;</li>
+<li>l'algoritmo implementato è di tipo <em>greedy</em>, cioè &ldquo;ingordo&rdquo;: il robot cerca ottusamente di massimizzare il livello di luminosità. Questo modo di procedere rende impossibile raggiungere le zone a massima luminosità se queste si trovano al di là di zone a minor luminosità (in linguaggio matematico si direbbe che <em>il robot rischia di rimanere intrappolato in un massimo locale</em>). Lo sviluppo di strategie più robuste richiede tuttavia uno sforzo che va al di là delle pretese di questi appunti.</li>
 </ul>
-<p class="modification-notice">Pagina modificata il 31/05/2018</p>
+<h2>Conclusioni</h2>
+<p>Sarebbe stato praticamente impossibile validare questo progetto senza la possibilità di visualizzare a schermo i dati di intensità luminosa rilevati da mBot. Non disponendo di un esposimetro non avrei mai avuto la certezza che il robot stesse effettivamente seguendo una traiettoria a luminosità crescente. Avrei magari potuto ricorrere a qualche espediente come per esempio far emettere di tanto in tanto un suono a mBot di altezza proporzionale all'ultima lettura del sensore. Si sarebbe comunque trattato di una misura indiretta, per di più qualitativa: nulla di comparabile alla precisione ottenuta tracciando l'andamento del livello di luminosità su un diagramma cartesiano.</p>
+<p class="modification-notice">Pagina modificata il 01/06/2018</p>
 </body>
 </html>
