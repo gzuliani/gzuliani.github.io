@@ -1,0 +1,1069 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Comunicazione seriale Arduino/Android via USB</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-android-usb.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-android-usb">risorse</a> | comunicazione seriale arduino/android via usb</p>
+<h1>Comunicazione seriale Arduino/Android via USB</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Vorrei portare su Android il programma per PC &ldquo;<a href="https://bitbucket.org/gzuliani/sps-hc20">Consolle</a>&rdquo; che ho sviluppato per il <a href="arduino-scoreboard">controllo di un tabellone segnapunti</a> per il quale qualche mese fa ho realizzato un circuito di interfaccia. Il programma al momento gira su un vetusto portatile e il suo uso risulta macchinoso perché il computer non è dotato di <em>touch screen</em>. Nella foga della partita non è facile centrare sempre il pulsante giusto, e l'illuminazione della zona dei refertisti in palestra non è ottimale. Poiché tutti gli <em>smart phone</em> e i <em>tablet</em> oggi in circolazione ne sono dotati, ho pensato di trasformare il programma Python in un'App per Android. Prima di tutto devo però accertarmi di poter comunicare dal terminale con Arduino via seriale USB, perché il Bluetooth in questo caso non è un'opzione.</p>
+<h2>Dispositivi USB On-The-Go (OTG)</h2>
+<p>Il primo passo consiste nel procurarsi un dispositivo Android in grado di funzionare come <em>host</em> USB. Dei tre terminali in mio possesso, un tablet Samsung Galaxy Tab 2 10.1, uno smartphone Samsung J3 e un Huawey P8 Light, solo i primi due supportano tale modalità, nota come <a href="https://en.wikipedia.org/wiki/USB_On-The-Go">USB OTG</a>.</p>
+<p>Per attivare la modalità OTG (nei dispositivi che la supportano!) è necessario utilizzare un apposito cavetto di connessione: l'impiego di questo particolare accessorio fa sì che il dispositivo Android commuti da <em>slave</em> a <em>master</em>.</p>
+<p>Poiché il Samsung Galaxy Tab è sprovvisto di una presa USB standard, ho dovuto acquistare due cavetti OTG: uno standard per una presa USB micro, uno per il connettore proprietario del tablet:</p>
+<img src="img/arduino-android-usb/connectors.jpg">
+<p class="illustration">In alto il cavo OTG standard per il Samsung J3, sotto quello dedicato per il Galaxy Tab</p>
+<p>Resta ora da verificare come si debba stabilire una comunicazione seriale con Arduino.</p>
+<h2>Sketch Arduino</h2>
+<p>Per verificare la comunicazione tra il terminale Android e Arduino ho caricato un programma di <em>echo</em> seriale che lavora a 57600 baud sulla scheda (<a href="files/arduino-android-usb/serial-echo.ino">qui</a> il sorgente):</p>
+<pre class="code">
+void setup() {
+  Serial.begin(57600);
+}
+
+void loop() {
+  while (Serial.available() > 0)
+    Serial.print((char)Serial.read());
+}
+</pre>
+<h2>App Android</h2>
+
+<!--
+
+5) USB host overview
+https://developer.android.com/guide/topics/connectivity/usb/host
+dalla guida ufficiale
+
+6) usb-serial-for-android
+https://github.com/mik3y/usb-serial-for-android
+uno dei primi risultati di google
+
+7) UsbSerial
+https://github.com/felHR85/UsbSerial
+molto usata, ma non funziona su Android 5.1.1 Lollipop
+
+1) Android Things - USB communications
+http://nilhcem.com/android-things/usb-communications
+aggancio alle notifiche usb e riconoscimento automatico di Arduino
+
+2) androidthings - sample-usbenum
+https://github.com/androidthings/sample-usbenum
+esempio d'uso dell'API USB
+
+3) How to Use Your Android to Communicate with Your Arduino
+https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364
+esempio basato su usbserial
+
+4) USB Communication between Android and Arduino
+https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html
+esempio senza librerie esterne
+-->
+
+
+<p>Il principale riferimento per lo sviluppo di app che comunicano attraverso la porta seriale USB è la sezione <a href="https://developer.android.com/guide/topics/connectivity/usb/host">USB host overview</a> della documentazione ufficiale; in rete si trovano poi vari progetti che coinvolgono espressamente Arduino (due esempi: <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">How to Use Your Android to Communicate with Your Arduino</a>, <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">USB Communication between Android and Arduino</a>). Molti di questi si basano su librerie di terze parti, in particolare <a href="https://github.com/felHR85/UsbSerial">UsbSerial</a> che, pur essendo particolarmente diffusa, è affetta da qualche problema, in particolare non supporta Android 5.1.1 Lollipop. Per avere il massimo grado di libertà e soprattutto farmi un'idea di come funziona l'API sottostante, ho deciso di sviluppare in autonomia il codice di comunicazione, traendo comunque ispirazione dai progetti <em>open</em> che hanno fatto la stessa scelta.</p>
+<p></p>
+
+
+
+
+
+<!--
+
+programma di test su arduino:
+
+[serial-echo.ino]
+
+
+
+nuovo progetto su Android
+
+
+
+aggiungere le seguenti righe al manifest:
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.theengineeringprojects.dani" >
+
+
++    <uses-feature android:name="android.hardware.usb.host" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme" >
+        <activity android:name=".MainActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
++            <intent-filter>
++                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
++            </intent-filter>
++
++            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
++                android:resource="@xml/device_filter" />
+        </activity>
+    </application>
+
+</manifest>
+-->
+<h3>Abilitazione della modalità USB Host</h3>
+<p>Le funzionalità di accesso all'Host USB sono state introdotte nell'API 12; è indispensabile basare l'app su un'API di pari livello o superiore. È inoltre necessario indicare nel file <span class="path">AndroidManifest.xml</span> che l'app richiede l'accesso a tale componente aggiunendo la riga evidenziata:</p>
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    package=&quot;com.theengineeringprojects.dani&quot; &gt;
+
+    <ins>&lt;uses-feature android:name=&quot;android.hardware.usb.host&quot; /&gt;</ins>
+
+    &lt;application
+        android:allowBackup=&quot;true&quot;
+        android:icon=&quot;@mipmap/ic_launcher&quot;
+        ...
+
+&lt;/manifest&gt;
+</pre>
+<h3>Identificazione della scheda Arduino</h3>
+<p>Per poter comunicare con Arduino è necessario individuare l'oggetto software (istanza della classe <span class="code">android.hardware.usb.UsbDevice</span>) che lo rappresenta. Esistono due modi per farlo: registrarsi e attendere una notifica dal sistema operativo dell'avvenuto collegamento della scheda alla presa USB oppure effettuando una scansione manuale. Il primo è il più semplice, e richiede un secondo intervento nel file <span class="path">AndroidManifest.xml</span>:</p>
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    package=&quot;com.theengineeringprojects.dani&quot; &gt;
+
+    &lt;uses-feature android:name=&quot;android.hardware.usb.host&quot; /&gt;
+
+    &lt;application
+        android:allowBackup=&quot;true&quot;
+        android:icon=&quot;@mipmap/ic_launcher&quot;
+        android:label=&quot;@string/app_name&quot;
+        android:supportsRtl=&quot;true&quot;
+        android:theme=&quot;@style/AppTheme&quot; &gt;
+        &lt;activity android:name=&quot;.MainActivity&quot; &gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name=&quot;android.intent.action.MAIN&quot; /&gt;
+                &lt;category android:name=&quot;android.intent.category.LAUNCHER&quot; /&gt;
+            &lt;/intent-filter&gt;
+            <ins>&lt;intent-filter&gt;
+                &lt;action
+                    android:name=&quot;android.hardware.usb.action.USB_DEVICE_ATTACHED&quot; /&gt;
+            &lt;/intent-filter&gt;
+            &lt;meta-data
+                android:name=&quot;android.hardware.usb.action.USB_DEVICE_ATTACHED&quot;
+                android:resource=&quot;@xml/device_filter&quot; /&gt;</ins>
+        &lt;/activity&gt;
+    &lt;/application&gt;
+&lt;/manifest&gt;
+</pre>
+
+
+
+<!--
+<a href="https://en.wikipedia.org/wiki/USB_communications_device_class">USB communications device class</a>
+
+
+
+
+device_filter è un file xml che contiene le caratteristiche dei dispositivi d'interesse
+
+da https://developer.android.com/guide/topics/connectivity/usb/host:
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <usb-device vendor-id="1234" product-id="5678" class="255" subclass="66" protocol="1" />
+</resources>
+
+
+nel mio caso:
+-->
+
+<pre class="code">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+
+&lt;resources&gt;
+    &lt;!-- 0x2341 / Arduino --&gt;
+    &lt;usb-device vendor-id=&quot;9025&quot; /&gt;
+&lt;/resources&gt;
+</pre>
+<p class="illustration">Il contenuto del file <span class="path">device_filter.xml</span></p>
+
+<!--
+(cfr. http://www.linux-usb.org/usb.ids per un elenco esaustivo,
+https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml
+per un elenco "ragionevole")
+
+
+mi baso su https://developer.android.com/guide/topics/connectivity/usb/host
+
+
+aggiunto
+
+	<uses-feature android:name="android.hardware.usb.host" />
+	<uses-sdk android:minSdkVersion="12" />
+
+
+in AndroidManifest.xml
+
+
+dopodiché tutto sta nel metodo onResume, che viene chiamato dall'intent-filter
+
+USB_DEVICE_ATTACHED va usato come intent filter
+USB_DEVICE_DETACHED va invece agganciato da un broadcastreceiver
+
+
+un po' di casini a lavorare a 57600, probabilmente bisogna usare controlTransfer per settare il baud rate:
+
+http://android.serverbox.ch/?p=549
+http://android.serverbox.ch/?p=427
+
+
+piuttosto incasinato... e se usassi usbserial?
+
+https://github.com/felHR85/UsbSerial/ -- unico limite: non funziona con Android 5.1.1 Lollipop
+
+ASPETTIAMO UN ATTIMO...
+
+[confermo, se lavoro a 9600 bulkTransfer funziona in entrambe le direzioni,
+evidentemente UsbDevice si pone di default con quel baud rate. riporto
+Arduino su 57600 e cerco di capire come programmare Android per portare la
+seriale sullo stesso parametro]
+
+
+Arduino
+      vendorId: '0x2341',  (9025 Dec)
+      productId: '0x0043'
+
+
+
+
+https://stackoverflow.com/questions/8546099/setting-parity-with-controltransfer-method?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+
+
+
+You can define the combination of bits to create your own configuration
+(parity, stop bit & data bit).
+
+conn.controlTransfer(0x40, 0x04, 0x0008, 0, null, 0, 0);
+
+1st parameter - 0x40  - request to set or get control data
+
+ #define FTDI_SIO_SET_DATA_REQUEST_TYPE  0x40
+
+2nd parameter - 0x04 - type of data to be set or get
+
+#define FTDI_SIO_RESET      0 /* Reset the port */
+#define FTDI_SIO_MODEM_CTRL     1 /* Set the modem control register */
+#define FTDI_SIO_SET_FLOW_CTRL  2 /* Set flow control register */
+#define FTDI_SIO_SET_BAUD_RATE  3 /* Set baud rate */
+#define FTDI_SIO_SET_DATA   4 /* Set the data characteristics of the port */
+#define FTDI_SIO_GET_MODEM_STATUS   5 /* Retrieve current value of modern status register */
+#define FTDI_SIO_SET_EVENT_CHAR 6 /* Set the event character */
+#define FTDI_SIO_SET_ERROR_CHAR 7 /* Set the error character */
+
+Third parameter - 0x0008 - data bit 8, parity none, stop bit 1, tx off - Is the actual data to be passed.
+
+The third parameter is a 16 bit data which can be formed from the constants defined below:
+
+Bits 0 to 7   -- Number of data bits
+
+Bits 8 to 10  -- Parity
+          0 = None
+          1 = Odd
+          2 = Even
+          3 = Mark
+          4 = Space
+Bits 11 to 13 -- Stop Bits
+          0 = 1
+          1 = 1.5
+          2 = 2
+Bit 14
+          1 = TX ON (break)
+          0 = TX OFF (normal state)
+Bit15 -- Reserved
+
+
+ #define FTDI_SIO_SET_DATA_REQUEST       FTDI_SIO_SET_DATA
+
+ #define FTDI_SIO_SET_DATA_PARITY_NONE   (0x0 << 8)
+ #define FTDI_SIO_SET_DATA_PARITY_ODD    (0x1 << 8)
+ #define FTDI_SIO_SET_DATA_PARITY_EVEN   (0x2 << 8)
+ #define FTDI_SIO_SET_DATA_PARITY_MARK   (0x3 << 8)
+ #define FTDI_SIO_SET_DATA_PARITY_SPACE  (0x4 << 8)
+ #define FTDI_SIO_SET_DATA_STOP_BITS_1   (0x0 << 11)
+ #define FTDI_SIO_SET_DATA_STOP_BITS_15  (0x1 << 11)
+ #define FTDI_SIO_SET_DATA_STOP_BITS_2   (0x2 << 11)
+ #define FTDI_SIO_SET_BREAK              (0x1 << 14)
+
+For baud rate :
+
+* Value Baud Rate speed
+* 0×2710 300
+* 0×1388 600
+* 0x09C4 1200
+* 0x04E2 2400
+* 0×0271 4800
+* 0×4138 9600
+* 0x80D0 14400
+* 0x809C 19200
+* 0xC04E 38400
+* 0×0034 57600
+* 0x001A 115200
+* 0x000D 230400
+* 0×4006 460800
+* 0×8003 921600
+*/
+
+Please refer the below links for more details:
+
+http://read.pudn.com/downloads181/sourcecode/embed/842049/usb/serial/ftdi_sio.h__.htm
+
+http://www.mev.co.uk/pages/Support/USB-Baud-Spoof.html
+
+
+guardando i sorgenti di UsbSerial, funzione setBaudRate di FTDISerialDevice:
+
+
+	setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0, null);
+
+con
+ FTDI_SIO_SET_BAUD_RATE = 3
+ value = FTDI_BAUDRATE_57600 -> 0x0034
+
+similmente,
+
+            case UsbSerialInterface.DATA_BITS_8:
+                currentSioSetData &= ~1;
+                currentSioSetData &= ~(1 << 1);
+                currentSioSetData &= ~(1 << 2);
+                currentSioSetData |= (1 << 3);
+                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
+
+con FTDI_SIO_SET_DATA = 4
+quindi currentSioSetData = 0x---8
+
+
+            case UsbSerialInterface.PARITY_NONE:
+                currentSioSetData &= ~(1 << 8);
+                currentSioSetData &= ~(1 << 9);
+                currentSioSetData &= ~(1 << 10);
+                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
+
+questo azzera i bit 8, 9 e 10
+
+
+            case UsbSerialInterface.STOP_BITS_1:
+                currentSioSetData &= ~(1 << 11);
+                currentSioSetData &= ~(1 << 12);
+                currentSioSetData &= ~(1 << 13);
+                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
+
+questo azzera i bit 11, 12 e 13
+
+da cui 8-n-1 è 0x0008
+
+
+
+cosa fa setControlCommand?
+
+    private int setControlCommand(int request, int value, int index, byte[] data)
+    {
+        int dataLength = 0;
+        if(data != null)
+        {
+            dataLength = data.length;
+        }
+        int response = connection.controlTransfer(FTDI_REQTYPE_HOST2DEVICE, request, value, mInterface.getId() + 1 + index, data, dataLength, USB_TIMEOUT);
+        Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
+        return response;
+    }
+
+    private static final int FTDI_REQTYPE_HOST2DEVICE = 0x40;
+
+
+
+
+
+
+
+
+d'altra parte, in
+
+http://android-er.blogspot.com/2014/02/send-hello-to-arduino-from-android-in.html
+http://android-er.blogspot.com/2014/03/android-send-command-to-arduino-in-usb.html
+
+trovo:
+
+ private boolean setupUsbComm(){
+
+  //for more info, search SET_LINE_CODING and
+  //SET_CONTROL_LINE_STATE in the document:
+  //"Universal Serial Bus Class Definitions for Communication Devices"
+  //at http://adf.ly/dppFt
+  final int RQSID_SET_LINE_CODING = 0x20;
+  final int RQSID_SET_CONTROL_LINE_STATE = 0x22;
+
+  boolean success = false;
+
+  UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+  Boolean permitToRead = manager.hasPermission(deviceFound);
+
+  if(permitToRead){
+   usbDeviceConnection = manager.openDevice(deviceFound);
+   if(usbDeviceConnection != null){
+    usbDeviceConnection.claimInterface(usbInterfaceFound, true);
+
+    showRawDescriptors(); //skip it if you no need show RawDescriptors
+
+    int usbResult;
+
+    /*
+     *  D7: 0 - Host to Device
+     *   1 = Device to Host
+     *  D6..5 Type
+     *   0 = Standard
+     *   1 = Class
+     *   2 = Vendor
+     *   3 = Reserved
+     *  D4..0 Recipient
+     *   0 = Device
+     *   1 = Interface
+     *   2 = Endpoint
+     *   3 = Other
+     */
+
+    //int requestType = 0x21;
+    int requestType = 0x42;
+
+    usbResult = usbDeviceConnection.controlTransfer(
+      requestType,
+      RQSID_SET_CONTROL_LINE_STATE, //SET_CONTROL_LINE_STATE
+      0,     //value
+      0,     //index
+      null,    //buffer
+      0,     //length
+      0);    //timeout
+
+    //baud rate = 9600
+    //8 data bit
+    //1 stop bit
+    byte[] encodingSetting =
+      new byte[] {(byte)0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08 };
+    usbResult = usbDeviceConnection.controlTransfer(
+      requestType,
+      RQSID_SET_LINE_CODING,   //SET_LINE_CODING
+      0,      //value
+      0,      //index
+      encodingSetting,  //buffer
+      7,      //length
+      0);     //timeout
+
+   }
+
+  }else{
+   manager.requestPermission(deviceFound, mPermissionIntent);
+   Toast.makeText(MainActivity.this,
+     "Permission: " + permitToRead,
+     Toast.LENGTH_LONG).show();
+   textStatus.setText("Permission: " + permitToRead);
+  }
+
+  return success;
+ }
+
+
+
+
+VID/PID determinato dalla libreria UsbSerial: vid:9025, pid:67
+questa liberia quale UsbDevice concreto istanzia? CDC!!!
+
+
+
+Questa è la classe completa:
+
+
+package com.felhr.usbserial;
+
+import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbEndpoint;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbRequest;
+import android.util.Log;
+
+public class CDCSerialDevice extends UsbSerialDevice
+{
+    private static final String CLASS_ID = CDCSerialDevice.class.getSimpleName();
+
+    private static final int CDC_REQTYPE_HOST2DEVICE = 0x21;
+    private static final int CDC_REQTYPE_DEVICE2HOST = 0xA1;
+
+    @Override
+    public String whoAmI() { return "CDC"; }
+
+    private static final int CDC_SET_LINE_CODING = 0x20;
+    private static final int CDC_GET_LINE_CODING = 0x21;
+    private static final int CDC_SET_CONTROL_LINE_STATE = 0x22;
+
+    /***
+     *  Default Serial Configuration
+     *  Baud rate: 115200
+     *  Data bits: 8
+     *  Stop bits: 1
+     *  Parity: None
+     *  Flow Control: Off
+     */
+    private static final byte[] CDC_DEFAULT_LINE_CODING = new byte[] {
+            (byte) 0x00, // Offset 0:4 dwDTERate
+            (byte) 0xC2,
+            (byte) 0x01,
+            (byte) 0x00,
+            (byte) 0x00, // Offset 5 bCharFormat (1 Stop bit)
+            (byte) 0x00, // bParityType (None)
+            (byte) 0x08  // bDataBits (8)
+    };
+
+    private static final int CDC_CONTROL_LINE_ON = 0x0003;
+    private static final int CDC_CONTROL_LINE_OFF = 0x0000;
+
+    private UsbInterface mInterface;
+    private UsbEndpoint inEndpoint;
+    private UsbEndpoint outEndpoint;
+    private UsbRequest requestIN;
+
+    private int initialBaudRate = 0;
+
+    public CDCSerialDevice(UsbDevice device, UsbDeviceConnection connection)
+    {
+        this(device, connection, -1);
+    }
+
+    public CDCSerialDevice(UsbDevice device, UsbDeviceConnection connection, int iface)
+    {
+        super(device, connection);
+        mInterface = device.getInterface(iface >= 0 ? iface : findFirstCDC(device));
+    }
+
+    @Override
+    public void setInitialBaudRate(int initialBaudRate) {
+        this.initialBaudRate = initialBaudRate;
+    }
+
+    @Override
+    public int getInitialBaudRate() {
+        return initialBaudRate;
+    }
+
+    @Override
+    public boolean open()
+    {
+        boolean ret = openCDC();
+
+        if(ret)
+        {
+            // Initialize UsbRequest
+            requestIN = new UsbRequest();
+            requestIN.initialize(connection, inEndpoint);
+
+            // Restart the working thread if it has been killed before and  get and claim interface
+            restartWorkingThread();
+            restartWriteThread();
+
+            // Pass references to the threads
+            setThreadsParams(requestIN, outEndpoint);
+
+            asyncMode = true;
+
+            return true;
+        }else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public void close()
+    {
+        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null);
+        killWorkingThread();
+        killWriteThread();
+        connection.releaseInterface(mInterface);
+        connection.close();
+    }
+
+    @Override
+    public boolean syncOpen()
+    {
+        boolean ret = openCDC();
+        if(ret)
+        {
+            setSyncParams(inEndpoint, outEndpoint);
+            asyncMode = false;
+            return true;
+        }else
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public void syncClose()
+    {
+        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null);
+        connection.releaseInterface(mInterface);
+        connection.close();
+    }
+
+    @Override
+    public void setBaudRate(int baudRate)
+    {
+        byte[] data = getLineCoding();
+
+        data[0] = (byte) (baudRate & 0xff);
+        data[1] = (byte) (baudRate >> 8 & 0xff);
+        data[2] = (byte) (baudRate >> 16 & 0xff);
+        data[3] = (byte) (baudRate >> 24 & 0xff);
+
+        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+    }
+
+    @Override
+    public void setDataBits(int dataBits)
+    {
+        byte[] data = getLineCoding();
+        switch(dataBits)
+        {
+            case UsbSerialInterface.DATA_BITS_5:
+                data[6] = 0x05;
+                break;
+            case UsbSerialInterface.DATA_BITS_6:
+                data[6] = 0x06;
+                break;
+            case UsbSerialInterface.DATA_BITS_7:
+                data[6] = 0x07;
+                break;
+            case UsbSerialInterface.DATA_BITS_8:
+                data[6] = 0x08;
+                break;
+            default:
+                return;
+        }
+
+        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+
+    }
+
+    @Override
+    public void setStopBits(int stopBits)
+    {
+        byte[] data = getLineCoding();
+        switch(stopBits)
+        {
+            case UsbSerialInterface.STOP_BITS_1:
+                data[4] = 0x00;
+                break;
+            case UsbSerialInterface.STOP_BITS_15:
+                data[4] = 0x01;
+                break;
+            case UsbSerialInterface.STOP_BITS_2:
+                data[4] = 0x02;
+                break;
+            default:
+                return;
+        }
+
+        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+
+
+    }
+
+    @Override
+    public void setParity(int parity)
+    {
+        byte[] data = getLineCoding();
+        switch(parity)
+        {
+            case UsbSerialInterface.PARITY_NONE:
+                data[5] = 0x00;
+                break;
+            case UsbSerialInterface.PARITY_ODD:
+                data[5] = 0x01;
+                break;
+            case UsbSerialInterface.PARITY_EVEN:
+                data[5] = 0x02;
+                break;
+            case UsbSerialInterface.PARITY_MARK:
+                data[5] = 0x03;
+                break;
+            case UsbSerialInterface.PARITY_SPACE:
+                data[5] = 0x04;
+                break;
+            default:
+                return;
+        }
+
+        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+
+    }
+
+    @Override
+    public void setFlowControl(int flowControl)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void setRTS(boolean state)
+    {
+        //TODO
+    }
+
+    @Override
+    public void setDTR(boolean state)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getCTS(UsbCTSCallback ctsCallback)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getDSR(UsbDSRCallback dsrCallback)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getBreak(UsbBreakCallback breakCallback)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getFrame(UsbFrameCallback frameCallback)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getOverrun(UsbOverrunCallback overrunCallback)
+    {
+        //TODO
+    }
+
+    @Override
+    public void getParity(UsbParityCallback parityCallback)
+    {
+        //TODO
+    }
+
+    private boolean openCDC()
+    {
+        if(connection.claimInterface(mInterface, true))
+        {
+            Log.i(CLASS_ID, "Interface succesfully claimed");
+        }else
+        {
+            Log.i(CLASS_ID, "Interface could not be claimed");
+            return false;
+        }
+
+        // Assign endpoints
+        int numberEndpoints = mInterface.getEndpointCount();
+        for(int i=0;i<=numberEndpoints-1;i++)
+        {
+            UsbEndpoint endpoint = mInterface.getEndpoint(i);
+            if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
+                    && endpoint.getDirection() == UsbConstants.USB_DIR_IN)
+            {
+                inEndpoint = endpoint;
+            }else if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
+                    && endpoint.getDirection() == UsbConstants.USB_DIR_OUT)
+            {
+                outEndpoint = endpoint;
+            }
+        }
+
+        if(outEndpoint == null || inEndpoint == null)
+        {
+            Log.i(CLASS_ID, "Interface does not have an IN or OUT interface");
+            return false;
+        }
+
+        // Default Setup
+        setControlCommand(CDC_SET_LINE_CODING, 0, getInitialLineCoding());
+        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null);
+
+        return true;
+    }
+
+    protected byte[] getInitialLineCoding() {
+        byte[] lineCoding;
+
+        int initialBaudRate = getInitialBaudRate();
+
+        if(initialBaudRate > 0) {
+            lineCoding = CDC_DEFAULT_LINE_CODING.clone();
+            for (int i = 0; i < 4; i++) {
+                lineCoding[i] = (byte) (initialBaudRate >> i*8 & 0xFF);
+            }
+        } else {
+            lineCoding = CDC_DEFAULT_LINE_CODING;
+        }
+
+        return lineCoding;
+    }
+
+    private int setControlCommand(int request, int value, byte[] data)
+    {
+        int dataLength = 0;
+        if(data != null)
+        {
+            dataLength = data.length;
+        }
+        int response = connection.controlTransfer(CDC_REQTYPE_HOST2DEVICE, request, value, 0, data, dataLength, USB_TIMEOUT);
+        Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
+        return response;
+    }
+
+    private byte[] getLineCoding()
+    {
+        byte[] data = new byte[7];
+        int response = connection.controlTransfer(CDC_REQTYPE_DEVICE2HOST, CDC_GET_LINE_CODING, 0, 0, data, data.length, USB_TIMEOUT);
+        Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
+        return data;
+    }
+
+    private static int findFirstCDC(UsbDevice device)
+    {
+        int interfaceCount = device.getInterfaceCount();
+
+        for (int iIndex = 0; iIndex < interfaceCount; ++iIndex)
+        {
+            if (device.getInterface(iIndex).getInterfaceClass() == UsbConstants.USB_CLASS_CDC_DATA)
+            {
+                return iIndex;
+            }
+        }
+
+        Log.i(CLASS_ID, "There is no CDC class interface");
+        return -1;
+    }
+
+}
+
+
+la classe base UsbSerialDevice contiene i metodi syncRead/Write,
+che sono implementati come mi aspettavo:
+
+    @Override
+    public int syncWrite(byte[] buffer, int timeout)
+    {
+        if(!asyncMode)
+        {
+            if(buffer == null)
+                return 0;
+
+            return connection.bulkTransfer(outEndpoint, buffer, buffer.length, timeout);
+        }else
+        {
+            return -1;
+        }
+    }
+
+    @Override
+    public int syncRead(byte[] buffer, int timeout)
+    {
+        if(asyncMode)
+        {
+            return -1;
+        }
+
+        if (buffer == null)
+            return 0;
+
+        return connection.bulkTransfer(inEndpoint, buffer, buffer.length, timeout);
+    }
+
+
+
+
+
+
+come immaginavo, l'emulatore in Android studio non supporta USB.
+Però si può debuggare col wifi, in modo da lasciare libera la porta usb:
+
+https://developer.android.com/studio/command-line/adb#wireless
+
+
+
+
+
+
+
+
+primo test:
+
+Screenshot_2018-06-09-14-59-38.png
+
+la prima trasmissione mancata (timeout) credo sia sempre riconducibile al reset di Arduino
+
+
+
+ma cosa vuol dire CDC? che differenza c'è con FTDI?
+
+CDC = Communication Device Class
+
+protocollo di alto livello cui i dispositivi si presentano all'host UDB
+
+FTDI sono dei chip che creano un bridge UART/USB, e non implementano il CDC
+
+Linux mappa le UART "pure" sotto dev/ttyS
+Linux mappa le UART/USB sotto dev/ttyUSB
+Linux mappa i dispositivi USB che parlano il V.250 (comandi AT) sotto dev/ttyACM
+ (abstract control model, sono dispositivi che si dichiarano "modem")
+
+
+descrizione esaustiva qui:
+https://www.keil.com/pack/doc/mw/USB/html/_c_d_c.html
+
+
+per le costanti, cfr. specifiche "Communications Device Class"
+(scaricate da http://www.usb.org/developers/docs/devclass_docs/)
+documento CDC120-20101103-track.pdf  pag. 30.
+
+
+
+problemi ad effettuare più di un paio di scambi col protocollo sps-hc20;
+dopo 3/4, il programma si pianta. Penso di provare a fare un tentativo
+asincrono...
+
+Magari problemi di timeout?
+
+R/W timeout = 5ms -> problemi
+W 5, R 500 -> problemi
+W 500, R 500 -> problemi
+R/W 5000 -> problemi
+
+escluderei il timeout
+
+
+
+
+
+debug wifi -- (per dispositivi non rooted!)
+
+https://android.stackexchange.com/questions/49681/adb-connect-to-a-device-via-tcp-ip
+
+Try following these instructions:
+
+1) Open the command prompt and navigate to your sdk/platform-tools/ folder.
+
+2) Type adb tcpip 5555 with your device plugged in
+
+3) Type adb connect <your device ip address>:5555
+  (l'ip lo si trova nelle proprietà wifi del dispositivo, forse funziona anche `adb shell netcfg`)
+
+4) At this point you unplug your device and type adb logcat
+
+5) At times, such as unplugging/plugging into a USB device, the logcat will become disconnected, just redo steps 3 & 4.
+
+
+
+per sconnettersi:
+
+	adb disconnect <IPAddress>:<portNumber>.
+
+o
+
+	adb disconnect
+
+per disconnettere tutti i dispositivi
+
+	adb usb
+
+per disabilitare il tcpip e riattivare il debug via usb (oppure restart del dispositivo)
+
+
+debug con log:
+
+https://developer.android.com/studio/debug/am-logcat
+
+ok, sembra che il problema sia che bulkTransfer in lettura può ritornare un numero
+di bytes maggiore di quello richiesto; non allarga il buffer passato, quindi forse
+lascia in coda i byte in eccesso? oppure li butta via?
+
+
+
+qua (http://libusb.sourceforge.net/api-1.0/libusb_packetoverflow.html) leggo:
+
+"Problems may occur if the device attempts to send more data than can fit in the buffer."
+
+
+	Bulk/interrupt transfer overflows
+	When requesting data on a bulk endpoint, libusb requires you to supply a
+	buffer and the maximum number of bytes of data that libusb can put in that
+	buffer. However, the size of the buffer is not communicated to the device
+	- the device is just asked to send any amount of data.
+
+	There is no problem if the device sends an amount of data that is less than
+	or equal to the buffer size. libusb reports this condition to you through
+	the libusb_transfer.actual_length field.
+
+	Problems may occur if the device attempts to send more data than can fit in
+	the buffer. libusb reports LIBUSB_TRANSFER_OVERFLOW for this condition but
+	other behaviour is largely undefined: actual_length may or may not be
+	accurate, the chunk of data that can fit in the buffer (before overflow)
+	may or may not have been transferred.
+
+	Overflows are nasty, but can be avoided. Even though you were told to
+	ignore packets above, think about the lower level details: each transfer
+	is split into packets (typically small, with a maximum size of 512 bytes).
+	Overflows can only happen if the final packet in an incoming data transfer
+	is smaller than the actual packet that the device wants to transfer.
+	Therefore, you will never see an overflow if your transfer buffer size is a
+	multiple of the endpoint's packet size: the final packet will either fill
+	up completely or will be only partially filled.
+
+
+C'è un BufferOverflowException, ma la tira solo la "requestWait", quindi in
+modalità asincrona... magari è quello. allora basterebbe allargare l'input buffer
+e tornare comunque l'ultimo byte
+
+
+-->
+
+
+<h2>Riferimenti</h2>
+<ol>
+<a name="ref-1"></a>
+<li class="ref"><em>&ldquo;Android Things - USB communications&rdquo;</em>, android stuff &amp; co. &mdash; <a href="http://nilhcem.com/android-things/usb-communications">http://nilhcem.com/android-things/usb-communications</a>, visitato il 28/08/2018.</li>
+<a name="ref-2"></a>
+<li class="ref"><em>&ldquo;androidthings - sample-usbenum&rdquo;</em>, androidthings &mdash; <a href="https://github.com/androidthings/sample-usbenum">https://github.com/androidthings/sample-usbenum</a>, visitato il 28/08/2018.</li>
+<a name="ref-3"></a>
+<li class="ref"><em>&ldquo;How to Use Your Android to Communicate with Your Arduino&rdquo;</em>, Maker.io &mdash; <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364</a>, visitato il 28/08/2018.</li>
+<a name="ref-4"></a>
+<li class="ref"><em>&ldquo;USB Communication between Android and Arduino&rdquo;</em>, theengineeringprojects &mdash; <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html</a>, visitato il 28/08/2018.</li>
+<a name="ref-5"></a>
+<li class="ref"><em>&ldquo;USB host overview&rdquo;</em>, developer.android.com &mdash; <a href="https://developer.android.com/guide/topics/connectivity/usb/host">https://developer.android.com/guide/topics/connectivity/usb/host</a>, visitato il 28/08/2018.</li>
+<a name="ref-6"></a>
+<li class="ref"><em>&ldquo;USB On-The-Go&rdquo;</em>, wikipedia.org &mdash; <a href="https://en.wikipedia.org/wiki/USB_On-The-Go">https://en.wikipedia.org/wiki/USB_On-The-Go</a>, visitato il 01/09/2018.</li>
+<a name="ref-7"></a>
+<li class="ref"><em>&ldquo;usb-serial-for-android&rdquo;</em>, mik3y &mdash; <a href="https://github.com/mik3y/usb-serial-for-android">https://github.com/mik3y/usb-serial-for-android</a>, visitato il 28/08/2018.</li>
+<a name="ref-8"></a>
+<li class="ref"><em>&ldquo;UsbSerial&rdquo;</em>, felHR85 &mdash; <a href="https://github.com/felHR85/UsbSerial">https://github.com/felHR85/UsbSerial</a>, visitato il 28/08/2018.</li>
+</ol>
+<p class="modification-notice">Pagina modificata il 02/09/2018</p>
+</body>
+</html>
