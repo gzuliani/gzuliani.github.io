@@ -9,7 +9,7 @@
 <p class="page-path"><a href="../index.html#arduino-android-usb">risorse</a> | comunicazione seriale arduino/android via usb</p>
 <h1>Comunicazione seriale Arduino/Android via USB</h1>
 <p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
-<p>Vorrei portare su Android il programma per PC &ldquo;<a href="https://bitbucket.org/gzuliani/sps-hc20">Consolle</a>&rdquo; che ho sviluppato per il <a href="arduino-scoreboard">controllo di un tabellone segnapunti</a> per il quale qualche mese fa ho realizzato un circuito di interfaccia. Il programma al momento gira su un vetusto portatile e il suo uso risulta macchinoso perché il computer non è dotato di <em>touch screen</em>. Nella foga della partita non è facile centrare sempre il pulsante giusto, e l'illuminazione della zona dei refertisti in palestra non è ottimale. Poiché tutti gli <em>smart phone</em> e i <em>tablet</em> oggi in circolazione ne sono dotati, ho pensato di trasformare il programma Python in un'App per Android. Prima di tutto devo però accertarmi di poter comunicare dal terminale con Arduino via seriale USB, perché il Bluetooth in questo caso non è un'opzione.</p>
+<p>Vorrei portare su Android il programma per PC &ldquo;<a href="https://bitbucket.org/gzuliani/sps-hc20">Consolle</a>&rdquo; che ho sviluppato per il <a href="arduino-scoreboard">controllo di un tabellone segnapunti</a> per il quale qualche mese fa ho realizzato un circuito di interfaccia. Il programma al momento gira su un vetusto portatile e il suo uso risulta macchinoso perché il computer non è dotato di <em>touch screen</em>. Nella foga della partita non è facile centrare sempre il pulsante giusto, e l'illuminazione della zona dei refertisti in palestra non è ottimale. Poiché tutti gli <em>smart phone</em> e i <em>tablet</em> oggi in circolazione ne sono dotati, ho pensato di trasformare il programma Python in un'applicazione per Android. Prima di tutto devo però accertarmi di poter comunicare dal terminale con Arduino via seriale USB, perché il Bluetooth in questo caso non è un'opzione.</p>
 <h2>Dispositivi USB On-The-Go (OTG)</h2>
 <p>Il primo passo consiste nel procurarsi un dispositivo Android in grado di funzionare come <em>host</em> USB. Dei tre terminali in mio possesso, un tablet Samsung Galaxy Tab 2 10.1, uno smartphone Samsung J3 e un Huawey P8 Light, solo i primi due supportano tale modalità, nota come <a href="https://en.wikipedia.org/wiki/USB_On-The-Go">USB OTG</a>.</p>
 <p>Per attivare la modalità OTG (nei dispositivi che la supportano!) è necessario utilizzare un apposito cavetto di connessione: l'impiego di questo particolare accessorio fa sì che il dispositivo Android commuti da <em>slave</em> a <em>master</em>.</p>
@@ -21,101 +21,18 @@
 <p>Per verificare la comunicazione tra il terminale Android e Arduino ho caricato un programma di <em>echo</em> seriale che lavora a 57600 baud sulla scheda (<a href="files/arduino-android-usb/serial-echo.ino">qui</a> il sorgente):</p>
 <pre class="code">
 void setup() {
-  Serial.begin(57600);
+    Serial.begin(57600);
 }
 
 void loop() {
-  while (Serial.available() > 0)
-    Serial.print((char)Serial.read());
+    while (Serial.available() > 0)
+        Serial.print((char)Serial.read());
 }
 </pre>
-<h2>App Android</h2>
-
-<!--
-
-5) USB host overview
-https://developer.android.com/guide/topics/connectivity/usb/host
-dalla guida ufficiale
-
-6) usb-serial-for-android
-https://github.com/mik3y/usb-serial-for-android
-uno dei primi risultati di google
-
-7) UsbSerial
-https://github.com/felHR85/UsbSerial
-molto usata, ma non funziona su Android 5.1.1 Lollipop
-
-1) Android Things - USB communications
-http://nilhcem.com/android-things/usb-communications
-aggancio alle notifiche usb e riconoscimento automatico di Arduino
-
-2) androidthings - sample-usbenum
-https://github.com/androidthings/sample-usbenum
-esempio d'uso dell'API USB
-
-3) How to Use Your Android to Communicate with Your Arduino
-https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364
-esempio basato su usbserial
-
-4) USB Communication between Android and Arduino
-https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html
-esempio senza librerie esterne
--->
-
-
-<p>Il principale riferimento per lo sviluppo di app che comunicano attraverso la porta seriale USB è la sezione <a href="https://developer.android.com/guide/topics/connectivity/usb/host">USB host overview</a> della documentazione ufficiale; in rete si trovano poi vari progetti che coinvolgono espressamente Arduino (due esempi: <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">How to Use Your Android to Communicate with Your Arduino</a>, <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">USB Communication between Android and Arduino</a>). Molti di questi si basano su librerie di terze parti, in particolare <a href="https://github.com/felHR85/UsbSerial">UsbSerial</a> che, pur essendo particolarmente diffusa, è affetta da qualche problema, in particolare non supporta Android 5.1.1 Lollipop. Per avere il massimo grado di libertà e soprattutto farmi un'idea di come funziona l'API sottostante, ho deciso di sviluppare in autonomia il codice di comunicazione, traendo comunque ispirazione dai progetti <em>open</em> che hanno fatto la stessa scelta.</p>
-<p></p>
-
-
-
-
-
-<!--
-
-programma di test su arduino:
-
-[serial-echo.ino]
-
-
-
-nuovo progetto su Android
-
-
-
-aggiungere le seguenti righe al manifest:
-
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.theengineeringprojects.dani" >
-
-
-+    <uses-feature android:name="android.hardware.usb.host" />
-
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".MainActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-+            <intent-filter>
-+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-+            </intent-filter>
-+
-+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-+                android:resource="@xml/device_filter" />
-        </activity>
-    </application>
-
-</manifest>
--->
+<h2>Applicazione Android</h2>
+<p>Il principale riferimento per lo sviluppo di applicazioni che comunicano attraverso la porta seriale USB è la sezione <a href="https://developer.android.com/guide/topics/connectivity/usb/host">USB host overview</a> della documentazione ufficiale; in rete si trovano poi vari progetti che coinvolgono espressamente Arduino (due esempi: <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">How to Use Your Android to Communicate with Your Arduino</a>, <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">USB Communication between Android and Arduino</a>). Molti di questi si basano su librerie di terze parti, in particolare <a href="https://github.com/felHR85/UsbSerial">UsbSerial</a> che, pur essendo particolarmente diffusa, è affetta da qualche problema, in particolare non supporta Android 5.1.1 Lollipop. Per avere il massimo grado di libertà e soprattutto farmi un'idea di come funziona l'API sottostante, ho deciso di sviluppare in autonomia il codice di comunicazione, traendo comunque ispirazione dai progetti <em>open</em> che hanno fatto la stessa scelta.</p>
 <h3>Abilitazione della modalità USB Host</h3>
-<p>Le funzionalità di accesso all'Host USB sono state introdotte nell'API 12; è indispensabile basare l'app su un'API di pari livello o superiore. È inoltre necessario indicare nel file <span class="path">AndroidManifest.xml</span> che l'app richiede l'accesso a tale componente aggiunendo la riga evidenziata:</p>
+<p>Le funzionalità di accesso all'Host USB sono state introdotte nell'API 12; è indispensabile basare l'applicazione su un'API di pari livello o superiore. È inoltre necessario indicare nel file <span class="path">AndroidManifest.xml</span> che l'applicazione richiede l'accesso a tale componente aggiunendo la riga evidenziata:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
@@ -161,28 +78,7 @@ aggiungere le seguenti righe al manifest:
     &lt;/application&gt;
 &lt;/manifest&gt;
 </pre>
-
-
-
-<!--
-<a href="https://en.wikipedia.org/wiki/USB_communications_device_class">USB communications device class</a>
-
-
-
-
-device_filter è un file xml che contiene le caratteristiche dei dispositivi d'interesse
-
-da https://developer.android.com/guide/topics/connectivity/usb/host:
-<?xml version="1.0" encoding="utf-8"?>
-
-<resources>
-    <usb-device vendor-id="1234" product-id="5678" class="255" subclass="66" protocol="1" />
-</resources>
-
-
-nel mio caso:
--->
-
+<p>La risorsa <span class="code">device_filter</span> citata nel manifesto è un file XML che specifica i dispositivi USB per i quali l'applicazione intende ricevere la notifica. Ogni dispositivo USB è identificato univocamente da un insieme di codici numerici, specificatamente <em>vendor-id</em>, <em>product-id</em>, <em>class</em>, <em>subclass</em> e <em>protocol</em>. La pagina <a href="http://www.linux-usb.org/usb-ids.html">The USB ID Repository</a> contiene un elenco esaustivo di identificativi di dispositivi USB, uno più &laquo;ragionato&raquo; si è reperibile nei sorgenti della libreria <a href="https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml">usb-serial-for-android</a>. Dagli elenchi si ricava il <em>vendor-id</em> associato ad Arduino, che è 9025 (esadecimale 0x2341). Il <em>product-id</em> varia a seconda della tipologia e della revisione della scheda; evitando di specificarlo l'applicazione riceverà la notifica <span class="code">USB_DEVICE_ATTACHED</span> qualunque sia la scheda Arduino collegata al terminale Android. Il file <span class="path">device_filter.xml</span> assume quindi la forma:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 
@@ -191,31 +87,87 @@ nel mio caso:
     &lt;usb-device vendor-id=&quot;9025&quot; /&gt;
 &lt;/resources&gt;
 </pre>
-<p class="illustration">Il contenuto del file <span class="path">device_filter.xml</span></p>
+<p>A questo punto, quando l'utente collega un dispositivo Arduindo al terminale Android il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>; specializzando il metodo si ricava un riferimento all'oggetto <span class="code">UsbDevice</span> associato alla scheda direttamente dall'<span class="code">Intent</span> implicito attraverso il metodo <span class="code">getParcelableExtra</span>:</p>
+<pre class="code">
+public class MainActivity extends AppCompatActivity {
+    ...
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        <ins>Intent intent = getIntent();
+        String action = intent.getAction();
+
+        if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+            UsbDevice device =
+                (UsbDevice)intent.getParcelableExtra(
+                    UsbManager.EXTRA_DEVICE);
+            ...
+        }</ins>
+    }
+}
+</pre>
+<h3>Scansione dei dispositivi USB</h3>
+<p>Il secondo metodo di individuazione della scheda Arduino consiste nell'effettuare una scansione periodica di tutti i dispositivi USB collegati al terminale Android alla ricerca del primo con <em>vendor-id</em> pari a 9025:</p>
+<pre class="code">
+    <ins>HashMap&lt;String, UsbDevice&gt; deviceList = usbManager.getDeviceList();
+    Iterator&lt;UsbDevice&gt; deviceIterator = deviceList.values().iterator();
+
+    while(deviceIterator.hasNext()) {
+        UsbDevice usbDevice = deviceIterator.next();
+        if (usbDevice.getVendorId() == 9025) {
+            // this is an Arduino device!
+            break;
+        }
+    }</ins>
+</pre>
+<p>Questa soluzione ha lo svantaggio che l'applicazione non viene avviata automaticamente in concomitanza con il collegamento della scheda Arduino al terminale Android.</p>
+<h3>Scollegamento della scheda</h3>
+<p>Android riconosce quando l'utente scollega un dispositivo USB dal terminale, ed è possibile richiedere al sistema operativo di inviare una notifica alla nostra applicazione al verificarsi di questa condizione. È sufficiente registrare l'applicazione sull'evento <span class="code">USB_DEVICE_DETACHED</span>, anche se non in modo dichiarativo come fatto per l'evento <span class="code">USB_DEVICE_ATTACHED</span> &mdash; modificando il file <span class="path">AndroidManifest.xml</span> &mdash; ma a <em>runtime</em>, sfruttando un <span class="code">BroadcastReceiver</span>. L'aggancio avviene in due fasi; dapprima si definisce il <em>listener</em>, che contiene il codice da eseguire alla disconnessione del dispositivo:</p>
+<pre class="code">
+public class MainActivity extends AppCompatActivity {
+    ...
+
+    <ins>// create a listener for the ACTION_USB_DEVICE_DETACHED event
+    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                // an USB device has been detached!
+            }
+        }
+    };</ins>
+    ...
+}
+</pre>
+<p>Si collega quindi il <em>listener</em> all'evento <span class="code">USB_DEVICE_DETACHED</span>, di norma durante la fase di inizializzazione dell'applicazione:</p>
+<pre class="code">
+public class MainActivity extends AppCompatActivity {
+    ...
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ...
+
+        <ins>// register the ACTION_USB_DEVICE_DETACHED event listener
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(usbReceiver, filter);</ins>
+        ...
+    }
+}
+</pre>
+<h3>Comunicazione seriale</h3>
+
+
+<p class="todo">gerarchia dispositivo, interfaccia, porta,</p>
+<p class="todo">configurazione parametri di comunicazione</p>
+<p class="todo">emulatore non supporta USB; USB serve per trasferire il programma, come posso anche usarlo per comunicare con Arduino? debug wifi -- (per dispositivi non rooted!)</p>
+<p class="todo">BufferOverflowException</p>
 <!--
-(cfr. http://www.linux-usb.org/usb.ids per un elenco esaustivo,
-https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml
-per un elenco "ragionevole")
-
-
-mi baso su https://developer.android.com/guide/topics/connectivity/usb/host
-
-
-aggiunto
-
-	<uses-feature android:name="android.hardware.usb.host" />
-	<uses-sdk android:minSdkVersion="12" />
-
-
-in AndroidManifest.xml
-
-
-dopodiché tutto sta nel metodo onResume, che viene chiamato dall'intent-filter
-
-USB_DEVICE_ATTACHED va usato come intent filter
-USB_DEVICE_DETACHED va invece agganciato da un broadcastreceiver
-
 
 un po' di casini a lavorare a 57600, probabilmente bisogna usare controlTransfer per settare il baud rate:
 
@@ -330,7 +282,7 @@ http://www.mev.co.uk/pages/Support/USB-Baud-Spoof.html
 guardando i sorgenti di UsbSerial, funzione setBaudRate di FTDISerialDevice:
 
 
-	setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0, null);
+    setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0, null);
 
 con
  FTDI_SIO_SET_BAUD_RATE = 3
@@ -983,15 +935,15 @@ Try following these instructions:
 
 per sconnettersi:
 
-	adb disconnect <IPAddress>:<portNumber>.
+    adb disconnect <IPAddress>:<portNumber>.
 
 o
 
-	adb disconnect
+    adb disconnect
 
 per disconnettere tutti i dispositivi
 
-	adb usb
+    adb usb
 
 per disabilitare il tcpip e riattivare il debug via usb (oppure restart del dispositivo)
 
@@ -1011,30 +963,30 @@ qua (http://libusb.sourceforge.net/api-1.0/libusb_packetoverflow.html) leggo:
 "Problems may occur if the device attempts to send more data than can fit in the buffer."
 
 
-	Bulk/interrupt transfer overflows
-	When requesting data on a bulk endpoint, libusb requires you to supply a
-	buffer and the maximum number of bytes of data that libusb can put in that
-	buffer. However, the size of the buffer is not communicated to the device
-	- the device is just asked to send any amount of data.
+    Bulk/interrupt transfer overflows
+    When requesting data on a bulk endpoint, libusb requires you to supply a
+    buffer and the maximum number of bytes of data that libusb can put in that
+    buffer. However, the size of the buffer is not communicated to the device
+    - the device is just asked to send any amount of data.
 
-	There is no problem if the device sends an amount of data that is less than
-	or equal to the buffer size. libusb reports this condition to you through
-	the libusb_transfer.actual_length field.
+    There is no problem if the device sends an amount of data that is less than
+    or equal to the buffer size. libusb reports this condition to you through
+    the libusb_transfer.actual_length field.
 
-	Problems may occur if the device attempts to send more data than can fit in
-	the buffer. libusb reports LIBUSB_TRANSFER_OVERFLOW for this condition but
-	other behaviour is largely undefined: actual_length may or may not be
-	accurate, the chunk of data that can fit in the buffer (before overflow)
-	may or may not have been transferred.
+    Problems may occur if the device attempts to send more data than can fit in
+    the buffer. libusb reports LIBUSB_TRANSFER_OVERFLOW for this condition but
+    other behaviour is largely undefined: actual_length may or may not be
+    accurate, the chunk of data that can fit in the buffer (before overflow)
+    may or may not have been transferred.
 
-	Overflows are nasty, but can be avoided. Even though you were told to
-	ignore packets above, think about the lower level details: each transfer
-	is split into packets (typically small, with a maximum size of 512 bytes).
-	Overflows can only happen if the final packet in an incoming data transfer
-	is smaller than the actual packet that the device wants to transfer.
-	Therefore, you will never see an overflow if your transfer buffer size is a
-	multiple of the endpoint's packet size: the final packet will either fill
-	up completely or will be only partially filled.
+    Overflows are nasty, but can be avoided. Even though you were told to
+    ignore packets above, think about the lower level details: each transfer
+    is split into packets (typically small, with a maximum size of 512 bytes).
+    Overflows can only happen if the final packet in an incoming data transfer
+    is smaller than the actual packet that the device wants to transfer.
+    Therefore, you will never see an overflow if your transfer buffer size is a
+    multiple of the endpoint's packet size: the final packet will either fill
+    up completely or will be only partially filled.
 
 
 C'è un BufferOverflowException, ma la tira solo la "requestWait", quindi in
@@ -1043,27 +995,6 @@ e tornare comunque l'ultimo byte
 
 
 -->
-
-
-<h2>Riferimenti</h2>
-<ol>
-<a name="ref-1"></a>
-<li class="ref"><em>&ldquo;Android Things - USB communications&rdquo;</em>, android stuff &amp; co. &mdash; <a href="http://nilhcem.com/android-things/usb-communications">http://nilhcem.com/android-things/usb-communications</a>, visitato il 28/08/2018.</li>
-<a name="ref-2"></a>
-<li class="ref"><em>&ldquo;androidthings - sample-usbenum&rdquo;</em>, androidthings &mdash; <a href="https://github.com/androidthings/sample-usbenum">https://github.com/androidthings/sample-usbenum</a>, visitato il 28/08/2018.</li>
-<a name="ref-3"></a>
-<li class="ref"><em>&ldquo;How to Use Your Android to Communicate with Your Arduino&rdquo;</em>, Maker.io &mdash; <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364</a>, visitato il 28/08/2018.</li>
-<a name="ref-4"></a>
-<li class="ref"><em>&ldquo;USB Communication between Android and Arduino&rdquo;</em>, theengineeringprojects &mdash; <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html</a>, visitato il 28/08/2018.</li>
-<a name="ref-5"></a>
-<li class="ref"><em>&ldquo;USB host overview&rdquo;</em>, developer.android.com &mdash; <a href="https://developer.android.com/guide/topics/connectivity/usb/host">https://developer.android.com/guide/topics/connectivity/usb/host</a>, visitato il 28/08/2018.</li>
-<a name="ref-6"></a>
-<li class="ref"><em>&ldquo;USB On-The-Go&rdquo;</em>, wikipedia.org &mdash; <a href="https://en.wikipedia.org/wiki/USB_On-The-Go">https://en.wikipedia.org/wiki/USB_On-The-Go</a>, visitato il 01/09/2018.</li>
-<a name="ref-7"></a>
-<li class="ref"><em>&ldquo;usb-serial-for-android&rdquo;</em>, mik3y &mdash; <a href="https://github.com/mik3y/usb-serial-for-android">https://github.com/mik3y/usb-serial-for-android</a>, visitato il 28/08/2018.</li>
-<a name="ref-8"></a>
-<li class="ref"><em>&ldquo;UsbSerial&rdquo;</em>, felHR85 &mdash; <a href="https://github.com/felHR85/UsbSerial">https://github.com/felHR85/UsbSerial</a>, visitato il 28/08/2018.</li>
-</ol>
-<p class="modification-notice">Pagina modificata il 02/09/2018</p>
+<p class="modification-notice">Pagina modificata il 03/09/2018</p>
 </body>
 </html>
