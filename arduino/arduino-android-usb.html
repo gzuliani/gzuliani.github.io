@@ -78,7 +78,7 @@ void loop() {
     &lt;/application&gt;
 &lt;/manifest&gt;
 </pre>
-<p>La risorsa <span class="code">device_filter</span> citata nel manifesto è un file XML che specifica i dispositivi USB per i quali l'applicazione intende ricevere la notifica. Ogni dispositivo USB è identificato univocamente da un insieme di codici numerici, specificatamente <em>vendor-id</em>, <em>product-id</em>, <em>class</em>, <em>subclass</em> e <em>protocol</em>. La pagina <a href="http://www.linux-usb.org/usb-ids.html">The USB ID Repository</a> contiene un elenco esaustivo di identificativi di dispositivi USB, uno più &laquo;ragionato&raquo; si è reperibile nei sorgenti della libreria <a href="https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml">usb-serial-for-android</a>. Dagli elenchi si ricava il <em>vendor-id</em> associato ad Arduino, che è 9025 (esadecimale 0x2341). Il <em>product-id</em> varia a seconda della tipologia e della revisione della scheda; evitando di specificarlo l'applicazione riceverà la notifica <span class="code">USB_DEVICE_ATTACHED</span> qualunque sia la scheda Arduino collegata al terminale Android. Il file <span class="path">device_filter.xml</span> assume quindi la forma:</p>
+<p>La risorsa <span class="code">device_filter</span> citata nel manifesto è un file XML salvato nella cartella <span class="path">res</span> che specifica i dispositivi USB per i quali l'applicazione intende ricevere la notifica dell'evento <span class="code">USB_DEVICE_ATTACHED</span>. Ogni dispositivo USB è identificato univocamente da un insieme di codici numerici, specificatamente <em>vendor-id</em>, <em>product-id</em>, <em>class</em>, <em>subclass</em> e <em>protocol</em>. La pagina <a href="http://www.linux-usb.org/usb-ids.html">The USB ID Repository</a> contiene un elenco esaustivo di identificativi di dispositivi USB; uno più &laquo;ragionato&raquo; è invece reperibile nei sorgenti della libreria <a href="https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml">usb-serial-for-android</a>. Dagli elenchi si ricava il <em>vendor-id</em> associato ad Arduino, che è 9025 (esadecimale 0x2341). Il <em>product-id</em> varia a seconda della tipologia e della revisione della scheda; se non lo si indica, il sistema operativo invierà all'applicazione la notifica <span class="code">USB_DEVICE_ATTACHED</span> qualunque sia la scheda Arduino collegata al terminale Android. Il file <span class="path">device_filter.xml</span> assume quindi la forma:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 
@@ -87,7 +87,7 @@ void loop() {
     &lt;usb-device vendor-id=&quot;9025&quot; /&gt;
 &lt;/resources&gt;
 </pre>
-<p>A questo punto, quando l'utente collega un dispositivo Arduindo al terminale Android il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>; specializzando il metodo si ricava un riferimento all'oggetto <span class="code">UsbDevice</span> associato alla scheda direttamente dall'<span class="code">Intent</span> implicito attraverso il metodo <span class="code">getParcelableExtra</span>:</p>
+<p>A questo punto, quando l'utente collega un dispositivo Arduindo al terminale Android il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>; specializzando il metodo si ricava un riferimento all'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDevice"><span class="code">UsbDevice</span></a> associato alla scheda direttamente dall'<span class="code">Intent</span> implicito attraverso il metodo <span class="code">getParcelableExtra</span>:</p>
 <pre class="code">
 public class MainActivity extends AppCompatActivity {
     ...
@@ -160,188 +160,139 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 </pre>
+<h3>Porta seriale (virtuale)</h3>
+<p>Arduino si presenta sul bus USB come un <em>Communications Device Class</em> (CDC, cfr. sezione &ldquo;Communications Device Class&rdquo; in <a href="http://www.usb.org/developers/docs/devclass_docs/">USB Device Class Specifications</a>), ovvero un dispositivo di comunicazione. Si tratta di dispositivi compositi, dotati cioé di più interfacce; per poter instaurare un canale di comunicazione è dunque indispensabile individuare la giusta interfaccia. In questo contesto l'interfaccia cercata è dotata di due <em>endpoint</em> &mdash; uno di ingresso e uno d'uscita &mdash; che supporta il trasferimento <em>bulk</em>. Se un'interfaccia con tali caratteristiche viene individuata, si procede aprendo un canale di comunicazione verso il dispositivo e collegandolo all'interfaccia appena trovata:</p>
+<pre class="code">
+public class UsbPort {
+    ...
+
+    private UsbManager usbManager;
+    private UsbDevice usbDevice;
+    private UsbEndpoint usbInEndpoint;
+    private UsbEndpoint usbOutEndpoint;
+    private UsbInterface usbInterface;
+    private UsbDeviceConnection usbConnection;
+    ...
+
+    public UsbPort(UsbManager manager) {
+        usbManager = manager;
+        reset();
+    }
+    ...
+
+    <ins>private boolean attach(UsbDevice device) {
+
+        usbInEndpoint = null;
+        usbOutEndpoint = null;
+
+        // search for a suitable interface,
+        // i.e. one that supports bidirectional bulk transfers
+        for (int i = 0; i &lt; device.getInterfaceCount(); i++) {
+
+            UsbInterface iface = device.getInterface(i);
+            int numOfEndpoints = iface.getEndpointCount();
+
+            if (numOfEndpoints &gt; 1) {
+                for (int j = 0; j &lt; numOfEndpoints; j++) {
+                    if (iface.getEndpoint(j).getType() ==
+                            UsbConstants.USB_ENDPOINT_XFER_BULK) {
+                        if (iface.getEndpoint(j).getDirection()
+                                == UsbConstants.USB_DIR_IN) {
+                            usbInEndpoint = iface.getEndpoint(j);
+                        } else if (iface.getEndpoint(j).getDirection()
+                                == UsbConstants.USB_DIR_OUT) {
+                            usbOutEndpoint = iface.getEndpoint(j);
+                        }
+                    }
+                }
+
+                if (usbInEndpoint != null &amp;&amp; usbOutEndpoint != null)
+                    usbInterface = iface;
+            }
+        }
+
+        if (usbInterface == null)
+            return false;
+
+        usbDevice = device;
+        usbConnection = usbManager.openDevice(usbDevice);
+
+        if (usbConnection == null)
+            return false;
+
+        return usbConnection.claimInterface(usbInterface, true);
+    }</ins>
+    ...
+
+    private void reset() {
+        usbConnection = null;
+        usbInEndpoint = null;
+        usbOutEndpoint = null;
+        usbInterface = null;
+        usbDevice = null;
+    }
+    ...
+
+}
+</pre>
 <h3>Comunicazione seriale</h3>
+<p>Il trasferimento di dati da/per la scheda Arduino si ottiene invocando il metodo <span class="code">bulkTransfer</span> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection"><span class="code">UsbDeviceConnection</span></a>:</p>
+<pre class="code">
+public class UsbPort {
+    ...
 
+    <ins>public int send(byte[] data, int timeout) {
+        if (usbConnection == null)
+            return 0;
+        return usbConnection.bulkTransfer(
+            usbOutEndpoint, data, data.length, timeout);
+    }</ins>
 
-<p class="todo">gerarchia dispositivo, interfaccia, porta,</p>
-<p class="todo">configurazione parametri di comunicazione</p>
+    <ins>public int receive(byte[] buffer, int timeout) {
+        if (usbConnection == null)
+            return -1;
+        return usbConnection.bulkTransfer(
+            usbInEndpoint, buffer, buffer.length, timeout);
+    }</ins>
+    ...
+}
+</pre>
+<h3>Configurazione della porta seriale (virtuale)</h3>
+<p>La configurazione della connessione avviene per mezzo del metodo <span class="code">controlTransfer</span> dell'oggetto <span class="code">UsbDeviceConnection</span>, cui per comodità accedo attraverso un <em>adapter</em>:</p>
+<pre class="code">
+public class UsbPort {
+    ...
+
+    private static final int CDC_SET_LINE_CODING        = 0x20;
+    private static final int CDC_REQTYPE_HOST2DEVICE    = 0x21;
+    private static final int CDC_SET_CONTROL_LINE_STATE = 0x22;
+
+    private static final int CDC_CONTROL_LINE_OFF       = 0x0000;
+    private static final int CDC_CONTROL_LINE_ON        = 0x0003;
+
+    private static final int USB_TIMEOUT                = 5000; // ms
+    ...
+
+    <ins>private int setControlCommand(int request, int value, byte[] data) {
+        return usbConnection.controlTransfer(
+                CDC_REQTYPE_HOST2DEVICE,
+                request,
+                value,
+                0,
+                data,
+                (data == null) ? 0 : data.length,
+                USB_TIMEOUT);</ins>
+    }
+    ...
+}
+</pre>
+
+<p class="todo">per la configurazione (CDC_SET_LINE_CODING), cfr. 6.3.10 SetLineCoding pagg. 24 e 25 di PSTN120.pdf (sempre da http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip)</p>
+<p class="todo">per rts/dtr (CDC_SET_CONTROL_LINE_STATE), cfr. 6.3.12 SetControlLineState pagg. 25 di PSTN120.pdf (sempre da http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip)</p>
+
 <p class="todo">emulatore non supporta USB; USB serve per trasferire il programma, come posso anche usarlo per comunicare con Arduino? debug wifi -- (per dispositivi non rooted!)</p>
 <p class="todo">BufferOverflowException</p>
 <!--
-
-un po' di casini a lavorare a 57600, probabilmente bisogna usare controlTransfer per settare il baud rate:
-
-http://android.serverbox.ch/?p=549
-http://android.serverbox.ch/?p=427
-
-
-piuttosto incasinato... e se usassi usbserial?
-
-https://github.com/felHR85/UsbSerial/ -- unico limite: non funziona con Android 5.1.1 Lollipop
-
-ASPETTIAMO UN ATTIMO...
-
-[confermo, se lavoro a 9600 bulkTransfer funziona in entrambe le direzioni,
-evidentemente UsbDevice si pone di default con quel baud rate. riporto
-Arduino su 57600 e cerco di capire come programmare Android per portare la
-seriale sullo stesso parametro]
-
-
-Arduino
-      vendorId: '0x2341',  (9025 Dec)
-      productId: '0x0043'
-
-
-
-
-https://stackoverflow.com/questions/8546099/setting-parity-with-controltransfer-method?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
-
-
-
-
-You can define the combination of bits to create your own configuration
-(parity, stop bit & data bit).
-
-conn.controlTransfer(0x40, 0x04, 0x0008, 0, null, 0, 0);
-
-1st parameter - 0x40  - request to set or get control data
-
- #define FTDI_SIO_SET_DATA_REQUEST_TYPE  0x40
-
-2nd parameter - 0x04 - type of data to be set or get
-
-#define FTDI_SIO_RESET      0 /* Reset the port */
-#define FTDI_SIO_MODEM_CTRL     1 /* Set the modem control register */
-#define FTDI_SIO_SET_FLOW_CTRL  2 /* Set flow control register */
-#define FTDI_SIO_SET_BAUD_RATE  3 /* Set baud rate */
-#define FTDI_SIO_SET_DATA   4 /* Set the data characteristics of the port */
-#define FTDI_SIO_GET_MODEM_STATUS   5 /* Retrieve current value of modern status register */
-#define FTDI_SIO_SET_EVENT_CHAR 6 /* Set the event character */
-#define FTDI_SIO_SET_ERROR_CHAR 7 /* Set the error character */
-
-Third parameter - 0x0008 - data bit 8, parity none, stop bit 1, tx off - Is the actual data to be passed.
-
-The third parameter is a 16 bit data which can be formed from the constants defined below:
-
-Bits 0 to 7   -- Number of data bits
-
-Bits 8 to 10  -- Parity
-          0 = None
-          1 = Odd
-          2 = Even
-          3 = Mark
-          4 = Space
-Bits 11 to 13 -- Stop Bits
-          0 = 1
-          1 = 1.5
-          2 = 2
-Bit 14
-          1 = TX ON (break)
-          0 = TX OFF (normal state)
-Bit15 -- Reserved
-
-
- #define FTDI_SIO_SET_DATA_REQUEST       FTDI_SIO_SET_DATA
-
- #define FTDI_SIO_SET_DATA_PARITY_NONE   (0x0 << 8)
- #define FTDI_SIO_SET_DATA_PARITY_ODD    (0x1 << 8)
- #define FTDI_SIO_SET_DATA_PARITY_EVEN   (0x2 << 8)
- #define FTDI_SIO_SET_DATA_PARITY_MARK   (0x3 << 8)
- #define FTDI_SIO_SET_DATA_PARITY_SPACE  (0x4 << 8)
- #define FTDI_SIO_SET_DATA_STOP_BITS_1   (0x0 << 11)
- #define FTDI_SIO_SET_DATA_STOP_BITS_15  (0x1 << 11)
- #define FTDI_SIO_SET_DATA_STOP_BITS_2   (0x2 << 11)
- #define FTDI_SIO_SET_BREAK              (0x1 << 14)
-
-For baud rate :
-
-* Value Baud Rate speed
-* 0×2710 300
-* 0×1388 600
-* 0x09C4 1200
-* 0x04E2 2400
-* 0×0271 4800
-* 0×4138 9600
-* 0x80D0 14400
-* 0x809C 19200
-* 0xC04E 38400
-* 0×0034 57600
-* 0x001A 115200
-* 0x000D 230400
-* 0×4006 460800
-* 0×8003 921600
-*/
-
-Please refer the below links for more details:
-
-http://read.pudn.com/downloads181/sourcecode/embed/842049/usb/serial/ftdi_sio.h__.htm
-
-http://www.mev.co.uk/pages/Support/USB-Baud-Spoof.html
-
-
-guardando i sorgenti di UsbSerial, funzione setBaudRate di FTDISerialDevice:
-
-
-    setControlCommand(FTDI_SIO_SET_BAUD_RATE, value, 0, null);
-
-con
- FTDI_SIO_SET_BAUD_RATE = 3
- value = FTDI_BAUDRATE_57600 -> 0x0034
-
-similmente,
-
-            case UsbSerialInterface.DATA_BITS_8:
-                currentSioSetData &= ~1;
-                currentSioSetData &= ~(1 << 1);
-                currentSioSetData &= ~(1 << 2);
-                currentSioSetData |= (1 << 3);
-                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
-
-con FTDI_SIO_SET_DATA = 4
-quindi currentSioSetData = 0x---8
-
-
-            case UsbSerialInterface.PARITY_NONE:
-                currentSioSetData &= ~(1 << 8);
-                currentSioSetData &= ~(1 << 9);
-                currentSioSetData &= ~(1 << 10);
-                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
-
-questo azzera i bit 8, 9 e 10
-
-
-            case UsbSerialInterface.STOP_BITS_1:
-                currentSioSetData &= ~(1 << 11);
-                currentSioSetData &= ~(1 << 12);
-                currentSioSetData &= ~(1 << 13);
-                setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0, null);
-
-questo azzera i bit 11, 12 e 13
-
-da cui 8-n-1 è 0x0008
-
-
-
-cosa fa setControlCommand?
-
-    private int setControlCommand(int request, int value, int index, byte[] data)
-    {
-        int dataLength = 0;
-        if(data != null)
-        {
-            dataLength = data.length;
-        }
-        int response = connection.controlTransfer(FTDI_REQTYPE_HOST2DEVICE, request, value, mInterface.getId() + 1 + index, data, dataLength, USB_TIMEOUT);
-        Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
-        return response;
-    }
-
-    private static final int FTDI_REQTYPE_HOST2DEVICE = 0x40;
-
-
-
-
-
 
 
 
