@@ -9,16 +9,19 @@
 <p class="page-path"><a href="../index.html#arduino-android-usb">risorse</a> | comunicazione seriale arduino/android via usb</p>
 <h1>Comunicazione seriale Arduino/Android via USB</h1>
 <p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
-<p>Vorrei portare su Android il programma per PC &ldquo;<a href="https://bitbucket.org/gzuliani/sps-hc20">Consolle</a>&rdquo; che ho sviluppato per il <a href="arduino-scoreboard">controllo di un tabellone segnapunti</a> per il quale qualche mese fa ho realizzato un circuito di interfaccia. Il programma al momento gira su un vetusto portatile e il suo uso risulta macchinoso perché il computer non è dotato di <em>touch screen</em>. Nella foga della partita non è facile centrare sempre il pulsante giusto, e l'illuminazione della zona dei refertisti in palestra non è ottimale. Poiché tutti gli <em>smart phone</em> e i <em>tablet</em> oggi in circolazione ne sono dotati, ho pensato di trasformare il programma Python in un'applicazione per Android. Prima di tutto devo però accertarmi di poter comunicare dal terminale con Arduino via seriale USB, perché il Bluetooth in questo caso non è un'opzione.</p>
+<p>Vorrei portare su Android il programma per PC &laquo;<a href="https://bitbucket.org/gzuliani/sps-hc20">Consolle</a>&raquo; che ho sviluppato per il <a href="arduino-scoreboard">controllo di un tabellone segnapunti</a>. Il programma al momento gira su un vetusto portatile e il suo uso risulta macchinoso perché il computer non è dotato di <em>touch screen</em>. Nella foga della partita non è facile centrare sempre il pulsante giusto, e l'illuminazione della zona dei refertisti in palestra non è ottimale.</p>
+<img src="img/arduino-android-usb/consolle.png">
+<p class="illustration">L'interfaccia di controllo del tabellone segnapunti</p>
+<p>Poiché tutti gli <em>smartphone</em> e i <em>tablet</em> in circolazione ne sono dotati, ho pensato di riscrivere il programma per Android. Prima di tutto devo però accertarmi di poter inviare i comandi di controllo dal terminale Android alla scheda Arduino che pilota il tabellone via USB, perché il Bluetooth in questo caso non è un'opzione.</p>
 <h2>Dispositivi USB On-The-Go (OTG)</h2>
 <p>Il primo passo consiste nel procurarsi un dispositivo Android in grado di funzionare come <em>host</em> USB. Dei tre terminali in mio possesso, un tablet Samsung Galaxy Tab 2 10.1, uno smartphone Samsung J3 e un Huawey P8 Light, solo i primi due supportano tale modalità, nota come <a href="https://en.wikipedia.org/wiki/USB_On-The-Go">USB OTG</a>.</p>
 <p>Per attivare la modalità OTG (nei dispositivi che la supportano!) è necessario utilizzare un apposito cavetto di connessione: l'impiego di questo particolare accessorio fa sì che il dispositivo Android commuti da <em>slave</em> a <em>master</em>.</p>
-<p>Poiché il Samsung Galaxy Tab è sprovvisto di una presa USB standard, ho dovuto acquistare due cavetti OTG: uno standard per una presa USB micro, uno per il connettore proprietario del tablet:</p>
+<p>Poiché il Samsung Galaxy Tab 2 è sprovvisto di una presa USB standard, ho dovuto acquistare due cavetti OTG: uno standard per una presa USB micro, da usare con il Samsung J3, e uno per il connettore proprietario del tablet:</p>
 <img src="img/arduino-android-usb/connectors.jpg">
 <p class="illustration">In alto il cavo OTG standard per il Samsung J3, sotto quello dedicato per il Galaxy Tab</p>
-<p>Resta ora da verificare come si debba stabilire una comunicazione seriale con Arduino.</p>
+<p>Resta ora da verificare come si possa stabilire una comunicazione seriale con Arduino.</p>
 <h2>Sketch Arduino</h2>
-<p>Per verificare la comunicazione tra il terminale Android e Arduino ho caricato un programma di <em>echo</em> seriale che lavora a 57600 baud sulla scheda (<a href="files/arduino-android-usb/serial-echo.ino">qui</a> il sorgente):</p>
+<p>Per verificare la comunicazione tra il terminale Android e la scheda Arduino ho caricato su quest'ultima un programma di <em>echo</em> seriale (<a href="files/arduino-android-usb/serial-echo.ino">qui</a> il sorgente):</p>
 <pre class="code">
 void setup() {
     Serial.begin(57600);
@@ -30,9 +33,9 @@ void loop() {
 }
 </pre>
 <h2>Applicazione Android</h2>
-<p>Il principale riferimento per lo sviluppo di applicazioni che comunicano attraverso la porta seriale USB è la sezione <a href="https://developer.android.com/guide/topics/connectivity/usb/host">USB host overview</a> della documentazione ufficiale; in rete si trovano poi vari progetti che coinvolgono espressamente Arduino (due esempi: <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">How to Use Your Android to Communicate with Your Arduino</a>, <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">USB Communication between Android and Arduino</a>). Molti di questi si basano su librerie di terze parti, in particolare <a href="https://github.com/felHR85/UsbSerial">UsbSerial</a> che, pur essendo particolarmente diffusa, è affetta da qualche problema, in particolare non supporta Android 5.1.1 Lollipop. Per avere il massimo grado di libertà e soprattutto farmi un'idea di come funziona l'API sottostante, ho deciso di sviluppare in autonomia il codice di comunicazione, traendo comunque ispirazione dai progetti <em>open</em> che hanno fatto la stessa scelta.</p>
+<p>Il principale riferimento per lo sviluppo di applicazioni che comunicano attraverso la porta seriale USB è la sezione <a href="https://developer.android.com/guide/topics/connectivity/usb/host">USB host overview</a> della documentazione ufficiale; in rete si trovano poi vari progetti che coinvolgono espressamente la scheda Arduino Uno (due esempi: <a href="https://www.digikey.com/en/maker/projects/aed1f8e3fa044264a4310c6b3b2a4364">How to Use Your Android to Communicate with Your Arduino</a>, <a href="https://www.theengineeringprojects.com/2015/10/usb-communication-between-android-and-arduino.html">USB Communication between Android and Arduino</a>). Molti di questi si basano su librerie di terze parti, in particolare <a href="https://github.com/felHR85/UsbSerial">UsbSerial</a> che, pur essendo particolarmente diffusa, è affetta da qualche problema, in particolare non supporta Android 5.1.1 Lollipop. Per avere il massimo grado di libertà e soprattutto farmi un'idea di come funziona l'API sottostante, ho deciso di sviluppare in autonomia il codice di comunicazione, traendo comunque ispirazione dai progetti <em>open</em> che hanno fatto la stessa scelta.</p>
 <h3>Abilitazione della modalità USB Host</h3>
-<p>Le funzionalità di accesso all'Host USB sono state introdotte nell'API 12; è indispensabile basare l'applicazione su un'API di pari livello o superiore. È inoltre necessario indicare nel file <span class="path">AndroidManifest.xml</span> che l'applicazione richiede l'accesso a tale componente aggiunendo la riga evidenziata:</p>
+<p>Le funzionalità relative all'Host USB sono state introdotte nell'API 12; è quindi indispensabile basare l'applicazione su un'API di pari livello o superiore. È inoltre necessario indicare nel file <span class="path">AndroidManifest.xml</span> che l'applicazione richiede l'accesso a tale componente aggiungendo la riga evidenziata:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
@@ -48,7 +51,7 @@ void loop() {
 &lt;/manifest&gt;
 </pre>
 <h3>Identificazione della scheda Arduino</h3>
-<p>Per poter comunicare con Arduino è necessario individuare l'oggetto software (istanza della classe <span class="code">android.hardware.usb.UsbDevice</span>) che lo rappresenta. Esistono due modi per farlo: registrarsi e attendere una notifica dal sistema operativo dell'avvenuto collegamento della scheda alla presa USB oppure effettuando una scansione manuale. Il primo è il più semplice, e richiede un secondo intervento nel file <span class="path">AndroidManifest.xml</span>:</p>
+<p>Per poter comunicare con Arduino è necessario individuare l'oggetto software &mdash; istanza della classe <span class="code">android.hardware.usb.UsbDevice</span> &mdash; che lo rappresenta. Esistono due modi per farlo: registrarsi e attendere una notifica dal sistema operativo dell'avvenuto collegamento della scheda alla presa USB oppure effettuare una scansione manuale. Il primo è il più semplice, e richiede un secondo intervento nel file <span class="path">AndroidManifest.xml</span>:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 &lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
@@ -78,7 +81,7 @@ void loop() {
     &lt;/application&gt;
 &lt;/manifest&gt;
 </pre>
-<p>La risorsa <span class="code">device_filter</span> citata nel manifesto è un file XML salvato nella cartella <span class="path">res</span> che specifica i dispositivi USB per i quali l'applicazione intende ricevere la notifica dell'evento <span class="code">USB_DEVICE_ATTACHED</span>. Ogni dispositivo USB è identificato univocamente da un insieme di codici numerici, specificatamente <em>vendor-id</em>, <em>product-id</em>, <em>class</em>, <em>subclass</em> e <em>protocol</em>. La pagina <a href="http://www.linux-usb.org/usb-ids.html">The USB ID Repository</a> contiene un elenco esaustivo di identificativi di dispositivi USB; uno più &laquo;ragionato&raquo; è invece reperibile nei sorgenti della libreria <a href="https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml">usb-serial-for-android</a>. Dagli elenchi si ricava il <em>vendor-id</em> associato ad Arduino, che è 9025 (esadecimale 0x2341). Il <em>product-id</em> varia a seconda della tipologia e della revisione della scheda; se non lo si indica, il sistema operativo invierà all'applicazione la notifica <span class="code">USB_DEVICE_ATTACHED</span> qualunque sia la scheda Arduino collegata al terminale Android. Il file <span class="path">device_filter.xml</span> assume quindi la forma:</p>
+<p>La risorsa <span class="code">device_filter</span> citata nel manifesto è un file XML salvato nella cartella <span class="path">res</span> che specifica i dispositivi USB per i quali l'applicazione desidera ricevere la notifica dell'evento <span class="code">USB_DEVICE_ATTACHED</span>. Ogni dispositivo USB è identificato univocamente da un quintetto di codici numerici: <em>vendor-id</em>, <em>product-id</em>, <em>class</em>, <em>subclass</em> e <em>protocol</em>. La pagina <a href="http://www.linux-usb.org/usb-ids.html">The USB ID Repository</a> contiene un elenco esaustivo di tali identificativi; uno più &ldquo;ragionato&rdquo; è invece reperibile nei sorgenti della libreria <a href="https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml">usb-serial-for-android</a>. Dagli elenchi si ricava il <em>vendor-id</em> associato ad Arduino, che è 9025 (esadecimale 0x2341). Il <em>product-id</em> varia a seconda della tipologia e della revisione della scheda; se non lo si indica, il sistema operativo invierà all'applicazione la notifica <span class="code">USB_DEVICE_ATTACHED</span> qualunque scheda Arduino venga collegata, indipendentemente dal <em>product-id</em> che la caratterizza. Il file <span class="path">device_filter.xml</span> assume quindi la forma:</p>
 <pre class="code">
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
 
@@ -87,7 +90,7 @@ void loop() {
     &lt;usb-device vendor-id=&quot;9025&quot; /&gt;
 &lt;/resources&gt;
 </pre>
-<p>A questo punto, quando l'utente collega un dispositivo Arduindo al terminale Android il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>; specializzando il metodo si ricava un riferimento all'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDevice"><span class="code">UsbDevice</span></a> associato alla scheda direttamente dall'<span class="code">Intent</span> implicito attraverso il metodo <span class="code">getParcelableExtra</span>:</p>
+<p>A questo punto, quando l'utente collega una qualunque scheda Arduino al terminale Android, il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>. Da qui è possibile ottenere un riferimento all'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDevice"><span class="code">UsbDevice</span></a> associato alla scheda appena collegata:</p>
 <pre class="code">
 public class MainActivity extends AppCompatActivity {
     ...
@@ -109,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 }
 </pre>
 <h3>Scansione dei dispositivi USB</h3>
-<p>Il secondo metodo di individuazione della scheda Arduino consiste nell'effettuare una scansione periodica di tutti i dispositivi USB collegati al terminale Android alla ricerca del primo con <em>vendor-id</em> pari a 9025:</p>
+<p>Il secondo metodo di individuazione della scheda Arduino consiste nell'effettuare una scansione di tutti i dispositivi USB collegati al terminale Android alla ricerca del primo marcato &laquo;Arduino&raquo;, cioè con <em>vendor-id</em> pari a 9025:</p>
 <pre class="code">
     <ins>HashMap&lt;String, UsbDevice&gt; deviceList = usbManager.getDeviceList();
     Iterator&lt;UsbDevice&gt; deviceIterator = deviceList.values().iterator();
@@ -122,9 +125,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }</ins>
 </pre>
-<p>Questa soluzione ha lo svantaggio che l'applicazione non viene avviata automaticamente in concomitanza con il collegamento della scheda Arduino al terminale Android.</p>
+<p>Questa soluzione ha lo svantaggio che l'applicazione non viene avviata automaticamente al collegamento della scheda Arduino al terminale Android.</p>
 <h3>Scollegamento della scheda</h3>
-<p>Android riconosce quando l'utente scollega un dispositivo USB dal terminale, ed è possibile richiedere al sistema operativo di inviare una notifica alla nostra applicazione al verificarsi di questa condizione. È sufficiente registrare l'applicazione sull'evento <span class="code">USB_DEVICE_DETACHED</span>, anche se non in modo dichiarativo come fatto per l'evento <span class="code">USB_DEVICE_ATTACHED</span> &mdash; modificando il file <span class="path">AndroidManifest.xml</span> &mdash; ma a <em>runtime</em>, sfruttando un <span class="code">BroadcastReceiver</span>. L'aggancio avviene in due fasi; dapprima si definisce il <em>listener</em>, che contiene il codice da eseguire alla disconnessione del dispositivo:</p>
+<p>Android riconosce quando l'utente scollega un dispositivo USB dal terminale, ed è possibile richiedere al sistema operativo di inviare una notifica al verificarsi di questa condizione. È sufficiente registrare l'applicazione sull'evento <span class="code">USB_DEVICE_DETACHED</span>, anche se non in modo dichiarativo come fatto per l'evento <span class="code">USB_DEVICE_ATTACHED</span> &mdash; cioè modificando il file <span class="path">AndroidManifest.xml</span> &mdash; ma a <em>runtime</em>, per mezzo di un <span class="code">BroadcastReceiver</span>. L'aggancio avviene in due fasi; innanzitutto si definisce il <em>listener</em>, l'oggetto che contiene il codice da eseguire alla disconnessione del dispositivo:</p>
 <pre class="code">
 public class MainActivity extends AppCompatActivity {
     ...
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
     ...
 }
 </pre>
-<p>Si collega quindi il <em>listener</em> all'evento <span class="code">USB_DEVICE_DETACHED</span>, di norma durante la fase di inizializzazione dell'applicazione:</p>
+<p>Si collega quindi il <em>listener</em> all'evento <span class="code">USB_DEVICE_DETACHED</span>, di norma durante la fase di inizializzazione dell'applicazione, per mezzo di un <span class="code">IntentFilter</span>:</p>
 <pre class="code">
 public class MainActivity extends AppCompatActivity {
     ...
@@ -161,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 }
 </pre>
 <h3>Porta seriale (virtuale)</h3>
-<p>Arduino si presenta sul bus USB come un <em>Communications Device Class</em> (CDC, cfr. sez. &ldquo;Communications Device Class&rdquo; in <a href="http://www.usb.org/developers/docs/devclass_docs/">USB Device Class Specifications</a>), ovvero un dispositivo di comunicazione. Si tratta di dispositivi compositi, dotati cioé di più interfacce; per poter instaurare un canale di comunicazione è dunque indispensabile individuare la giusta interfaccia. In questo contesto l'interfaccia cercata è dotata di due <em>endpoint</em> &mdash; uno di ingresso e uno d'uscita &mdash; che supporta il trasferimento <em>bulk</em>. Se un'interfaccia con tali caratteristiche viene individuata, si procede aprendo un canale di comunicazione verso il dispositivo e collegandolo all'interfaccia appena trovata:</p>
+<p>Arduino si presenta sul bus USB come un <em>Communications Device Class</em> (CDC, cfr. sez. &laquo;Communications Device Class&raquo; in <a href="http://www.usb.org/developers/docs/devclass_docs/">USB Device Class Specifications</a>), ovvero un dispositivo di comunicazione. Si tratta di dispositivi compositi, dotati cioé di più interfacce; per poter instaurare un canale di comunicazione con questo tipo di dispositivo è indispensabile individuare la giusta interfaccia. In questo contesto l'interfaccia cercata è dotata di due <em>endpoint</em> &mdash; uno di ingresso e uno d'uscita &mdash; che supporta il trasferimento <em>bulk</em>. Se un'interfaccia con tali caratteristiche viene individuata, si procede aprendo un canale di comunicazione verso il dispositivo e collegandolo all'interfaccia appena trovata:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -236,7 +239,7 @@ public class UsbPort {
 }
 </pre>
 <h3>Comunicazione seriale</h3>
-<p>Il trasferimento di dati da/per la scheda Arduino si ottiene invocando il metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection.html#bulkTransfer(android.hardware.usb.UsbEndpoint,%20byte[],%20int,%20int)"><span class="code">bulkTransfer</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection"><span class="code">UsbDeviceConnection</span></a>:</p>
+<p>Il trasferimento di dati da/per Arduino avviene con il metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection.html#bulkTransfer(android.hardware.usb.UsbEndpoint,%20byte[],%20int,%20int)"><span class="code">bulkTransfer</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection"><span class="code">UsbDeviceConnection</span></a>:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -258,7 +261,7 @@ public class UsbPort {
 }
 </pre>
 <h3>Configurazione della porta seriale (virtuale)</h3>
-<p>La configurazione della connessione avviene per mezzo del metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection.html#controlTransfer(int,%20int,%20int,%20int,%20byte[],%20int,%20int,%20int)"><span class="code">controlTransfer</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection"><span class="code">UsbDeviceConnection</span></a>, cui per comodità accedo attraverso un <em>adapter</em>:</p>
+<p>La configurazione della porta seriale avviene con il metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection.html#controlTransfer(int,%20int,%20int,%20int,%20byte[],%20int,%20int,%20int)"><span class="code">controlTransfer</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDeviceConnection"><span class="code">UsbDeviceConnection</span></a>, cui per comodità accedo attraverso un <em>adapter</em>:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -286,13 +289,13 @@ public class UsbPort {
     ...
 }
 </pre>
-<p>Il parametro <span class="code">bmRequestType</span> è impostato a <span class="code">0x21</span> perché si tratta di un trasferimento diretto verso l'interfaccia del dispositivo (cfr. <a href="https://www.beyondlogic.org/usbnutshell/usb6.shtml#SetupPacket">The Setup Packet</a> e la risposta <a href="https://stackoverflow.com/questions/10467846/explanation-about-controltransfer-in-android-to-set-up-the-usb-communication">explanation about controltransfer in android to set up the USB communication</a> in Stackoverflow per maggiori dettagli):</p>
+<p>Il parametro <span class="code">bmRequestType</span> &mdash; un intero che rappresenta una maschera di bit &mdash; è impostato a <span class="code">0x21</span> perché si tratta di un trasferimento diretto verso l'interfaccia del dispositivo (cfr. <a href="https://www.beyondlogic.org/usbnutshell/usb6.shtml#SetupPacket">The Setup Packet</a> e la risposta <a href="https://stackoverflow.com/questions/10467846/explanation-about-controltransfer-in-android-to-set-up-the-usb-communication">explanation about controltransfer in android to set up the USB communication</a> in Stackoverflow per maggiori dettagli):</p>
 <ul>
 	<li><span class="code">B7</span>: direzione del trasferimento (Host&rarr;Device/Device&rarr;Host);</li>
 	<li><span class="code">B6&div;B5</span>: tipo di richiesta (Standard, Class, Vendor, &hellip;);</li>
 	<li><span class="code">B4&div;B0</span>: destinatario (Dispositivo, Intefaccia, Endpoint, &hellip;).</li>
 </ul>
-<p>Relativamente alla configurazione della seriale, i parametri assumono i seguenti significati (cfr. sez. 6.3.10 &laquo;SetLineCoding&raquo; del file PSTN120.pdf che si trova all'interno dell'archivio <a href="http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip">CDC1.2_WMC1.1_012011.zip</a> rilasciato dal consorzio USS-IF e contentente la documentazione ufficiale relativa alla classe di dispositivi CDC &mdash; <a href="files/arduino-android-usb/PSTN120.pdf">qui</a> una copia locale del file):</p>
+<p>Relativamente alla configurazione della porta seriale, i parametri assumono i seguenti significati (cfr. sez. 6.3.10 &laquo;SetLineCoding&raquo; del file PSTN120.pdf che si trova all'interno dell'archivio <a href="http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip">CDC1.2_WMC1.1_012011.zip</a> rilasciato dal consorzio USS-IF e contentente la documentazione ufficiale relativa alla classe di dispositivi CDC &mdash; <a href="files/arduino-android-usb/PSTN120.pdf">qui</a> una copia locale del file):</p>
 <table cellspacing="0">
 <tr><th>Parametro</th><th>Valore</th></tr>
 <tr><td><span class="code">request</span></td><td><span class="code">0x20</span></td></tr>
@@ -310,7 +313,7 @@ public class UsbPort {
 	</td>
 </tr>
 </table>
-<p>Sapendo che lo sketch caricato su Arduino lavora a 57600 8N1, il metodo per configurare la porta seriale allo stesso modo è il seguente:</p>
+<p>Poiché lo sketch caricato su Arduino lavora a 57600 8N1, la porta seriale del terminale Android va configurata di conseguenza:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -369,7 +372,7 @@ public class UsbPort {
 </tr>
 <tr><td><span class="code">data</span></td><td>non utilizzato</td></tr>
 </table>
-<p>Avendo attivato le linee DTR/RTS all'apertura della connessione, è buona norma disattivarle alla chiusura:</p>
+<p>Avendo attivato le linee DTR/RTS all'apertura della connessione, si disattivano in chiusura:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -398,14 +401,14 @@ public class UsbPort {
 
 }
 </pre>
-<p>Approntata una semplice applicazione costituita da un'unica attività che ciclicamente invia la stringa &ldquo;<strong>*** Test @ 57600 8N1 ***</strong>&rdquo; sulla porta seriale per poi porsi in attesa della risposta, ho potuto verificare che il codice funziona:</p>
+<p>Approntata una semplice applicazione costituita da un'unica attività che ciclicamente invia la stringa &ldquo;<strong>*** Test @ 57600 8N1 ***</strong>&rdquo; sulla porta seriale per poi porsi in attesa di una risposta, ho potuto verificare che il codice funziona:</p>
 <img src="img/arduino-android-usb/test-circuit.jpg">
 <p class="illustration">Il circuito di test</p>
 <img src="img/arduino-android-usb/debug-window.png">
 <p class="illustration">L'esito del primo test di comunicazione</p>
-<p>Si può notare che la prima trasmissione è fallita (indagando più approfonditamente si scopre che si tratta di un errore di timeout). La cosa è imputabile al fatto che all'apertura della connessione Arduino effettua un reset automatico che rende il sistema indisponibile per qualche secondo (cfr. <a href="http://playground.arduino.cc/Main/DisablingAutoResetOnSerialConnection">DisablingAutoResetOnSerialConnection</a> sui forum ufficiali).</p>
+<p>Si può notare che la prima trasmissione è fallita. La cosa è imputabile al fatto che all'apertura della connessione Arduino effettua un reset automatico che lo rende &ldquo;sordo&rdquo; per qualche secondo (cfr. <a href="http://playground.arduino.cc/Main/DisablingAutoResetOnSerialConnection">DisablingAutoResetOnSerialConnection</a> sui forum ufficiali).</p>
 <h3>BufferOverflowException</h3>
-<p>Sebbene la classe <span class="code">UsbPort</span> abbia dato buona prova di sè con l'echo seriale, lo stesso non è accaduto quando ho implementato il protocollo di comunicazione utilizzato dal programma di controllo del tabellone segnapunti, che prevede la trasmissione di un pacchetto di comando di 14 byte cui segue la risposta di Arduino, costituita da un unico byte:</p>
+<p>Sebbene la classe <span class="code">UsbPort</span> abbia dato buona prova di sè con l'echo seriale, lo stesso non è accaduto quando ho implementato il protocollo di comunicazione utilizzato dal programma di controllo del tabellone segnapunti, che prevede la trasmissione di un pacchetto di comando di 14 byte cui segue la risposta di Arduino, costituita da un unico byte (<span class="code">ACK</span>/<span class="code">NAK</span>):</p>
 <pre class="code">
     private byte[] txBuffer = new byte[14];
     ...
@@ -431,7 +434,7 @@ public class UsbPort {
 
     ...
 </pre>
-<p>L'applicazione terminava invariabilmente con errore dopo aver inviato non più di 3/4 pacchetti. Ho così scoperto che il metodo <span class="code">bulkTransfer</span> scarica tutti i dati ricevuti nel buffer predisposto, <a href="http://libusb.sourceforge.net/api-1.0/libusb_packetoverflow.html">anche se questi eccedono la sua capacità</a>. Conviene quindi allocare un buffer sufficientemente ampio da contenere il pacchetto più grande che si possa ricevere. Tale dimensione si ottiene dal metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbEndpoint.html#getMaxPacketSize()"><span class="code">getMaxPacketSize</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbEndpoint"><span class="code">UsbEndpoint</span></a> associato al terminale d'ingresso (nel caso della scheda Arduino Uno è pari a 64):</p>
+<p>L'applicazione terminava invariabilmente con errore dopo aver inviato non più di 3/4 pacchetti. Ho così scoperto che il metodo <span class="code">bulkTransfer</span> scarica tutti i dati ricevuti nel buffer predisposto, <a href="http://libusb.sourceforge.net/api-1.0/libusb_packetoverflow.html">anche se questi eccedono la sua capacità</a>. Conviene quindi allocare un buffer sufficientemente ampio da contenere il pacchetto più grande che si possa ricevere. Tale dimensione si ottiene dal metodo <a href="https://developer.android.com/reference/android/hardware/usb/UsbEndpoint.html#getMaxPacketSize()"><span class="code">getMaxPacketSize</span></a> dell'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbEndpoint"><span class="code">UsbEndpoint</span></a> associato al terminale d'ingresso (nel caso della scheda Arduino Uno collegata al tablet in mio possesso è pari a 64):</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -445,32 +448,40 @@ public class UsbPort {
 <p>Utilizzando tale valore come dimensione del buffer d'ingresso non si sono più verificati errori di sorta. Il codice completo della classe <span class="code">UsbPort</span> è scaricabile <a href="files/arduino-android-usb/UsbPort.java">qui</a>.</p>
 <h2>Debug Wireless</h2>
 <p>L'emulatore Android non supporta la porta USB, quindi il test dell'applicazione va fatto su un terminale reale. D'altra parte non è possibile utilizzare il debugger con l'applicativo remoto perché, dopo aver trasferito l'applicazione, la presa USB del terminale va scollegata dal PC e collegata alla scheda Arduino. Fortunatamente esiste la possibilità di attivare il <a href="https://developer.android.com/studio/command-line/adb#wireless">debug wireless</a>, purché il terminale Android non sia stato aperto (<em>rooted</em>) in precedenza.</p>
-<p>Seguendo le istruzioni riportate nella domanda di Stackoverflow <a href="https://android.stackexchange.com/questions/49681/adb-connect-to-a-device-via-tcp-ip">ADB connect to a device via TCP/IP</a> sono riuscito ad attivare questa modalità di debuging. Quando il terminale Android è ancora connesso al PC, dare i seguenti comandi:</p>
+<p>Seguendo le istruzioni riportate nella domanda di Stackoverflow <a href="https://android.stackexchange.com/questions/49681/adb-connect-to-a-device-via-tcp-ip">ADB connect to a device via TCP/IP</a> sono riuscito ad attivare questa modalità di debugging. Quando il terminale Android è ancora connesso al PC, dare i seguenti comandi:</p>
 <pre class="code">
 $ cd ~/Android/Sdk/platform-tools
 $ adb tcpip 5555
+restarting in TCP mode port: 5555
 $ adb connect &lt;IP-DISPOSITIVO&gt;:5555
 </pre>
-<p>L'indirizzo IP del terminale si trova nelle proprietà della connessione Wi-Fi. Alternativamente si può usare il comando:</p>
+<p>L'indirizzo IP del terminale si trova nelle proprietà della connessione Wi-Fi:</p>
+<img src="img/arduino-android-usb/ip-address.png">
+<p class="illustration">Le proprietà della rete Wi-Fi sul Samsung Galaxy Tab 2</p>
+<p>Il comando in questo caso assume la forma:</p>
 <pre class="code">
-$ adb shell netcfg
+$ adb connect 192.168.1.102:5555
+connected to 192.168.1.102:5555
 </pre>
-<p>A questo punto si può scollegare il cavo USB e procedere con il debugging. Se si è interessati al log prodotto dall'applicazione, lo si può visualizzare sul terminale con il comando (cfr. <a href="https://developer.android.com/studio/debug/am-logcat">Write and View Logs with Logcat</a>):</p>
+<p>A questo punto si può scollegare il cavo USB e procedere con il debugging. Se si è interessati a visualizzare il log prodotto dall'applicazione sul terminale, dare il comando (cfr. <a href="https://developer.android.com/studio/command-line/logcat">Logcat command-line tool</a>):</p>
 <pre class="code">
 $ adb logcat
 </pre>
 <p>Per disconnettere il terminale Android dare il comando:</p>
 <pre class="code">
-$ adb disconnect &lt;IP-DISPOSITIVO&gt;:5555
+$ adb disconnect 192.168.1.102:5555
+disconnected 192.168.1.102:5555
 </pre>
 <p>Se non si specifica l'indirizzo, il comando disconnette tutti i dispositivi connessi:</p>
 <pre class="code">
 $ adb disconnect
+disconnected everything
 </pre>
-<p>Infine, per riattivare il debug via USB dare il comando:</p>
+<p>Infine, per riattivare il debug via USB riavviare il terminale Android oppure dare il comando:</p>
 <pre class="code">
 $ adb usb
+restarting in USB mode
 </pre>
-<p class="modification-notice">Pagina modificata il 09/09/2018</p>
+<p class="modification-notice">Pagina modificata il 11/09/2018</p>
 </body>
 </html>
