@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 }
 </pre>
 <h3>Porta seriale (virtuale)</h3>
-<p>Arduino si presenta sul bus USB come un <em>Communications Device Class</em> (CDC, cfr. sez. &laquo;Communications Device Class&raquo; in <a href="http://www.usb.org/developers/docs/devclass_docs/">USB Device Class Specifications</a>), ovvero un dispositivo di comunicazione. Si tratta di dispositivi compositi, dotati cioé di più interfacce; per poter instaurare un canale di comunicazione con questo tipo di dispositivo è indispensabile individuare la giusta interfaccia. In questo contesto l'interfaccia cercata è dotata di due <em>endpoint</em> &mdash; uno di ingresso e uno d'uscita &mdash; che supporta il trasferimento <em>bulk</em>. Se un'interfaccia con tali caratteristiche viene individuata, si procede aprendo un canale di comunicazione verso il dispositivo e collegandolo all'interfaccia appena trovata:</p>
+<p>Arduino si presenta sul bus USB come un <em>Communications Device Class</em> (CDC, cfr. sez. &laquo;Communications Device Class&raquo; in <a href="https://www.usb.org/document-library/class-definitions-communication-devices-12">USB Device Class Specifications</a>), ovvero un dispositivo di comunicazione. Si tratta di dispositivi compositi, dotati cioé di più interfacce; per poter instaurare un canale di comunicazione con questo tipo di dispositivo è indispensabile individuare la giusta interfaccia. In questo contesto l'interfaccia cercata è dotata di due <em>endpoint</em> &mdash; uno di ingresso e uno d'uscita &mdash; che supporta il trasferimento <em>bulk</em>. Se un'interfaccia con tali caratteristiche viene individuata, si procede aprendo un canale di comunicazione verso il dispositivo e collegandolo all'interfaccia appena trovata:</p>
 <pre class="code">
 public class UsbPort {
     ...
@@ -295,7 +295,9 @@ public class UsbPort {
 	<li><span class="code">B6&div;B5</span>: tipo di richiesta (Standard, Class, Vendor, &hellip;);</li>
 	<li><span class="code">B4&div;B0</span>: destinatario (Dispositivo, Intefaccia, Endpoint, &hellip;).</li>
 </ul>
-<p>Relativamente alla configurazione della porta seriale, i parametri assumono i seguenti significati (cfr. sez. 6.3.10 &laquo;SetLineCoding&raquo; del file PSTN120.pdf che si trova all'interno dell'archivio <a href="http://www.usb.org/developers/docs/devclass_docs/CDC1.2_WMC1.1_012011.zip">CDC1.2_WMC1.1_012011.zip</a> rilasciato dal consorzio USS-IF e contentente la documentazione ufficiale relativa alla classe di dispositivi CDC &mdash; <a href="files/arduino-android-usb/PSTN120.pdf">qui</a> una copia locale del file):</p>
+<p>Relativamente alla configurazione della porta seriale, i parametri assumono i seguenti significati (cfr. sez. 6.3.10 &laquo;SetLineCoding&raquo; del file PSTN120.pdf che si trova all'interno dell'archivio <a href="https://www.usb.org/sites/default/files/CDC1.2_WMC1.1_012011.zip
+
+">CDC1.2_WMC1.1_012011.zip</a> rilasciato dal consorzio USS-IF e contentente la documentazione ufficiale relativa alla classe di dispositivi CDC &mdash; <a href="files/arduino-android-usb/PSTN120.pdf">qui</a> una copia locale del file):</p>
 <table cellspacing="0">
 <tr><th>Parametro</th><th>Valore</th></tr>
 <tr><td><span class="code">request</span></td><td><span class="code">0x20</span></td></tr>
