@@ -90,7 +90,10 @@ void loop() {
     &lt;usb-device vendor-id=&quot;9025&quot; /&gt;
 &lt;/resources&gt;
 </pre>
-<p>A questo punto, quando l'utente collega una qualunque scheda Arduino al terminale Android, il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>. Da qui è possibile ottenere un riferimento all'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDevice"><span class="code">UsbDevice</span></a> associato alla scheda appena collegata:</p>
+<p>A questo punto, quando l'utente collega una qualunque scheda Arduino al terminale Android, il sistema operativo avvia l'applicazione se non è già attiva, e chiama il metodo <span class="code">onResume</span>.</p>
+<img src="img/arduino-android-usb/notification-window.png">
+<p class="illustration">La richiesta di conferma dell'avvio dell'applicazione in seguito alla connessione della scheda Arduino</p>
+<p>Nel metodo <span class="code">onResume</span> è possibile ottenere un riferimento all'oggetto <a href="https://developer.android.com/reference/android/hardware/usb/UsbDevice"><span class="code">UsbDevice</span></a> associato alla scheda appena collegata:</p>
 <pre class="code">
 public class MainActivity extends AppCompatActivity {
     ...
