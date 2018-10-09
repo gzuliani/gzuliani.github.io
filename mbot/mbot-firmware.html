@@ -146,7 +146,7 @@ per sempre
 <p>Il progetto scansa-ostacoli è scaricabile <a href="files/mbot-firmware/wall-avoidance.sb2">qui</a>.</p>
 <a name="line-follower"></a>
 <h2>Segui la linea</h2>
-<p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="code">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span>quello di destra):</p>
+<p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="code">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span> quello di destra):</p>
 <table cellspacing="0">
 <tr><td class="header">S1</td><td class="header">S2</td><td class="header">Valore</td></tr>
 <tr><td>Nero</td><td>Nero</td><td>0</td></tr>
@@ -172,7 +172,7 @@ per sempre
 <p>Segue una possibile realizzazione della versione &ldquo;naif&rdquo; dell'inseguitore:</p>
 <img src="img/mbot-firmware/line-follower-naive.png">
 <p class="illustration">Il programma dell'inseguitore semplificato</p>
-<p>Il programma originale segue invece una logica diversa: la svolta correttiva viene rimandata al momento in cui anche il secondo sensore finisce fuori dalla linea, curvando viene nella direzione del sensore che per ultimo è uscito dalla linea. Il programma tiene traccia della storia recente dei valori registrati dai sensori per mezzo di una variabile numerica (denominata <span class="code">Flag</span> nel codice sorgente originale) che può assumere un qualunque valore compreso tra 0 e 20. Posta a 10 quando entrambi i sensori sono sulla linea, viene decrementata quando il sensore destro esce dalla linea, incrementata quando
+<p>Il programma originale segue invece una logica diversa: la svolta correttiva viene rimandata al momento in cui anche il secondo sensore finisce fuori dalla linea, curvando nella direzione del sensore che per ultimo è uscito dalla linea. Il programma tiene traccia della storia recente dei valori registrati dai sensori per mezzo di una variabile numerica (denominata <span class="code">Flag</span> nel codice sorgente originale) che può assumere un qualunque valore compreso tra 0 e 20. Posta a 10 quando entrambi i sensori sono sulla linea, viene decrementata quando il sensore destro esce dalla linea, incrementata quando
 esce quello sinistro. Nell'istante in cui entrambi i sensori escono dalla linea, il programma consulta il valore della variabile e comanda una svolta a sinistra se il valore è inferiore a 10, a destra se maggiore. In pseudo codice:</p>
 <pre class="code">
 direzione = 0
