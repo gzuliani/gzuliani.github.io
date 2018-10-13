@@ -452,7 +452,7 @@ public class UsbPort {
 </pre>
 <p>Utilizzando tale valore come dimensione del buffer d'ingresso non si sono più verificati errori di sorta. Il codice completo della classe <span class="code">UsbPort</span> è scaricabile <a href="files/arduino-android-usb/UsbPort.java">qui</a>.</p>
 <h2>Debug Wireless</h2>
-<p>L'emulatore Android non supporta la porta USB, quindi il test dell'applicazione va fatto su un terminale reale. D'altra parte non è possibile utilizzare il debugger con l'applicativo remoto perché, dopo aver trasferito l'applicazione, la presa USB del terminale va scollegata dal PC e collegata alla scheda Arduino. Fortunatamente esiste la possibilità di attivare il <a href="https://developer.android.com/studio/command-line/adb#wireless">debug wireless</a>, purché il terminale Android non sia stato aperto (<em>rooted</em>) in precedenza.</p>
+<p>L'emulatore Android non supporta la porta USB, quindi il test dell'applicazione va fatto su un terminale reale. D'altra parte non è possibile utilizzare il debugger con l'applicativo remoto perché, dopo aver trasferito l'applicazione, la presa USB del terminale va scollegata dal PC e collegata alla scheda Arduino. Fortunatamente esiste la possibilità di attivare il <a href="https://developer.android.com/studio/command-line/adb#wireless">debug wireless</a>.</p>
 <p>Seguendo le istruzioni riportate nella domanda di Stackoverflow <a href="https://android.stackexchange.com/questions/49681/adb-connect-to-a-device-via-tcp-ip">ADB connect to a device via TCP/IP</a> sono riuscito ad attivare questa modalità di debugging. Quando il terminale Android è ancora connesso al PC, dare i seguenti comandi:</p>
 <pre class="code">
 $ cd ~/Android/Sdk/platform-tools
