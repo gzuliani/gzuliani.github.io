@@ -1,0 +1,73 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tiny BASIC su Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-tinybasic">risorse</a> | tiny basic su arduino</p>
+<h1>Tiny BASIC su Arduino</h1>
+<p>Al lavoro alcuni colleghi stanno effettuando il porting di <a href="https://micropython.org/">MicroPython</a> su un sistema proprietario; fantasticavo di installarlo sulla mia scheda Arduino UNO, ma la cosa non è fattibile a causa della scarsità di risorse disponibili (cfr. &ldquo;<a href="https://forum.micropython.org/viewtopic.php?t=685#p3973">Micropython on Any Arduino Board?</a>&rdquo; nel forum ufficiale).</p>
+<p>Cercando in rete ispirazione per un <a href="https://it.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">linguaggio shell</a> alternativo mi sono imbattuto in <a href="https://it.wikipedia.org/wiki/Tiny_BASIC">Tiny BASIC</a>. Pensavo di implementare un piccolo interprete per questo linguaggio, ma qualcuno mi ha preceduto: <a href="https://github.com/BleuLlama/TinyBasicPlus">TinyBasic Plus</a> è una versione di Tiny BASIC adattabile a diverse piattaforme Arduino, UNO compreso.</p>
+<p>Scaricato lo <em>sketch</em> dal sito ufficiale (<a href="files/arduino-tinybasic/TinyBasicPlus.ino">qui</a> una copia locale della versione 0.15) e caricato su Arduino, si accede all'interprete BASIC attraverso un terminale, per esempio <strong>screen</strong>:</p>
+<pre class="code">
+$ screen /dev/ttyACM0 9600
+</pre>
+<img src="img/arduino-tinybasic/welcome.png">
+<p class="illustration">Il messaggio di benvenuto di TinyBasic Plus</p>
+<p>Oltre alle istruzioni incluse nel dialetto Tiny del BASIC, TinyBasic Plus ne supporta di specifiche per Arduino:</p>
+<ul>
+<li><strong><span class="code">DELAY ms</span></strong> &ndash; sospende l'esecuzione per il numero di millisecondi specificato;</li>
+<li><strong><span class="code">DWRITE pin,valore</span></strong> &ndash; imposta il pin al valore indicato (uno tra <strong><span class="code">HIGH</span></strong>, <strong><span class="code">HI</span></strong>, <strong><span class="code">LOW</span></strong>, <strong><span class="code">LO</span></strong>);</li>
+<li><strong><span class="code">AWRITE pin,valore</span></strong> &ndash; imposta il pin in PWM al valore indicato (nell'intervallo <strong><span class="code">0..255</span></strong>);</li>
+<li><strong><span class="code">DREAD(pin)</span></strong> &ndash; legge il valore digitale del pin;</li>
+<li><strong><span class="code">AREAD(pin)</span></strong> &ndash; legge il valore analogico del pin.</li>
+</ul>
+<p>Per esempio, il programma seguente fa lampeggiare il LED sulla scheda:</p>
+<pre class="code">
+10 DELAY 500
+20 DWRITE 13,HIGH
+30 DELAY 500
+40 DWRITE 13,LOW
+50 GOTO 10
+</pre>
+<img src="img/arduino-tinybasic/blink.png">
+<p class="illustration">Il programma del lampeggio caricato nella memoria dell'interprete</p>
+<p>Per eseguire il programma si usa il comando:</p>
+<pre class="code">
+>RUN
+</pre>
+<p>Il LED comincia a lampeggiare. Usare la combinazione di tasti Ctrl+C per interrompere l'esecuzione del programma:</p>
+<img src="img/arduino-tinybasic/blink-break.png">
+<p class="illustration">L'interprete segnala l'avvenuta interruzione del programma</p>
+<h2>Salvataggio in EEPROM</h2>
+<p>TinyBasic Plus offre una forma di persistenza dei programmi: è infatti possibile salvare una copia del programma attualmente caricato in memoria in una zona dedicata dell'EEPROM di Arduino. Bisogna prima di tutto formattare l'area di salvataggio:</p>
+<pre class="code">
+>EFORMAT
+</pre>
+<p>Dopo alcuni istanti l'interprete ripresenta il prompt:</p>
+<img src="img/arduino-tinybasic/eformat.png">
+<p class="illustration">La procedura di formattazione dell'area di salvataggio richiede alcuni secondi</p>
+<p>Per salvare il programma si usa il comando <span class="code">ESAVE</span>:</p>
+<img src="img/arduino-tinybasic/esave.png">
+<p class="illustration">Il salvataggio del programma è pressoché istantaneo</p>
+<p>Il programma può essere richiamato con il comando <span class="code">ELOAD</span>, per esempio dopo un <span class="code">NEW</span>:</p>
+<pre class="code">
+>NEW
+>LIST
+OK
+>ELOAD
+
+>LIST
+10 DELAY 500
+20 DWRITE 13,HIGH
+30 DELAY 500
+40 DWRITE 13,LOW
+50 GOTO 10
+OK
+>
+</pre>
+<p>In aggiunta, se l'interprete è stato compilato con il flag <span class="code">ENABLE_EAUTORUN</span> (attivo di default), alla successiva accensione TinyBasic Plus recupera il programma salvato e lo esegue immediatamente. In questo caso, per interromperne l'escuzione, occorre ricollegarsi all'interprete con il terminale e inviare un Ctrl+C.</p>
+<p class="modification-notice">Pagina modificata il 14/10/2018</p>
+</body>
+</html>
