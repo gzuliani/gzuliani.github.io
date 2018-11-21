@@ -1,0 +1,18 @@
+li.skipped {
+ color: #93a1a1;
+}
+
+span.code {
+ border: 1px solid #586e75;
+ background-color: #eee8d5;
+ padding: .2em;
+}
+
+table {
+ margin: 0em;
+ font-size: .75em;
+}
+
+td {
+ white-space: nowrap;
+}
