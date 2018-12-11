@@ -189,6 +189,24 @@ user.shortcuts=Ctrl+3|1121|
 <p class="note"><strong>Nota 2:</strong> le estensioni <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> generano un <span class="code">DeprecationWarning</span> che però non pregiudica la conversione.</p>
 <p class="update"><strong>Aggiornamento [20/05/2015]</strong></p>
 <p>Firefox ha qualche <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=673087">problema</a> a renderizzare pagine HTML codificate UTF-8 se questa non è esplicitamente dichiarata nell'apposito nodo <span class="code">meta</span>. Poiché l'estensione  <span class="code">mdx_xhtml_wrap</span> non lo fa, conviene, <strong>prima di installarla</strong>, applicare questa <a href="files/scite-markdown/meta-charset.patch"><em>patch</em></a> (o, alternativamente, agire direttamente sui sorgenti già installati).</p>
-<p class="modification-notice">Pagina modificata il 20/05/2015</p>
+<p class="update"><strong>Aggiornamento [11/12/2018]</strong></p>
+<p>Una recente installazione del pacchetto Markdown (v. 3.0.1) ha evidenziato un problema di compatibilità con alcune estensioni di terze parti, <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> in particolare. Il problema si risolve modificando il metodo <span class="code">makeExtension</span> nei file sorgente presenti nella cartella <span class="code">site-packages</span>:</p>
+<pre class="code">
+[file mdx_cite.py]
+...
+
+def makeExtension(<del>configs={}</del><ins>**kwargs</ins>):
+    return CiteExtension(<del>configs=dict(configs)</del><ins>**kwargs</ins>)
+...
+</pre>
+<pre class="code">
+[file mdx_del_ins.py]
+...
+
+def makeExtension(<del>configs={}</del><ins>**kwargs</ins>):
+    return DelInsExtension(<del>configs=dict(configs)</del><ins>**kwargs</ins>)
+...
+</pre>
+<p class="modification-notice">Pagina modificata l'11/12/2018</p>
 </body>
 </html>
