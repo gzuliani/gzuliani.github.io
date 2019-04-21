@@ -1,0 +1,137 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sommatore binario elettrico</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/binary-adder.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#binary-adder">risorse</a> |
+sommatore binario elettrico</p>
+<h1>Sommatore binario elettrico</h1>
+<p>Ho intrapreso questo progetto per dimostrare che un semplice circuito elettrico composto di soli interruttori (deviatori, per la precisione) può far di conto. Vuole essere una risposta concreta a una domanda che mi è stata rivolta spesso, di spiegare cioé come funziona una calcolatrice elettronica.</p>
+<p>Per ridurre i costi al minimo ho pensato di realizzare un sommatore binario a tre bit: questo riduce il numero di deviatori &ndash; il componente più caro &ndash;  a sei, cui si aggiungono quattro LED per rappresentare i bit della somma, più eventuali altri tre LED per i riporti:</p>
+<img src="img/binary-adder/initial-draft.png">
+<p class="illustration">Schema di massima del sommatore</p>
+<p>Lo schema mostra l'aspetto che avrà il sommatore. Com'è logico attendersi, il bit meno significativo si trova a destra, quello più significativo a sinistra. Il sommatore è raffigurato mentre esegue l'operazione <strong>5 + 6 = 11</strong>, in binario <strong>0110 + 0101 = 1011</strong>.</p>
+<p>Il circuito del sommatore sarà formato da un semi-sommatore per il bit meno significativo e una serie di sommatori completi per ognuno dei bit successivi (nel mio caso, due).</p>
+<h2>Sintesi logica</h2>
+<h3>Semi-sommatore</h3>
+<p>Il circuito del semi-sommatore si occupa di sommare i due bit meno significativi (<strong>A<sub>0</sub></strong> e <strong>B<sub>0</sub></strong>) e produce il bit somma (<strong>S<sub>0</sub></strong>) e quello del riporto (<strong>C<sub>0</sub></strong>):</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>A<sub>0</sub></th><th>B<sub>0</sub></th><th></th><th>S<sub>0</sub></th><th>C<sub>0</sub></th></tr>
+<tr><td>0</td><td>0</td><td></td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td></td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td></td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td></td><td>0</td><td>1</td></tr>
+</table>
+<p class="illustration">Tavola di verità del semi-sommatore</p>
+<p>Dalla tabella si ricavano facilmente le espressioni logiche per le due uscite:</p>
+<p class="formula">S<sub>0</sub> = <span class="not">A</span><sub>0</sub>B<sub>0</sub> + A<sub>0</sub><span class="not">B</span><sub>0</sub></p>
+<p class="formula">C<sub>0</sub> = A<sub>0</sub>B<sub>0</sub></p>
+<h3>Sommatore completo</h3>
+<p>Il circuito del sommatore completo determina la somma dei due bit in ingresso (<strong>A<sub>i</sub></strong> e <strong>B<sub>i</sub></strong>) e del riporto dello stadio precedente (<strong>C<sub>i-1</sub></strong>) e produce il bit somma (<strong>S<sub>i</sub></strong>) e quello del riporto (<strong>C<sub>i</sub></strong>):</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>A<sub>i</sub></th><th>B<sub>i</sub></th><th>C<sub>i-1</sub></th><th></th><th>S<sub>i</sub></th><th>C<sub>i</sub></th></tr>
+<tr><td>0</td><td>0</td><td>0</td><td></td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td></td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td></td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td><td></td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>0</td><td></td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>1</td><td></td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>0</td><td></td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td><td></td><td>1</td><td>1</td></tr>
+</table>
+<p class="illustration">Tavola di verità del sommatore completo</p>
+<p>L'espressione logica per la somma è:</p>
+<p class="formula">S<sub>i</sub> = <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub>C<sub>i-1</sub> + <span class="not">A</span><sub>i</sub>B<sub>i</sub><span class="not">C</span><sub>i-1</sub> + A<sub>i</sub><span class="not">B</span><sub>i</sub><span class="not">C</span><sub>i-1</sub> + A<sub>i</sub>B<sub>i</sub>C<sub>i-1</sub></p>
+<p>Raccogliendo riporto e riporto negato a fattor comune si ottiene:</p>
+<p class="formula">S<sub>i</sub> = C<sub>i-1</sub>(A<sub>i</sub>B<sub>i</sub> + <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub>) + <span class="not">C</span><sub>i-1</sub>(<span class="not">A</span><sub>i</sub>B<sub>i</sub> + A<sub>i</sub><span class="not">B</span><sub>i</sub>)</p>
+<p>L'espressione per il riporto invece è:</p>
+<p class="formula">C<sub>i</sub> = A<sub>i</sub>B<sub>i</sub> + C<sub>i-1</sub>(A<sub>i</sub> + B<sub>i</sub>)</p>
+<p>Poiché il riporto negato contribuisce alla determinazione del bit somma del sommatore completo, conviene propagarlo assieme al riporto fin dallo stadio iniziale (tecnica nota come <em>dual-rail-carry full adder</em>):</p>
+<p class="formula"><span class="not">C</span><sub>0</sub> = <span class="not">A</span><sub>0</sub> + <span class="not">B</span><sub>0</sub></p>
+<p class="formula"><span class="not">C</span><sub>i</sub> = <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub> + <span class="not">C</span><sub>i-1</sub>(<span class="not">A</span><sub>i</sub> + <span class="not">B</span><sub>i</sub>)</p>
+<p>Riassumendo, il semi-sommatore è caratterizzato dalle seguenti espressioni:</p>
+<p class="formula">S<sub>0</sub> = <span class="not">A</span><sub>0</sub>B<sub>0</sub> + A<sub>0</sub><span class="not">B</span><sub>0</sub></p>
+<p class="formula">C<sub>0</sub> = A<sub>0</sub>B<sub>0</sub></p>
+<p class="formula"><span class="not">C</span><sub>0</sub> = <span class="not">A</span><sub>0</sub> + <span class="not">B</span><sub>0</sub></p>
+<p>Il sommatore completo è invece contraddistinto dalle seguenti espressioni:</p>
+<p class="formula">S<sub>i</sub> = C<sub>i-1</sub>(A<sub>i</sub>B<sub>i</sub> + <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub>) + <span class="not">C</span><sub>i-1</sub>(<span class="not">A</span><sub>i</sub>B<sub>i</sub> + A<sub>i</sub><span class="not">B</span><sub>i</sub>)</p>
+<p class="formula">C<sub>i</sub> = A<sub>i</sub>B<sub>i</sub> + C<sub>i-1</sub>(A<sub>i</sub> + B<sub>i</sub>)</p>
+<p class="formula"><span class="not">C</span><sub>i</sub> = <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub> + <span class="not">C</span><sub>i-1</sub>(<span class="not">A</span><sub>i</sub> + <span class="not">B</span><sub>i</sub>)</p>
+<h2>Circuito elettrico</h2>
+<h3>Semi-sommatore</h3>
+<p>Il circuito del semi-sommatore può essere realizzato con due deviatori a quattro vie:</p>
+<img src="img/binary-adder/half-adder.png">
+<p class="illustration">Il circuito del semi-sommatore</p>
+<p>Di ogni deviatore sono evidenziati i soli poli utilizzati. Per convenzione ho assegnato la posizione del contatto in alto allo stato logico <strong>1</strong>, quella in basso allo <strong>0</strong>. Secondo questa logica, gli stati delle linee del circuito sono i seguenti:</p>
+<img src="img/binary-adder/half-adder-with-labels.png">
+<p class="illustration">Gli stati logici delle linee del semi-sommatore</p>
+<h3>Sommatore completo</h3>
+<p>Adottando la stessa convenzione circa la posizione del contatto del deviatore  usata per il semi-sommatore, ecco una prima versione del circuito del sommatore completo:</p>
+<img src="img/binary-adder/full-adder-with-labels.png">
+<p class="illustration">Gli stati logici delle linee del sommatore completo</p>
+<p>Così configurato, il circuito del sommatore completo richiede l'uso di deviatori a sei poli, difficili da trovare in commercio. In rete ho trovato una versione molto più compatta del circuito, ideata da Konrad Zuse per il suo calcolatore elettromeccanico Z3 attorno al 1941. Usa una sintesi diversa, sebbene equivalente, per la determinazione del riporto e del suo negato, come si può evincere dallo schema sottostante:</p>
+<img src="img/binary-adder/zuse-adder-with-labels.png">
+<p class="illustration">Il sommatore di Konrad Zuse basato su due deviatori a quattro vie</p>
+<p>Le espressioni dei riporti ricavata dalla tabella di verità del sommatore completo sono:</p>
+<p class="formula">C<sub>i</sub> = A<sub>i</sub>B<sub>i</sub> + C<sub>i-1</sub>(A<sub>i</sub> + B<sub>i</sub>)</p>
+<p class="formula"><span class="not">C</span><sub>i</sub> = <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub> + <span class="not">C</span><sub>i-1</sub>(<span class="not">A</span><sub>i</sub> + <span class="not">B</span><sub>i</sub>)</p>
+<p>mentre quelle utilizzate da Zuse nel suo sommatore sono:</p>
+<p class="formula">C<sub>i</sub> = A<sub>i</sub>B<sub>i</sub> + C<sub>i-1</sub>(<span class="not">A<sub>i</sub></span>B<sub>i</sub> + A<sub>i</sub><span class="not">B<sub>i</sub></span>)</p>
+<p class="formula"><span class="not">C</span><sub>i</sub> = <span class="not">A</span><sub>i</sub><span class="not">B</span><sub>i</sub> + <span class="not">C</span><sub>i-1</sub>(<span class="not">A<sub>i</sub></span>B<sub>i</sub> + A<sub>i</sub><span class="not">B<sub>i</sub></span>)</p>
+<h2>Realizzazione pratica</h2>
+<p>Mi sono rifornito del materiale necessario in un negozio di elettronica, dove ho reperito i deviatori a quattro vie, i LED e alcune matasse di filo colorato che spero agevolino il lavoro di cablatura del circuito.</p>
+<img src="img/binary-adder/toggle-switch.jpg">
+<p class="illustration">Uno dei deviatori a quattro vie acquistati</p>
+<p>Ho temporaneamente disposto i deviatori su un supporto in cartoncino in attesa di trovare una scatola adatta a contenere il circuito finale:</p>
+<img src="img/binary-adder/P1040367.JPG">
+<p class="illustration">Il supporto temporaneo in cartoncino con i deviatori già montati</p>
+<p>Data la sua semplicità, ho potuto verificare preliminarmente il circuito del semi-sommatore con i (pochi) connettori a coccodrillo di cui dispongo:</p>
+<img src="img/binary-adder/P1040365.JPG">
+<p class="illustration">Verifica del circuito del semi-sommatore con i connettori a coccodrillo</p>
+<img src="img/binary-adder/P1040366.JPG">
+<p class="illustration">Dettaglio del circuito del semi-sommatore temporaneo</p>
+<p>Per ognuna delle quattro configurazioni dei bit in ingresso <strong>A<sub>0</sub></strong> e <strong>B<sub>0</sub></strong> ho verificato che ci fosse continuità elettrica tra i terminali d'uscita (somma/riporto) e la linea di alimentazione solo nei casi in cui l'uscita corrisponde al livello logico <strong>1</strong>. Una volta accertato il corretto funzionamento del circuito del semi-sommatore, ho proceduto con la cablatura definitiva. Al semi-sommatore sono seguiti i due sommatori, realizzati secondo lo schema di Zuse:</p>
+<img src="img/binary-adder/P1040369.JPG">
+<p class="illustration">Il sommatore a tre bit completo</p>
+<p>Ultimato il lavoro di saldatura ho verificato il corretto funzionamento dell'intero circuito sfruttando la scheda Arduino per ricavare la tensione di alimentazione (5V) e la sua bread-board per collegare i LED che rappresentano il risultato del sommatore. Le resistenze limitatrici sono da 220&ohm; per una corrente diretta sui LED di circa 14mA, considerando una caduta di tensione su di essi vicina ai 2V:</p>
+<img src="img/binary-adder/P1040368.JPG">
+<p class="illustration">Test di funzionamento del sommatore</p>
+<p>Solo a questo punto mi sono reso conto di aver cablato il semi-sommatore dal lato sbagliato del pannello; visto frontalmente, esso si trova infatti a sinistra, non a destra, posizione naturale del bit meno significativo! Ho deciso allora di segmentare il circuito, e per farlo ho usato alcuni cavetti Dupont:</p>
+<img src="img/binary-adder/P1040370.JPG">
+<p class="illustration">La prima segmentazione: l'alimentazione tra il semi-sommatore e il primo sommatore completo</p>
+<img src="img/binary-adder/P1040371.JPG">
+<p class="illustration">Verfica del circuito a segmentazione completata</p>
+<p>Dove trovare un contenitore grande a sufficienza per ospitare il circuito e che sia dotato di un frontalino adatto per il montaggio dei deviatori e dei LED? La scelta è ricaduta su una scatola di derivazione Gweiss, comprata per pochi spiccioli in ferramenta:</p>
+<img src="img/binary-adder/GW48005.jpg">
+<p class="illustration">La scatola di derivazione che ospiterà il circuito del sommatore</p>
+<p>Dopo aver forato il coperchio della scatola di derivazione in corrispondenza delle posizioni dei deviatori e dei LED, ho smontato il circuito dal supporto temporaneo in cartoncino e l'ho montato sul frontalino di plastica:</p>
+<img src="img/binary-adder/P1040372.JPG">
+<p class="illustration">Il circuito rimontato sul coperchio della scatola di derivazione</p>
+<p>Per l'alimentazione ho riciclato un cavo di ricarica per cellulare che aveva la presa micro-USB difettosa. Ecco l'aspetto finale del sommatore binario:</p>
+<img src="img/binary-adder/P1040375.JPG">
+<p class="illustration">Il circuito sommatore nella sua veste definitiva</p>
+<p>Ho predisposto una maschera che aiuta a interpretare il funzionamento del circuito:</p>
+<img src="img/binary-adder/P1040376.JPG">
+<p class="illustration">Il primo prototipo della maschera esplicativa applicata al frontalino</p>
+<center>
+<video width="360" controls>
+ <source src="img/binary-adder/VID_20190420_141801.mp4" type="video/mp4">
+</video>
+</center>
+<p class="illustration">Il sommatore all'opera</p>
+<h2>Note</h2>
+<p>Nella realizzare il circuito ho invertito la corrispondenza tra la posizione del contatto del deviatore e lo stato logico associato. Quando la levetta del deviatore si trova in alto (posizione associata allo stato logico <strong>1</strong>), internamente il contatto avviene tra il terminale centrale e quello sottostante; quando la levetta è in basso (posizione associata allo stato logico <strong>0</strong>), il contatto è stabilito tra il terminale centrale e quello superiore:</p>
+<img src="img/binary-adder/toggle-switch-states.png">
+<p class="illustration">Relazione tra la posizione della levetta e contatti del deviatore</p>
+<p>Per questa ragione la cablatura dei due circuiti risulta invertita verticalmente:</p>
+<img src="img/binary-adder/wirings.png">
+<p class="illustration">Vista posteriore delle cablature del semi-sommatore e del sommatore completo</p>
+<p>Lo schema elettrico completo del circuito è rappresentato qui sotto; nel mio caso al posto delle lampadine ho usato dei LED con una resistenza da 220&ohm; in serie. Il circuito può essere usato in sicurezza con una tensione di alimentazione non superiore ai 6V.</p>
+<a href="img/binary-adder/wiring-diagram.png"><img src="img/binary-adder/wiring-diagram.png" width="100%"></a>
+<p class="illustration">Schema elettrico completo (click sull'immagine per ingrandirla)</p>
+<p class="modification-notice">Pagina modificata il 21/04/2019</p>
+</body>
+</html>
