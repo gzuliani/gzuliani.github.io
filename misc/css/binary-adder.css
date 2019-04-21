@@ -1,0 +1,27 @@
+p.formula {
+ font-weight: bold;
+ margin-top: 1em;
+ margin-left: 2em;
+ margin-bottom: 1em;
+}
+
+table {
+ margin-bottom: 1em;
+}
+
+td {
+ text-align: center;
+}
+
+th {
+ text-align: center;
+}
+
+video {
+ margin-left: auto;
+ margin-right: auto;
+}
+
+.not {
+ text-decoration: overline;
+}
