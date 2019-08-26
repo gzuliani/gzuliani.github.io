@@ -341,6 +341,6 @@ Da [Lipo battery charging specs for mbot](https://forum.makeblock.com/t/lipo-bat
 
 ### Riferimenti
 
-* sez. [mBot](https://gzuliani.bitbucket.io/index.html#mbot) dei miei appunti;
+* sez. [mBot](https://gzuliani.github.io/index.html#mbot) dei miei appunti;
 
 * sez. [Examples](http://www.mblock.cc/example/introduction/) sul sito ufficiale.
