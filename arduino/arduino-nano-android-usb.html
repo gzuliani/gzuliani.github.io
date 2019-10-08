@@ -1,0 +1,127 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Connessione USB Arduino Nano/Android via USB</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="css/arduino-nano-android-usb.css" rel="stylesheet" type="text/css"></link>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-nano-android-usb">risorse</a> | connessione usb arduino nano/android</p>
+<h1>Connessione USB Arduino Nano/Android</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>A settembre 2019 un'ingegnere olandese mi ha contattato riguardo alla classe <span class="code">UsbPort</span> descritta in &ldquo;<a href="arduino-android-usb.html">Comunicazione seriale Arduino/Android via USB</a>&rdquo;. In particolare voleva sapere se era in grado di far comunicare un terminale Android con una scheda Arduino Nano.</p>
+<p>Stupito dal fatto che si fosse indirizzata verso la mia implementazione e non avesse invece optato per una delle tante soluzioni disponibili in rete, molte delle quali gratuite e aperte, ingenuamente le ho detto che non vedevo motivi per cui la cosa non dovesse funzionare.</p>
+<p>Ignoravo però che Arduino Nano non usa un ATmega8 per controllare la porta USB, bensì il chip FTDI FT232RL (cfr. ad esempio <a href="https://forum.arduino.cc/index.php?topic=446788.0">comprehensive list of Uno Rev. 3 USB vendor/product IDs?</a>). Questo chip non si presenta sul bus USB come un dispositivo CDC, per cui il mio codice non è in grado di stabilire una connessione con tale scheda.</p>
+<p>L'ingegnere si è ben presto resa conto del problema e mi ha chiesto consiglio su come procedere. A me sono venute in mente tre possibilità:</p>
+<ul>
+<li>
+<p><strong>usare/trarre ispirazione da una delle librerie esistenti</strong></p>
+<p>Di progetti a riguardo in rete ce ne sono diversi, un esempio su tutti è la classe <a href="https://github.com/ksksue/FTDriver/blob/master/FTDriver/src/jp/ksksue/driver/serial/FTDriver.java">FTDriver.java</a> dell'omonima liberia, che supporta diverse varianti della scheda Arduino, tra cui la Uno e la Nano. Scorrendo il codice si nota come le due tipologie di dispositivi &mdash; CDC vs. FT &mdash; sono gestite separatamente (cfr. flag <span class="code">isCDC</span>). Se non si è interessati alla prima classe di dispositivi, si può sempre estrarre il codice relativo alla seconda. Un altro progetto molto interessante che val la pena considerare è <a href="https://github.com/mik3y/usb-serial-for-android">usb-serial-for-android</a>.</p>
+</li>
+<li>
+<p><strong>usare la libreria D2XX sviluppata dal produttore del chip FT232RL</strong></p>
+<p>Si tratta di una libreria Java che offre un'API di accesso alle funzionalità del chip. Il fatto di essere sviluppata dal produttore del chip dovrebbe garantirne stabilità e robustezza (il condizionale è d'obbligo!). La libreria, scaricabile gratuitamente dal sito ufficiale di FTDI alla pagina <a href="https://www.ftdichip.com/Support/SoftwareExamples/Android_JAVA_D2XX_Projects.htm">FTDI Android Java D2XX Prjects</a>, è corredata da un congruo numero di esempi di casi d'uso. Gli applicativi dimostrativi sono descritti in dettaglio nella nota tecnica <a href="https://www.ftdichip.com/Support/Documents/TechnicalNotes/TN_147_Java_D2xx_for_Android.pdf">TN_147_Java_D2xx_for_Android.pdf</a>.
+</p>
+</li>
+<li>
+<p><strong>usare l'interfaccia UART presente in &ldquo;Android Things&rdquo;</strong></p>
+<p>Se si opta per questa soluzione, tenere conto che l'interfaccia è disponibile solo in Android 8.1 e versioni successive. La documentazione relativa si trova nella <a href="https://developer.android.com/things/sdk/pio/uart.html">guida ufficiale</a> degli sviluppatori. Non l'ho mai usata, mi riservo di valutarla in futuro.</p>
+</li>
+</ul>
+<h2>Prova di fattibilità con la libreria D2XX</h2>
+<p>Ricordando di aver a disposizione un convertitore USB/Seriale TTL basato proprio sul chip FT232RL di FTDI (cfr. &ldquo;<a href="arduino-ft232rl.html">Test del chip FT232RL con Arduino</a>&rdquo;) ho deciso di provare io stesso a far comunicare un terminale Android con un altro dispositivo a valle del chip FTDI. Non avendo altro a disposizione che una scheda Arduino Uno, ho deciso di affrontare il problema secondo lo schema:</p>
+<pre class="code">
+    +---------+                         +---------+
+    |         |       +---------+       |         |
+    | Android | &lt;===&gt; | FT232RL | &lt;===&gt; | Arduino |
+    |         |       +---------+       |         |
+    +---------+                         +---------+
+</pre>
+<p>Al solito, su Arduino ho caricato il programma <em>echo</em>:</p>
+<pre class="code">
+void setup() {
+  Serial.begin(57600);
+}
+
+void loop() {
+  while (Serial.available() > 0)
+    Serial.print((char)Serial.read());
+}
+</pre>
+<p>In questo modo mi aspetto che l'app riceva come risposta da parte di Arduino esattamente gli stessi caratteri che gli ha inviato attraverso l'interfaccia USB/Serial TTL. Relativamente alle connessioni, il terminale Android è collegato all'interfaccia attraverso un cavo USB OTG in cascata ad un normale cavo USB. L'interfaccia è collegata ad Arduino con 4 cavetti dupont, due per l'alimentazione (grigio GND, bianco 5V), due per i dati (blu TX, viola RX).</p>
+<img src="img/arduino-nano-android-usb/diagram.png">
+<p class="illustration">Schema delle connessioni</p>
+<img src="img/arduino-nano-android-usb/circuit.jpg">
+<p class="illustration">Il circuito di prova reale &ndash; il cavo USB più corto è quello OTG</p>
+<p>L'app di prova consta di un'unica attività con un campo <em>EditText</em> (cfr. id <span class="code">editText</span>) che contiene il testo da inviare ed un pulsante al quale è associato il codice seguente:</p>
+<pre class="code">
+/**
+ * Called when the user taps the Send button
+ */
+public void sendMessage(View view) {
+  EditText editText = (EditText) findViewById(R.id.editText);
+  String message = editText.getText().toString();
+  StringBuilder log = new StringBuilder();
+
+  try {
+    D2xxManager ftdid2xx = D2xxManager.getInstance(this);
+    int devCount = ftdid2xx.createDeviceInfoList(this);
+
+    log.append(String.format("devCount = %d\n", devCount));
+
+    if (devCount > 0) {
+      FT_Device device = ftdid2xx.openByIndex(this, 0);
+
+      if (device != null) {
+//        device.setDtr();
+//        device.setRts();
+
+        device.setBaudRate(57600);
+        device.setDataCharacteristics(
+          D2xxManager.FT_DATA_BITS_8,
+          D2xxManager.FT_STOP_BITS_1,
+          D2xxManager.FT_PARITY_NONE);
+
+        byte[] txBuffer = message.getBytes();
+        int writtenBytes = device.write(txBuffer, message.length(), true);
+        log.append(String.format("txBuffer: \"%s\"\n", message));
+        log.append(String.format("writtenBytes: %d\n", writtenBytes));
+
+        int readBytes = 0;
+        byte[] rxBuffer = new byte[txBuffer.length];
+
+        while (readBytes == 0)
+          readBytes = device.read(rxBuffer, rxBuffer.length, 100);
+
+        log.append(String.format("readBytes: %d\n", readBytes));
+        log.append(String.format(
+          "rxBuffer: \"%s\"\n", new String(rxBuffer, 0, readBytes)));
+
+//        device.clrRts();
+//        device.clrDtr();
+
+        device.close();
+      } else {
+        // TODO
+      }
+    }
+  } catch (D2xxManager.D2xxException e) {
+    // TODO
+  }
+
+  new AlertDialog.Builder(this)
+      .setTitle("Test FT232RL")
+      .setMessage(log.toString())
+      .setPositiveButton(android.R.string.yes, null)
+      .show();
+}
+</pre>
+<p>Sebbene il codice non sia affatto robusto &mdash; <strong>ne sconsiglio fortemente l'uso in contesti reali:</strong> non gestisce gli errori e assume che le chiamate <span class="code">read</span> e <span class="code">write</span> trasferiscano in un colpo solo tutti i caratteri in gioco, cosa non necessariamente vera &mdash; ha dato buona prova di sè nei pochi e limitati test che ho condotto:</p>
+<img src="img/arduino-nano-android-usb/capture.png">
+<p class="illustration">Tutte le trasmissioni effettuate hanno avuto esito positivo</p>
+<h3>Note</h3>
+<p>La libreria <span class="path">j2xx.jar</span> si trova nella cartella <span class="path">libs</span> dell'archivio sopra indicato. Ricordarsi di copiarla nella cartella <span class="path">app/libs</span> locale e di aggiungerla come dipendenza del progetto (menu <em>File</em>, <em>Project Structure</em>, <em>Dependencies</em>, <em>+</em>).</p>
+<p>La documentazione d'uso della libreria si trova nella cartella <span class="path">doc</span> dell'archivio, a partire dal file <span class="path">index.html</span>.</p>
+<p class="modification-notice">Pagina modificata l'08/10/2019</p>
+</body>
+</html>
