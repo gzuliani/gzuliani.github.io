@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Cppcheck</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#cppcheck">risorse</a> | cppcheck</p>
@@ -17,7 +19,6 @@
 	<li>segnala l'uso di funzioni obsolete della libreria standard C;</li>
 	<li>individua possibili usi scorretti di STL.</li>
 </ul>
-</p>
 <p>Le segnalazioni prodotte si suddividono in errori veri e propri (<em>error</em>, es. <strong>&laquo;division by zero&raquo;</strong>), potenziali errori (<em>warning</em>, es. <strong>&laquo;member variable is not initialized in the constructor&raquo;</strong>), questioni stilistiche (<em>style</em>, es. <strong>&laquo;exception should be caught by reference&raquo;</strong>), aspetti legati all'efficienza (<em>performance</em>, es. <strong>&laquo;prefer prefix ++/-- operators for non-primitive types&raquo;</strong>) o alla portabilit&agrave; (<em>portability</em>, es. <strong>&laquo;assigning an address value to the integer (int/long/etc) type is not portable&raquo;</strong>).</p>
 <p>Un interessante aspetto di Cppcheck &egrave; che pu&ograve; essere invocato dalla linea di comando. Questa caratteristica mi ha permesso di sfruttarlo nella procedura di build di un progetto C++ di medie dimensioni, interrompendo il processo nel caso Cppcheck individui una o pi&ugrave; condizioni d'errore. Lo script che segue torna <span class="code">0</span> se l'invocazione di Cppcheck non ha evidenziato errori, <span class="code">1</span> in caso contrario:</p>
 <pre class="code">

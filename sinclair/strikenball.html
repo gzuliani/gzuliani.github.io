@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Strike and ball</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
-<link rel='stylesheet' type='text/css' href='css/sinclair.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
+<link rel='stylesheet' type='text/css' href='css/sinclair.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#sinclair">risorse</a> | <a href="index.html#strikenball">zx spectrum</a> | strikenball</p>
@@ -20,31 +22,31 @@
   30 REM *  STRIKE AND BALL  *
   40 REM *                   *
   50 REM *********************
-  60 REM 
+  60 REM
   70 GO TO 460
-  80 REM 
+  80 REM
   90 REM =====================
  100 REM  GENERA COMBINAZIONE
  110 REM =====================
- 120 REM 
+ 120 REM
  130 LET I$=&quot;&quot;
  140 FOR F=1 TO LUNG
  150 LET NUM=INT (RND*10)
  160 LET I$=I$+STR$ (NUM)
  170 NEXT F
- 180 RETURN 
- 190 REM 
+ 180 RETURN
+ 190 REM
  200 REM ====================
  210 REM  PROVA A INDOVINARE
  220 REM ====================
- 230 REM 
+ 230 REM
  240 INPUT &quot;COMBINAZIONE..&quot;;LINE T$: IF LEN T$&lt;&gt;LUNG THEN PRINT #0; INVERSE 1;&quot;* LUNGHEZZA ERRATA *&quot;: PAUSE 50: GO TO 240
- 250 RETURN 
- 260 REM 
+ 250 RETURN
+ 260 REM
  270 REM ===========
  280 REM  CONTROLLO
  290 REM ===========
- 300 REM 
+ 300 REM
  310 LET C$=I$
  320 LET STRIKE=0: LET BALL=0
  330 FOR F=1 TO LUNG
@@ -54,12 +56,12 @@
  370 FOR N=1 TO LUNG
  380 IF C$(F)&lt;&gt;&quot;*&quot; AND T$(N)&lt;&gt;&quot;*&quot; AND C$(F)=T$(N) THEN LET BALL=BALL+1: LET C$(F)=&quot;*&quot;: LET T$(N)=&quot;*&quot;
  390 NEXT N: NEXT F
- 400 RETURN 
- 410 REM 
+ 400 RETURN
+ 410 REM
  420 REM ===============
  430 REM  PRESENTAZIONE
  440 REM ===============
- 450 REM 
+ 450 REM
  460 BORDER 0: PAPER 0: INK 7: BRIGHT 1: CLS : POKE 23624,71
  470 PRINT &quot;{+6}{-2}{-1}{+4}{-5}{-3}{+7}{+5}{+5}{+6}{-5}{-3}{-2} {+6}{-6}{-5}{-8}{+5}{+4}{-6} {-5}{-3}{+7}{+6}{-6}{-5}{-8}{-8}{+5} &quot;
  480 PRINT &quot;{-1}{-6}{-8}{+5}{-5}{+3}{-2}{+5}{+4}{+7}{-5}{+3}{-8}{-8}{+1}{+2}{-5}{-6}{+5}{+5}{-5}{-8}{-5}{-3}{+7}{+1}{+2}{-5}{-8}{-8}{+5}{-8}&quot;
@@ -70,7 +72,7 @@
  530 PRINT '&quot;LUNGHEZZA DEL CODICE: &quot;;LUNG;&quot; CIFRE..&quot;
  540 GO SUB 100
  550 FOR T=0 TO 9
- 560 PRINT 
+ 560 PRINT
  570 PRINT T;&quot;)  &quot;;
  580 GO SUB 210
  590 PRINT T$;&quot;    &quot;;
@@ -88,7 +90,7 @@
  710 PRINT '&quot;NON CE L'HAI FATTA!!&quot;'&quot;IL CODICE ERA --&gt;&quot;; INVERSE 1;I$; INVERSE 0;&quot;&lt;--&quot;
  720 PRINT #0;&quot;VUOI RITENTARE ?&quot;
  730 LET R$=INKEY$: IF R$=&quot;&quot; THEN GO TO 730
- 740 IF R$=&quot;N&quot; OR R$=&quot;n&quot; THEN CLS : STOP 
+ 740 IF R$=&quot;N&quot; OR R$=&quot;n&quot; THEN CLS : STOP
  750 IF R$=&quot;S&quot; OR R$=&quot;s&quot; THEN GO TO 460
  760 PRINT ''&quot;SEI FORTUNATO, HAI INDOVINATO!&quot;
  770 PRINT #0;&quot;VUOI SFIDARMI DI NUOVO ?&quot;: GO TO 730

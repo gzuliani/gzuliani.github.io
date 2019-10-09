@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Programmare Minecraft in Python</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/minecraft-python.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/minecraft-python.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#minecraft-python">risorse</a> | programmare minecraft in python</p>
@@ -61,11 +62,11 @@ $ ln CanaryMod-1.2.0_0.jar CanaryMod.jar
 <pre class="code">
 $ java -jar CanaryMod.jar
 </pre>
-<p>il server terminerà con errore:
+<p>il server terminerà con errore:</p>
 <pre class="code">
 [WARN]: Failed to load eula.txt
 </pre>
-modificare il file <span class="file">CanaryMod/eula.txt</span> impostando a <span class="code">true</span> il parametro
+<p>modificare il file <span class="file">CanaryMod/eula.txt</span> impostando a <span class="code">true</span> il parametro
 <span class="code">eula</span>:</p>
 <pre class="code">
 eula=true
@@ -85,20 +86,20 @@ $ java -jar CanaryMod.jar
 <ol>
 <li><p>avviare il client di Minecraft, selezionando la versione del server <em>CanaryMod</em> appena installato; <strong>non dovesse essere disponibile, riavviare il client assicurandosi che il computer abbia accesso a internet, selezionare nuovamente la versione corretta e attendere che vengano scaricati e installati i file necessari</strong>;</p></li>
 <li><p>selezionare la modalità di gioco <em>Multiplayer</em>, premere il pulsante <em>Direct Connect</em> e specificare nella casella <em>Server Address</em> l'indirizzo IP del computer sul quale gira il server Minecraft (&ldquo;<span class="code">localhost</span>&rdquo; se è quello sul quale è in esecuzione il client);</p></li>
-<li><p>nel caso il client non dovesse riuscire a collegarsi al server ed emettesse l’errore
+<li><p>nel caso il client non dovesse riuscire a collegarsi al server ed emettesse l’errore:</p>
 <pre class="code">
 failed to login: authentication servers are down for maintenance
 </pre>
-è sufficiente modificare il file <span class="file">CanaryMod/config/server.cfg</span> impostando a <span class="code">false</span> il parametro <span class="code">online-mode</span>:</p>
+<p>è sufficiente modificare il file <span class="file">CanaryMod/config/server.cfg</span> impostando a <span class="code">false</span> il parametro <span class="code">online-mode</span>:</p>
 <pre class="code">
 online-mode=false
 </pre>
 </li>
-<li><p>uscire dal gioco e arrestare il server immettendo il comando:
+<li><p>uscire dal gioco e arrestare il server immettendo il comando:</p>
 <pre class="code">
 > stop
 </pre>
-nella finestra del terminale.</p>
+<p>nella finestra del terminale.</p>
 </li>
 </ol>
 <h3>Installazione del plug-in CanaryRaspberryJuice</h3>
@@ -145,12 +146,11 @@ $ ln spigot-1.9.4.jar spigot.jar
 <pre class="code">
 $ java -jar spigot.jar
 </pre>
-<p>il server terminerà con errore:
+<p>il server terminerà con errore:</p>
 <pre class="code">
 [WARN]: Failed to load eula.txt
 </pre>
-modificare il file <span class="file">spigot/eula.txt</span> impostando a <span class="code">true</span> il parametro
-<span class="code">eula</span>:</p>
+<p>modificare il file <span class="file">spigot/eula.txt</span> impostando a <span class="code">true</span> il parametro <span class="code">eula</span>:</p>
 <pre class="code">
 eula=true
 </pre>

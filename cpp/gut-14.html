@@ -1,8 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Good Unit Tests /14</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -87,7 +88,7 @@ public:
   void end() { <del>report_-&gt;onEnd(); }</del>
     <ins>report_-&gt;end(
       testCount_,
-      failedTestCount_,   
+      failedTestCount_,
       totalFailureCount_,
       globalTimer_.elapsedTime());
     }</ins>

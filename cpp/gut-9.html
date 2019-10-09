@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /9</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -38,37 +40,37 @@ bool compare(std::nullptr_t lhs, T* rhs) {
   ...
   CHECK(NULL == cpi1);
   //~ assert(lastFailure == &quot;[error] NULL == cpi1 evaluates to 0 == 0012FF24&quot;);
-  
+
   <ins>// nullptr
   CHECK(pi1 == nullptr);
   //~ assert(lastFailure == &quot;[error] pi1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
-  
+
   CHECK(&amp;i1 == nullptr);
   //~ assert(lastFailure == &quot;[error] &amp;i1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
-  
+
   int* pnullptr = nullptr;
-  
+
   CHECK(pnullptr != NULL);
   //~ assert(lastFailure == &quot;[error] pnullptr != NULL evaluates to 00000000 != 00000000&quot;);
-  
+
   CHECK(pnullptr != 0);
   //~ assert(lastFailure == &quot;[error] pnullptr != 0 evaluates to 00000000 != 00000000&quot;);
-  
+
   CHECK(cpi1 == nullptr);
   //~ assert(lastFailure == &quot;[error] cpi1 == nullptr evaluates to 0012FF24 == &lt;nullptr&gt;&quot;);
-  
+
   CHECK(nullptr == &amp;i1);
   //~ assert(lastFailure == &quot;[error] nullptr == &amp;i1 evaluates to &lt;nullptr&gt; == 0012FF24&quot;);
-  
+
   CHECK(0 != pnullptr);
   //~ assert(lastFailure == &quot;[error] 0 != pnullptr evaluates to 00000000 != 00000000&quot;);
-  
+
   CHECK(NULL != pnullptr);
   //~ assert(lastFailure == &quot;[error] NULL != pnullptr evaluates to 00000000 != 00000000&quot;);
-  
+
   CHECK(nullptr == cpi1);
   //~ assert(lastFailure == &quot;[error] nullptr == cpi1 evaluates to &lt;nullptr&gt; == 0012FF24&quot;);</ins>
-  
+
   // objects
   Object o1(1);
   Object o2(2);

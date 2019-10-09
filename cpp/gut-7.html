@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /7</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -43,7 +45,7 @@ int main() {
   auto report_ = std::make_shared&lt;gut::DefaultReport&gt;();
   // ...
 </pre>
-<h3>CHECK/REQUIRE al di fuori di TEST</h3>	
+<h3>CHECK/REQUIRE al di fuori di TEST</h3>
 <p>Sebbene l'uso di <span class="code">CHECK</span> e <span class="code">REQUIRE</span> all'esterno di un <span class="code">TEST</span> sia legittima &ndash; il codice prodotto dall'espansione delle macro &egrave; sintatticamente corretto &ndash; la loro presenza dovrebbe essere limitata al loro interno, in parte perch&eacute; potenziali sorgenti di eccezioni, in secondo luogo per favorire una maggiore struttrazione del codice di test. Non &egrave; per&ograve; banale adattare l'attuale infrastruttura di test in modo tale da causare un errore di compilazione in seguito all'uso delle macro in un contesto inappropriato. &Egrave; relativamente facile desumere la posizione interna/esterna di un fallimento (<span class="code">gut::Report::failure</span> invocata senza una precedente chiamata a <span class="code">gut::Report::startTest</span>), pi&ugrave; difficile &egrave; farlo per i controlli che si concludono con esito positivo.</p>
 <p>Conviene allora modificare radicalmente il modello attuale, e passare ad uno alternativo; in particolare, si separano le due fasi di registrazione ed esecuzione dei test; la prima &egrave; a carico dell'oggetto <span class="code">Suite</span>, mentre della seconda se ne occupa ancora la funzione <span class="code">runTests_</span>, ma con una modalit&agrave; diversa:</p>
 <pre class="code">

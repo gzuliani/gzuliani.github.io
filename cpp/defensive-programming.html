@@ -1,24 +1,25 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Defensive Programming</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/defensive-programming.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/defensive-programming.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#defensive-programming">risorse</a> | defensive programming</p>
 <h1>Defensive Programming</h1>
 <p class="note">John Lakos @ ACCU 2011</p>
 <h2>Contratti software</h2>
-<p>Notazione di Hoare:
- <blockquote>{pre-condizioni e invarianti} metodo {post-condizioni e invarianti}</blockquote>
-</p>
+<p>Notazione di Hoare:</p>
+<blockquote>{pre-condizioni e invarianti} metodo {post-condizioni e invarianti}</blockquote>
 <p>Se le pre-condizioni e le invarianti sono soddisfatte, l'esecuzione del metodo garantisce le post-condizioni e le invarianti.</p>
 <p>Le post-condizioni definiscono quindi l'effetto dell'esecuzione del metodo nell'ipotesi che le pre-condizioni siano verificate; si parla in questo caso di effetto essenziale del metodo (<span class="term">essential behavior</span>). In realt&agrave; l'essential behavior &egrave; qualcosa di pi&ugrave; specifico delle post-condizioni, in quanto tiene conto anche di altri fattori, come ad esempio le garanzie circa il costo computazionale del metodo; per tale ragione, la verifica dell'essential behavior &egrave; in generale pi&ugrave; complicata rispetto alla verifica delle post-condizioni. Se le pre-condizioni di un metodo non sono soddisfatte, l'effetto dell'esecuzione del metodo &egrave; per definizione non definita (<span class="term">undefined behavior</span>).</p>
 <p>Di norma essential e undefined behavior non sono complementari; esiste infatti una zona intermedia, denominata <span class="term">unspecified behavior</span> che separa le due aree:</p>
 <pre>
             +----------------------------+
             | +------------------------+ |
-            | | +--------------------+ |<--- defined but
+            | | +--------------------+ |&lt;--- defined but
             | | |                    | | |   not essential behavior
             | | | essential behavior | | |
             | | |                    | | |
@@ -35,14 +36,13 @@
 <p>Un esempio di undefined behavior si riscontra nel metodo <span class="code">std::vector::front</span>, che ha come pre-condizione il fatto che il vettore sia non vuoto: chiamare il metodo <span class="code">front</span> su un vettore vuoto &egrave; perci&ograve; undefined behavior. Un esempio di unspecified behavior &egrave; invece il seguente:</p>
 <pre class="code">
  // if stream is not valid on entry, print does nothing
- std::ostream& print(std::ostream& stream, const std::vector<int>& values);
+ std::ostream&amp; print(std::ostream&amp; stream, const std::vector&lt;int&gt;&amp; values);
 </pre>
 <p><span class="code">print</span> &egrave; un metodo senza pre-condizioni, dunque non contempla undefined behavior. Tuttavia non viene specificato cosa accade se l'oggetto <span class="code">stream</span> diventa invalido durante l'esecuzione del metodo: questo &egrave; un caso di unspecified behavior.</p>
 <h2>Programmazione difensiva</h2>
 <p>Scopo del <span class="term">defensive programming</span> &egrave; assicurare che le pre-condizioni siano soddisfatte; la verifica viene effettuata all'inizio di metodo. Per ovvie ragioni di praticit&agrave;, le invarianti di classe vengono di norma verificate solo nel distruttore.</p>
-<p>La pratica del defensive programming richiede la scrittura di codice ridondante, che introduce anche una penalizzazione in termini di efficienza. Secondo la definizione di defensive programming di Lakos:
- <blockquote>redundand code that provides runtime checks to detect and report (but not handle or hide) defects in software</blockquote>
-</p>
+<p>La pratica del defensive programming richiede la scrittura di codice ridondante, che introduce anche una penalizzazione in termini di efficienza. Secondo la definizione di defensive programming di Lakos:</p>
+<blockquote>redundand code that provides runtime checks to detect and report (but not handle or hide) defects in software</blockquote>
 <p>Da cosa ci si vuol difendere? Dagli errori nelle librerie di terze parti? No, in questi casi si chiede al fornitore di correggere l'errore. Dagli errori nel codice di nostra propriet&agrave; (post-condizioni)? No, questa attivit&agrave; &egrave; di pertinenza dei test. <strong>Ci si difende dal cattivo uso che terze parti possono fare del nostro codice.</strong></p>
 <p>Una domanda lecita che ci si pu&ograve; porre giunti a questo punto &egrave;: se le pre-condizioni non sono verificate, &egrave; necessario comunque garantire le invarianti? La risposta &egrave; no, non ha senso; il pi&ugrave; delle volte ci si trover&agrave; infatti costretti a compiere scelte del tutto arbitrarie, il cui effetto finale sar&agrave; nascondere un errore di programmazione. Si consideri il caso:</p>
 <pre class="code">

@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Tic-tac-toe</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
-<link rel='stylesheet' type='text/css' href='css/sinclair.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
+<link rel='stylesheet' type='text/css' href='css/sinclair.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#sinclair">risorse</a> | <a href="index.html#tictactoe">zx spectrum</a> | tictactoe</p>
@@ -28,11 +30,11 @@
  100 LET COUNT=0
  110 LET R$=&quot;&quot;
  120 GO SUB 1070
- 129 REM 
+ 129 REM
  130 REM ********************
  131 REM * CICLO PRINCIPALE *
  132 REM ********************
- 133 REM 
+ 133 REM
  140 GO SUB 540
  150 GO SUB 1070
  160 GO SUB 870
@@ -41,54 +43,54 @@
  190 GO SUB 1070
  200 GO SUB 870
  210 IF R$=&quot;&quot; THEN GO TO 140
- 229 REM 
+ 229 REM
  230 REM **************
  231 REM * FINE GIOCO *
  232 REM **************
- 233 REM 
+ 233 REM
  250 GO SUB 1070
- 260 PRINT : PRINT 
+ 260 PRINT : PRINT
  270 IF R$=&quot;W&quot; THEN PRINT TAB 8;&quot;HO VINTO IO&quot;: LET FLAG=-1
  280 IF R$=&quot;L&quot; THEN PRINT TAB 8;&quot;HAI VINTO TU&quot;: LET FLAG =1
  290 IF R$=&quot;D&quot; THEN PRINT TAB 8;&quot;E' PATTA&quot;: GO TO 430
- 299 REM 
+ 299 REM
  300 REM *********************
  301 REM * AGGIORNA DATABASE *
  302 REM *********************
- 303 REM 
+ 303 REM
  310 FOR B=1 TO 5
  320 FOR J=2 TO 9
  330 IF M(J)=D(B) THEN GO SUB 370
  340 NEXT J
  350 NEXT B
  360 GO TO 430
- 369 REM 
+ 369 REM
  370 REM ***********************
  371 REM *  RIORDINA ELEMENTI  *
  372 REM * MATRICE DELLE MOSSE *
  373 REM ***********************
- 374 REM 
+ 374 REM
  380 LET TEMP=M(J+FLAG)
  390 LET M(J+FLAG)=M(J)
  400 LET M(J)=TEMP
  410 LET J=9
- 420 RETURN 
- 430 PRINT : PRINT 
+ 420 RETURN
+ 430 PRINT : PRINT
  435 FOR I=1 TO 100: NEXT I
  440 PRINT &quot;PRIORITA' DELLE POSIZIONI&quot;: PRINT &quot;DOPO L' ULTIMA PARTITA:&quot;
- 450 PRINT : PRINT 
+ 450 PRINT : PRINT
  460 FOR J=1 TO 9
  470 PRINT M(J);&quot; &quot;;
  480 NEXT J
- 490 PRINT : PRINT 
+ 490 PRINT : PRINT
  500 INPUT &quot;VUOI GIOCARE DI NUOVO: &quot;; LINE A$
- 515 IF A$=&quot;NO&quot; OR A$=&quot;N&quot; OR A$=&quot;no&quot; OR A$=&quot;n&quot; THEN STOP 
+ 515 IF A$=&quot;NO&quot; OR A$=&quot;N&quot; OR A$=&quot;no&quot; OR A$=&quot;n&quot; THEN STOP
  520 GO TO 30
- 529 REM 
+ 529 REM
  530 REM *********************
  531 REM * MOSSA AL COMPUTER *
  532 REM *********************
- 533 REM 
+ 533 REM
  550 LET P=CODE (&quot;O&quot;)
  560 LET X=0
  570 LET J=1
@@ -97,13 +99,13 @@
  600 IF A(W(J+1))=A(W(J+2)) AND A(W(J))=32 AND A(W(J+1))=P THEN LET X=W(J): GO TO 750
  610 IF J&lt;21 THEN LET J=J+3: GO TO 580
  620 IF P=CODE (&quot;O&quot;) THEN LET P=CODE (&quot;X&quot;): GO TO 570
- 629 REM 
+ 629 REM
  630 REM ***********************
  631 REM * NON CI SONO CASELLE *
  632 REM *  PER LA VITTORIA O  *
  633 REM *     PER IL BLOCCO   *
  634 REM ***********************
- 635 REM 
+ 635 REM
  650 LET J=1
  660 IF A(M(J))=32 THEN LET X=M(J): GO TO 750
  670 IF J&lt;10 THEN LET J=J+1: GO TO 660
@@ -112,12 +114,12 @@
  700 LET X=INT (RND*9)+1: IF A(X)=32 THEN GO TO 750
  710 IF H&lt;100 THEN GO TO 690
  720 LET R$=&quot;D&quot;
- 730 RETURN 
- 739 REM 
+ 730 RETURN
+ 739 REM
  740 REM *******************
  741 REM * ESEGUE LA MOSSA *
  742 REM *******************
- 743 REM 
+ 743 REM
  750 LET A(X)=CODE (&quot;O&quot;)
  770 LET COUNT=COUNT+1
  780 LET D(COUNT)=X
@@ -126,60 +128,60 @@
  810 IF A(J)=32 THEN LET FLAG=1
  820 NEXT J
  830 IF FLAG=0 AND R$=&quot;&quot; THEN LET R$=&quot;D&quot;
- 839 REM 
+ 839 REM
  840 REM **********************
  841 REM * TUTTE LE POSIZIONI *
  842 REM * OCCUPATE : PATTA.. *
  843 REM **********************
- 844 REM 
- 850 RETURN 
- 859 REM 
+ 844 REM
+ 850 RETURN
+ 859 REM
  860 REM **********************
  861 REM * CONTROLLA SE VINTO *
  862 REM **********************
- 863 REM 
+ 863 REM
  880 LET J=1
  890 IF A(W(J))=32 THEN LET J=J+3
- 900 IF J&gt;23 THEN RETURN 
+ 900 IF J&gt;23 THEN RETURN
  910 IF A(W(J))=A(W(J+1)) AND A(W(J))=A(W(J+2)) THEN GO TO 940
  920 IF J&lt;22 THEN LET J=J+3: GO TO 890
- 930 RETURN 
+ 930 RETURN
  940 IF A(W(J))=CODE (&quot;O&quot;) THEN LET R$=&quot;W&quot;
  950 IF A(W(J))=CODE (&quot;X&quot;) THEN LET R$=&quot;L&quot;
- 960 RETURN 
- 969 REM 
+ 960 RETURN
+ 969 REM
  970 REM *******************
  971 REM * MOSSA ALL' UOMO *
  972 REM *******************
- 973 REM 
- 980 PRINT 
- 990 PRINT 
+ 973 REM
+ 980 PRINT
+ 990 PRINT
 1000 INPUT &quot;FAI LA TUA MOSSA: &quot;;MOV
 1020 IF MOV&lt;1 OR MOV&gt;9 THEN GO TO 1000
 1030 IF A(MOV)&lt;&gt;32 THEN GO TO 1000
 1040 LET A(MOV)=CODE (&quot;X&quot;)
-1050 RETURN 
-1059 REM 
+1050 RETURN
+1059 REM
 1060 REM *********************
 1061 REM * STAMPA SCACCHIERA *
 1062 REM *********************
-1063 REM 
-1080 CLS 
+1063 REM
+1080 CLS
 1085 PRINT &quot;TIC-TAC-TOE&quot;
-1090 PRINT : PRINT : PRINT 
+1090 PRINT : PRINT : PRINT
 1100 PRINT &quot;   1:2:3      &quot;;CHR$ (A(1));&quot;:&quot;;CHR$ (A(2));&quot;:&quot;;CHR$ (A(3))
 1110 PRINT &quot;   -----      -----&quot;
 1120 PRINT &quot;   4:5:6      &quot;;CHR$ (A(4));&quot;:&quot;;CHR$ (A(5));&quot;:&quot;;CHR$ (A(6))
 1130 PRINT &quot;   -----      -----&quot;
 1140 PRINT &quot;   7:8:9      &quot;;CHR$ (A(7));&quot;:&quot;;CHR$ (A(8));&quot;:&quot;;CHR$ (A(9))
-1150 PRINT 
-1160 RETURN 
-1169 REM 
+1150 PRINT
+1160 RETURN
+1169 REM
 1170 REM ********************
 1171 REM * INIZIALIZZAZIONE *
 1172 REM ********************
-1173 REM 
-1190 CLS 
+1173 REM
+1190 CLS
 1200 DIM A(9): DIM M(10): DIM W(24): DIM D(5)
 1250 FOR J=1 TO 24
 1260 READ W(J)
@@ -187,19 +189,19 @@
 1280 DATA 1,2,3,4,5,6,7,8,9
 1290 DATA 1,4,7,2,5,8,3,6,9
 1300 DATA 1,5,9,3,5,7
-1309 REM 
+1309 REM
 1310 REM *********************
 1311 REM * DATABASE INIZIALE *
 1312 REM *********************
-1313 REM 
+1313 REM
 1314 INPUT &quot;VUOI INSERIRE PERSONALMENTE&quot;'&quot;IL TUO DATABASE INIZIALE ? &quot;; LINE A$
 1315 IF A$&lt;&gt;&quot;SI&quot; THEN GO TO 1320
-1318 GO SUB 1060: FOR J=1 TO 9: PRINT &quot;POSIZIONE N. &quot;;(J);: INPUT &quot;CASELLA NUMERO..&quot;;M(J): PRINT &quot;  CASELLA N. &quot;;M(J): NEXT J: RETURN 
+1318 GO SUB 1060: FOR J=1 TO 9: PRINT &quot;POSIZIONE N. &quot;;(J);: INPUT &quot;CASELLA NUMERO..&quot;;M(J): PRINT &quot;  CASELLA N. &quot;;M(J): NEXT J: RETURN
 1320 FOR J=1 TO 10
 1330 READ M(J)
 1340 NEXT J
 1350 DATA 5,3,7,1,9,2,4,6,8,5
-1360 RETURN 
+1360 RETURN
 </pre>
 <p class="modification-notice">Pagina modificata l'8/11/2011</p>
 </body>

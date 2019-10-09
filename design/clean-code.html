@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Clean Code</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/clean-code.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/clean-code.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#clean-code">risorse</a> | clean code</p>
@@ -38,15 +40,15 @@
  <li>evitare i <span class="term">flag</span> negli argomenti, significa che la funzione assolve a due compiti diversi (meglio definire un'altra funzione);</li>
  <li>evitare di usare gli argomenti come valori di ritorno, non &egrave; naturale;</li>
  <li>evitare gli effetti collaterali;</li>
- <li><p>separare funzioni operative e interrogazioni, si generano forme ambigue:
+ <li><p>separare funzioni operative e interrogazioni, si generano forme ambigue:</p>
   <pre class="code">
     if (set("username", "pippo")) {
       // ???
     }
   </pre>
- </p></li>
+ </li>
  <li>preferire le eccezioni ai codici d'errore;</li>
- <li><p>isolare i blocchi <span class="code">try/catch</span> in funzioni esterne; la funzione:
+ <li><p>isolare i blocchi <span class="code">try/catch</span> in funzioni esterne; la funzione:</p>
   <pre class="code">
     void doSeveralThings()
     {
@@ -63,7 +65,7 @@
       doAnotherThing();
     }
   </pre>
-  &egrave; consigliabile riscriverla in questa forma:
+  <p>&egrave; consigliabile riscriverla in questa forma:</p>
   <pre class="code">
     void doSeveralThings()
     {
@@ -83,9 +85,9 @@
       }
     }
   </pre>
- </p></li>
+ </li>
  <li>preferire il polimorfismo ai costrutti if e switch;</li>
- <li><p>esplicitare le dipendenze temporali: se due funzioni vanno chiamate secondo un ordine determinato, fare in modo che la seconda dipenda dal risultato della prima:
+ <li><p>esplicitare le dipendenze temporali: se due funzioni vanno chiamate secondo un ordine determinato, fare in modo che la seconda dipenda dal risultato della prima:</p>
   <pre class="code">
     class A
     {
@@ -99,7 +101,7 @@
       }
     }
   </pre>
-  diventa:
+  <p>diventa:</p>
   <pre class="code">
     class A
     {
@@ -110,7 +112,8 @@
         // usa c
       }
     }
- </p></li>
+  </pre>
+ </li>
 </ul>
 <h2>4. Comments</h2>
 <p>Le avvertenze sono le solite:</p>
@@ -129,14 +132,14 @@
  <li>minimizzare la distanza verticale tra dichiarazione e uso delle variabili;</li>
  <li>separare con una riga vuota i segmenti di codice fortemente correlati;</li>
  <li>il limite delle 80 colonne &egrave; superato, ma meglio non esagerare (suggerisce 120);</li>
- <li><p>evitare gli allineamenti orizzontali:
+ <li><p>evitare gli allineamenti orizzontali:</p>
  <pre class="code">
   int                current_page;
   std::vector&lt;int&gt;   pages;
   bool               is_published;
   std::string        header;
  </pre>
- questo tipo di formattazione induce una suddivisione tra i tipi (a sinistra) e le variabili (a destra) anzich&eacute; l'associazione di ogni variabile col suo tipo.</p></li>
+ <p>questo tipo di formattazione induce una suddivisione tra i tipi (a sinistra) e le variabili (a destra) anzich&eacute; l'associazione di ogni variabile col suo tipo.</p></li>
 </ul>
 <h2>6. Objects and Data Structures</h2>
 <p>Il sesto capitolo affronta la dicotomia oggetti/strutture, affermando che se l'interfaccia dei primi deve astrarre dall'implementazione, per le seconde ci&ograve; non vale, essendo dei semplici contenitori di dati. Seguono due considerazioni:</p>
@@ -145,19 +148,18 @@
  <li>preferire strutture a oggetti rende semplice aggiungere nuove funzioni.</li>
 </ul>
 <p>La tesi viene suffragata considerando che l'introduzione di una nuova entit&agrave; all'interno di una gerarchia di classi si ottiene derivando la nuova entit&agrave; da una esistente ed implementandone le funzionalit&agrave; specifiche; nel caso di una gerarchia di strutture, &egrave; necessario intervenire su tutte le funzioni operanti sulle strutture esistenti, dovendo esse ora trattare anche la nuova casistica. Viceversa, l'introduzione di una nuova funzionalit&agrave; in una gerarchia di classi spesso si traduce nell'aggiornamento dell'interfaccia di gran parte delle classi esistenti; nel caso di strutture, normalmente &egrave; sufficiente implementare la nuova funzionalit&agrave; in un metodo globale.</p>
-<p>Limitatamente al dominio degli oggetti, viene citata la <span class="term">legge di Demeter</span>, e viene proposto un metodo per soddisfarla, che consiste nell'esporre parte della funzionalit&agrave; del contenuto nell'interfaccia del contenitore:
- <pre class="code">
-    final String outputDir = ctxt.options.scratchDir.absolutePath;
-    ...
-    String outFile = outputDir + "/" + className.replace('.', '/') + ".class";
-    FileOutputStream fout = new FileOutputStream(outFile);
-    BufferedOutputStream bos = new BufferedOutputStream(fout);
- </pre>
- si pu&ograve; rendere meglio cos&igrave;:
- <pre class="code">
-    BufferedOutputStream bos = ctxt.createScratchFileStream(classFileName);
- </pre>
-</p>
+<p>Limitatamente al dominio degli oggetti, viene citata la <span class="term">legge di Demeter</span>, e viene proposto un metodo per soddisfarla, che consiste nell'esporre parte della funzionalit&agrave; del contenuto nell'interfaccia del contenitore:</p>
+<pre class="code">
+   final String outputDir = ctxt.options.scratchDir.absolutePath;
+   ...
+   String outFile = outputDir + "/" + className.replace('.', '/') + ".class";
+   FileOutputStream fout = new FileOutputStream(outFile);
+   BufferedOutputStream bos = new BufferedOutputStream(fout);
+</pre>
+<p>si pu&ograve; rendere meglio cos&igrave;:</p>
+<pre class="code">
+   BufferedOutputStream bos = ctxt.createScratchFileStream(classFileName);
+</pre>
 <h2>7. Error Handling</h2>
 <p></p>
 <ul>
@@ -175,13 +177,12 @@
 </ul>
 <p>Relativamente al codice sviluppato da altri colleghi, qualora questo non sia ancora disponibile, si raccomanda l'uso di <span class="term">mock/stubs</span> per emulare le funzionalit&agrave; necessarie; questi potranno in seguito essere riutilizzati come <span class="term">adapter</span> dei componenti reali, quando diventeranno disponibili.</p>
 <h2>9. Unit Test</h2>
-<p>Il capitolo inizia enunciando le tre leggi del <span class="term">TDD</span>:
- <ol>
-  <li>non si scrive codice di produzione finch&eacute; un test non fallisce;</li>
-  <li>non si scrive codice di test se non quello necessario al fallimento (un errore di compilazione &egrave; gi&agrave; di per se un fallimento);</li>
-  <li>non si scrive codice di produzione se non quello necessario per far passare il test che fallisce.</li>
- </ol>
-</p>
+<p>Il capitolo inizia enunciando le tre leggi del <span class="term">TDD</span>:</p>
+<ol>
+ <li>non si scrive codice di produzione finch&eacute; un test non fallisce;</li>
+ <li>non si scrive codice di test se non quello necessario al fallimento (un errore di compilazione &egrave; gi&agrave; di per se un fallimento);</li>
+ <li>non si scrive codice di produzione se non quello necessario per far passare il test che fallisce.</li>
+</ol>
 <p>Il TDD costringe lo sviluppatore a passare continuamente dallo scrivere codice di test &ndash; che fallisce &ndash; alla scrittura di codice di produzione &ndash; che fa passare il test. Il codice progredisce cos&igrave; per piccoli passi, essendo la durata tipica di un ciclo di qualche minuto. Risulta perci&ograve; quasi impossibile perdersi nel codice dato che, per definizione, se a un dato momento il test non passa la causa &egrave; da ricercare nelle modifiche introdotte nell'ultima iterazione. Ci&ograve; regala una notevole serenit&agrave; al programmatore, che ha la certezza che, qualunque cosa sia successa, pochi <em>undo</em> lo ricondurranno ad una situazione stabile.</p>
 <p>Il codice di test va trattato come il codice di produzione. Cosa fa invece di un test case un <em>buon</em> test case?</p>
 <ul>

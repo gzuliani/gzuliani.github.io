@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /1</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!--
@@ -129,7 +131,7 @@ int main() {
 }
 
 // output:
-// ...\check.cpp(13): 1 != 2</pre>
+// ...\check.cpp(13): 1 != 2
 </pre>
 <p>Ci&ograve; tuttavia richiede la definizione di una macro per ogni operatore relazionale:</p>
 <pre class="code">
@@ -243,7 +245,7 @@ int main() {
 // output:
 // ...\check.cpp(38): i1 == i2 evaluates to 1 == 2
 </pre>
-<p>Ricapitolando:
+<p>Ricapitolando:</p>
 <ol>
 <li>la macro <span class="code">CHECK</span> istanzia un temporaneo di tipo <span class="code">Capture</span> al quale passa l'espressione binaria, e si preoccupa gestire il fallimento nel caso il valore di ritorno sia <span class="code">false</span>;</li>
 <li>l'oggetto <span class="code">Capture</span> istanzia un oggetto di tipo <span class="code">Term&lt;T&gt;</span> dove <span class="code">T</span> rappresenta il tipo del valore <span class="code">i1</span>;</li>
@@ -969,10 +971,8 @@ int main() {
 </ul>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
-<a name="ref-2"></a>
-<li class="ref">Nash, P. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 20 Marzo 2012.</li>
+<li class="ref"><a name="ref-1"></a>Henney, K. &quot;Rethinking Unit Testing in C++&quot;. <em>Skills Matters: ACCU 2010: Rethinking Unit Testing in C++</em>. &lt;<a href="http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus">http://skillsmatter.com/podcast/agile-testing/kevlin-henney-rethinking-unit-testing-in-c-plus-plus</a>&gt;. Visitato il 20 Marzo 2012.</li>
+<li class="ref"><a name="ref-2"></a>Nash, P. &quot;Catch&quot;. <em>philsquared/Catch - github</em>. &lt;<a href="https://github.com/philsquared/Catch">https://github.com/philsquared/Catch</a>&gt;. Visitato il 20 Marzo 2012.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 20/03/2012</p>
 </body>

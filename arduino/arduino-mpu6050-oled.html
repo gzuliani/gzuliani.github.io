@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Accelerometro grafico con arduino</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/arduino-mpu6050-oled.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-mpu6050-oled.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#arduino-mpu6050-oled">risorse</a> | accelerometro grafico con arduino</p>
@@ -627,7 +628,7 @@ void changeScale() {
 </pre>
 <p>La tabella sottostante riporta la mappatura tra la scala selezionata dall'utente, i valori assunti delle variabili <span class="code">afs_sel</span> e <span class="code">emulate_1g_afs</span> e l'entità dello shift applicato ai valori di accelerazione sui due assi del display:</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>scala</th><th><span class="code">afs_sel</span></th><th><span class="code">emulate_1g_afs</span></th><th wrap>shift x</th><th>shift y</th></tr>
+<tr><th>scala</th><th><span class="code">afs_sel</span></th><th><span class="code">emulate_1g_afs</span></th><th>shift x</th><th>shift y</th></tr>
 <tr><td>&plusmn;1g</td><td>AFS_SEL_2G</td><td>true</td><td>8</td><td>9</td></tr>
 <tr><td>&plusmn;2g</td><td>AFS_SEL_2G</td><td>false</td><td>9</td><td>10</td></tr>
 <tr><td>&plusmn;4g</td><td>AFS_SEL_4G</td><td>false</td><td>9</td><td>10</td></tr>
@@ -710,27 +711,19 @@ void loop() {
 }
 </pre>
 <img src="img/arduino-mpu6050-oled/mapping-corrected.jpg">
-<p class="illustration">Posizione del cursore corretta<ol>
+<p class="illustration">Posizione del cursore corretta</p>
 <p>La versione finale dello sketch è disponibile <a href="files/arduino-mpu6050-oled/corrected/mpu6050-oled.ino">qui</a>.</p>
 <h2>Riferimenti</h2>
-<a name="ref-1"></a>
-<li class="ref"><em>&ldquo;Adafruit GFX Graphics Library Guide&rdquo;</em>, learn.adafruit.com &mdash; <a href="https://learn.adafruit.com/adafruit-gfx-graphics-library/">https://learn.adafruit.com/adafruit-gfx-graphics-library/</a>, visitato il 30/12/2016.</li>
-<a name="ref-2"></a>
-<li class="ref"><em>&ldquo;Adafruit-GFX-Library&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit-GFX-Library">https://github.com/adafruit/Adafruit-GFX-Library</a>, visitato il 30/12/2016.</li>
-<a name="ref-3"></a>
-<li class="ref"><em>&ldquo;Adafruit_SSD1306&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit_SSD1306">https://github.com/adafruit/Adafruit_SSD1306</a>, visitato il 30/12/2016.</li>
-<a name="ref-4"></a>
-<li class="ref"><em>&ldquo;Avoiding float math to speed up arduino&rdquo;</em>, StackExchange &mdash; <a href="http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino">http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino</a>, visitato il 01/01/2017.</li>
-<a name="ref-5"></a>
-<li class="ref"><em>&ldquo;Faster code Fridays: Avoid floating point math&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/">http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/</a>, visitato il 01/01/2017.</li>
-<a name="ref-6"></a>
-<li class="ref"><em>&ldquo;Faster code Fridays: Understand division and speed of operations&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/">http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/</a>, visitato il 01/01/2017.</li>
-<a name="ref-7"></a>
-<li class="ref"><em>&ldquo;Hardware Interrupt and I2C interference - how to resolve&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=308019.0">http://forum.arduino.cc/index.php?topic=308019.0</a>, visitato il 02/01/2017.</li>
-<a name="ref-8"></a>
-<li class="ref"><em>&ldquo;Speed of floating point operations -- test results&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=40901.0">http://forum.arduino.cc/index.php?topic=40901.0</a>, visitato il 01/01/2017.</li>
-<a name="ref-9"></a>
-<li class="ref"><em>&ldquo;Wire communication during interrupt handling&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=254857.0">http://forum.arduino.cc/index.php?topic=254857.0</a>, visitato il 02/01/2017.</li>
+<ol>
+<li class="ref"><a name="ref-1"></a><em>&ldquo;Adafruit GFX Graphics Library Guide&rdquo;</em>, learn.adafruit.com &mdash; <a href="https://learn.adafruit.com/adafruit-gfx-graphics-library/">https://learn.adafruit.com/adafruit-gfx-graphics-library/</a>, visitato il 30/12/2016.</li>
+<li class="ref"><a name="ref-2"></a><em>&ldquo;Adafruit-GFX-Library&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit-GFX-Library">https://github.com/adafruit/Adafruit-GFX-Library</a>, visitato il 30/12/2016.</li>
+<li class="ref"><a name="ref-3"></a><em>&ldquo;Adafruit_SSD1306&rdquo;</em>, adafruit repository on github.com &mdash; <a href="https://github.com/adafruit/Adafruit_SSD1306">https://github.com/adafruit/Adafruit_SSD1306</a>, visitato il 30/12/2016.</li>
+<li class="ref"><a name="ref-4"></a><em>&ldquo;Avoiding float math to speed up arduino&rdquo;</em>, StackExchange &mdash; <a href="http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino">http://arduino.stackexchange.com/questions/23238/avoiding-float-math-to-speed-up-arduino</a>, visitato il 01/01/2017.</li>
+<li class="ref"><a name="ref-5"></a><em>&ldquo;Faster code Fridays: Avoid floating point math&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/">http://www.engblaze.com/faster-code-fridays-avoid-floating-point-math/</a>, visitato il 01/01/2017.</li>
+<li class="ref"><a name="ref-6"></a><em>&ldquo;Faster code Fridays: Understand division and speed of operations&rdquo;</em>, EngBlaze &mdash; <a href="http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/">http://www.engblaze.com/faster-code-fridays-understand-division-and-speed-of-operations/</a>, visitato il 01/01/2017.</li>
+<li class="ref"><a name="ref-7"></a><em>&ldquo;Hardware Interrupt and I2C interference - how to resolve&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=308019.0">http://forum.arduino.cc/index.php?topic=308019.0</a>, visitato il 02/01/2017.</li>
+<li class="ref"><a name="ref-8"></a><em>&ldquo;Speed of floating point operations -- test results&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=40901.0">http://forum.arduino.cc/index.php?topic=40901.0</a>, visitato il 01/01/2017.</li>
+<li class="ref"><a name="ref-9"></a><em>&ldquo;Wire communication during interrupt handling&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=254857.0">http://forum.arduino.cc/index.php?topic=254857.0</a>, visitato il 02/01/2017.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 01/01/2017</p>
 </body>

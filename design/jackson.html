@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Software Specifications &amp; Requirements</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#jackson">risorse</a> | jackson</p>
@@ -77,7 +79,6 @@ problema dell'ascensore:
 <li><strong>formalit&agrave;</strong>: se il dominio &egrave; informale, &egrave; da considerarsi illimitato, in quanto non &egrave; possibile descriverlo in maniera esaustiva.</li>
 </ul>
 <p>Un importante aspetto da considerare sono le tipologie di interazioni tra domini, in particolare in presenza di latenze o altre inconsistenze che non permettono di individuare uno <em>shared phenomena</em> comune attraverso il quale modellare l'interazione. In questo caso si ricorre a un dominio ausiliario di disaccoppiamento, il <em>connection-domain</em>. Un esempio in tal senso &egrave; costituito dall'invio e dalla successiva ricezione di una missiva: i due eventi sono sufficientemente distanti nel tempo da non essere vissuti dal mittente e dal destinatario come due aspetti di un unico evento; in secondo luogo non &egrave; nemmeno certo che ad un invio segua una ricezione, per esempio perch&eacute; la lettera potrebbe venir smarrita. Si introduce allora un <em>connection domain</em> che rappresenta un ufficio postale: l'invio diventa uno <em>shared phenomena</em> tra il dominio del mittente ed il <em>connection domain</em>, mentre la ricezione diventa uno <em>shared phenomena</em> tra il <em>connection domain</em> e il dominio del destinatario</p>
-</p>
 <h3><em>domain characteristics</em> + <em>domain interactions</em> &rarr; <em>problem frame</em></h3>
 <p>Note le caratteristiche e le dipendenze tra i sotto-domini del problema, si cerca di stabilire una corrispondenza con uno dei <em>problem frame</em> noti, nella speranza di poter mettere in atto le strategie risolutive pi&ugrave; adeguate per il tipo di problema. &Egrave; utile a questo punto tracciare il <em>frame diagram</em>, che &egrave; un <em>context diagram</em> arricchito delle relazioni esistenti tra i domini, oltre all'evidenziazione del dominio <em>machine</em>: questo permette di identificare la struttura del problema e consente di valutarne la somiglianza con gli schemi noti.</p>
 <p>Per valutare il grado di compatibilit&agrave; del <em>frame diagram</em> con un <em>problem frame</em>, bisogna tener conto di:</p>
@@ -116,10 +117,8 @@ identit&agrave; non &egrave; equivalenza (qualche propriet&agrave; in comune), m
 -->
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Jackson, M. <em>Software Specifications &amp; Requirements</em>. Addison-Wesley Professional, 1995.</li>
-<a name="ref-2"></a>
-<li class="ref">&quot;Problem frames approach&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Problem_Frames_Approach">http://en.wikipedia.org/wiki/Problem_Frames_Approach</a>&gt;. Visitato il 16 Dicembre 2011.</li>
+<li class="ref"><a name="ref-1"></a>Jackson, M. <em>Software Specifications &amp; Requirements</em>. Addison-Wesley Professional, 1995.</li>
+<li class="ref"><a name="ref-2"></a>&quot;Problem frames approach&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Problem_Frames_Approach">http://en.wikipedia.org/wiki/Problem_Frames_Approach</a>&gt;. Visitato il 16 Dicembre 2011.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 03/01/2012</p>
 </body>

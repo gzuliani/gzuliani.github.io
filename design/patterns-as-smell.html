@@ -1,15 +1,16 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Are patterns a language smell?</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#patterns-as-smell">risorse</a> | are patterns a language smell?</p>
 <h1>Are patterns a language smell?</h1>
 <p>Ci arrivo con appena 15 anni di ritardo. &Egrave; infatti nel 1996 che Peter Norvig pubblica un articolo<a href="#ref-3"><sup>[3]</sup></a> dove sostiene che ben 16 dei 23 pattern individuati dalla <a href="http://c2.com/cgi/wiki?GangOfFour">Gang Of Four</a> sono invisibili o comunque di pi&ugrave; semplice implementazione in Lisp (e in Dylan). L'integrazione dei pattern aumenta l'espressivit&agrave; del linguaggio stesso, che a sua volta permette di scrivere codice pi&ugrave; comprensibile, per l'assenza di codice &laquo;infrastrutturale&raquo; &ndash; codice relativo al dominio della soluzione anzich&eacute; a quello del problema. Da qui l'implicazione &laquo;uso dei patterns &rArr; linguaggio inadeguato&raquo;.</p>
-<p>Il tutto ha avuto origine dalla lettura del post di Jeff Atwood<a href="#ref-1"><sup>[1]</sup></a> che elabora l'idea di Norvig affermando:
+<p>Il tutto ha avuto origine dalla lettura del post di Jeff Atwood<a href="#ref-1"><sup>[1]</sup></a> che elabora l'idea di Norvig affermando:</p>
 <blockquote>Perhaps later languages will include many design patterns as standard features.</blockquote>
-</p>
 <p>Si tratta in sostanza dello stesso fenomeno che negli anni 60/70 ha originato i linguaggi della programmazione strutturata: i pattern pi&ugrave; utilizzati dai programmatori assembly, come ad esempio la realizzazione dei cicli <em>for</em>, <em>while/do</em> e <em>repeat/until</em> con i salti condizionati, o il passaggio dei parametri attraverso lo stack, sono stati integrati nei nuovi linguaggi. Chi durante gli anni 80 si dilettava a scrivere programmi in Sinclair BASIC, certamente ricorder&agrave; il pattern usato per sopperire all'assenza dell'operatore ELSE nella clausola IF-THEN(-ELSE):</p>
 <pre class="code">
 10 IF &lt;CONDITION&gt; THEN GO TO 60
@@ -22,17 +23,13 @@
 80 REM
 90 REM END OF IF STATEMENT
 </pre>
-<p>L'articolo di Atwood cita poi un intervento di Paul Graham<a href="#ref-2"><sup>[2]</sup></a> sulla superiorit&agrave; del Lisp rispetto agli altri linguaggi (per quanto lungo, &egrave; di facile e divertente lettura, infarcito com'&egrave; di perle come &laquo;any sufficiently complicated C or Fortran program contains an ad hoc informally-specified bug-ridden slow implementation of half of Common Lisp&raquo;), che si conclude con la considerazione:
+<p>L'articolo di Atwood cita poi un intervento di Paul Graham<a href="#ref-2"><sup>[2]</sup></a> sulla superiorit&agrave; del Lisp rispetto agli altri linguaggi (per quanto lungo, &egrave; di facile e divertente lettura, infarcito com'&egrave; di perle come &laquo;any sufficiently complicated C or Fortran program contains an ad hoc informally-specified bug-ridden slow implementation of half of Common Lisp&raquo;), che si conclude con la considerazione:</p>
 <blockquote>When I see patterns in my programs, I consider it a sign of trouble. The shape of a program should reflect only the problem it needs to solve. Any other regularity in the code is a sign, to me at least, that I'm using abstractions that aren't powerful enough-- often that I'm generating by hand the expansions of some macro that I need to write.</blockquote>
-</p>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Atwood, J. &quot;Are Design Patterns How Languages Evolve?&quot;. <em>CODING HORROR</em>. &lt;<a href="http://www.codinghorror.com/blog/2005/06/are-design-patterns-how-languages-evolve.html">http://www.codinghorror.com/blog/2005/06/are-design-patterns-how-languages-evolve.html</a>&gt;. Visitato l'8 Novembre 2011.</li>
-<a name="ref-2"></a>
-<li class="ref">Graham, P. &quot;Revenge of the Nerds&quot;. <em>www.paulgraham.com</em>. &lt;<a href="http://www.paulgraham.com/icad.html">http://www.paulgraham.com/icad.html</a>&gt;. Visitato l'8 Novembre 2011.</li>
-<a name="ref-3"></a>
-<li class="ref">Norvig, P. &quot;Design Patterns in Dynamic Languages&quot;. <em>norvig.com</em>. &lt;<a href="http://norvig.com/design-patterns/index.htm">http://norvig.com/design-patterns/index.htm</a>&gt;. Visitato l'8 Novembre 2011.</li>
+<li class="ref"><a name="ref-1"></a>Atwood, J. &quot;Are Design Patterns How Languages Evolve?&quot;. <em>CODING HORROR</em>. &lt;<a href="http://www.codinghorror.com/blog/2005/06/are-design-patterns-how-languages-evolve.html">http://www.codinghorror.com/blog/2005/06/are-design-patterns-how-languages-evolve.html</a>&gt;. Visitato l'8 Novembre 2011.</li>
+<li class="ref"><a name="ref-2"></a>Graham, P. &quot;Revenge of the Nerds&quot;. <em>www.paulgraham.com</em>. &lt;<a href="http://www.paulgraham.com/icad.html">http://www.paulgraham.com/icad.html</a>&gt;. Visitato l'8 Novembre 2011.</li>
+<li class="ref"><a name="ref-3"></a>Norvig, P. &quot;Design Patterns in Dynamic Languages&quot;. <em>norvig.com</em>. &lt;<a href="http://norvig.com/design-patterns/index.htm">http://norvig.com/design-patterns/index.htm</a>&gt;. Visitato l'8 Novembre 2011.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 25/11/2011</p>
 </body>

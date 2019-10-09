@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Spazi in XML</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/xml-space.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/xml-space.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#xml-space">risorse</a> | spazi in xml</p>
@@ -89,7 +90,7 @@ t viverra.&lt;/message&gt;
 <blockquote>One of the more obscure parts of the XML 1.0 specification is the perhaps misleadingly named &laquo;ignorable white space&raquo;. This is white space that occurs between tags in places where the DTD does not allow mixed content.</blockquote>
 <h2>L'attributo <span class="code">xml:space</span></h2>
 <p>L'attributo speciale <span class="code">xml:space</span> viene usato per <strong>comunicare all'applicazione</strong> il trattamento richiesto per spaziature. L'attributo può assumere solo due valori: <span class="code">default</span> e <span class="code">preserve</span>. Il primo indica all'applicazione che è accettabile il trattamento predefinito delle spaziature, il secondo richiede la conservazione di tutti gli spazi.</p>
-<h3>default</span></h3>
+<h3>default</h3>
 <p>Per &laquo;trattamento predefinito&raquo; si intende quello dell'applicazione, non quello dell'XML. È dunque compito dell'applicazione specificare come opera sulle spaziature nelle due modalità. Ad esempio, l'implementazione di <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/xml:space">SVG di Mozilla</a> è piuttosto chiara, in merito:</p>
 <blockquote>
 <dl>
@@ -116,30 +117,19 @@ t viverra.&lt;/message&gt;
 <blockquote>The <span class="code">xml:space</span> attribute only matters if the software making use of the XML document recognizes it and acts upon it. This is often not the case.</blockquote>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Bray, T. &ldquo;The Annotated XML Specification&rdquo;. <em>www.xml.com</em>. &lt;<a href="http://www.xml.com/axml/testaxml.htm">http://www.xml.com/axml/testaxml.htm</a>&gt;. Visitato il 12/09/2014.</li>
-<a name="ref-2"></a>
-<li class="ref">Harold, E. R. &ldquo;Ignorable White Space&rdquo;, <em>cafeconleche.org</em>. &lt;<a href="http://cafeconleche.org/books/xmljava/chapters/ch06s10.html">http://cafeconleche.org/books/xmljava/chapters/ch06s10.html</a>&gt;. Visitato l'11/09/2014.</li>
-<a name="ref-3"></a>
-<li class="ref">Page, S. &ldquo;White Space in XML Documents&rdquo;. <em>UsingXML</em>. &lt;<a href="http://www.usingxml.com/Basics/XmlSpace">http://www.usingxml.com/Basics/XmlSpace</a>&gt;. Visitato l'11/09/2014.</li>
-<a name="ref-4"></a>
-<li class="ref">Tverskov, J. &ldquo;Understanding xml:space&rdquo;. <em>www.xmlplease.com</em>. &lt;<a href="http://www.xmlplease.com/xml/xmlspace/">http://www.xmlplease.com/xml/xmlspace/</a>&gt;. Visitato l'11/09/2014.</li>
-<a name="ref-5"></a>
-<li class="ref">Wang, J. &ldquo;What You Need to Know About Whitespace in XML&rdquo;. <em>Oracle</em>. &lt;<a href="http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html">http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html</a>&gt;. Visitato l'11/09/2014.</li>
-<a name="ref-6"></a>
-<li class="ref">&ldquo;Canonical XML&rdquo;. <em>W3C Consortium</em>. &lt;<a href="http://www.w3.org/TR/xml-c14n">http://www.w3.org/TR/xml-c14n</a>&gt;. Visitato l'11/09/2014.</li>
+<li class="ref"><a name="ref-1"></a>Bray, T. &ldquo;The Annotated XML Specification&rdquo;. <em>www.xml.com</em>. &lt;<a href="http://www.xml.com/axml/testaxml.htm">http://www.xml.com/axml/testaxml.htm</a>&gt;. Visitato il 12/09/2014.</li>
+<li class="ref"><a name="ref-2"></a>Harold, E. R. &ldquo;Ignorable White Space&rdquo;, <em>cafeconleche.org</em>. &lt;<a href="http://cafeconleche.org/books/xmljava/chapters/ch06s10.html">http://cafeconleche.org/books/xmljava/chapters/ch06s10.html</a>&gt;. Visitato l'11/09/2014.</li>
+<li class="ref"><a name="ref-3"></a>Page, S. &ldquo;White Space in XML Documents&rdquo;. <em>UsingXML</em>. &lt;<a href="http://www.usingxml.com/Basics/XmlSpace">http://www.usingxml.com/Basics/XmlSpace</a>&gt;. Visitato l'11/09/2014.</li>
+<li class="ref"><a name="ref-4"></a>Tverskov, J. &ldquo;Understanding xml:space&rdquo;. <em>www.xmlplease.com</em>. &lt;<a href="http://www.xmlplease.com/xml/xmlspace/">http://www.xmlplease.com/xml/xmlspace/</a>&gt;. Visitato l'11/09/2014.</li>
+<li class="ref"><a name="ref-5"></a>Wang, J. &ldquo;What You Need to Know About Whitespace in XML&rdquo;. <em>Oracle</em>. &lt;<a href="http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html">http://www.oracle.com/technetwork/articles/wang-whitespace-092897.html</a>&gt;. Visitato l'11/09/2014.</li>
+<li class="ref"><a name="ref-6"></a>&ldquo;Canonical XML&rdquo;. <em>W3C Consortium</em>. &lt;<a href="http://www.w3.org/TR/xml-c14n">http://www.w3.org/TR/xml-c14n</a>&gt;. Visitato l'11/09/2014.</li>
 <li class="ref">&ldquo;Extensible Markup Language (XML)&rdquo;. <em>W3C Consortium</em>:
 <ol type="a">
-<a name="ref-7.a"></a>
-<li class="ref">&ldquo;White Space&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#NT-S">http://www.w3.org/TR/REC-xml/#NT-S</a>&gt;;</li>
-<a name="ref-7.b"></a>
-<li class="ref">&ldquo;2.10 White Space Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-white-space">http://www.w3.org/TR/xml/#sec-white-space</a>&gt;;</li>
-<a name="ref-7.c"></a>
-<li class="ref">&ldquo;2.11 End-of-Line Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-line-ends">http://www.w3.org/TR/xml/#sec-line-ends</a>&gt;;</li>
-<a name="ref-7.d"></a>
-<li class="ref">&ldquo;3.2.1 Element Content&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#dt-elemcontent">http://www.w3.org/TR/REC-xml/#dt-elemcontent</a>&gt;;</li>
-<a name="ref-7.e"></a>
-<li class="ref">&ldquo;3.3.3 Attribute-Value Normalization&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#AVNormalize">http://www.w3.org/TR/REC-xml/#AVNormalize</a>&gt;.</li>
+<li class="ref"><a name="ref-7.a"></a>&ldquo;White Space&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#NT-S">http://www.w3.org/TR/REC-xml/#NT-S</a>&gt;;</li>
+<li class="ref"><a name="ref-7.b"></a>&ldquo;2.10 White Space Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-white-space">http://www.w3.org/TR/xml/#sec-white-space</a>&gt;;</li>
+<li class="ref"><a name="ref-7.c"></a>&ldquo;2.11 End-of-Line Handling&rdquo;. &lt;<a href="http://www.w3.org/TR/xml/#sec-line-ends">http://www.w3.org/TR/xml/#sec-line-ends</a>&gt;;</li>
+<li class="ref"><a name="ref-7.d"></a>&ldquo;3.2.1 Element Content&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#dt-elemcontent">http://www.w3.org/TR/REC-xml/#dt-elemcontent</a>&gt;;</li>
+<li class="ref"><a name="ref-7.e"></a>&ldquo;3.3.3 Attribute-Value Normalization&rdquo;. &lt;<a href="http://www.w3.org/TR/REC-xml/#AVNormalize">http://www.w3.org/TR/REC-xml/#AVNormalize</a>&gt;.</li>
 </ol> Visitati il 12/09/2014.</li>
 <li class="ref">&ldquo;White Space&rdquo;. <em>MSDN</em>. &lt;<a href="http://msdn.microsoft.com/en-us/library/ms256097%28v=vs.110%29.aspx">http://msdn.microsoft.com/en-us/library/ms256097%28v=vs.110%29.aspx</a>&gt;. Visitato l'11/09/2014.</li>
 </ol>

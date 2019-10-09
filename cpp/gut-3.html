@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /3</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -198,35 +200,35 @@ int main() {
   // initial list is empty
   {
     RecentlyUsedList anEmptyList;
-  
+
     CHECK(anEmptyList.empty());
     CHECK(anEmptyList.size() == 0);
   }
-  
+
   // insertion to empty list is retained
   {
     RecentlyUsedList aListWithOneElement;
     aListWithOneElement.insert(&quot;one&quot;);
-  
+
     CHECK(!aListWithOneElement.empty());
     CHECK(aListWithOneElement.size() == 1);
     CHECK(aListWithOneElement[0] == &quot;one&quot;);
   }
-  
+
   // distinct insertions are retained in stack order
   {
     RecentlyUsedList aListWithManyElements;
     aListWithManyElements.insert(&quot;one&quot;);
     aListWithManyElements.insert(&quot;two&quot;);
     aListWithManyElements.insert(&quot;three&quot;);
-  
+
     CHECK(!aListWithManyElements.empty());
     CHECK(aListWithManyElements.size() == 3);
     CHECK(aListWithManyElements[0] == &quot;three&quot;);
     CHECK(aListWithManyElements[1] == &quot;two&quot;);
     CHECK(aListWithManyElements[2] == &quot;one&quot;);
   }
-  
+
   // duplicate insertions are moved to the front but not inserted
   {
     RecentlyUsedList aListWithDuplicatedElements;
@@ -234,19 +236,19 @@ int main() {
     aListWithDuplicatedElements.insert(&quot;two&quot;);
     aListWithDuplicatedElements.insert(&quot;three&quot;);
     aListWithDuplicatedElements.insert(&quot;two&quot;);
-  
+
     CHECK(!aListWithDuplicatedElements.empty());
     CHECK(aListWithDuplicatedElements.size() == 3);
     CHECK(aListWithDuplicatedElements[0] == &quot;two&quot;);
     CHECK(aListWithDuplicatedElements[1] == &quot;three&quot;);
     CHECK(aListWithDuplicatedElements[2] == &quot;one&quot;);
   }
-  
+
   // out of range indexing throws exception
   {
     RecentlyUsedList aListWithOneElement;
     aListWithOneElement.insert(&quot;one&quot;);
-  
+
     THROWS(aListWithOneElement[1], std::out_of_range);
   }
 
@@ -457,7 +459,7 @@ class RecentlyUsedList {
   // initial list is empty
   {
     RecentlyUsedList anEmptyList;
-  
+
     CHECK(anEmptyList.empty());
     CHECK(anEmptyList.size() == 0);
   }
@@ -526,8 +528,7 @@ int main() {
 }
 </pre>
 <a name="procedurale"></a>
-<p><p>Esempio di test procedurale: ogni metodo viene testato in &ldquo;isolamento&rdquo;. Ipotesi chiaramente falsa: per verificare il buon funzionamento del metodo <span class="code">empty</span>, per esempio, &egrave; indispensabile effettuare almeno una chiamata <span class="code">insert</span> (oltre a quella del costruttore, ovviamente).</p>
-</p>
+<p>Esempio di test procedurale: ogni metodo viene testato in &ldquo;isolamento&rdquo;. Ipotesi chiaramente falsa: per verificare il buon funzionamento del metodo <span class="code">empty</span>, per esempio, &egrave; indispensabile effettuare almeno una chiamata <span class="code">insert</span> (oltre a quella del costruttore, ovviamente).</p>
 <pre class="code">
 // ...
 

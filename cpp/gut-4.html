@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /4</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -221,7 +223,7 @@ TEST {
 Boolean AreAlmostEqual(double d1, double d2) {
   double diff = std::fabs(d1 - d2);
   return Boolean(diff &lt; 0.001, TextFlow() &lt;&lt; &quot;|&quot; &lt;&lt; d1 &lt;&lt; &quot; - &quot; &lt;&lt; d2 &lt;&lt; &quot;| = &quot; &lt;&lt; diff &lt;&lt; &quot; &gt;= 0.001&quot;);
-}</ins>
+}
 </pre>
 <h3>operator!</h3>
 <p><span class="code">Boolean</span> non supporta al meglio la negazione:</p>

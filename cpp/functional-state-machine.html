@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Macchina a stati funzionale</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/functional-state-machine.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/functional-state-machine.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#functional-state-machine">risorse</a> | macchina a stati funzionale</p>
@@ -604,7 +605,7 @@ int main() {
   assert(output == UNDEFINED);</ins>
 }
 </pre>
-<p>Riappare in questo caso lo <span class="code">switch</span> esplicito sul valore d'ingresso, che nella soluzione a oggetti è risolto dall'interfaccia <span class="code">State</span>. della soluzione funzionale è implicito nella soluzione oo, perché se ne fa carico il polimorfismo:</p>
+<p>Riappare in questo caso lo <span class="code">switch</span> esplicito sul valore d'ingresso, che nella soluzione a oggetti è risolto dall'interfaccia <span class="code">State</span>:</p>
 <pre class="code">
 <span class="mark1">// Object-oriented `happy`</span>             <span class="mark2">// Functional `happy`</span>
 
@@ -647,18 +648,15 @@ int main() {
 <h2>Sorgenti</h2>
 <ul>
 <li>Implementazione procedurale basata su <span class="code">switch</span>: <a href="files/functional-state-machine/procedural_switch.cpp">procedural_switch.cpp</a></li>
-<li>Implementazione procedurale basata su tabella: <a href="files/functional-state-machine/procedural_table.cpp">procedural_table.cpp</a></span></li>
-<li>Implementazione a oggetti (<em>state pattern</em>): <a href="files/functional-state-machine/oo_state_pattern.cpp">oo_state_pattern.cpp</a></span></li>
-<li>Implementazione ispirata al paradigma funzionale: <a href="files/functional-state-machine/functional.cpp">functional.cpp</a></span></li>
+<li>Implementazione procedurale basata su tabella: <a href="files/functional-state-machine/procedural_table.cpp">procedural_table.cpp</a></li>
+<li>Implementazione a oggetti (<em>state pattern</em>): <a href="files/functional-state-machine/oo_state_pattern.cpp">oo_state_pattern.cpp</a></li>
+<li>Implementazione ispirata al paradigma funzionale: <a href="files/functional-state-machine/functional.cpp">functional.cpp</a></li>
 </ul>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Henney, K. &ldquo;Declarative Thinking, Declarative Practice&rdquo;. <em>ACCU 2016</em>. &lt;<a href="https://www.youtube.com/watch?v=nrVIlhtoE3Y">https://www.youtube.com/watch?v=nrVIlhtoE3Y</a>&gt;. Visitato il 06 giugno 2017.</li>
-<a name="ref-2"></a>
-<li class="ref">Tamir, B. &ldquo;A Functional-Style State Machine in C++&rdquo;. <em>dev.to</em>.  &lt;<a href="https://dev.to/tmr232/a-functional-style-state-machine-in-c">https://dev.to/tmr232/a-functional-style-state-machine-in-c</a>&gt;. Visitato il 6 giugno 2017</li>
-<a name="ref-3"></a>
-<li class="ref">&ldquo;Automa a stati finiti&rdquo;. <em>wikipedia</em>.  &lt;<a href="https://it.wikipedia.org/wiki/Automa_a_stati_finiti">https://it.wikipedia.org/wiki/Automa_a_stati_finiti</a>&gt;. Visitato l'8 settembre 2017</li>
+<li class="ref"><a name="ref-1"></a>Henney, K. &ldquo;Declarative Thinking, Declarative Practice&rdquo;. <em>ACCU 2016</em>. &lt;<a href="https://www.youtube.com/watch?v=nrVIlhtoE3Y">https://www.youtube.com/watch?v=nrVIlhtoE3Y</a>&gt;. Visitato il 06 giugno 2017.</li>
+<li class="ref"><a name="ref-2"></a>Tamir, B. &ldquo;A Functional-Style State Machine in C++&rdquo;. <em>dev.to</em>.  &lt;<a href="https://dev.to/tmr232/a-functional-style-state-machine-in-c">https://dev.to/tmr232/a-functional-style-state-machine-in-c</a>&gt;. Visitato il 6 giugno 2017</li>
+<li class="ref"><a name="ref-3"></a>&ldquo;Automa a stati finiti&rdquo;. <em>wikipedia</em>.  &lt;<a href="https://it.wikipedia.org/wiki/Automa_a_stati_finiti">https://it.wikipedia.org/wiki/Automa_a_stati_finiti</a>&gt;. Visitato l'8 settembre 2017</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 10/09/2017</p>
 </body>

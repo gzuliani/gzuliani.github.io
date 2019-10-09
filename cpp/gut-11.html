@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Good Unit Tests /11</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
@@ -275,7 +277,7 @@ int main() {
         gut::FatalNoThrowFailure(#expr_, __FILE__, __LINE__)); \
       throw gut::AbortTest(); \
     } \
-  } while (0)<ins>
+  } while (0)</ins>
 </pre>
 <p>L'implementazione della clausola <span class="code">REQUIRE_THROWS</span> suggerisce una fattorizzazione del codice:</p>
 <pre class="code">

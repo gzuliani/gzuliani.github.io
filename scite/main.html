@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>SciTE</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
-<link rel='stylesheet' type='text/css' href='css/scite.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
+<link rel='stylesheet' type='text/css' href='css/scite.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#scite">risorse</a> | scite</p>
@@ -66,7 +68,6 @@ Gli snippet privi di scope sono globali, gli snippet SCLEX_RUBY sono globali all
 		<li>I caratteri $, /, }, e ` devono essere preceduti da un carattere di back-slash. Tenere a mente che si tratta comunque di stringhe Lua, quindi nelle stringhe letterali il carattere back-slash va raddoppiato, mentre nelle stringhe <code>[[ ]]</code> ne va specificato uno solo.</li>
 	</ul>
 </blockquote>
-</p>
 <p class="note">Le peculiarit&agrave; dei due linguaggi mi ha costretto a modificare leggermente la sintassi per la definizione delle espressioni regolari utilizzabili negli snippet. In particolare, mentre in Ruby i gruppi sono identificati da un carattere dollaro seguito da un intero, e la numerazione inizia da 0, in Python i gruppi sono identificati da un back-slash seguito da un intero, a partire 1. Cos&igrave;, per esempio, la trasformazione <code>${1/text/other $0/}</code> va cos&igrave; riscritta: <code>${1/(text)/other \\1/}</code>.</p>
 <p>Sono disponibili gli snippet per <span class="path"><a href="files/.scite/lua/snippets-html.lua">HTML</a></span> sviluppati da Jani stesso, adattati per Python, oltre ad alcuni snippet sperimentali per <span class="path"><a href="files/.scite/lua/snippets-cpp.lua">C++</a></span>.</p>
 <p class="modification-notice">Pagina modificata il 15/04/2015</p>

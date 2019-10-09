@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Scacchi in 1K</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/scacchi-1k.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scacchi-1k.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#scacchi-1k">risorse</a> | scacchi in 1K</p>
@@ -122,7 +123,7 @@ Offset(h) 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 00000310  20 02 36 80 C9 36 37 27 33 35 <span class="mark4">76</span> <span class="irrelevant">00 02 02 00 E4</span>
 
 <span class="mark1">numero di linea         = 00 01    = 0001<sub>H</sub> = 1<sub>D</sub></span>
-<span class="mark2">lunghezza della linea   = A3 02    = 02A3<sub>H</sub> = 675<sub>D</sub> bytes
+<span class="mark2">lunghezza della linea   = A3 02    = 02A3<sub>H</sub> = 675<sub>D</sub> bytes</span>
 <span class="mark3">testo della linea       = EA &hellip;     = REM &hellip;</span>
 <span class="mark4">marcatore di fine linea = 76       = &laquo;a-capo&raquo;</span>
 </pre>
@@ -132,7 +133,7 @@ Offset(h) 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 00000320  <span class="mark4">76</span> <span class="irrelevant">0C 0A 04 00 F9 D4 3D 76 76 76 76 76 76 80 08</span>
 
 <span class="mark1">numero di linea         = 00 02    = 0002<sub>H</sub> = 2<sub>D</sub></span>
-<span class="mark2">lunghezza della linea   = 02 00    = 0002<sub>H</sub> = 2<sub>D</sub> bytes
+<span class="mark2">lunghezza della linea   = 02 00    = 0002<sub>H</sub> = 2<sub>D</sub> bytes</span>
 <span class="mark3">testo della linea       = E4       = SLOW</span>
 <span class="mark4">marcatore di fine linea = 76       = &laquo;a-capo&raquo;</span>
 </pre>
@@ -141,7 +142,7 @@ Offset(h) 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
 00000320  <span class="irrelevant">76</span> <span class="mark1">0C 0A</span> <span class="mark2">04 00</span> <span class="mark3">F9 D4 3D</span> <span class="mark4">76</span> <span class="irrelevant">76 76 76 76 76 80 08</span>
 
 <span class="mark1">numero di linea         = 0C 0A    = 0C0A<sub>H</sub> = 3082<sub>D</sub></span>
-<span class="mark2">lunghezza della linea   = 04 00    = 0004<sub>H</sub> = 4<sub>D</sub> bytes
+<span class="mark2">lunghezza della linea   = 04 00    = 0004<sub>H</sub> = 4<sub>D</sub> bytes</span>
 <span class="mark3">testo della linea       = F9 D4 3D = RAND USR X</span>
 <span class="mark4">marcatore di fine linea = 76       = &laquo;a-capo&raquo;</span>
 </pre>
@@ -196,7 +197,7 @@ Addr  Data
 <p>La scelta della mossa iniziale è del tutto arbitraria, e il programma funzionerebbe correttamente qualunque essa fosse. Evidentemente l'autore ha preferito partire con un'apertura legittima, piuttosto che affidarsi al caso.</p>
 <p>L'ultima sezione è quella contenente le variabili BASIC, in questo caso una sola:</p>
 <pre class="code">
-000003A0  <span class="irrelevant">76 76 76 76 76 76</span> <span class="mark1">7D<span> <span class="mark2">8F</span> <span class="mark3">00 DA 00 00</span> <span class="mark4">80</span>
+000003A0  <span class="irrelevant">76 76 76 76 76 76</span> <span class="mark1">7D</span> <span class="mark2">8F</span> <span class="mark3">00 DA 00 00</span> <span class="mark4">80</span>
 
 <span class="mark1">nome della variabile = 7D = X (numerica)</span>
 <span class="mark2">esponente            = 8F</span>
@@ -1110,7 +1111,7 @@ Addr  Data
    403C                             405D                            407D
     v                                v                               v
  ----------------------------------------------------------------------------
-    [####### PRINTER BUFFER ########][## CALCULATOR'S MEM. AREA ##]XX[#### 
+    [####### PRINTER BUFFER ########][## CALCULATOR'S MEM. AREA ##]XX[####
     <span class="mark1">PPPPP</span><span class="mark2">BBBBB</span><span class="mark3">MMMMMMMMMMMMMMMMMMMMMMMMMMMMM</span><span class="mark4">TTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>###
  ----------------------------------------------------------------------------
     <span class="mark1">^</span>    <span class="mark2">^</span>    <span class="mark3">^</span>                            <span class="mark4">^</span>
@@ -1447,22 +1448,14 @@ Addr  Data
 <p>Aggiungo una piccola postilla per segnalare lo splendido risultato ottenuto da Stefano Maragò, che con il suo <a href="http://smmax.sourceforge.net/">SuperMicro FIDE ZX81 1K</a> dimostra come sia possibile realizzare un programma di scacchi <strong>completo</strong> in meno di 1K. Questo, oltre ad implementare tutte le regole degli scacchi FIDE, è in grado di dare filo da torcere ad un principiante pur presentando tempi di risposta dell'ordine dei secondi.</p>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Collier, I. <em>Full ZX-81 Chess in 1K</em>, <a href="http://users.ox.ac.uk/~uzdm0006/scans/1kchess">http://users.ox.ac.uk/~uzdm0006/scans/1kchess</a>, visitato il 23/01/2017.</li>
-<a name="ref-2"></a>
-<li class="ref">Logan, I., O'Hara, F. <em>The Complete Timex TS1000/Sinclair ZX81 ROM Disassembly</em>, Melbourne House (UK), 1982. Scaricabile all'indirizzo <a href="http://www.worldofspectrum.org/infoseekid.cgi?id=2000980">http://www.worldofspectrum.org/infoseekid.cgi?id=2000980</a>, disponibile on-line all'indirizzo <a href="https://k1.spdns.de/Vintage/Sinclair/80/Sinclair%20ZX81/ROMs/zx81%20version%202%20'improved'%20rom%20disassembly%20(Logan,%20O'Hara).html">https://k1.spdns.de/Vintage/Sinclair/80/Sinclair%20ZX81/ROMs/zx81%20version%202%20'improved'%20rom%20disassembly%20(Logan,%20O'Hara).html</a>, visitato il 23/01/2017.</li>
-<a name="ref-3"></a>
-<li class="ref">Horne, D. <em>Chess in 1K</em>, Your Computer (December 1982), pp. 68-69. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1982-12/YourComputer_1982_12#page/n67/mode/2up">https://archive.org/stream/your-computer-magazine-1982-12/YourComputer_1982_12#page/n67/mode/2up</a>, visitato il 23/01/2017.</li>
-<a name="ref-4"></a>
-<li class="ref">Horne, D. <em>1K Chess</em>, Your Computer (January 1983), pp. 81, 83. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1983-01/YourComputer_1983_01#page/n79/mode/2up">https://archive.org/stream/your-computer-magazine-1983-01/YourComputer_1983_01#page/n79/mode/2up</a>, visitato il 23/01/2017.</li>
-<a name="ref-5"></a>
-<li class="ref">Horne, D. <em>Full ZX-81 Chess in 1K</em>, Your Computer February 1983, pp. 100-102. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1983-02/YourComputer_1983_02#page/n99/mode/2up">https://archive.org/stream/your-computer-magazine-1983-02/YourComputer_1983_02#page/n99/mode/2up</a>, visitato il 28/12/2016.</li>
-<a name="ref-6"></a>
-<li class="ref">Vickers, S. <em>Sinclair ZX81 BASIC Programming</em>, Sinclair Research Limited, 1980. Scaricabile all'indirizzo <a href="http://www.worldofspectrum.org/infoseekid.cgi?id=2000452">http://www.worldofspectrum.org/infoseekid.cgi?id=2000452</a>, disponibile on-line all'indirizzo <a href="http://www.worldofspectrum.org/ZX81BasicProgramming/">http://www.worldofspectrum.org/ZX81BasicProgramming/</a>, visitato il 23/01/2017.</li>
-<a name="ref-7"></a>
-<li class="ref">Villena, A. <em>chess.asm</em>, <a href="https://sourceforge.net/p/emuscriptoria/code/HEAD/tree/chess/chess.asm">https://sourceforge.net/p/emuscriptoria/code/HEAD/tree/chess/chess.asm</a>, visitato il 23/01/2017.</li>
-<a name="ref-8"></a>
-<li class="ref"><em>1K ZX Chess</em>, ZX81 Collection - Tapes. <a href="http://www.zx81stuff.org.uk/zx81/tape/1KZXChess">http://www.zx81stuff.org.uk/zx81/tape/1KZXChess</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-1"></a>Collier, I. <em>Full ZX-81 Chess in 1K</em>, <a href="http://users.ox.ac.uk/~uzdm0006/scans/1kchess">http://users.ox.ac.uk/~uzdm0006/scans/1kchess</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-2"></a>Logan, I., O'Hara, F. <em>The Complete Timex TS1000/Sinclair ZX81 ROM Disassembly</em>, Melbourne House (UK), 1982. Scaricabile all'indirizzo <a href="http://www.worldofspectrum.org/infoseekid.cgi?id=2000980">http://www.worldofspectrum.org/infoseekid.cgi?id=2000980</a>, disponibile on-line all'indirizzo <a href="https://k1.spdns.de/Vintage/Sinclair/80/Sinclair%20ZX81/ROMs/zx81%20version%202%20'improved'%20rom%20disassembly%20(Logan,%20O'Hara).html">https://k1.spdns.de/Vintage/Sinclair/80/Sinclair%20ZX81/ROMs/zx81%20version%202%20'improved'%20rom%20disassembly%20(Logan,%20O'Hara).html</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-3"></a>Horne, D. <em>Chess in 1K</em>, Your Computer (December 1982), pp. 68-69. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1982-12/YourComputer_1982_12#page/n67/mode/2up">https://archive.org/stream/your-computer-magazine-1982-12/YourComputer_1982_12#page/n67/mode/2up</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-4"></a>Horne, D. <em>1K Chess</em>, Your Computer (January 1983), pp. 81, 83. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1983-01/YourComputer_1983_01#page/n79/mode/2up">https://archive.org/stream/your-computer-magazine-1983-01/YourComputer_1983_01#page/n79/mode/2up</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-5"></a>Horne, D. <em>Full ZX-81 Chess in 1K</em>, Your Computer February 1983, pp. 100-102. Consultabile all'indirizzo <a href="https://archive.org/stream/your-computer-magazine-1983-02/YourComputer_1983_02#page/n99/mode/2up">https://archive.org/stream/your-computer-magazine-1983-02/YourComputer_1983_02#page/n99/mode/2up</a>, visitato il 28/12/2016.</li>
+<li class="ref"><a name="ref-6"></a>Vickers, S. <em>Sinclair ZX81 BASIC Programming</em>, Sinclair Research Limited, 1980. Scaricabile all'indirizzo <a href="http://www.worldofspectrum.org/infoseekid.cgi?id=2000452">http://www.worldofspectrum.org/infoseekid.cgi?id=2000452</a>, disponibile on-line all'indirizzo <a href="http://www.worldofspectrum.org/ZX81BasicProgramming/">http://www.worldofspectrum.org/ZX81BasicProgramming/</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-7"></a>Villena, A. <em>chess.asm</em>, <a href="https://sourceforge.net/p/emuscriptoria/code/HEAD/tree/chess/chess.asm">https://sourceforge.net/p/emuscriptoria/code/HEAD/tree/chess/chess.asm</a>, visitato il 23/01/2017.</li>
+<li class="ref"><a name="ref-8"></a><em>1K ZX Chess</em>, ZX81 Collection - Tapes. <a href="http://www.zx81stuff.org.uk/zx81/tape/1KZXChess">http://www.zx81stuff.org.uk/zx81/tape/1KZXChess</a>, visitato il 23/01/2017.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 27/01/2017</p>
 </body>

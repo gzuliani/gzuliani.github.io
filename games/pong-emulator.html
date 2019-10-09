@@ -1,8 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Analisi del gioco Pong</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" language="JavaScript">
 function update_value(id, value)
 {
@@ -108,7 +109,6 @@ bordo orizzontale...............:  18 pixel uno, 19 pixel l'altro
 <p>Per determinare i valori più adatti delle dimensioni del quadro video dell'emulatore avevo preparato un sistema automatico di riscalatura dei valori che riporto qui sotto. È sufficiente impostare le dimensioni del quadro video desiderate e premere il pulsante &laquo;<strong>Ricalcola</strong>&raquo; per vedere come cambiano di conseguenza posizione e dimensione degli oggetti:</p>
 <form id="test-form">
 <table cellspacing="0">
-<tr>
 <tr>
 	<th class="sub-title">dimensioni</th>
 	<th colspan="2" class="original">originale</th>
@@ -346,11 +346,10 @@ bordo orizzontale...............:  18 pixel uno, 19 pixel l'altro
 </tr>
 </table>
 </form>
-<p>In conclusione, alcune osservazioni relative alle linee di demarcazione: quelle verticali hanno spessore pari a 1&micro;s (2 tick), e ogni tratto è alto 1 linea; Quelle orizzontali hanno spessore pari a 2 linee, e ogni tratto è lungo 0.5&micro;s (1 tick). La linea di mezzeria, anch'essa larga 1 tick, è costituita da una sequenza di 28 tratti pieni alternati a 28 vuoti, ognuno dei quali è costituito da 4 linee, e sembra distare 2 linee dalla linea di demarcazione superiore (la linea centrale, essendo compresa tra le due linee superiore ed inferiore, è lunga esattamente 274 - 46 = 228):
+<p>In conclusione, alcune osservazioni relative alle linee di demarcazione: quelle verticali hanno spessore pari a 1&micro;s (2 tick), e ogni tratto è alto 1 linea; Quelle orizzontali hanno spessore pari a 2 linee, e ogni tratto è lungo 0.5&micro;s (1 tick). La linea di mezzeria, anch'essa larga 1 tick, è costituita da una sequenza di 28 tratti pieni alternati a 28 vuoti, ognuno dei quali è costituito da 4 linee, e sembra distare 2 linee dalla linea di demarcazione superiore (la linea centrale, essendo compresa tra le due linee superiore ed inferiore, è lunga esattamente 274 - 46 = 228):</p>
 <pre class="code">
 2 + (4 + 4) * 28 + 2 = 228
 </pre>
-</p>
 <h2>Movimento</h2>
 <p>Gli unici oggetti del gioco che si muovono sono le racchette e la palla. Le racchette si muovono solo in verticale, e la loro posizione è determinata dal valore di resistenza del potenziometro di controllo. Il movimento della palla è invece controllato dal chip.</p>
 <h3>Velocità orizzontale della palla</h3>

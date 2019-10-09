@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>StatHg</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#stat-hg">risorse</a> | StatHg</p>
@@ -260,9 +262,9 @@ order by rev;
 <p class="note"><strong>Nota</strong>: <span class="code">ins_lines + del_lines = added + removed + 2 &times; modified</span>.</p>
 <h2>Creazione dei prospetti</h2>
 <p>Vengono generati due tipologie di prospetti, tabellari e grafici. I primi sono ottenuti a partire da una serializzazione in formato XML dei risultati della query associata per essere successivamente trasformati in HTML via XSLT, mentre quelli grafici sono ottenuti diagrammando i contenuti di un file CSV tramite <a href="http://www.gnuplot.info/">gnuplot</a>:</p>
-<img src="img/stat-hg/table.png"></img>
+<img src="img/stat-hg/table.png">
 <p class="illustration">Esempio di prospetto tabellare</p>
-<img src="img/stat-hg/graph.png"></img>
+<img src="img/stat-hg/graph.png">
 <p class="illustration">Esempio di prospetto grafico</p>
 <h2>Implementazione</h2>
 <p>Uno <a href="files/stat-hg/statHg.cmd">script</a> <em>batch</em> si occupa di lanciare in successione le tre fasi della procedura:</p>
@@ -308,7 +310,7 @@ having occurrences > 1
 order by occurrences desc;
 </pre>
 <p>Per agevolare la costruzione del tag-cloud, a ciascun termine viene assegnato un indice di importanza che corrisponde al numero di cifre di cui &egrave; composto il conteggio delle occorrenze: i termini che compaiono da due fino a nove volte sono di indice <span class="code">1</span>, quelli il cui numero &egrave; compreso tra dieci e novantanove sono di indice <span class="code">2</span> e cos&igrave; via. Definendo per ogni indice uno stile apposito, via via pi&ugrave; appariscente all'aumentare dell'indice, e assegnando ad ogni termine lo stile relativo all'indice, si ottiene il tag-cloud:</p>
-<img src="img/stat-hg/cloud.png"></img>
+<img src="img/stat-hg/cloud.png">
 <p class="illustration">Esempio di tag cloud</p>
 <br>
 <p class="note"><strong>Nota</strong>: le versioni 2.6 e 2.7 di Python per Windows non supportano l'estensione FTS4 di sqlite (vedere ad esempio la domanda n. <a href="http://stackoverflow.com/questions/3823659/how-to-setup-fts3-fts4-with-python2-7-on-windows">3823659</a> su Stack Overflow). Basta tuttavia sostituire la DLL &lt;PYTHON_INSTALL_DIR&gt;\DLLs\sqlite.dll con quella scaricabile dalla <a href="http://www.sqlite.org/download.html">pagina dei download</a> di sqlite.</p>

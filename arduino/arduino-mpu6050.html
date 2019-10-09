@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Accelerometro con Arduino</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/arduino-mpu6050.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-mpu6050.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#arduino-mpu6050">risorse</a> | accelerometro con arduino</p>
@@ -99,7 +100,7 @@ void loop() {
 <h3>Lettura dei dati grezzi</h3>
 <p>Il sensore MPU-6050 supporta due modalità di funzionamento: la prima, più semplice, consente di acquisire i dati provenienti dal giroscopio, dagli accelerometri e dal sensore interno di temperatura in modo sincrono, ovvero su esplicita richiesta inviata sul bus I2C. La seconda modalità, detta <span class="term">Digital Motion Processor&trade; (DMP)</span>, è in grado invece di effettuare il <span class="term">tracking</span> del sensore nello spazio tridimensionale e di riconoscere diverse <span class="term">gesture</span>, come ad esempio lo scuotimento. La comunicazione in questo caso avviene in modo asincrono, per mezzo di <span class="term">interrupt</span>, grazie al buffer interno di cui è dotata la scheda. Fare riferimento alla documentazione ufficiale per maggiori informazioni a riguardo<a href="#ref-7"><sup>[7]</sup></a>.</p>
 <p>La collezione di librerie per AVR/Arduino <a href="https://github.com/jrowberg/i2cdevlib">I2C Device Library</a> ne contiene una per l'accelerometro scelto per questo progetto che porta il suo stesso nome, <a href="https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050">MPU6050</a>. Avendo optato per l'interrogazione sincrona del sensore, ho preferito implementare direttamente il protocollo di comunicazione per impratichirmi nell'uso delle primitive di basso livello messe a disposizione dalla libreria <span class="library">Wire</span>.</p>
-<p>Scorrendo le specifiche tecniche dell'MPU-6050<a href="#ref-8"><sup>[8]</sup></a>, si scopre che prima di avviare il ciclo di interrogazioni è necessario &ldquo;risvegliare&rdquo; il circuito disabilitando lo <em>sleep-mode</em> in cui il sensore si trova al momento dell'accesione; per far ciò è necessario azzerare il bit 6 del registro <span class="register">Power Management 1</span> di indirizzo <span class="address">0x6B</span>. Inclusa la libreria <span class="library">Wire</span> per la gestione del bus I2C, si definiscono alcune costanti di comodo e si procede ad azzerare l'intero registro nella fase di inizializzazione dello <span class=term">sketch</span>:</p>
+<p>Scorrendo le specifiche tecniche dell'MPU-6050<a href="#ref-8"><sup>[8]</sup></a>, si scopre che prima di avviare il ciclo di interrogazioni è necessario &ldquo;risvegliare&rdquo; il circuito disabilitando lo <em>sleep-mode</em> in cui il sensore si trova al momento dell'accesione; per far ciò è necessario azzerare il bit 6 del registro <span class="register">Power Management 1</span> di indirizzo <span class="address">0x6B</span>. Inclusa la libreria <span class="library">Wire</span> per la gestione del bus I2C, si definiscono alcune costanti di comodo e si procede ad azzerare l'intero registro nella fase di inizializzazione dello <span class="term">sketch</span>:</p>
 <pre class="code">
 <ins>#include &lt;Wire.h&gt;</ins>
 
@@ -192,7 +193,7 @@ void loop() {
 <ins>  // point to the first accelerometer register
   Wire.beginTransmission(MPU_I2C_ADDR);
   Wire.write(ACCEL_XOUT_H);
-  Wire.endTransmission();
+  Wire.endTransmission();</ins>
 
 <ins>  // read six bytes of data
   Wire.requestFrom(MPU_I2C_ADDR, 6);</ins>
@@ -735,24 +736,15 @@ Z:+1.00&#x2423;&#x2423;A:+1.00
 <p>La versione finale dello sketch con la calibrazione del sensore è scaricabile <a href="files/arduino-mpu6050/calibration/mpu6050.ino">qui</a>.</p>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref"><em>&ldquo;Accelerazione di gravità&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0">https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0</a>, visitato il 19/12/2016.</li>
-<a name="ref-2"></a>
-<li class="ref"><em>&ldquo;Persistenza della visione&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Persistenza_della_visione">https://it.wikipedia.org/wiki/Persistenza_della_visione</a>, visitato il 26/12/2016.</li>
-<a name="ref-3"></a>
-<li class="ref"><em>&ldquo;Arduino Sketch to automatically calculate MPU6050 offsets&rdquo;</em>, I2Cdevlib Forums &mdash; <a href="http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/">http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/</a>, visitato il 26/12/2016.</li>
-<a name="ref-4"></a>
-<li class="ref"><em>&ldquo;MPU-6050 Accelerometer + Gyro</em>, Aruino Playground &mdash; <a href="http://playground.arduino.cc/Main/MPU-6050">http://playground.arduino.cc/Main/MPU-6050</a>, visitato il 02/01/2017.</li>
-<a name="ref-5"></a>
-<li class="ref"><em>&ldquo;MPU6050 accelerometer calibration&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=268931.0">http://forum.arduino.cc/index.php?topic=268931.0</a>, visitato il 26/12/2016.</li>
-<a name="ref-6"></a>
-<li class="ref"><em>&ldquo;Calibrating &amp; Optimising the MPU6050&rdquo;</em>, chillibasket &mdash; <a href="http://wired.chillibasket.com/2015/01/calibrating-mpu6050/">http://wired.chillibasket.com/2015/01/calibrating-mpu6050/</a>, visitato il 26/12/2016.</li>
-<a name="ref-7"></a>
-<li class="ref"><em>&ldquo;MPU-6000 and MPU-6050 Product Specification&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Datasheet1.pdf">MPU-6000-Datasheet1.pdf</a>, scaricato il 15/11/2016.</li>
-<a name="ref-8"></a>
-<li class="ref"><em>&ldquo;MPU-6000 and MPU-6050 Register Map and Descriptions&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Register-Map1.pdf">MPU-6000-Register-Map1.pdf</a>, scaricato il 15/11/2016.</li>
-<a name="ref-9"></a>
-<li class="ref"><em>&ldquo;MPU Hardware Offset Registers Application Note&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/invensense-hardware-offset-registers.pdf">invensense-hardware-offset-registers.pdf</a>, scaricato il 12/12/2016 da <a href="http://www.digikey.com/en/pdf/i/invensense/mpu-hardware-offset-registers">qui</a>.</li>
+<li class="ref"><a name="ref-1"></a><em>&ldquo;Accelerazione di gravità&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0">https://it.wikipedia.org/wiki/Accelerazione_di_gravit%C3%A0</a>, visitato il 19/12/2016.</li>
+<li class="ref"><a name="ref-2"></a><em>&ldquo;Persistenza della visione&rdquo;</em>, wikipedia.org &mdash; <a href="https://it.wikipedia.org/wiki/Persistenza_della_visione">https://it.wikipedia.org/wiki/Persistenza_della_visione</a>, visitato il 26/12/2016.</li>
+<li class="ref"><a name="ref-3"></a><em>&ldquo;Arduino Sketch to automatically calculate MPU6050 offsets&rdquo;</em>, I2Cdevlib Forums &mdash; <a href="http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/">http://www.i2cdevlib.com/forums/topic/96-arduino-sketch-to-automatically-calculate-mpu6050-offsets/</a>, visitato il 26/12/2016.</li>
+<li class="ref"><a name="ref-4"></a><em>&ldquo;MPU-6050 Accelerometer + Gyro</em>, Aruino Playground &mdash; <a href="http://playground.arduino.cc/Main/MPU-6050">http://playground.arduino.cc/Main/MPU-6050</a>, visitato il 02/01/2017.</li>
+<li class="ref"><a name="ref-5"></a><em>&ldquo;MPU6050 accelerometer calibration&rdquo;</em>, Arduino Forums &mdash; <a href="http://forum.arduino.cc/index.php?topic=268931.0">http://forum.arduino.cc/index.php?topic=268931.0</a>, visitato il 26/12/2016.</li>
+<li class="ref"><a name="ref-6"></a><em>&ldquo;Calibrating &amp; Optimising the MPU6050&rdquo;</em>, chillibasket &mdash; <a href="http://wired.chillibasket.com/2015/01/calibrating-mpu6050/">http://wired.chillibasket.com/2015/01/calibrating-mpu6050/</a>, visitato il 26/12/2016.</li>
+<li class="ref"><a name="ref-7"></a><em>&ldquo;MPU-6000 and MPU-6050 Product Specification&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Datasheet1.pdf">MPU-6000-Datasheet1.pdf</a>, scaricato il 15/11/2016.</li>
+<li class="ref"><a name="ref-8"></a><em>&ldquo;MPU-6000 and MPU-6050 Register Map and Descriptions&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/MPU-6000-Register-Map1.pdf">MPU-6000-Register-Map1.pdf</a>, scaricato il 15/11/2016.</li>
+<li class="ref"><a name="ref-9"></a><em>&ldquo;MPU Hardware Offset Registers Application Note&rdquo;</em>, invensense.com &mdash; <a href="files/arduino-mpu6050/invensense-hardware-offset-registers.pdf">invensense-hardware-offset-registers.pdf</a>, scaricato il 12/12/2016 da <a href="http://www.digikey.com/en/pdf/i/invensense/mpu-hardware-offset-registers">qui</a>.</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 27/12/2016</p>
 </body>

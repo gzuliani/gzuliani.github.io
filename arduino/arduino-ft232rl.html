@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8"/>
 <title>Test del chip FT232RL con Arduino</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/arduino-ft232rl.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-ft232rl.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#arduino-ft232rl">risorse</a> | test del chip ft232rl con arduino</p>
@@ -76,7 +77,7 @@ void loop() {
 <h3>Test su Ubuntu 16.04 64 bit</h3>
 <p>Per verificare il corretto funzionamento del circuito, avvio un terminale, lo collego a <strong>/dev/ttyUSB0</strong>, digito alcuni caratteri e mi accerto che questi appaiano sullo schermo:</p>
 <pre class="code">
-$ screen /dev/ttyUSB0 9600 
+$ screen /dev/ttyUSB0 9600
 </pre>
 <img src="img/arduino-ft232rl/ubuntu-test.png">
 <p class="illustration">L'apparizione dei caratteri digitati conferma il funzionamento della scheda</p>
@@ -100,7 +101,7 @@ Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
 
 $ lsusb
 Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 002 Device 004: ID 0403:dd02 Future Technology Devices International, Ltd 
+Bus 002 Device 004: ID 0403:dd02 Future Technology Devices International, Ltd
 Bus 002 Device 003: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
 Bus 002 Device 002: ID 0e0f:0003 VMware, Inc. Virtual Mouse
 Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub

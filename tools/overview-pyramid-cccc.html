@@ -1,7 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="windows-1252"/>
 <title>Overview Pyramid con CCCC</title>
-<link rel='stylesheet' type='text/css' href='../css/main.css'></link>
+<link rel='stylesheet' type='text/css' href='../css/main.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#pyramid-cccc">risorse</a> | pyramid/cccc</p>
@@ -15,7 +17,7 @@
 <p>Salta subito agli occhi una notevole discrepanza delle stime delle metriche estratte dai due strumenti, in particolare nei valori attribuiti a <em>LOC</em> e <em>CYCLO</em>:</p>
 <table cellspacing="0" cellpadding="0">
  <tr><th>Metrica</th><th>SourceMonitor</th><th>CCCC</th><th>differenza (%)</th></tr>
- <tr><td>ANDC</td><td class="centered">n/a</td><td class="centered">.6<td class="centered">n/a</td></td></tr>
+ <tr><td>ANDC</td><td class="centered">n/a</td><td class="centered">.6<td class="centered">n/a</td></tr>
  <tr><td>AHH</td><td class="centered">n/a</td><td class="centered">1.1</td><td class="centered">n/a</td></tr>
  <tr><td>NOP</td><td class="centered">49</td><td class="centered">47</td><td class="centered">4,1</td></tr>
  <tr><td>NOC</td><td class="centered">1500</td><td class="centered">1380</td><td class="centered">8,0</td></tr>
@@ -48,7 +50,7 @@
 <p>Le discrepanze su questa metrica si spiega per la differente metodologia di calcolo: SourceMonitor, rispetto a CCCC, conta anche le uscite anticipate dai blocchi <span class="code">switch</span>, oltre alle istruzioni <span class="code">catch</span>.</p>
 <p><strong>SourceMonitor:</strong></p>
 <blockquote>
-Each function or method has a complexity of one plus one for each branch statement such as if, else, for, foreach, or while. Arithmetic if statements (MyBoolean ? ValueIfTrue : ValueIfFalse) each add one count to the complexity total. A complexity count is added for each '&amp;&amp;' and '||' in the logic within if, for, while or similar logic statements. 
+Each function or method has a complexity of one plus one for each branch statement such as if, else, for, foreach, or while. Arithmetic if statements (MyBoolean ? ValueIfTrue : ValueIfFalse) each add one count to the complexity total. A complexity count is added for each '&amp;&amp;' and '||' in the logic within if, for, while or similar logic statements.
 
 Switch statements add complexity counts for each exit from a case (due to a break, goto, return, throw, continue, or similar statement), and one count is added for a default case even if one is not present. (Note: when a project's Modified Complexity option is selected, switch statements add a count of one to the complexity and the internal case statements do not contribute to the complexity metric.) Each catch or except statement in a try block (but not the try or finally statements) each add one count to the complexity as well.
 </blockquote>
@@ -64,12 +66,9 @@ Usage: pyramid.cmd &lt;project-name&gt; &lt;project-version&gt; &lt;output-dir&g
 <p>Oltre all'indicazione dello strumento utilizzato per raccogliere le metriche, in testata ora viene riportata anche la data di creazione del prospetto stesso.</p>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">&quot;Source lines of code&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Source_lines_of_code">http://en.wikipedia.org/wiki/Source_lines_of_code</a>&gt;. Visitato il 28 Novembre 2013.</li>
-<a name="ref-2"></a>
-<li class="ref">Littlefair, T. &quot;CCCC&quot;. <em>sourceforge.net</em>. &lt;<a href="http://cccc.sourceforge.net/">http://cccc.sourceforge.net/</a>&gt;</li>
-<a name="ref-3"></a>
-<li class="ref">Danial, A. &quot;CLOC&quot;. <em>sourceforge.net</em>. &lt;<a href="http://cloc.sourceforge.net/">http://cloc.sourceforge.net/</a>&gt;</li>
+<li class="ref"><a name="ref-1"></a>&quot;Source lines of code&quot;. <em>Wikipedia</em>. &lt;<a href="http://en.wikipedia.org/wiki/Source_lines_of_code">http://en.wikipedia.org/wiki/Source_lines_of_code</a>&gt;. Visitato il 28 Novembre 2013.</li>
+<li class="ref"><a name="ref-2"></a>Littlefair, T. &quot;CCCC&quot;. <em>sourceforge.net</em>. &lt;<a href="http://cccc.sourceforge.net/">http://cccc.sourceforge.net/</a>&gt;</li>
+<li class="ref"><a name="ref-3"></a>Danial, A. &quot;CLOC&quot;. <em>sourceforge.net</em>. &lt;<a href="http://cloc.sourceforge.net/">http://cloc.sourceforge.net/</a>&gt;</li>
 </ol>
 <p class="modification-notice">Pagina modificata il 28/11/2013</p>
 </body>

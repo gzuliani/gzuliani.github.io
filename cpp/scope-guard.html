@@ -1,8 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
+<meta charset="utf-8"/>
 <title>ScopeGuard</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"></link>
-<link href="css/scope-guard.css" rel="stylesheet" type="text/css"></link>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scope-guard.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#scopeguard">risorse</a> | scopeguard</p>
@@ -92,7 +94,6 @@ void Safe::SetName(const std::string&amp; newName) {
 </pre>
 <p>Se il codice richiamato da <span class="code">SetName</span> solleva un'eccezione, il distruttore di <span class="code">guard</span> effettua il ripristino del valore originale di <span class="code">m_name</span>; se l'esecuzione del metodo va a buon fine, la chiamata <span class="code">Commit</span> disinnesca il distruttore di <span class="code">guard</span>.</p>
 <p>Per quanto interessante, questo approccio ha lo svantaggio di costringere il programmatore a definire un discreto numero di classi di supporto. Andrei Alexandrescu e Petru Marginean hanno generalizzato questa idea in <em>ScopeGuard</em><a href="#ref-1"><sup>[2]</sup></a>, un oggetto che, se richiesto, nel suo distruttore effettua una chiamata a metodo, funzione o <em>functor</em>.</p>
-</p>
 <h3>Ripristino mediante chiamata a metodo d'oggetto</h3>
 <p>Si consideri la seguente definizione:</p>
 <pre class="code">
@@ -336,7 +337,7 @@ void UseResource(bool fail = false) {
 class Releaser {
 public:
   void operator()() {
-    Release();  
+    Release();
   }
 };
 
@@ -479,12 +480,9 @@ class ScopeGuardForFunc1 : public ScopeGuardBase {
 </pre>
 <h2>Riferimenti</h2>
 <ol>
-<a name="ref-1"></a>
-<li class="ref">Abrahams, D. &quot;Exception-Safety in Generic Components&quot;. <em>boost.org</em>. &lt;<a href="http://www.boost.org/community/exception_safety.html">http://www.boost.org/community/exception_safety.html</a>&gt;. Visitato il 4 Novembre 2011.</li>
-<a name="ref-2"></a>
-<li class="ref">Alexandrescu, A. and Marginean, P. &quot;Generic: Change the Way You Write Exception-Safe Code &ndash; Forever&quot;. <em>Dr.Dobb's</em>. December 2000. &lt;<a href="http://drdobbs.com/cpp/184403758">http://drdobbs.com/cpp/184403758</a>&gt;. Visitato il 5 Ottobre 2011.</li>
-<a name="ref-3"></a>
-<li class="ref">Stroustrup, B. &quot;Standard-Library Exception Safety&quot;. <em>AT&amp;T Labs Research</em>. &lt;<a href="http://www2.research.att.com/~bs/3rd_safe.pdf">http://www2.research.att.com/~bs/3rd_safe.pdf</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<li class="ref"><a name="ref-1"></a>Abrahams, D. &quot;Exception-Safety in Generic Components&quot;. <em>boost.org</em>. &lt;<a href="http://www.boost.org/community/exception_safety.html">http://www.boost.org/community/exception_safety.html</a>&gt;. Visitato il 4 Novembre 2011.</li>
+<li class="ref"><a name="ref-2"></a>Alexandrescu, A. and Marginean, P. &quot;Generic: Change the Way You Write Exception-Safe Code &ndash; Forever&quot;. <em>Dr.Dobb's</em>. December 2000. &lt;<a href="http://drdobbs.com/cpp/184403758">http://drdobbs.com/cpp/184403758</a>&gt;. Visitato il 5 Ottobre 2011.</li>
+<li class="ref"><a name="ref-3"></a>Stroustrup, B. &quot;Standard-Library Exception Safety&quot;. <em>AT&amp;T Labs Research</em>. &lt;<a href="http://www2.research.att.com/~bs/3rd_safe.pdf">http://www2.research.att.com/~bs/3rd_safe.pdf</a>&gt;. Visitato il 5 Ottobre 2011.</li>
 </ol>
 <p class="modification-notice">Pagina modificata l'8/11/2011</p>
 </body>
