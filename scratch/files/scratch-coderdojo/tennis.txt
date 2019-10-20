@@ -1,0 +1,58 @@
+Tennis
+
+1. Giocatore: Scratch
+   spostamento su e giù (x/y) con i tasti a e q
+   definire la posizione iniziale (vai a xy)
+   dargli un nome (Scratch)
+
+2. Palla: Soccer Ball
+    dargli un nome (palla)
+    rimpicciolirlo
+    farlo correre per lo schermo:
+     altro modo di spostarsi (direzione (60)/fai N passi (10))
+    farlo rimbalzare su Scratch, intanto a caso verso destra
+    fermare il gioco se si colpisce il bordo sinistro:
+     aggiungere uno sprite o una barra colorata nello sfondo
+
+3. Antagonista: Penguin2 Talk
+    girarlo, rimpicciolirlo, portarlo in posizione
+    spostarlo coi tasti p, l
+    gestire il rimbalzo del topolino
+    aggiungere il controllo del bordo destro
+    con un colore diverso -> così sappiamo chi ha vinto!
+
+4. Intelligenza artificiale
+    primo tentativo: vai dove y = y palla (serve una variabile)
+    è imbattibile!
+    dovrebbe arrivarci piano piano, oppure non proprio lì...
+    usare uno scivola in N secondi a
+    aumentando N nel tempo, si simula la stanchezza!
+
+5. Aggiustamenti
+    la palla deve partire a caso verso uno dei due giocatori
+    un conteggio prima di far partire la palla
+    evento di inizio partita (la palla parte sull'evento)
+
+6. Esultanza
+    la palla invia il messaggio in funzione del colore
+    lo sprite esulta
+
+7. Aumento graduale della velocità
+    all'evento di inizio partita,
+     aumentare la velocità ogni secondo
+     (lo stesso evento può essere gestito più volte)
+    limitare la velocità
+    in modalità singolo giocatore:
+     spostare la racchetta col mouse
+
+8. Punteggio
+    contare i punti dei due giocatori
+    mostrare il messaggio "match point" prima dell'ultimo punto
+
+9. Altro
+    direzionare il rimbalzo
+    aggiungere un'area di deflessione
+    aggiungere alcuni obiettivi da colpire
+    muovere il giocatore controllato dal computer
+     solo quando la palla è nel suo campo
+    permettere ai giocatori di muoversi sulla propria porzione di campo

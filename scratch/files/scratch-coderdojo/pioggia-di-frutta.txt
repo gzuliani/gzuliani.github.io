@@ -1,0 +1,287 @@
+# Scaletta
+_Tavagnacco @Pradamano - Domenica 12 Aprile 2015_
+
+* avvio di Scratch: impostazione della lingua italiana;
+
+* struttura dell'editor: stage e sprite a sinistra, blocchi al centro, area di lavoro a destra;
+
+* impostazione dello sfondo con il pulsante _Scegli uno sfondo dalla libreria_; scegliere "desert"; accennare alle altre possibilità;
+
+* aggiungere un nuovo sprite con il pulsante _Scegli uno sprite dalla libreria_; scegliere "Monkey1"; accennare alle altre possibilità;
+
+* ridimensionare lo sprite con i pulsanti _Espandi lo sprite_ e _Riduci lo sprite_ della barra del menu; non troppo, va bene così com'è;
+
+* eliminare lo sprite di Scratch: selezionarlo nell'area _Sprite_, tasto destro, scegliere "cancella";
+
+* facciamo spostare la scimmietta: assicuriamoci che sia selezionata nell'area _Sprite_, e trasciniamo il blocco `fai (10) passi` nell'area di lavoro; non succede niente;
+
+* doppio click sul blocco e la scimmietta trasla verso a destra;
+
+* facciamole fare una passeggiata: selezioniamo il gruppo _Controllo_ e trasciniamo il blocco `per sempre` nell'area di lavoro; avvicinandolo al blocco `fai (10) passi` si incastra circondandolo; non succede nulla; doppio click sul blocco e la scimmietta raggiunge il bordo destro dello _Stage_;
+
+* lo _Script_ è in esecuzione, lo si riconosce dall'alone giallo; se trasciniamo la scimmietta al centro dello _Stage_ con il mouse, riprende a spostarsi verso destra;
+
+* per fermare un blocco `per sempre` bisogna premere il pulsante rosso in alto;
+
+* vicino al pulsante di arresto notiamo una bandierina verde: è il modo naturale di Scratch di avviare i giochi; facciamolo anche noi!
+
+* selezioniamo il gruppo _Situazioni_, trasciniamo il blocco `quando si clicca su F` nell'area di lavoro e agganciamolo al blocco `per sempre`;
+
+* riportiamo la scimmietta al centro dello _Stage_, e verifichiamo che se ne sta ferma dove l'abbiamo appoggiata; premiamo la bandierina e la scimmietta riprende a muoversi;
+
+* premere il pulsante d'arresto e riportare la scimmietta al centro della scena;
+
+* voglio far spostare la scimmietta solo quando premo un tasto, ad esempio il tasto cursore con la freccia verso destra; per fare questo, selezionare il gruppo _Controllo_ e portare il blocco `se <> allora` nell'area di lavoro, posizionandolo tra il `per sempre` e il `fai (10) passi`:
+
+        quando si clicca su F
+        per sempre
+         se <> allora
+          fai (10) passi
+
+* notare lo spazio vuoto esagonale tra il `se` e l'`allora`: lì va indicata la condizione per la quale dev'essere eseguito il blocco interno; le varie condizioni disponibili si trovano nel gruppo _Sensori_;
+
+* selezionare il gruppo _Sensori_ e trascinare il blocco `<tasto [spazio] premuto>` nello spazio, verificando che l'agganciamento sia avvenuto; aprire il menu a tendina e selezionare il tasto `freccia destra`;
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+
+* premere la bandierina verde; non accade nulla; premere il tasto cursore a destra, la scimmietta si muove verso destra! fare alcune prove, al termine premere il pulsante d'arresto;
+
+* abbiamo capito che se diciamo alla scimmietta di camminare, lei procede verso destra; ora vorremmo che quando premiamo il tasto cursore con la freccia sinistra, la scimmietta si muova verso sinistra; aggiungiamo un nuovo blocco `se <> allora` con la condizione giusta:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          ???
+
+* che blocco di movimento ci mettiamo? potrebbe funzionare con un altro blocco `fai (10) passi`? Beh, proviamoci!
+
+* va a destra anche se premo il tasto cursore con la freccia a sinistra; evidentemente la scimmietta va sempre a destra, finché non le si dice di cambiare direzione; ma come possiamo fare? Tra i blocchi del gruppo _Movimento_ ce n'è uno che potrebbe fare il caso nostro: `punta in direzione (90)`. inseriamolo prima del blocco `fai (10) passi` e scegliamo la direzione `(-90) sinistra`:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* adesso abbiamo due problemi: una volta che la facciamo andare a sinistra, la scimmietta si capovolge, e anche se premiamo il tasto con la freccia a destra, continua a muoversi verso sinistra; il secondo problema si risolve facilmente, basta dire alla scimmietta di andare verso destra quando si preme il tasto freccia a destra:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* ci siamo quasi! ora dobbiamo dire che per andare a sinistra non serve camminare a testa all'ingù! Premere la (i) azzurra in alto a sinistra dello sprite della scimmietta e cambiare lo stile di rotazione in "sinistra-destra"; provare
+
+* premere il triangolino bianco su fondo azzurro per tornare all'elenco degli sprite;
+
+* un'ultima cosa: all'inizio del gioco, vogliamo che la scimmietta occupi una posizione centrale; notare che quando sposto lo sprite con il mouse, le coordinate del blocco `vai a x: () y: ()` cambiano; posizionare la scimmietta in basso al centro, e inserire il blocco prima del `per sempre`:
+
+        quando si clicca su F
+        vai a x: (0) y: (-85)
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* cosa succede se invece di 10 passi facciamo fare alla scimmietta 5 passi alla volta? Provare; provare con 20...
+
+* facciamo che la scimmietta deve raccogliere delle banane che cadono dal cielo; aggiungiamo lo sprite "bananas" dalla libreria, rimpiccioliamolo un po' e posizioniamolo in alto, lasciando un po' di margine;
+
+* cominciamo col far cadere le banane; sappiamo che si comincia con:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+
+* per far spostare uno sprite verso il basso bisogna far diminuire la sua coordinata y; agganciamo perciò un blocco `cambia y di (-10)`; attenzione al meno, se ve lo scordate le banane saliranno in cielo!
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+
+* come si fa ad aumentare o diminuire la velocità di caduta?
+
+* possono accadere due cose: o la scimmietta riesce a raccogliere le banane, e allora diciamo che facciamo un punto, oppure cascano per terra, e non guadagnamo nessun punto; in entrambi i casi, le banane devono sparire, e un altro casco dovrà cadere; cominciamo con il caso delle banane non raccolte:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+         se <sta toccando [bordo]> allora
+
+* cosa deve succedere? le banane devono scomparire e, dopo un pò, ricomparire in alto; per questo, sfruttiamo due nuovi blocchi in _Aspetto_, `nascondi` e `mostra`, oltre al blocco `attendi () secondi` di _Controlli_:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+         se <sta toccando [bordo]> allora
+          nascondi
+          attendi (3) secondi
+          vai a x: (-80) y: (145)
+          mostra
+
+* ricompare sempre al solito posto; possiamo fare in modo che compaia in posizioni diverse sfruttando il blocco `numero a caso tra () e ()` del gruppo _Operatori_; spostando il cursore del mouse lungo il margine superiore si capisce che i numeri giusti sono +/-200:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+         se <sta toccando [bordo]> allora
+          nascondi
+          attendi (3) secondi
+          vai a x: (numero a caso tra (-200) e (200)) y: (145)
+          mostra
+
+* aggiungere un `mostra` prima del `per sempre`, per assicurarsi che le banane si vedano all'inizio del gioco, nel caso in cui la partita precedente fosse stata arrestata quando le banane erano nascoste;
+
+* è ora di cominciare a fare punti; ci serve perciò un contatore di punti; nel gruppo _Variabili e Liste_, premere _Crea una variabile_ e chiamarla "Punti"; cosa succede?
+
+* abbiamo detto che facciamo un punto ogni volta che la scimmietta prende le banane; selezioniamo lo sprite delle banane, ed aggiungiamo un nuovo blocco `se <> allora`, con la condizione `sta toccando [Monkey1]`:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+         se <sta toccando [bordo]> allora
+          nascondi
+          attendi (3) secondi
+          vai a x: (numero a caso tra (-200) e (200)) y: (145)
+          mostra
+         se <sta toccando [Monkey1]> allora
+          cambia [Punti] di (1)
+
+* copiamo la stessa logica del riposizionamento delle banane in seguito al raggiungimento del bordo, così quando la scimmietta le tocca queste spariscono per ricadere poco dopo in una posizione casuale;
+
+* diminuendo l'attesa in seguito alla cattura, premio la bravura del giocatore; aumentando l'attesa in seguito alla perdita, penalizzo il giocatore;
+
+* si può giocare a schermo intero premendo il riquadro azzurro in alto a sinistra; premere il riquadro nella stessa posizione per tornare alla modalità di lavoro;
+
+* notate un problema? quando il gioco riparte, il punteggio non si azzera!
+
+        quando si clicca su F
+        porta [Punti] a [0]
+        vai a x: (-80) y: (145)
+        per sempre
+         ...
+
+* perché solo banane? Selezioniamo lo sprite delle banane, nell'area dei blocchi selezioniamo _Costumi_; aggiungiamo nuovi costumi con il comando _Scegli un costume dalla libreria_, per esempio "apple", "orange", "watermelon-c"; espandiamo/riduciamo gli sprite in modo che abbiano dimensioni simili; per cambiare frutto quando la scimmietta ne ha raccolto uno, basta aggiungere un blocco `passa al costume seguente` del gruppo _Aspetto_ prima del blocco `mostra`:
+
+        quando si clicca su F
+        vai a x: (-80) y: (145)
+        per sempre
+         cambia y di (-10)
+         se <sta toccando [bordo]> allora
+          nascondi
+          attendi (3) secondi
+          vai a x: (numero a caso tra (-200) e (200)) y: (145)
+          mostra
+         se <sta toccando [Monkey1]> allora
+          cambia [Punti] di (1)
+          nascondi
+          attendi (3) secondi
+          vai a x: (numero a caso tra (-200) e (200)) y: (145)
+          passa al costume seguente
+          mostra
+
+* selezioniamo lo sprite della scimmietta, e andiamo in _Costumi_: ha un secondo costume, adatto a quando si muove; possiamo allora dire alla scimmietta di usare il primo costume quando è ferma, il secondo quando si muove (cioè quando è premuto un tasto cursore); torniamo a _Script_:
+
+        quando si clicca su F
+        vai a x: (0) y: (-85)
+        per sempre
+         passa al costume [monkey1-a]
+         se <tasto [freccia destra] premuto> allora
+          passa al costume [monkey1-b]
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          passa al costume [monkey1-b]
+          punta in direzione (-90)
+          fai (10) passi
+
+* far cadere altri oggetti che però non devono essere raccolti, se no si perde; serve uno sprite simile a quello del cibo, cambia solo l'aspetto (costumi) e quel che succede quando viene toccato dalla scimmietta; tasto destro sullo sprite delle banane, duplica; selezionare il nuovo sprite "Bananas2", premere la (i) e cambiare nome in "Veleno"; _Costumi_, cancellare i costumi dei frutti premendo la (x) nera e aggiungerne di altri non commestibili, ad esempio "baseball", "microphone", "pencil-a", "sunglasses1", ... ridimensionandoli se necessario;
+
+* far partire il gioco, e verificare che si guadagnano punti anche se si raccolgono gli oggetti pericolosi; per cambiare il comportamento:
+
+    * eliminare il blocco `porta [Punti] a [0]`;
+    * aggiungere un `passa al costume seguente` prima del `mostra`;
+    * svuotare il blocco `se <sta toccando [Monkey1]> allora`;
+    * aggiungerci i due blocchi:
+
+            se <sta toccando [Monkey1]> allora
+             dire [Non sono da mangiare!] per (2) secondi
+             arresta [tutto]
+
+* per facilitare il gioco, possiamo decidere di far comparire il veleno dopo 10 secondi dall'inizio della partita:
+
+        quando si clicca su F
+        nascondi
+        attendi (10) secondi
+        vai a x: (-80) y: (145)
+        ...
+
+* per far fare dei salti alla scimmietta aggiungere allo sprite lo script:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [spazio] premuto> allora
+          ripeti 10 volte
+           cambia y di (10)
+          ripeti 10 volte
+           cambia y di (-10)
+
+* far finire il gioco dopo mezzo minuto, aggiungere la variabile "Tempo", e aggiungere ad uno sprite qualunque il seguente script:
+
+        quando si clicca su F
+        porta [Tempo] a [60]
+        per sempre
+         attendi (1) secondi
+         cambia [Tempo] di (-1)
+         se <(Tempo) = [0]> allora
+          arresta [tutto]
+
+* introdurre un terzo incomodo che ruba la frutta e/o dev'essere evitato;
+
+        quando si clicca su F
+        nascondi
+        attendi (15) secondi
+        vai a x: (numero a caso tra (-200) e (200)) y: 100
+        punta in direzione (numero a caso tra (60) e (120))
+        mostra
+        per sempre
+         fai (2) passi
+         rimbalza quando tocchi il bordo
+
+   per fare in modo che il nuovo sprite non debba essere toccato aggiungere, dopo il blocco `rimbalza quando tocchi il bordo`:
+
+        se <sta toccando [Monkey1]> allora
+         dire [Stammi lontano!] per (2) secondi
+         arresta [tutto]
+
+   per fare in modo che il nuovo sprite rubi la frutta, modificare lo script del cibo in questo modo:
+
+        ...
+        se <<sta toccando [bordo]> o <sta toccando [Bat1]>>
+        ...
+
+* se il nuovo sprite è provvisto di più costumi (ad esempio "Bat1", "Butterfly1", ...):
+
+        quando si clicca su F
+        per sempre
+         passa al costume seguente
+         attendi (.2) secondi

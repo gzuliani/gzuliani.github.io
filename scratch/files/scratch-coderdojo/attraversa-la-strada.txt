@@ -1,0 +1,381 @@
+# Scaletta
+
+_Dojo @Udine3D Forum - 12 Novembre 2017_
+
+ATTRAVERSA LA STRADA!
+
+## preliminari
+
+* avvio di Scratch: impostazione della lingua italiana;
+
+* struttura dell'editor: stage e sprite a sinistra, blocchi al centro, area di lavoro a destra;
+
+## il protagonista
+
+* trasciniamo il blocco `fai (10) passi` nell'area di lavoro; non succede niente;
+
+* doppio click sul blocco e Scratch si sposta verso a destra;
+
+TODO: fargli dire qualcosa, per capire come si attaccano e staccano i blocchi
+
+* ogni sprite ha un nome, che leggi sotto la sua icona; il nostro sprite per esempio si chiama "Sprite1", ma possiamo cambiargli nome: premi la (i) bianca su fondo azzurro in alto a sinistra accanto all'icona dello sprite, sostituisci "Sprite1" con "Scratch" usando la tastiera, quindi nascondi le proprietà dello sprite cliccando il triangolino bianco su fondo azzurro;
+
+* facciamogli fare una bella passeggiata: selezioniamo il gruppo _Controllo_ e trasciniamo il blocco `per sempre` nell'area di lavoro; avvicinandolo al blocco `fai (10) passi` si incastra circondandolo; non succede nulla; doppio click sul blocco e Scratch si sposta fino al bordo destro dello _Stage_;
+
+* lo _Script_ è in esecuzione, lo si riconosce dall'alone giallo; se trasciniamo Scratch al centro dello _Stage_ con il mouse, riprende a spostarsi verso destra;
+
+* per fermare un blocco `per sempre` bisogna premere il pulsante rosso in alto;
+
+* vicino al pulsante di arresto c'è una bandierina verde: è il modo naturale di Scratch di avviare i giochi; facciamolo anche noi...
+
+* selezioniamo il gruppo _Situazioni_, trasciniamo il blocco `quando si clicca su F` nell'area di lavoro e agganciamolo al blocco `per sempre`;
+
+* riportiamo Scratch al centro dello _Stage_, e verifichiamo che se ne sta fermo dove l'abbiamo lasciato; premiamo la bandierina e Scratch riprende a muoversi;
+
+* premere il pulsante d'arresto e riportare Scratch al centro della scena;
+
+* vogliamo che Scratch si sposti solo quando premo un tasto; per fare questo, selezionare il gruppo _Controllo_ e portare il blocco `se <> allora` nell'area di lavoro, posizionandolo tra il `per sempre` e il `fai (10) passi`:
+
+        quando si clicca su F
+        per sempre
+         se <> allora
+          fai (10) passi
+
+* notare lo spazio vuoto esagonale tra il `se` e l'`allora`: lì va indicata la condizione per la quale dev'essere eseguito il blocco interno; le varie condizioni disponibili si trovano nel gruppo _Sensori_;
+
+* selezionare il gruppo _Sensori_ e trascinare il blocco `<tasto [spazio] premuto>` nello spazio, verificando che l'agganciamento sia avvenuto;
+
+        quando si clicca su F
+        per sempre
+         se <tasto [spazio] premuto> allora
+          fai (10) passi
+
+* premere la bandierina verde; non accade nulla; premere la barra spaziatrice, Scratch si sposta verso destra! fare alcune prove, al termine premere il pulsante d'arresto;
+
+* vogliamo controllare il movimento di Scratch con i tasti cursore: aprire il menu a tendina del blocco sensore e seleziono il tasto `freccia destra`;
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+
+* la barra spaziatrice adesso non funziona più, Scratch si sposta solo quando si preme la freccia verso destra;
+
+* abbiamo capito che se diciamo a Scratch di muoversi, lui si sposta verso destra; ora vorremmo che quando premiamo il tasto cursore con la freccia sinistra, Scratch si sposti verso sinistra; aggiungiamo un nuovo blocco `se <> allora` con la condizione giusta:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          ???
+
+* che blocco di movimento ci mettiamo? potrebbe funzionare un altro blocco `fai (10) passi`? Beh, proviamoci!
+
+* non funziona, Scratch va verso destra anche se si preme il tasto freccia a sinistra; evidentemente Scratch va sempre a destra, finché non gli si dice di cambiare direzione; ma come possiamo fare? Tra i blocchi del gruppo _Movimento_ ce n'è uno che potrebbe fare il caso nostro: `punta in direzione (90)`. inseriamolo PRIMA (prima, non dopo: perché!?) del blocco `fai (10) passi` e scegliamo la direzione `(-90) sinistra`:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* adesso abbiamo due problemi: una volta che lo facciamo camminare verso sinistra, Scratch si capovolge, e anche se premiamo il tasto con la freccia a destra, continua a spostarsi verso sinistra; il secondo problema si risolve facilmente, basta dire a Scratch di camminare verso destra quando si preme il tasto freccia a destra:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* ci siamo quasi! ora dobbiamo dire che quando ci si muove verso sinistra non serve farlo a testa all'ingù! per farlo, premere la (i) azzurra in alto a sinistra dello sprite di Scrach e cambiare lo stile di rotazione in "sinistra-destra"; provare
+
+* premere il solito triangolino bianco su fondo azzurro per tornare all'elenco degli sprite;
+
+* un modo alternativo è quello di inserire il blocco `porta stile rotazione a [sinistra-destra]` prima del `per sempre`: se si apre il menu a tendina, si nota che si sono le stesse opzioni viste nelle proprietà dello sprite;
+
+* un'ultima cosa: all'inizio del gioco, vogliamo che Scratch occupi una posizione ben precisa, in basso al centro; notare che quando sposto lo sprite con il mouse, le coordinate del blocco `vai a x: () y: ()` cambiano; posizionare lo sprite di Scratch nella posizione desiderata, quindi prendere il blocco `vai a x: () y: ()` e inserirlo prima del `per sempre`:
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* cosa succede se invece di 10 passi facciamo fare a Scrach 5 passi alla volta? provare; per cambiare il dato, selezionarlo con un doppio click del mouse e impostare il nuovo valore da tastiera; provare anche con 20...
+
+* per spostare Scratch lungo la direzione verticale, si procede sempre nello stesso modo:
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+         se <tasto [freccia su] premuto> allora
+          punta in direzione (0)
+          fai (10) passi
+         se <tasto [freccia giù] premuto> allora
+          punta in direzione (180)
+          fai (10) passi
+
+* possiamo rendere più realistica la camminata di Scratch; lo sprite infatti ha due costumi, lo si vede selezionando l'area _Costumi_; possiamo dire a Scratch di alternare tra i due costumi ogni volta che si sposta:
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+          passa al costume seguente
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+          passa al costume seguente
+         se <tasto [freccia su] premuto> allora
+          punta in direzione (0)
+          fai (10) passi
+          passa al costume seguente
+         se <tasto [freccia giù] premuto> allora
+          punta in direzione (180)
+          fai (10) passi
+          passa al costume seguente
+
+* salviamo il gioco; ricordiamoci di farlo spesso, mentre lavoriamo;
+
+## l'antagonista
+
+* poiché Scratch dovrà attraversare una strada molto trafficata, aggiungiamo lo sprite di un'automobile, per esempio "Convertible3", e la posizioniamo in mezzo allo schermo;
+
+* facciamo in modo che l'auto percorra lo schermo in orizzontale, da sinistra a destra; dovremmo già saperlo fare:
+
+        quando si clicca su F
+        per sempre
+          fai (10) passi
+
+* stesso problema sperimentato con Scratch: arrivato in fondo a destra, l'auto si blocca; possiamo però farla continuare nella direzione contraria aggiungendo il blocco `rimbalza quando tocchi il bordo`; cosa succederà? riusciamo a immaginarlo prima di provare?
+
+        quando si clicca su F
+        per sempre
+          fai (10) passi
+          rimbalza quando tocchi il bordo
+
+* ancora il problema dello sprite sotto-sopra; ora però sappiamo che basta aggiungere all'inizio il blocco `porta stile di rotazione a [sinistra-destra]`:
+
+        quando si clicca su F
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+          fai (10) passi
+          rimbalza quando tocchi il bordo
+
+* probabilmente è il caso di dare le giuste proporzioni agli sprite; lo si può fare in modo interattivo con i pulsanti _Espandi lo sprite_ e _Riduci lo sprite_ della barra del menu, oppure da programma con il blocco `porta dimensione al (90) %`, come si preferisce;
+
+* facciamo partire il gioco e spostiamo Scratch sull'auto; non succede nulla;
+
+* cosa dovrebbe accadere? innanzitutto, il gioco dovrebbe fermarsi, o meglio "se lo sprite sta toccando "Scratch" allora ferma tutto"... cerchiamo tra i blocchi quelli che potrebbero servirci:
+
+        quando si clicca su F
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+          fai (10) passi
+          rimbalza quando tocchi il bordo
+          se <sta toccando [Sprite1]> allora
+            ferma [tutto]
+
+ **NOTA**: può accadere che quando si riavvia il gioco, questo si arresti nuovamente, come se l'auto sentisse ancora la presenza di Scratch; dovesse succedere, e dovesse risultare fastidioso, basta introdurre una piccola pausa all'inizio dello script dell'auto, tipo `attendi (0.1) secondi`;
+
+* per rendere più evidente l'evento, si può aggiungere un nuovo costume all'auto, duplicando quello esistente e modificandolo aggiungendo un effetto stile esplosione o simulando l'accartocciamento della carrozzeria... usare la fantasia! all'inizio l'auto dovrà usare il costume originale, e passare a quello modificato solo in caso di collisione:
+
+        quando si clicca su F
+        porta stile di rotazione a [sinistra-destra]
+        passa al costume [convertible3]
+        per sempre
+          fai (10) passi
+          rimbalza quando tocchi il bordo
+          se <sta toccando [Sprite1]> allora
+            passa al costume [convertible2]
+            ferma [tutto]
+
+* in alternativa, ci si può sbizzarrire con gli effetti grafici:
+
+        quando si clicca su F
+        porta stile di rotazione a [sinistra-destra]
+        passa al costume [convertible3]
+        per sempre
+          fai (10) passi
+          rimbalza quando tocchi il bordo
+          se <sta toccando [Sprite1]> allora
+            ripeti (--) volte
+              cambia effetto [------] di (--)
+            ferma [tutto]
+
+## l'obiettivo
+
+* diamo uno scopo a Scratch; perché attraversa la strada? magari per recuperare la palla che si trova dall'altro lato della carreggiata; aggiungiamo lo sprite "Beachball" in alto a sinistra, e ridimensioniamolo secondo i nostri gusti; prepariamo il programma della palla:
+
+        quando si clicca su F
+        vai a x: (-180) y: (115)
+
+* cosa succede quando Scratch raggiunge la palla? per adesso facciamola semplice, la palla ci fa i complimenti e il gioco termina:
+
+        quando si clicca su F
+        vai a x: (-180) y: (115)
+        per sempre
+          se <sta toccando [Scratch]> allora
+            dire [BRAVO!]
+            ferma [tutto]
+
+* è giunta l'ora di rilassarsi pensando allo scenario: possiamo sceglierne uno tra quelli già pronti premendo il pulsante _Scegli uno sfondo dalla libreria_; oppure possiamo disegnarcene uno, non è difficile!
+
+* il gioco finisce subito! come possiamo renderlo più difficile? avete provato a far andare l'auto più veloce? come si fa?
+
+* se un'auto non vi basta, potete aggiungerne delle altre: basta premere il tasto destro del mouse sullo sprite dell'auto verde e scegliere "duplica"; per non confondersi, conviene cambiare colore alla nuova auto, basta usare lo strumento di riempimento nell'editor del costume;
+
+* quando ci sono più auto, provate a dare ad ogni auto una velocità diversa; il gioco diventa più facile o più difficile? vi piace di più?
+
+* è meglio lasciare le auto sulla stessa linea o disporle su due file? quante auto volete mettere sulla vostra strada? se ne mettete troppe non riuscirete più a riprendere la palla!
+
+* un gioco senza un punteggio non è un vero gioco! in cosa potrebbe consistere il punteggio? come si fa a capire chi è il giocatore più bravo in questo gioco? GIUSTO! chi prende la palla per primo! dobbiamo misurare il tempo trascorso tra l'inizio del gioco e il raggiungimento della palla;
+
+* serve una variabile, cioè un contenitore che ospita un valore che possiamo cambiare a piacere durante l'esecuzione del programma;
+
+* selezioniamo lo sprite della palla (in realtà va bene uno qualunque, anche lo sfondo); creiamo una nuova variabile, e la chiamiamo "Tempo" (compare automaticamente in alto a sinistra sullo schermo); conterrà il numero di secondi trascorsi dall'inizio del gioco; all'inizio la azzeriamo:
+
+        quando si clicca su F
+        porta [Tempo] a [0]
+
+* per tener conto del tempo che passa, la aumentiamo di 1 dopo ogni secondo:
+
+        quando si clicca su F
+        porta [Tempo] a [0]
+        per sempre
+          attendi (1) secondi
+          cambia [Tempo] di (1)
+
+* quando il gioco termina, la variabile "Tempo", visibile in alto sullo schermo, ci dice quanto tempo abbiamo impiegato per arrivare alla palla; possiamo però fare in modo che sia la palla che ci dice quanto tempo è passato:
+
+        quando si clicca su F
+        vai a x: (-180) y: (115)
+        per sempre
+          se <sta toccando [Scratch]> allora
+            dire (unione di [BRAVO, CI HAI MESSO ] e (unione di (Tempo) e [ SECONDI!]))
+            ferma [tutto]
+
+* volendo, possiamo ora nascondere la variabile "Tempo", togliendo il segno di spunta al suo fianco; magari invece preferisci vedere lo scorrere del tempo durante il gioco;
+
+* possiamo anche fare in modo che ad ogni partita la posizione della palla cambi: fermo restando la sua posizione verticale, la si può piazzare in un punto a caso lungo la direzione orizzontale:
+
+        quando si clicca su F
+        vai a x: (numero a caso tra (-220) e (220)) y: (115)
+        per sempre
+          se <sta toccando [Scratch]> allora
+            dire (unione di [BRAVO, CI HAI MESSO ] e (unione di (Tempo) e [ SECONDI!]))
+            ferma [tutto]
+
+ verifica sperimentalmente quali sono gli estremi corretti, spostando la palla sullo schermo con il mouse;
+
+## possibili sviluppi
+
+* aggiungere degli effetti sonori;
+
+ * aggiungere dei livelli di gioco, ad esempio ogni volta
+   che si conclude uno schema, in quello successivo appare
+   un'auto in più o e/o aumenta la velocità delle auto
+
+ * la collisione con un'auto potrebbe causare il ritorno
+   allo schema precedente anziché terminare il gioco
+
+ * introdurre un tipo speciale di auto che...
+
+ * riportare la palla "a casa", per esempio ad un altro sprite
+
+ * animare lo sprite proprietario della palla quando la riceve
+
+ * scenetta iniziale che spiega l'antefatto, ad esempio
+   lo sprite al punto precedente passa la palla a Scratch
+   che la manda dall'altro lato della strada
+
+## esempio: riportare la palla al legittimo proprietario
+
+* aggiungiamo uno sprite in basso a destra, per esempio "Dog2", ridimensionandolo se serve;
+
+* copiamo lo script di Beachball in Dog2: selezioniamo lo sprite Beachball, trasciniamo lo script principale sullo sprite Dog2, quindi selezionaiamo nuovamente lo sprite Dog2: troveremo una copia dello script:
+
+        quando si clicca su F
+        vai a x: (numero a caso tra (-220) e (220)) y: (115)
+        per sempre
+          se <sta toccando [Scratch]> allora
+            dire (unione di [BRAVO, CI HAI MESSO ] e (unione di (Tempo) e [ SECONDI!]))
+            ferma [tutto]
+
+* togliamo il blocco `vai a x: () y: ()`, che non serve, e cambiamo il sensore controllando il tocco su Beachball:
+
+        quando si clicca su F
+        per sempre
+          se <sta toccando [Beachball]> allora
+            dire (unione di [BRAVO, CI HAI MESSO ] e (unione di (Tempo) e [ SECONDI!]))
+            ferma [tutto]
+
+* a questo punto dobbiamo modificare lo script della palla, facendo in modo che, una volta che è stata toccata da Scratch, questa lo segua, dando l'impressione che il gatto ha raccolto la palla; ci sono almeno due modi per farlo:
+
+    a) utilizzando una variabile che indica se Scratch ha toccato la palla; all'inizio la variabile è impostata a "no", e la palla sta ferma dov'è; non appena Scratch la tocca, la variabile diventa "si"; se la variabile è "si", allora la palla, anziché controllare se sta toccando il gatto, si sposta sopra ad esso -- la variabile potrebbe chiamarsi "Palla raccolta", ed essere nascosta (magari la nascondiamo dopo che siamo sicuri che il programma funziona come vogliamo!):
+
+        quando si clicca su F
+        porta [Palla raccolta] a [no]
+        vai a x: (numero a caso tra (-220) e (220)) y: (115)
+        per sempre
+          se <[Palla raccolta] = [si]> allora
+            raggiungi [Scratch]
+          altrimenti
+            se <sta toccando [Scratch]> allora
+              porta [Palla raccolta] a [si]
+
+    b) utilizzando un clone al posto della variabile: quando Scratch arriva sulla palla, questa si nasconde e crea un nuovo clone che lo seguirà:
+
+        quando si clicca su F
+        mostra
+        vai a x: (numero a caso tra (-220) e (220)) y: (115)
+        per sempre
+          se <sta toccando [Scratch]> allora
+            crea clone di [me stesso]
+            nascondi
+
+        quando vengo clonato
+        per sempre
+          raggiungi [Scratch]
+
+* a cosa serve il blocco `mostra` all'inizio dello script della palla? cosa succede se lo togli? prova a toglierlo e guarda cosa succede quando, completata una partita, vuoi giocarne un'altra...
+
+* una volta raggiungo "Dog2", la palla dovrebbe rimanere a lui, non continuare a seguire Scratch:
+
+        quando vengo clonato
+        per sempre
+          raggiungi [Scratch]
+          se <sta toccando [Dog2]> allora
+            raggiungi [Dog2]
+            ferma [questo script]
+
+* in questo modo la palla sparisce una volta portata a "Dog2"! no, non sparisce: avendo aggiunto "Dog2" dopo "Beachball", la palla semplicemente è finita sotto al cane; per portarla in primo piano basta aggiungere un blocco `vai in primo piano` all'inizio dello script del clone:
+
+        quando vengo clonato
+        vai in primo piano
+        per sempre
+          raggiungi [Scratch]
+          se <sta toccando [Dog2]> allora
+            raggiungi [Dog2]
+            ferma [questo script]

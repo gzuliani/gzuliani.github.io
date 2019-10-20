@@ -1,0 +1,102 @@
+Salta palla
+
+ * movimento destra/sinistra con le frecce
+    punta in direzione
+    fai (5) passi
+    passa al costume seguente    
+ * disegno della struttura
+    le pertiche dovrebbero sovrapporsi al piano superiore,
+    non a quello inferiore (facilita il movimento in giù)
+
+                               S
+                                 U
+               =|=================
+                |
+                |
+        ================|=
+                        |
+         P              |
+        ==========================
+
+                   S = sorgente delle palle rotolanti
+                   U = Uscita
+                   P = Punto di partenza
+                   = = Pavimento
+                   | = Pertica
+
+ * posizione iniziale
+ * passare al piano superiore: movimento su (y)
+    solo se tocca il colore delle pertiche
+ * movimento giù - DOPO, FORSE!
+    non indispensabile, più complicato da gestire
+ * raggiungere l'uscita
+    nuovo sprite / disegnare
+    quando tocco colore/uscita -> dire qualcosa, terminare
+
+ * gravità
+    problema: posso camminare nel vuoto!
+    soluzione: se non tocco piano nè pertica, cambia y di -4
+    non molto realistico -> POSSIBILE ESTENSIONE: caduta accelerata
+
+ * palla che rotola
+    posizionare lo sprite accanto alla porta
+    quando si clicca su P / vai a
+      per prove ed errori farla scendere fino al piano,
+      farla rotolare fino a poco oltre la pertica,
+      farla scendere al piano sottostante,
+      farla rotolare fino a poco oltre la pertica,
+      farla scendere a terra,
+      farla rotolare fino al punto di partenza,
+      farla sparire quando tocca il bordo
+
+ * se la palla tocca il protagonista, "avvisa"
+
+ * quando il protagonista "sente" di aver toccato la palla, torna indietro
+
+ * salto
+    prima soluzione:
+     quando tasto spazio premuto/ripeti N volte/cambia y di M
+      non troppo soddisfacente, ma ci accontentiamo
+      la ragione è che non si tiene conto della gravità
+    ADESSO SI PUÒ SALTARE ANCHE QUANDO SI È A MEZZ'ARIA... NON VALE!
+     si salta solo se si tocca il pavimento
+
+ * sequenza di palle
+    si clona:
+     quello che adesso è "quando si clicca su P"
+      diventa "quando vengo clonato" e si aggiunge "elimina questo clone"
+      al termine della sequenza di rotolamento
+     si aggiunge:
+      quando si clicca su P
+      per sempre
+       attendi N secondi // magari casuale
+       crea clone
+    serve nascondere lo sprite principale e di conseguenza mostrare i cloni
+
+ * verificare se si riesce a saltare una palla sia da fermo che correndo
+
+ * laser
+    definire due costumi
+    alternare tra i due costumi
+    se tocca il protagonista e il costume è quello del laser attivo,
+     allora si invia il messaggio "toccato"
+    per verificare il funzionamento del laser può essere conveniente
+     fermare il rotolamento delle palle: staccare il "per sempre" dal
+     blocco "quando clicco su P" dello sprite della palla!
+
+ * estensioni
+
+   - cambiare forma e dimensione delle palle
+      modificare il codice dello sprite originale, non quello del clone
+   - meccanismo che spegne il laser
+   - antagonista che si muove per lo schermo
+   - pezzo di pavimento che scompare
+   - n. di vite vs. stamina
+   - tempo impiegato per completare lo schema
+   - una palla che fa terminare la partita quando toccata
+   - tasto che fa sparire tutte le palle presenti
+      si può usare solo una volta
+      si raccoglie il bonus da qualche parte
+   - schermata iniziale di presentazione
+   - altri schemi
+ 

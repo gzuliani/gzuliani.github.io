@@ -1,0 +1,463 @@
+# Scaletta
+
+_Dojo @Campoformido - Ottobre 2015_
+
+## preliminari
+
+* avvio di Scratch: impostazione della lingua italiana;
+
+* struttura dell'editor: stage e sprite a sinistra, blocchi al centro, area di lavoro a destra;
+
+## l'ambientazione e il protagonista
+
+* impostazione dello sfondo con il pulsante _Scegli uno sfondo dalla libreria_; scegliere "underwater3"; accennare alle altre possibilità;
+
+* aggiungere un nuovo sprite con il pulsante _Scegli uno sprite dalla libreria_; scegliere "Diver2"; accennare alle altre possibilità; cambiare il nome al nuovo sprite in "Subacqueo" premendo il pulsante azzurro (i) dello sprite; chiudere le proprietà dello sprite premendo la freccia azzurra;
+
+* ridimensionare lo sprite con i pulsanti _Espandi lo sprite_ e _Riduci lo sprite_ della barra del menu; non troppo, va bene così com'è;
+
+* eliminare lo sprite di Scratch: selezionarlo nell'area _Sprite_, tasto destro, scegliere "cancella";
+
+* facciamo spostare il subacqueo: assicuriamoci che sia selezionato nell'area _Sprite_, e trasciniamo il blocco `fai (10) passi` nell'area di lavoro; non succede niente;
+
+* doppio click sul blocco e il subacqueo si sposta verso a destra;
+
+* facciamogli fare una bella nuotata: selezioniamo il gruppo _Controllo_ e trasciniamo il blocco `per sempre` nell'area di lavoro; avvicinandolo al blocco `fai (10) passi` si incastra circondandolo; non succede nulla; doppio click sul blocco e il subacqueo nuota fino al bordo destro dello _Stage_;
+
+* lo _Script_ è in esecuzione, lo si riconosce dall'alone giallo; se trasciniamo il subacqueo al centro dello _Stage_ con il mouse, riprende a spostarsi verso destra;
+
+* per fermare un blocco `per sempre` bisogna premere il pulsante rosso in alto;
+
+* vicino al pulsante di arresto c'è una bandierina verde: è il modo naturale di Scratch di avviare i giochi; facciamolo anche noi...
+
+* selezioniamo il gruppo _Situazioni_, trasciniamo il blocco `quando si clicca su F` nell'area di lavoro e agganciamolo al blocco `per sempre`;
+
+* riportiamo il subacqueo al centro dello _Stage_, e verifichiamo che se ne sta fermo dove l'abbiamo lasciato; premiamo la bandierina e il subacqueo riprende a muoversi;
+
+* premere il pulsante d'arresto e riportare il subacqueo al centro della scena;
+
+* voglio che il subacqueo si sposti quando premo un tasto; per fare questo, selezionare il gruppo _Controllo_ e portare il blocco `se <> allora` nell'area di lavoro, posizionandolo tra il `per sempre` e il `fai (10) passi`:
+
+        quando si clicca su F
+        per sempre
+         se <> allora
+          fai (10) passi
+
+* notare lo spazio vuoto esagonale tra il `se` e l'`allora`: lì va indicata la condizione per la quale dev'essere eseguito il blocco interno; le varie condizioni disponibili si trovano nel gruppo _Sensori_;
+
+* selezionare il gruppo _Sensori_ e trascinare il blocco `<tasto [spazio] premuto>` nello spazio, verificando che l'agganciamento sia avvenuto;
+
+        quando si clicca su F
+        per sempre
+         se <tasto [spazio] premuto> allora
+          fai (10) passi
+
+* premere la bandierina verde; non accade nulla; premere la barra spaziatrice, il subacqueo nuota verso destra! fare alcune prove, al termine premere il pulsante d'arresto;
+
+* voglio spostare il subacqueo con i tasti cursore, apro allora il menu a tendina del blocco sensore e seleziono il tasto `freccia destra`;
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+
+* la barra spaziatrice adesso non funziona più, il subacqueo si sposta solo quando si preme la freccia verso destra;
+
+* abbiamo capito che se diciamo al subacqueo di nuotare, lui nuota verso destra; ora vorremmo che quando premiamo il tasto cursore con la freccia sinistra, il subacqueo nuoti verso sinistra; aggiungiamo un nuovo blocco `se <> allora` con la condizione giusta:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          ???
+
+* che blocco di movimento ci mettiamo? potrebbe funzionare un altro blocco `fai (10) passi`? Beh, proviamoci!
+
+* non funziona, il subacqueo nuota verso destra anche se si preme il tasto freccia a sinistra; evidentemente il subacqueo va sempre a destra, finché non gli si dice di cambiare direzione; ma come possiamo fare? Tra i blocchi del gruppo _Movimento_ ce n'è uno che potrebbe fare il caso nostro: `punta in direzione (90)`. inseriamolo PRIMA (prima, non dopo: perché!?) del blocco `fai (10) passi` e scegliamo la direzione `(-90) sinistra`:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* adesso abbiamo due problemi: una volta che lo facciamo nuotare verso sinistra, il subacqueo si capovolge, e anche se premiamo il tasto con la freccia a destra, continua a nuotare verso sinistra; il secondo problema si risolve facilmente, basta dire al subacqueo di nuotare verso destra quando si preme il tasto freccia a destra:
+
+        quando si clicca su F
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* ci siamo quasi! ora dobbiamo dire che quando si nuota verso sinistra non serve farlo a testa all'ingù! per farlo, premere la (i) azzurra in alto a sinistra dello sprite del subacqueo e cambiare lo stile di rotazione in "sinistra-destra"; provare
+
+* premere il triangolino bianco su fondo azzurro per tornare all'elenco degli sprite;
+
+* un modo alternativo è quello di inserire il blocco `porta stile rotazione a [sinistra-destra]` prima del `per sempre`: se si apre il menu a tendina, si nota che si sono le stesse opzioni viste nelle proprietà dello sprite;
+
+* un'ultima cosa: all'inizio del gioco, vogliamo che il subacqueo occupi una posizione centrale; notare che quando sposto lo sprite con il mouse, le coordinate del blocco `vai a x: () y: ()` cambiano; posizionare il subacqueo al centro della scena, e inserire il blocco prima del `per sempre`:
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+
+* cosa succede se invece di 10 passi facciamo nuotare il subacqueo 5 passi alla volta? provare; per cambiare il dato, selezionarlo con un doppio click del mouse e impostare il nuovo valore da tastiera; provare anche con 20...
+
+* per spostare il subacqueo lungo la direzione verticale, si modifica la coordinata y dello sprite; aumentando il valore il subacqueo sale, diminuendolo, scende; provare spostando lo sprite con il mouse e verificando i valori riportati nel blocco `vai a x: () y: ()`;
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         se <tasto [freccia destra] premuto> allora
+          punta in direzione (90)
+          fai (10) passi
+         se <tasto [freccia sinistra] premuto> allora
+          punta in direzione (-90)
+          fai (10) passi
+         se <tasto [freccia su] premuto> allora
+          cambia y di (10)
+         se <tasto [freccia giù] premuto> allora
+          cambia y di (-10)
+
+* salviamo il gioco; ricordiamoci di farlo spesso, mentre lavoriamo;
+
+## il comprimario
+
+* facciamo fare qualcosa al subacqueo, per esempio raccogliere delle stelle marine; aggiungiamo lo sprite "Starfish" dalla libreria, le cambiamo nome in "Stella", la rimpiccioliamolo un bel po' e la posizioniamo in basso, lasciando un po' di margine;
+
+* facciamo partire il gioco e raggiungiamo la stella marina con il subacqueo; non succede nulla;
+
+* cosa dovrebbe accadere? per esempio, la stella ringrazia di essere stata salvata, e sparisce (perché finisce nella sacca del subacqueo); prepariamo allora il programma della stella; assicuriamoci che nell'area degli sprite "Stella" sia selezionata e prepariamo la sequenza iniziale del suo programma (questo è un buon punto per verificare che ogni sprite ha il suo programma, diverso da quello degli altri sprite);
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        per sempre
+
+* la stella deve ringraziare e sparire quando entra in contatto con il subacqueo; per questa ragione, usiamo il blocco `se <> allora` e il sensore `sta toccando []`; selezioniamo "Subacqueo" nelle opzioni del sensore;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+
+* per far pronunciare una frase si usa il blocco `dire [Hello!] per (2) secondi` del gruppo _Aspetto_; sempre nello stesso gruppo, usiamo il blocco `nascondi` per far scomparire la stella e ottenere l'effetto "ho raccolto la stella"; una volta inserito il blocco, cambiare "Hello!" in "Mi hai salvata!" e portare la durata a 1 secondo;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          dire [Mi hai salvata!] per (1) secondi
+          nasconditi
+
+* proviamo e verifichiamo che la stella ringrazia e sparisce; facciamo ripartire il gioco, la stella non c'è più! la ragione è che le abbiamo detto di nascondersi, e fintanto che non le diciamo il contrario, lei se ne sta nascosta; aggiungiamo allora un blocco `mostra` prima del `per sempre`:
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+
+* ogni volta che riparte il gioco, la stella ricompare;
+
+* possiamo abbellire il gioco modificando il costume della stella, che ha due costumi, lo si vede selezionando l'area _Costumi_; possiamo usare il costume col sorriso "starfish-a" quando ringraziamo il subacqueo, usando il blocco `passa al costume [starfish-b]` e cambiando "starfish-b" con "starfish-a" subito prima del blocco `dire`;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+
+* c'è un problema, simile a quello del `nascondi`/`mostra`; dopo essere stata raccolta per la prima volta, la stella sorride sempre; come prima, all'inizio bisogna dire a "Stella" di usare il costume "starfish-b";
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+
+* il gioco finisce subito! possiamo far raccogliere al subacqueo tante stelle marine, ma come fare? per esempio facendo ricomparire una nuova stella; magari non subito, ma dopo alcuni secondi;
+
+* dopo che la stella è stata raccolta, aspettiamo allora qualche secondo, aggiungendo un blocco `attendi (1) secondi` del gruppo _Controllo_ subito dopo il blocco `nascondi` e cambiando l'1 in 3; poi la rendiamo di nuovo visibile;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+          attendi (3) secondi
+          mostra
+
+* acc! quando ricompare la stella ride; ormai dovrebbe essere chiaro cosa occorre fare per farla riapparire con il costume giusto;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+          attendi (3) secondi
+          passa al costume [starfish-b] <<<---
+          mostra
+
+* il gioco è un po' migliorato, ma è troppo noioso: la stella ricompare sempre nello stesso posto; prima di farla ricomparire, allora, la spostiamo; serve un nuovo blocco `vai a x: () y: ()` che usiamo per cambiare il valore della coordinata x (lasciando la y così com'è la stella si sposta solo a destra o sinistra);
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+          attendi (3) secondi
+          passa al costume [starfish-b] <<<---
+          vai a x: (-200) y: (-140)
+          mostra
+
+* ma che valore va specificato per la x? qualunque mettiamo (provare!) la stella si sposta solo la prima volta, poi ricompare sempre nello stesso posto; il valore deve cambiare ogni volta; nel gruppo _Operatori_ c'è quello che fa per noi, il blocco `numero a caso tra (1) e (10)`;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+          attendi (3) secondi
+          passa al costume [starfish-b] <<<---
+          vai a x: (numero a caso tra (1) e (10)) y: (-140)
+          mostra
+
+* la stella si muove, ma di poco; bisogna aumentare l'intervallo di variabilità;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          nascondi
+          attendi (3) secondi
+          passa al costume [starfish-b] <<<---
+          vai a x: (numero a caso tra (-200) e (200)) y: (-140)
+          mostra
+
+## contare i punti
+
+* è ora di cominciare a fare punti; ci serve perciò un contatore di stelle salvate; nel gruppo _Variabili e Liste_, premere _Crea una variabile_ e chiamarla "Stelle salvate"; cosa succede?
+
+* abbiamo detto che facciamo un punto per ogni stella salvata; selezioniamo lo sprite della stella, ed aggiungiamo, sempre dal gruppo _Variabili e Liste_ un blocco `cambia [Stelle salvate] di (1)` subito prima del blocco `nascondi`:
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          cambia [Stelle salvate] di (1)
+          nascondi
+          attendi (3) secondi
+          passa al costume [starfish-b] <<<---
+          vai a x: (numero a caso tra (-200) e (200)) y: (-140)
+          mostra
+
+* verificare che il punteggio sale proprio quando la stella sparisce;
+
+* si può giocare a schermo intero premendo il riquadro azzurro in alto a sinistra; premere il riquadro nella stessa posizione per tornare alla modalità di lavoro;
+
+* notate un problema? quando il gioco riparte, il punteggio non si azzera! aggiungiamo allora un blocco `porta [Stelle salvate] a [0]` all'inizio dello script della stella;
+
+        quando si clicca su F
+        porta [Stelle salvate] a [0]
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         ...
+
+* si può giocare a schermo intero premendo il riquadro azzurro in alto a sinistra; premere il riquadro nella stessa posizione per tornare alla modalità di lavoro;
+
+## l'antagonista
+
+* per rendere più difficile il gioco, introduciamo un terzo incomodo che fa perdere punti, per esempio uno squalo: se lo squalo tocca il subacqueo, questo dallo spavento perde una stella; aggiungiamo allora lo sprite "Shark", e lo chiamiamo "Squalo"; adattiamo la sua dimensione al nostro gioco; facciamo in modo che lo squalo nuoti lentamente per conto suo;
+
+        quando si clicca su F
+        vai a x: (-170) y: (120)
+        per sempre
+         fai (3) passi
+
+* arrivato in fondo allo schermo, si blocca; usiamo il blocco `rimbalza quando tocchi il bordo` del gruppo _Movimento_ per evitare che si blocchi; provare, si verifica lo stesso problema che abbiamo sperimentato con il subacqueo, cioè che quando nuota verso sinistra procede a testa in giù; inoltre, si muove solo in orizzontale; per risolvere il secondo problema, basta impostare una direzione di movimento obliqua con un blocco `punta in direzione (90)` e cambiando l'angolazione;
+
+        quando si clicca su F
+        vai a x: (-170) y: (120)
+        porta stile di rotazione a [sinistra-destra]
+        punta in direzione (75)
+        per sempre
+         fai (3) passi
+
+* sfruttiamo i costumi dello squalo per fargli aprire la bocca, di tanto in tanto (questo è il punto giusto per mostrare che gli sprite possono eseguire più programmi contemporaneamente);
+
+        quando si clicca su F
+        per sempre
+         passa al costume [shark-a]
+         attendi (numero a caso tra (1) e (3)) secondi
+         passa al costume [shark-b]
+         attendi (.2) secondi
+
+* cosa vogliamo far succedere quando lo squalo tocca il subacqueo? di certo diminuire il numero di stelle salvate, ma anche nascondere per qualche secondo il subacqueo per penalizzare il giocatore che non è stato abbastanza scaltro da evitarlo; selezionare allora lo sprite del subacqueo e aggiungere al suo script un nuovo blocco `se <> allora`;
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         ...
+         se <sta toccando [Squalo]> allora
+          porta effetto [luminosità] a (60)
+          attendi (.1) secondi
+          porta effetto [luminosità] a (0)
+          dire [Ahia!] per (2) secondi
+          cambia [Stelle salvate] di (-1)
+
+* sembra funzionare, ma c'è un piccolo problema; il punteggio può diventare negativo! basta allora diminuire il punteggio solo se non è già zero;
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         ...
+         se <sta toccando [Squalo]> allora
+          porta effetto [luminosità] a (60)
+          attendi (.1) secondi
+          porta effetto [luminosità] a (0)
+          dire [Ahia!] per (2) secondi
+          se <(Stelle salvate) > [0]> allora
+           cambia [Stelle salvate] di (-1)
+
+* per facilitare il gioco, possiamo decidere di far comparire lo squalo dopo 10 secondi dall'inizio della partita:
+
+        quando si clicca su F
+        nascondi
+        attendi (10) secondi
+        mostra
+        vai a x: (-170) y: (120)
+        ...
+
+* per rendere il gioco meno prevedibile, possiamo applicare la tecnica dell'attesa casuale usata nel costume dello squalo anche nello sprite della stella, per far apparire la stella dopo un intervallo variabile;
+
+        quando si clicca su F
+        vai a x: (-200) y: (-140)
+        passa al costume [starfish-b]
+        mostra
+        per sempre
+         se <sta toccando [Subacqueo]> allora
+          passa al costume [starfish-a]
+          dire [Mi hai salvata!] per (1) secondi
+          cambia [Stelle salvate] di (1)
+          nascondi
+          attendi (numero a caso tra (1) e (3)) secondi
+          passa al costume [starfish-b] <<<---
+          vai a x: (numero a caso tra (-200) e (200)) y: (-140)
+          mostra
+
+## gioco a tempo
+
+* possiamo far finire il gioco dopo un tempo prefissato, per esempio un minuto; per far ciò, aggiungere la variabile "Tempo rimanente", e aggiungere allo sprite della stella il seguente script:
+
+        quando si clicca su F
+        porta [Tempo rimanente] a [60]
+        per sempre
+         attendi (1) secondi
+         cambia [Tempo rimanente] di (-1)
+         se <(Tempo rimanente) < [1]> allora
+          invia a tutti [Partita finita] e attendi
+          arresta [tutto]
+
+* il messaggio [Partita finita] serve per nascondere il subacqueo e lo squalo; si usa un blocco `invia a tutti [message1]`, e una volta posizionato, si sceglie la voce "nuovo messaggio..." dal menu del blocco, che richiede il nome del messaggio da inviare;
+
+* per nascondere il subacqueo e lo squalo quando ricevono il messaggio si usa il blocco `quando ricevo [message1]` del gruppo _Situazioni_; selezionare il messaggio giusto dal menu; oltre a nascondersi, conviene anche arrestare gli altri script dello sprite;
+
+        quando ricevo [Partita finita]
+        nascondi
+        arresta [tutti gli altri script dello sprite]
+
+* ricordarsi di aggiungere un `mostra` all'inizio dello script del subacqueo, per evitare che all'inizio della seconda partita lo sprite non resti nascosto; per lo squalo non serve farlo perché si mostra da sè dopo 10 secondi;
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        mostra
+        per sempre
+
+## esito del gioco
+
+* se si vuole avere un commento sull'esito della partita, si può estendere lo script della stella;
+
+        quando si clicca su F
+        porta [Tempo rimanente] a [60]
+        per sempre
+         attendi (1) secondi
+         cambia [Tempo rimanente] di (-1)
+         se <(Tempo rimanente) < [1]> allora
+          invia a tutti [Partita finita]
+          arresta [tutti gli altri script dello sprite]
+          se <(Stelle salvate) = [0]> allora
+           passa al costume [starfish-b]
+           dire [Peccato, non hai salvato nessuna stella...] per (3) secondi
+           arresta [questo script]
+          se <(Stelle salvate) = [1]> allora
+           passa al costume [starfish-a]
+           dire [Hai salvato una stella!] per (3) secondi
+           arresta [questo script]
+          se <(Stelle salvate) < [1]> allora
+           passa al costume [starfish-a]
+           dire (unione di [Bravo, hai salvato ] e (unione di (Stelle salvate) e [ stelle!])) per (3) secondi
+           arresta [questo script]
+
+## possibili sviluppi
+
+* aggiungere degli effetti sonori;
+
+* introdurre un secondo squalo, di colore diverso, dopo 30 secondi;
+
+* introdurre un nuovo tipo di stella, usando un nuovo sprite o estendendo "Stella", che vale 3 punti e che compare casualmente o dopo che sono state salvate un certo numero di stelle (per esempio, ogni 5 stelle salvate); come si può differenziare la stella speciale da quella normale?
+
+* introdurre un quarto sprite che "ruba" le stelle al subacqueo;
+
+* ...
