@@ -1,3 +1,5 @@
+[//]: # (encoding=utf-8)
+
 # L'informatiche creative cun Scratch
 
 Marilenghe & Mariscuele
