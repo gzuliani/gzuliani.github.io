@@ -105,7 +105,7 @@ max_power       = 3300 # max possible power (in W) provided by energy company
 [webapi]
 api_base_uri    = http://127.0.0.1 # Public EmonCMS server
 api_key         = ...              # Personal EmonCMS API key
-api_update_rate = 20               # min delay (in s) between 2 API requests
+api_update_rate = 30               # min delay (in s) between 2 API requests
 node_number     = 1                # Identifier of your node in EmonCMS
 </pre>
 <p>Il valore del parametro <code>api_key</code> si ricava dalla sezione <strong>Apikey authentication</strong> della pagina <strong>Input API Help</strong>, raggiungibile dalla pagina <strong>Input</strong> dell'applicativo web. Copiare la chiave <strong>Read &amp; Write</strong>, quella di sola lettura non è sufficiente:</p>
@@ -137,7 +137,7 @@ $ sudo update-rc.d emon defaults
 <p>Il collegamento è quindi diretto: bastano due conduttori. La resistenza di <em>pull-up</em> a protezione del fototransistor è fornita direttamente dalla scheda mediante un'opportuna configurazione del pin di ingresso della GPIO attuata da emond.</p>
 <img src="img/emoncms/meter-raspberry.png">
 <p class="illustration">Schema di collegamento del contatore alla Raspberry Pi</p>
-<p>Occorre a fare attenzione perché la numerazione dei pin della porta GPIO della Raspberry Pi 3 Mod. B è tutt'altro che intuitiva: per esempio il pin n. 25 è cablato sul pin 22 della porta, l'undicesimo della fila esterna contando dal bordo.</p>
+<p>Occorre a fare attenzione perché la numerazione dei pin della porta GPIO della Raspberry Pi 3 Mod. B è tutt'altro che intuitiva: per esempio il pin GPIO 25 è cablato sul pin n. 22 della porta, l'undicesimo della fila esterna contando dal bordo.</p>
 <img src="img/emoncms/raspberry-gpio-pinout.png">
 <p class="illustration">Pinout della GPIO della Raspberry Pi 3 Mod. B</p>
 <p>emond registra sul <em>syslog</em> eventuali problemi riscontrati durante il suo funzionamento; ad esempio, tentando di simulare a mano una sequenza di impulsi cortocircuitando brevemente i due connettori collegati alla porta GPIO ho ottenuto il seguente risultato:</p>
