@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="it"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<title>10 CAVE ADVENTURE</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css">
+<link href="css/10-cave-adventure.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<p class="page-path"><a href="../index.html#10-cave-adventure">risorse</a> | 10 cave adventure</p>
+<h1>10 CAVE ADVENTURE</h1>
+<h2>Introduzione</h2>
+<p><a href="https://spectrumcomputing.co.uk/index.php?cat=96&id=30392">10 CAVE ADVENTURE</a> è un piccolo gioiello che ho scoperto per caso cercando in rete del software per lo ZX81 che ho <a href="zx81-restoration.html">recentemente sistemato</a>. Si tratta di una avventura testuale realizzata da Einar Saukas per la versione non espansa del computer (richiede quindi solo 1K di RAM) per la competizione <a href="https://spectrumcomputing.co.uk/index.php?cat=999&group_id=2041">BASIC Tenliners</a> del 2016. Come si può facilmente dedurre il programma è composto da 10 linee: un risultato di tutto rispetto, tenendo conto che il BASIC dello ZX81 ammette un'unica istruzione per ogni riga di programma.</p>
+<p>Riporto integralmente la descrizione originale dell'implementazione preparata dall'autore:</p>
+<pre class="code">
+=======================================================
+&quot;TENLINER CAVE ADVENTURE&quot; - A ZX81 GAME BY EINAR SAUKAS
+=======================================================
+
+---------
+BACKSTORY
+---------
+
+As a young warrior apprentice, you have been chosen by the village elders to
+seek out the evil menace that lurks in some nearby caves. Once found, use any
+means at your disposal to defeat it... Good luck on your quest!
+
+
+--------
+COMMANDS
+--------
+
+This is a very simple tiny text adventure for the ZX81, coded in 10 lines only.
+It recognizes the following commands:
+
+    NORTH
+    SOUTH
+    EAST
+    WEST
+    INVENTORY
+    LOOK
+    LOOK &lt;object&gt;
+    GET &lt;object&gt;
+    OPEN &lt;object&gt;
+    KILL &lt;object&gt;
+
+
+-----
+ABOUT
+-----
+
+This game was created for the &quot;BASIC Tenliners 2016&quot; competition organized by
+HOMEPUTERIUM (Das Homecomputer-Laboratorium an der Eider-Treene-Schule) in
+Friedrichstadt, Germany. The competition was to design games in compiled or
+interpreted BASIC for any 8-bit plataform (Atari, MSX, etc) restricted to 10
+lines of code with limited size. It was the first ZX81 game to ever qualify for
+this competition, not an easy task considering the limitations of ZX81 BASIC!
+
+Each program line is under the 120 characters limit, without hidden control
+codes or initialization. The program only uses a machine code routine from the
+ZX81 ROM (accessed using &quot;USR 3086&quot;) to scroll text on screen, because the ZX81
+doesn&apos;t provide support for automatic text scrolling.
+
+
+-------
+DETAILS
+-------
+
+This game was adapted from &quot;1 Line Cave Adventure&quot;, originally developed by
+Digital Prawn and myself (Einar Saukas) for the ZX-Spectrum in 2007. An almost
+complete solution for our original game is available here:
+
+    http://www.solutionarchive.com/game/id%2C5064/
+
+The original game was already very small. Even so, it was quite challenging to
+port it to the ZX81 in 10 lines of code, mainly because the ZX81 only accepts a
+single instruction per command line. Even worse, due to the line length
+restriction in this category, the instruction responsible for the main game
+logic had to be broken into 3 separate lines, which means the entire game had to
+be implemented using 8 instructions only!
+
+The main solution was concatenating the entire game state into a single string
+variable X$, and modeling the game logic as a finite state machine such that a
+single formula updates the entire game state at once, in a single instruction,
+based on player movement and action. This core game logic is assisted by another
+2 formulas. The first formula validates and calculates player movement based on
+player input and current location, execute in a single instruction. The second
+formula validates and calculates player action based on player input, current
+location, and game state, executed in a single instruction although &quot;broken&quot;
+into 3 program lines because this last formula was too long.
+
+Another problem was, the full list of text responses exceeds the imposed line
+length limit. For this reason, the same string variable X$ is also used to
+store some of these responses.
+
+The complete game listing is provided here:
+
+   1 LET X$=&quot;100CANNOT DOYOU WALK OPENED   CLOSED   A SWORD  A KEY    NOTHING  A CHEST  A DRAGON A CORPSE &quot;
+   2 PRINT TAB USR 3086+USR 3086;&quot;YOU ARE IN A &quot;;&quot;CAVEPIT HALLLAKE&quot;(VAL X$(1)*4-3 TO VAL X$(1)*4)
+   3 INPUT U$
+   4 LET M=2*(U$=&quot;NORTH&quot;)*(X$(1)&lt;&quot;3&quot;)-2*(U$=&quot;SOUTH&quot;)*(X$(1)&gt;&quot;2&quot;)+(X$(1)+U$=&quot;2WEST&quot;)-(X$(1)+U$=&quot;3EAST&quot;)
+   5 LET A=(3+VAL X$(2)+2*(X$(3)=&quot;2&quot;))*(X$(1)+U$=&quot;2LOOK CHEST&quot;)+(11+(X$(3)=&quot;2&quot;))*(X$(1)+U$=&quot;3KILL DRAGON&quot;)+(M&lt;&gt;0)
+   6 LET A=A+(5+VAL X$(1))*(U$=&quot;LOOK&quot;)+(6-VAL X$(3))*(U$=&quot;INVENTORY&quot;)+(6-(X$(3)=&quot;0&quot;))*(X$(1)+U$=&quot;4LOOK CORPSE&quot;)
+   7 LET A=A+10*(X$( TO 3)+U$=&quot;400GET KEY&quot;)+2*(X$( TO 3)+U$=&quot;201OPEN CHEST&quot;)+10*(X$( TO 3)+U$=&quot;211GET SWORD&quot;)
+   8 LET X$( TO 3)=STR$ (VAL X$(1)+M)+STR$ (VAL X$(2)+(A=2))+STR$ (VAL X$(3)+(A=10))
+   9 PRINT TAB USR 3086;&quot;&gt; &quot;;U$;TAB USR 3086;(X$+&quot;TAKEN    YOU DIED YOU WON. &quot;)(A*9+4 TO A*9+12)
+  10 IF A&lt;11 THEN GOTO 2
+
+The complete list of variables is as follows:
+
+    X$ = current game state, where:
+        X$(1) = player location (1=cave, 2=pit, 3=hall, 4=lake)
+        X$(2) = chest (0=closed, 1=open)
+        X$(3) = inventory (0=nothing, 1=key, 2=sword)
+        X$(4 TO ) = partial list of text responses
+    U$ = player command
+    M = player movement (from -2 to 2)
+    A = player action (from 0 to 12)
+
+The purpose of each program line is described below:
+
+    Line 1: Initialize game state (location=1, chest=0, inventory=0)
+    Line 2: Print current player location
+    Line 3: Input player command
+    Line 4: Validate and calculate player movement
+    Lines 5 to 7: Validate and calculate player action
+    Line 8: Update game state
+    Line 9: Print game response
+    Line 10: Repeat until player wins or dies
+
+Easy, right? =:)
+
+
+-------
+CREDITS
+-------
+
+  &quot;TENLINER CAVE ADVENTURE&quot; for the ZX81
+    by Einar Saukas (c) 2016.
+
+  Based on &quot;1 Line Cave Adventure&quot; for the ZX-Spectrum
+    by Digital Prawn and Einar Saukas (c) 2007.
+</pre>
+<p>Considerata la brevità del programma, mi sono chiesto se sarei stato in grado di determinare le mosse necessarie per risolvere l'avventura dall'analisi del listato, immaginando di avere un unico tentativo a disposizione. Quel che segue è il risultato di un paio di sere di <em>reverse-engineering</em>.</p>
+<h2>Analisi del listato</h2>
+<h3>Luoghi</h3>
+<p>Il primo passo consiste nel ricostruire la mappa dei luoghi dell'avventura. Già sappiamo che le stanze in gioco sono quattro, rispettivamente <span class="location">cave</span>, <span class="location">pit</span>, <span class="location">hall</span> e <span class="location">lake</span>. Sapendo che <span class="code">X$(1)</span> contiene l'indice della stanza corrente, dalla linea n. 4 possiamo ricavare alcune interessanti informazioni. Essa è composta da 4 termini, ognuno associato ad una direzione di movimento:</p>
+<pre class="code">
+4 LET M = + 2 * (U$ = &quot;NORTH&quot;) * (X$(1) &lt; &quot;3&quot;)
+          - 2 * (U$ = &quot;SOUTH&quot;) * (X$(1) &gt; &quot;2&quot;)
+          + (X$(1) + U$ = &quot;2WEST&quot;)
+          - (X$(1) + U$ = &quot;3EAST&quot;)
+</pre>
+<p>Sapendo che la variabile <span class="code">X$(1)</span> contiene uno tra <span class="code">&quot;1&quot;</span>, <span class="code">&quot;2&quot;</span>, <span class="code">&quot;3&quot;</span> e <span class="code">&quot;4&quot;</span>, <span class="code">M</span> vale:</p>
+<ul>
+<li><strong><span class="code">+2</span></strong> se <span class="code">U$="NORTH"</span>, purché <span class="code">X$(1)="1"</span> oppure <span class="code">X$(1)="2"</span>;</li>
+<li><strong><span class="code">-2</span></strong> se <span class="code">U$="SOUTH"</span>, purché <span class="code">X$(1)="3"</span> oppure <span class="code">X$(1)="4"</span>;</li>
+<li><strong><span class="code">+1</span></strong> se <span class="code">U$="WEST"</span>,  <span class="code">purché X$(1)="2"</span>;</li>
+<li><strong><span class="code">-1</span></strong> se <span class="code">U$="EAST"</span>,  <span class="code">purché X$(1)="3"</span>;</li>
+<li><strong><span class="code"> 0</span></strong> altrimenti.</li>
+</ul>
+<p><span class="code">M</span> rappresenta quindi la distanza tra il luogo in cui ci si trova attualmente e quello di destinazione; ciò è confermato dalla riga n. 8, dove si nota un'addizione per la determinazione del nuovo valore di <span class="code">X$(1)</span>:</p>
+<pre class="code">
+   8 LET X$( TO 3)=STR$ (<span class="mark5">VAL X$(1)+M</span>)+...
+</pre>
+<p>Da ciò si può concludere che:</p>
+<ul>
+<li><span class="command">NORTH</span> consente di passare dalla stanza <span class="code">1</span> alla stanza <span class="code">3</span> e dalla stanza <span class="code">2</span> alla stanza <span class="code">4</span>;</li>
+<li><span class="command">SOUTH</span> consente di passare dalla stanza <span class="code">3</span> alla stanza <span class="code">1</span> e dalla stanza <span class="code">4</span> alla stanza <span class="code">2</span>;</li>
+<li><span class="command">WEST</span> consente di passare dalla stanza <span class="code">2</span> alla stanza <span class="code">3</span>;</li>
+<li><span class="command">EAST</span> consente di passare dalla stanza <span class="code">3</span> alla stanza <span class="code">2</span>.</li>
+</ul>
+<p>La stanza n.1 si trova quindi sopra la n.3, la n.3 sopra la n.4 e la n.3 a sinistra della n.2:</p>
+<pre class="code">
+              +-----+
+              |  4  |
+              +-----+
+                 |
+    +-----+   +-----+
+    |  3  |---|  2  |
+    +-----+   +-----+
+       |
+    +-----+
+    |  1  |
+    +-----+
+</pre>
+<h3>Azioni</h3>
+<p>Le righe che determinano il valore della variabile <span class="code">A</span> sono la 5, 6 e 7:</p>
+<pre class="code">
+5 LET A=(3+VAL X$(2)+2*(X$(3)=&quot;2&quot;))*(X$(1)+U$=&quot;2LOOK CHEST&quot;)+(11+(X$(3)=&quot;2&quot;))*(X$(1)+U$=&quot;3KILL DRAGON&quot;)+(M&lt;&gt;0)
+6 LET A=A+(5+VAL X$(1))*(U$=&quot;LOOK&quot;)+(6-VAL X$(3))*(U$=&quot;INVENTORY&quot;)+(6-(X$(3)=&quot;0&quot;))*(X$(1)+U$=&quot;4LOOK CORPSE&quot;)
+7 LET A=A+10*(X$( TO 3)+U$=&quot;400GET KEY&quot;)+2*(X$( TO 3)+U$=&quot;201OPEN CHEST&quot;)+10*(X$( TO 3)+U$=&quot;211GET SWORD&quot;)
+</pre>
+<p>Anche in questo caso siamo fronte ad una combinazione lineare di termini simili:</p>
+<pre class="code">
+A = (3 + VAL X$(2) + 2 * (X$(3) = &quot;2&quot;)) * (X$(1) + U$ = &quot;2LOOK CHEST&quot;)
+  + (11 + (X$(3) = &quot;2&quot;)) * (X$(1) + U$ = &quot;3KILL DRAGON&quot;)
+  + (M &lt;&gt; 0)
+  + (5 + VAL X$(1)) * (U$ = &quot;LOOK&quot;)
+  + (6 - VAL X$(3)) * (U$ = &quot;INVENTORY&quot;)
+  + (6 - (X$(3) = &quot;0&quot;)) * (X$(1) + U$ = &quot;4LOOK CORPSE&quot;)
+  + 10 * (X$( TO 3) + U$ = &quot;400GET KEY&quot;)
+  +  2 * (X$( TO 3) + U$ = &quot;201OPEN CHEST&quot;)
+  + 10 * (X$( TO 3) + U$ = &quot;211GET SWORD&quot;)
+</pre>
+<p>Poiché tutti i termini contengono un fattore associato ad un valore di <span class="code">U$</span> diverso, posso concludere che al più uno di essi sarà non nullo. Questo mi permette di analizzare un caso alla volta senza timore di perdere di vista qualche combinazione.</p>
+<p>Segue il significato di alcune espressioni, riportate nell'ordine in cui compaiono nel listato:</p>
+<ul>
+<li><span class="code">VAL X$(2)=0</span> se chest <span class="chest">closed</span>, <span class="code">1</span> se chest <span class="chest">open</span>;</li>
+<li><span class="code">X$(3)=&quot;2&quot;</span> vale <span class="code">1</span> se si possiede la <span class="inventory">sword</span>, <span class="code">0</span> altrimenti;</li>
+<li><span class="code">M&lt;&gt;0</span> vale <span class="code">1</span> se la mossa di spostamento è legale, <span class="code">0</span> altrimenti;</li>
+<li><span class="code">VAL X$(1)</span> è il numero di stanza ove ci si trova;</li>
+<li><span class="code">X$(3)=&quot;0&quot;</span> vale <span class="code">1</span> se non si possiede nulla, <span class="code">0</span> altrimenti.</li>
+</ul>
+<p>Alla luce di ciò annoto i valori assunti dalla variabile <span class="code">A</span> in una tabella:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th rowspan="2" class="term">Termine</th><th rowspan="2" class="command">Comando</th><th rowspan="2">Valore di <span class="code">A</span></th><th colspan="3" class="condition">Condizione</th></tr>
+<tr><th class="location">location</th><th class="chest">chest</th><th class="inventory">inventory</th></tr>
+<tr><td rowspan="3" class="term">#1</td><td rowspan="3" class="command">LOOK CHEST</td><td class="value_of_a">3</td><td class="location">pit</td><td class="chest">closed</td><td class="inventory">not sword</td></tr>
+<tr><td class="value_of_a">4</td><td class="location">pit</td><td class="chest">open</td><td class="inventory">not sword</td></tr>
+<tr><td class="value_of_a">6</td><td class="location">pit</td><td class="chest">open</td><td class="inventory">sword</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td rowspan="2" class="term">#2</td><td rowspan="2" class="command">KILL DRAGON</td><td class="value_of_a">11</td><td class="location">hall</td><td></td><td class="inventory">not sword</td></tr>
+<tr><td class="value_of_a">12</td><td class="location">hall</td><td></td><td class="inventory">sword</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td class="term">#3</td><td class="command">&laquo;spostamento&raquo;</td><td class="value_of_a">1</td><td></td><td></td><td></td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td rowspan="4" class="term">#4</td><td rowspan="4" class="command">LOOK</td><td class="value_of_a">6</td><td class="location">cave</td><td></td><td></td></tr>
+<tr><td class="value_of_a">7</td><td class="location">pit</td><td></td><td></td></tr>
+<tr><td class="value_of_a">8</td><td class="location">hall</td><td></td><td></td></tr>
+<tr><td class="value_of_a">9</td><td class="location">lake</td><td></td><td></td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td rowspan="3" class="term">#5</td><td rowspan="3" class="command">INVENTORY</td><td class="value_of_a">6</td><td></td><td></td><td class="inventory">nothing</td></tr>
+<tr><td class="value_of_a">5</td><td></td><td></td><td class="inventory">key</td></tr>
+<tr><td class="value_of_a">4</td><td></td><td></td><td class="inventory">sword</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td rowspan="2" class="term">#6</td><td rowspan="2" class="command">LOOK CORPSE</td><td class="value_of_a">5</td><td class="location">lake</td><td></td><td class="inventory">nothing</td></tr>
+<tr><td class="value_of_a">6</td><td class="location">lake</td><td></td><td class="inventory">not nothing</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td class="term">#7</td><td class="command">GET KEY</td><td class="value_of_a">10</td><td class="location">lake</td><td class="chest">closed</td><td class="inventory">nothing</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td class="term">#8</td><td class="command">OPEN CHEST</td><td class="value_of_a">2</td><td class="location">pit</td><td class="chest">closed</td><td class="inventory">key</td></tr>
+<tr><td class="separator" colspan="6"></td></tr>
+<tr><td class="term">#9</td><td class="command">GET SWORD</td><td class="value_of_a">10</td><td class="location">pit</td><td class="chest">open</td><td class="inventory">key</td></tr>
+</table>
+<p>Per qualunque altra combinazione la variabile <span class="code">A</span> assume il valore zero.</p>
+<h3>Risposte</h3>
+<p>La risposta del programma viene estratta dalla stringa di stato <span class="code">X$</span> in funzione del valore della <span class="code">A</span>. Dal frammento della linea n.9 evidenziato:</p>
+<pre class="code">
+9 PRINT ...;(X$+&quot;TAKEN    YOU DIED YOU WON. &quot;)(<span class="mark5">A*9+4 TO A*9+12</span>)
+</pre>
+<p>si deduce che la stringa di stato contiene una sequenza di risposte cablate di lunghezza 9. Suddividendo il contenuto a blocchi di 9 caratteri &mdash; ignorando i primi tre caratteri che sappiamo rappresentare location, chest e inventory &mdash; si ottiene la seguente corrispondenza:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Valore di <span class="code">A</span></th><th>Risposta</th></tr>
+<tr><td class="value_of_a">0</td><td>CANNOT DO</td></tr>
+<tr><td class="value_of_a">1</td><td>YOU WALK</td></tr>
+<tr><td class="value_of_a">2</td><td>OPENED</td></tr>
+<tr><td class="value_of_a">3</td><td>CLOSED</td></tr>
+<tr><td class="value_of_a">4</td><td>A SWORD</td></tr>
+<tr><td class="value_of_a">5</td><td>A KEY</td></tr>
+<tr><td class="value_of_a">6</td><td>NOTHING</td></tr>
+<tr><td class="value_of_a">7</td><td>A CHEST</td></tr>
+<tr><td class="value_of_a">8</td><td>A DRAGON</td></tr>
+<tr><td class="value_of_a">9</td><td>A CORPSE</td></tr>
+<tr><td class="value_of_a">10</td><td>TAKEN</td></tr>
+<tr><td class="value_of_a">11</td><td>YOU DIED</td></tr>
+<tr><td class="value_of_a">12</td><td>YOU WON.</td></tr>
+</table>
+<p>A questo punto dovrebbe essere possibile determinare la sequenza vincente di comandi.</p>
+<h2>Determinazione della soluzione</h2>
+<p>La condizione d'uscita è esplicitata alla riga n.10:</p>
+<pre class="code">
+10 IF A&lt;11 THEN GOTO 2
+</pre>
+<p>Dalle risposte si deduce che la vittoria si ottiene per <span class="code">A=12</span>, ovvero impartendo il comando <span class="command">KILL DRAGON</span> nella <span class="location">hall</span> possedendo la <span class="inventory">sword</span>. Per possedere la <span class="inventory">sword</span> occorre che si realizzi la condizione <span class="code">X$(3)="2"</span>. Poiché all'inizio del gioco <span class="code">X$(3)="0"</span> e, come si può desumere dalla riga n.8:
+<pre class="code">
+8 LET X$( TO 3)=...+...+STR$ (VAL X$(3)<span class="mark5">+(A=10)</span>)
+</pre>
+<p>quel valore viene incrementato quando <span class="code">A=10</span>, è necessario realizzare tale condizione per due volte. Consultando la tabella delle azioni si vede che <span class="code">A=10</span> si ottiene in due casi:</p>
+<ul>
+<li><span class="command">GET KEY</span> in <span class="location">lake</span> con chest <span class="chest">closed</span> a mani vuote (inventory <span class="inventory">nothing</span>);</li>
+<li><span class="command">GET SWORD</span> in <span class="location">pit</span> con chest <span class="chest">open</span> disponendo della <span class="inventory">key</span>.</li>
+</ul>
+<p>Va da sè che il primo comando da eseguire è <span class="command">GET KEY</span>; l'unica condizione necessaria per concludere con successo l'azione è trovarsi nella locazione n.4, che si raggiunge dalla stanza iniziale con la sequenza di movimenti:</p>
+<pre class="code">
+NORTH
+EAST
+NORTH
+</pre>
+<p>Giunti al <span class="location">lake</span> si raccoglie la <span class="inventory">key</span>:</p>
+<pre class="code">
+GET KEY
+</pre>
+<p>Prima di procedere con il comando <span class="command">GET SWORD</span> è necessario cambiare di stato al flag chest, che da <span class="chest">closed</span> deve diventare <span class="chest">open</span>. Il modo per farlo lo suggerisce sempre la riga n.8:</p>
+<pre class="code">
+8 LET X$( TO 3)=...+STR$ (VAL X$(2)<span class="mark5">+(A=2)</span>)+...
+</pre>
+<p>La condizione <span class="code">A=2</span> si ottiene con <span class="command">OPEN CHEST</span> in <span class="location">pit</span> con chest <span class="chest">closed</span> e inventory <span class="inventory">key</span>. Basta quindi raggiungere il luogo giusto:</p>
+<pre class="code">
+SOUTH
+</pre>
+<p>A questo punto si può raccogliere la <span class="inventory">sword</span> in due mosse:</p>
+<pre class="code">
+OPEN CHEST
+GET SWORD
+</pre>
+<p>Ora siamo pronti per l'azione decisiva, da eseguire in <span class="location">hall</span>:</p>
+<pre class="code">
+WEST
+KILL DRAGON
+</pre>
+<p>La sequenza vincente è dunque:</p>
+<pre class="code">
+NORTH
+EAST
+NORTH
+GET KEY
+SOUTH
+OPEN CHEST
+GET SWORD
+WEST
+KILL DRAGON
+</pre>
+<p>Non resta che provarla:</p>
+<img src="img/10-cave-adventure/screen-1.png">
+<p class="illustration">Lo stato del programma dopo le prime cinque mosse</p>
+<img src="img/10-cave-adventure/screen-2.png">
+<p class="illustration">Vittoria!</p>
+<p>Una copia locale del nastro virtuale che ho usato per giocare all'avventura è disponibile <a href="files/10-cave-adventure/10CAVEADV.P">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 21/12/2019</p>
+</body>
+</html>

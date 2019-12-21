@@ -1,0 +1,71 @@
+span.mark5 {
+ color: #d33682;
+ font-weight: bold;
+}
+
+span.command {
+ color: #6c71c4;
+ font-weight: bold;
+}
+
+span.inventory {
+ color: #2aa198;
+ font-weight: bold;
+}
+
+span.chest {
+ color: #859900;
+ font-weight: bold;
+}
+
+span.location {
+ color: #268bd2;
+ font-weight: bold;
+}
+
+td.chest {
+ color: #859900;
+}
+
+td.command {
+ color: #6c71c4;
+}
+
+td.inventory {
+ color: #2aa198;
+}
+
+td.location {
+ color: #268bd2;
+}
+
+td.separator {
+ border-bottom: 1px dotted #073642;
+}
+
+td.term {
+ text-align: center;
+}
+
+td.value_of_a {
+ text-align: center;
+}
+
+th.chest {
+ color: #859900;
+ text-align: center;
+}
+
+th.condition {
+ text-align: center;
+}
+
+th.inventory {
+ color: #2aa198;
+ text-align: center;
+}
+
+th.location {
+ color: #268bd2;
+ text-align: center;
+}
