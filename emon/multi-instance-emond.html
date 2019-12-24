@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>emond multi-istanza</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/multi-instance-emond.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#multi-instance-emond">risorse</a> | emond multi-istanza</p>
+<h1>emond multi-istanza</h1>
+<p class="note">Questi appunti costituiscono un'estensione dell'esperimento <a href="emoncms.html">Monitoraggio consumi con EmonCMS</a>.</p>
+<h2>Introduzione</h2>
+<p>Il servizio <a href="http://ondrej1024.github.io/emond/">emond</a> è in grado di monitorare un contatore elettronico di energia. Come fare se i contatori da controllare sono due o più? La domanda è già stata posta nei <a href="https://openenergymonitor.org/forum-archive/node/5825.html">forum di EmonCMS</a> e la risposta l'ha fornita l'autore stesso di emond:</p>
+<blockquote>
+I think it should be possible to run 2 instances of emond on the same RPi, though I have never tried. You just have to change the hardcoded config file name for one of them so you can have two different configurations (which you need to specify 2 different GPIO inputs).
+<br>
+As an alternative emond could be transformed into a multi threaded program which could handle multiple GPIO inputs natively. But this would required quite some work.
+<br>
+&hellip;
+</blockquote>
+<p>Il suggerimento di ricompilare l'eseguibile modificando il percorso del file di configurazione mi sembra poco pratico: sarei costretto a preparare un nuovo binario per ogni contatore aggiuntivo. Preferisco optare per una soluzione più flessibile e retrocompatibile: modificare il programma in modo che accetti un parametro opzionale che rappresenta &ndash; per esempio &ndash; un suffisso da applicare al nome del file di configurazione e ovunque si renda necessario. In questo modo diventa possibile lanciare un numero indefinito di istanze del servizio, ognuna parametrizzata con un suffisso diverso, sicuri di non creare confusione. Bisogna capire quali sono i punti in cui occorre applicare il suffisso.</p>
+<h2>Punti di intervento</h2>
+<p>Analizzando il codice dopo averlo scaricato dal <a href="https://github.com/ondrej1024/emond">repository git</a> ufficiale (l'ultimo rilascio disponibile ad oggi è associato al commit <a href="https://github.com/ondrej1024/emond/commit/b411381fc915073e07b59026df3a48bb71a0d3f1">b411381</a> del 27 settembre 2015, v.0.7.1), i punti in cui appare il nome &laquo;emon&raquo; o qualche suo derivato sono cinque, tre nel sorgente <span class="file">emond.c</span> e due nel makefile (file <span class="file">Makefile</span>).</p>
+<h3>emond.c</h3>
+<pre class="code">
+[emond.c]
+...
+#define CONFIG_FILE "/etc/<strong>emon</strong>.conf"
+#define NV_FILENAME "<strong>emond</strong>.dat"
+
+...
+   openlog("<strong>emond</strong>", LOG_PID|LOG_CONS, LOG_USER);
+</pre>
+<p>In questo caso è necessario personalizzare il nome del file di configurazione, il nome del file contenente lo storico dei dati e il nome identificativo dei messaggi inviati al syslog. Per questa ragione predispongo tre buffer che conterranno i nomi per questi oggetti, quindi i nomi standard (da utilizzare nel caso il suffisso non sia sttato specificato), infine tre template che rappresentano i nomi per i tre oggetti al netto del suffisso:</p>
+<pre class="code">
+<del>#define CONFIG_FILE "/etc/emon.conf"
+#define NV_FILENAME "emond.dat"</del>
+
+<ins>#define BUFFER_SIZE 64
+
+char DAEMON_NAME [BUFFER_SIZE];
+char CONFIG_FILE [BUFFER_SIZE];
+char NV_FILENAME [BUFFER_SIZE];
+
+#define DAEMON_NAME_DEFAULT "emond"
+#define CONFIG_FILE_DEFAULT "/etc/emon.conf"
+#define NV_FILENAME_DEFAULT  "emond.dat"
+
+#define DAEMON_NAME_TEMPLATE "emon-%s"
+#define CONFIG_FILE_TEMPLATE "/etc/emon-%s.conf"
+#define NV_FILENAME_TEMPLATE "emond-%s.dat"
+</ins>
+</pre>
+<p>I nomi definitivi vengono determinati all'avvio del programma a seconda che il suffisso sia stato specificato (<span class="code">argc==2</span>) oppure no (<span class="code">argc==1</span>):</p>
+<pre class="code">
+int main(int argc, char **argv)
+{
+<ins>   if (argc == 2)
+   {
+        const char* suffix = argv[1];
+        snprintf(DAEMON_NAME, BUFFER_SIZE, DAEMON_NAME_TEMPLATE, suffix);
+        snprintf(CONFIG_FILE, BUFFER_SIZE, CONFIG_FILE_TEMPLATE, suffix);
+        snprintf(NV_FILENAME, BUFFER_SIZE, NV_FILENAME_TEMPLATE, suffix);
+
+   }
+   else
+   {
+        strncpy(DAEMON_NAME, DAEMON_NAME_DEFAULT, BUFFER_SIZE);
+        strncpy(CONFIG_FILE, CONFIG_FILE_DEFAULT, BUFFER_SIZE);
+        strncpy(NV_FILENAME, NV_FILENAME_DEFAULT, BUFFER_SIZE);
+   }</ins>
+   openlog(<del>"emond"</del><ins>DAEMON_NAME</ins>, LOG_PID|LOG_CONS, LOG_USER);
+   ...
+</pre>
+<p>emond può visualizzare i dati ricavati dal contatore su un display LCD opportunamente collegato alla porta GPIO. Poiché ora ci sono in gioco più istanze del servizio, va definita la politica di gestione dell'LCD. Se ci sono più istanze attive penso non abbia senso aggiornarlo senza un adeguato coordinamento tra le stesse: si correrebbe il rischio di mostrare sul visore una serie di misure tra loro scorrelate in rapida successione senza che l'utente abbia il minimo controllo. Per questa ragione ho deciso di inibire l'uso del display nel caso emond giri come istanza, lasciando però intatto il funzionamento originale nel caso di un'installazione standard:</p>
+<pre class="code">
+   /* Init LCD screen */
+<ins>   if (argc == 2)
+   {
+      syslog(LOG_DAEMON | LOG_INFO, "Running as an instance, LCD will not be updated");
+   }
+   else </ins>if (lcd_init() &lt; 0)
+   {
+      syslog(LOG_DAEMON | LOG_WARNING, "Unable to setup LCD screen, display is disabled\n");
+   }
+</pre>
+<p><a href="files/multi-instance-emond/emond.c">Qui</a> è disponibile la versione del file <span class="file">emond.c</span> adattata.</p>
+<h3>Makefile</h3>
+<p>I punti di intervento riguardano il file di configurazione e lo script in <span class="file">init.d</span>:</p>
+<pre class="code">
+[Makefile]
+...
+install: target
+	@echo "---- Install binaries and scripts ----"
+	cp $(SRCPATH)/$(PROG) $(BINPATH)
+	cp conf/<strong>emon</strong>.conf $(CNFPATH)/
+	cp init.d/<strong>emon</strong> $(CNFPATH)/init.d/
+</pre>
+<p>Ho deciso di non intervenire sul makefile, per preservarne il funzionamento originale. Oltretutto l'installazione di una nuova istanza del servizio emond si ottiene facilmente con pochi passaggi.</p>
+<p>La prima cosa da fare è arrestare il servizio di emond, qualora fosse in esecuzione:</p>
+<pre class="code">
+$ sudo service emon stop
+</pre>
+<p>Prima di procedere con la creazione delle nuove istanze occorre ricompilare il servizio, dopo aver apportato al sorgente originale <span class="file">emond.c</span> le modifiche appena discusse o sostituendolo con la <a href="files/multi-instance-emond/emond.c">versione aggiornata</a>. I comandi da impartire sono:</p>
+<pre class="code">
+$ cd
+$ cd emond
+$ make
+</pre>
+<p>La sostituzione del vecchio binario conclude il primo passo:</p>
+<pre class="code">
+$ sudo cp src/emond /usr/local/bin
+</pre>
+<h3>Rinomina di emond</h3>
+<p>Supponendo di voler rinominare il servizio attualmente registrato come <span class="daemon">emond</span> in <span class="daemon">emon-hp1</span> (dove hp1 sta per &ldquo;heatpump #1&rdquo;), va conseguentemente rinominato lo script associato:</p>
+<pre class="code">
+$ cd /etc/init.d
+$ sudo mv emon emon-hp1
+</pre>
+<p>Lo script va poi modificato nelle parti indicate:</p>
+<pre class="code">
+# Provides:          	emond<ins>-hp1</ins>
+...
+
+PIDFILE=/var/run/<del>$NAME</del><ins>emond-hp1.pid</ins>
+...
+
+OPTS=<ins>hp1</ins>
+</pre>
+<p>Il parametro <span class="code">OPTS</span> rappresenta i parametri che il sistema operatico passa al servizio sulla riga di comando, in questo caso il suffisso <span class="daemon">hp1</span>. Ora va adattato il file di configurazione:</p>
+<pre class="code">
+$ cd ..
+$ sudo mv emon.conf emon-hp1.conf
+</pre>
+<p>Finalmente si può riavviare il servizio:</p>
+<pre class="code">
+$ sudo service emon-hp1 start
+</pre>
+<p>Una rapida occhiata al syslog ci conferma che il servizio è partito con il nuovo nome:</p>
+<pre class="code">
+$ tail -f /var/log/syslog
+Dec 16 21:13:55 emonpi emon-hp1[3665]: Start Energy monitor daemon
+Dec 16 21:13:55 emonpi emon-hp1[3673]: Starting Energy Monitor (version 0.7.2)
+Dec 16 21:13:55 emonpi emon-hp1[3673]: Config parameters read from /etc/emon-hp1.conf:
+Dec 16 21:13:55 emonpi emon-hp1[3673]: ***************************
+Dec 16 21:13:55 emonpi emon-hp1[3673]: pulse_input_pin: 25
+Dec 16 21:13:55 emonpi emon-hp1[3673]: wh_per_pulse: 1
+Dec 16 21:13:55 emonpi emon-hp1[3673]: pulse_length: 0
+Dec 16 21:13:55 emonpi emon-hp1[3673]: max_power: 3300
+Dec 16 21:13:55 emonpi emon-hp1[3673]: flash_dir: /media/data
+Dec 16 21:13:55 emonpi emon-hp1[3673]: lcdproc_port: 0
+Dec 16 21:13:55 emonpi emon-hp1[3673]: api_base_uri: http://127.0.0.1
+Dec 16 21:13:55 emonpi emon-hp1[3673]: api_key: ...
+Dec 16 21:13:55 emonpi emon-hp1[3673]: api_update_rate: 30
+Dec 16 21:13:55 emonpi emon-hp1[3673]: node_number: 1
+Dec 16 21:13:55 emonpi emon-hp1[3673]: ***************************
+Dec 16 21:13:55 emonpi emon-hp1[3673]: Data file /media/data/emond-hp1.dat not yet created
+...
+</pre>
+<p>Per richiedere l'avvio automatico del servizio dare il seguente comando:</p>
+<pre class="code">
+$ sudo update-rc.d emon-hp1 defaults
+</pre>
+<p>A conclusione di questa fase, ora che lo script <span class="file">emond</span> non esiste più (è stato rinominato in <span class="file">emon-hp1</span>) si procede con la rimozione del servizio:</p>
+<pre class="code">
+$ sudo update-rc.d emon remove
+</pre>
+<h3>Definizione di una nuova istanza</h3>
+<p>Supponendo di voler monitorare una seconda pompa di calore occorre creare una nuova istanza del servizio, da denominare per esempio <span class="daemon">emon-hp2</span>. Il binario è già predisposto, basta perciò registrare e configurare debitamente la nuova istanza. Per lo script conviene partire da quello di un'istanza preesistente:</p>
+<pre class="code">
+$ cd /etc/init.d
+$ sudo cp emon-hp1 emon-hp2
+</pre>
+<p>A questo punto si modifica lo script sostituendo il suffisso originale con quello nuovo:</p>
+<pre class="code">
+# Provides:          	emond-<del>hp1</del><ins>hp2</ins>
+...
+
+PIDFILE=/var/run/emond-<del>hp1</del><ins>hp2</ins>.pid
+...
+
+OPTS=<del>hp1</del><ins>hp2</ins>
+</pre>
+<p>Si predispone quindi il file di configurazione con la stessa logica:</p>
+<pre class="code">
+$ cd ..
+$ sudo cp emon-hp1.conf emon-hp2.conf
+</pre>
+<p>Il file di configurazione va modificato in funzione delle caratteristiche del nuovo contatore e dello schema di collegamento alla scheda Raspberry Pi. Se il contatore è dello stesso modello del precedente, gli unici punti di intervento sono il parametro <span class="code">pulse_input_pin</span>, che indica il pin della GPIO al quale è connesso il contatto SO+ del nuovo contatore, oltre ovviamente a <span class="code">node_number</span>, l'indice numerico che identifica univocamente il contatore nell'impianto:</p>
+<pre class="code">
+pulse_input_pin = <del>25</del><ins>24</ins>
+node_number = <del>1</del><ins>2</ins>
+</pre>
+<p>Per avviare il servizio si procede al solito modo:</p>
+<pre class="code">
+$ sudo service emon-hp2 start
+</pre>
+<p>Anche la richiesta di avvio automatico è la sempre stessa:</p>
+<pre class="code">
+$ sudo update-rc.d emon-hp2 defaults
+</pre>
+<p>Dopo aver riavviato la scheda, si può verificare lo stato delle due istanze:</p>
+<pre class="code">
+$ sudo service --status-all
+ ...
+ [ + ]  emon-hp1
+ [ + ]  emon-hp2
+ ....
+</pre>
+<p>L'indicazione che entrambe le istanze sono attive è il risultato atteso.</p>
+<h2>EmonCMS</h2>
+<p>La rinomina dell'istanza originale del servizio emond da <span class="daemon">emond</span> a <span class="daemon">emon-hp1</span> è del tutto trasparente per EmonCMS; collegando l'unico contatore che ho a disposizione sul pin 25 della porta GPIO le letture continuano ad essere associate al nodo 1, come si evince dalla pagina <strong>Input</strong>:</p>
+<img src="img/multi-instance-emond/emon-hp1.png">
+<p class="illustration">Il nome dell'istanza di emond non ha effetto su EmonCMS, ciò che conta è il <span class="code">node_number</span></p>
+<p>Se collego il contatore al pin 24 della porta GPIO allora entra in gioco la seconda istanza di emond, quella denominata <span class="daemon">emon-hp2</span>, associata al nodo 2:</p>
+<img src="img/multi-instance-emond/emon-hp2.png">
+<p class="illustration">EmonCMS mostra che ora i dati giungono dal nodo 2</p>
+<p>Conviene associare un device al nodo 2, come è già stato fatto inizialmente per il nodo 1. Per accedere alla maschera di configurazione è sufficiente selezionare l'icona a forma di chiave inglese associata al nodo:</p>
+<img src="img/multi-instance-emond/emon-hp2-device.png">
+<p class="illustration">Le proprietà del device associato al secondo contatore</p>
+<p>Volendo è possibile uniformare la definizione del primo device alla nuova forma:</p>
+<img src="img/multi-instance-emond/emon-hp1-device.png">
+<p class="illustration">Le proprietà del device associato al primo contatore</p>
+<p>Dopo queste modifiche La pagina <strong>Input</strong> si presenta così:</p>
+<img src="img/multi-instance-emond/input-final.png">
+<p>Per la creazione dei feed del nodo 2 si rimanda alla documentazione ufficiale.</p>
+<p class="modification-notice">Pagina modificata il 24/12/2019</p>
+</body>
+</html>
