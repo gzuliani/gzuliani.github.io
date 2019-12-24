@@ -166,6 +166,11 @@ $ sudo update-rc.d emon-hp1 defaults
 <pre class="code">
 $ sudo update-rc.d emon remove
 </pre>
+<p>Per maggiori dettagli riguardo a questo aspetto, consultare la <a href="http://manpages.ubuntu.com/manpages/xenial/man8/update-rc.d.8.html
+">man page</a> di update-rc.d:</p>
+<blockquote>
+When invoked with the remove option, update-rc.d removes any links in the /etc/rcrunlevel.d directories to the script /etc/init.d/name. The script must have been deleted already. If the script is still present then update-rc.d aborts with an error message.
+</blockquote>
 <h3>Definizione di una nuova istanza</h3>
 <p>Supponendo di voler monitorare una seconda pompa di calore occorre creare una nuova istanza del servizio, da denominare per esempio <span class="daemon">emon-hp2</span>. Il binario è già predisposto, basta perciò registrare e configurare debitamente la nuova istanza. Per lo script conviene partire da quello di un'istanza preesistente:</p>
 <pre class="code">
