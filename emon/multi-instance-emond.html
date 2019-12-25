@@ -85,7 +85,7 @@ int main(int argc, char **argv)
       syslog(LOG_DAEMON | LOG_WARNING, "Unable to setup LCD screen, display is disabled\n");
    }
 </pre>
-<p><a href="files/multi-instance-emond/emond.c">Qui</a> è disponibile la versione del file <span class="file">emond.c</span> adattata.</p>
+<p class="note">In <a href="#files">calce</a> il link per il download del file.</p>
 <h3>Makefile</h3>
 <p>I punti di intervento riguardano il file di configurazione e lo script in <span class="file">init.d</span>:</p>
 <pre class="code">
@@ -133,6 +133,7 @@ OPTS=<ins>hp1</ins>
 $ cd ..
 $ sudo mv emon.conf emon-hp1.conf
 </pre>
+<p class="note">In <a href="#files">calce</a> il link per il download dei due file.</p>
 <p>Finalmente si può riavviare il servizio:</p>
 <pre class="code">
 $ sudo service emon-hp1 start
@@ -197,6 +198,7 @@ $ sudo cp emon-hp1.conf emon-hp2.conf
 pulse_input_pin = <del>25</del><ins>24</ins>
 node_number = <del>1</del><ins>2</ins>
 </pre>
+<p class="note">In <a href="#files">calce</a> il link per il download dei due file.</p>
 <p>Per avviare il servizio si procede al solito modo:</p>
 <pre class="code">
 $ sudo service emon-hp2 start
@@ -230,6 +232,15 @@ $ sudo service --status-all
 <p>Dopo queste modifiche La pagina <strong>Input</strong> si presenta così:</p>
 <img src="img/multi-instance-emond/input-final.png">
 <p>Per la creazione dei feed del nodo 2 si rimanda alla documentazione ufficiale.</p>
+<a name="files"></a>
+<h2>File</h2>
+<ul>
+<li><a href="files/multi-instance-emond/emond.c">emond.c</a></li>
+<li><a href="files/multi-instance-emond/emon-hp1">emon-hp1</a></li>
+<li><a href="files/multi-instance-emond/emon-hp1.conf">emon-hp1.conf</a></li>
+<li><a href="files/multi-instance-emond/emon-hp2">emon-hp2</a></li>
+<li><a href="files/multi-instance-emond/emon-hp2.conf">emon-hp2.conf</a></li>
+</ul>
 <p class="modification-notice">Pagina modificata il 24/12/2019</p>
 </body>
 </html>
