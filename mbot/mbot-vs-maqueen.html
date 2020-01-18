@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>mBot vs. micro:Maqueen</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/mbot-vs-maqueen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mbot-vs-maqueen">risorse</a> | mbot vs. micro:maqueen</p>
+<h1>mBot vs. micro:Maqueen</h1>
+<p class="disclaimer"><strong>ATTENZIONE!</strong> Ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p class="note">Le considerazioni qui sotto rispecchiano lo stato delle cose a gennaio 2020. Considerando l'evoluzione degli strumenti software analizzati è assai probabile che diverranno obsolete entro poche settimane, al più mesi.</p>
+<h2>tl;dr</h2>
+<p>Vai direttamente alle <a href="#conclusions">conclusioni</a>.</p>
+<h2>Introduzione</h2>
+<p>In questi ultimi mesi ho condotto un paio di RoboDojo (ne parlo ad esempio <a href="robodojo.html">qui</a> e <a href="ssoc-itg-marinoni.html">qui</a>) avendo avuto la fortuna di poter disporre di una dozzina di <a href="https://www.makeblock.com/steam-kits/mbot">mBot</a> che vengono spesso usati allo stesso scopo da altre persone in contesti diversi. Nel tempo alcuni di essi sono diventati inutilizzabili a causa dell'imperizia di qualche partecipante troppo irruento o un poco distratto (viti spanate, connessioni strappate, sensori smarriti, &hellip;). Ho deciso allora di valutare la possibilità di usare un robot diverso, più economico, per minimizzare i costi di riparazione e sostituzione. La scelta è ricaduta su <a href="https://www.dfrobot.com/product-1783.html">micro:Maqueen</a>.</p>
+<h2>micro:Maqueen</h2>
+<p>micro:Maqueen è un robot giocattolo prodotto e distribuito dall'azienda cinese DFRobot. È basato sulla scheda <a href="https://microbit.org/">micro:bit</a>, da cui il nome. Le sue caratteristiche sono paragonabili a quelle di mBot; si differenzia da questo per il costo ridotto e il montaggio semplificato, richiedendo solo l'assemblaggio delle ruote e del pacco batterie. Anche la modalità di programmazione è simile.</p>
+<img src="img/mbot-vs-maqueen/maqueen.jpg">
+<p class="illustration">micro:Maqueen: notare la scheda micro:bit, il cervello del robot</p>
+<p>L'assemblaggio si completa in pochi semplici passaggi:</p>
+<ol>
+<li>montare i pneumatici sui cerchi delle ruote;</li>
+<li>inserire le ruote sugli assi dei motori;</li>
+<li>inserire la spina del porta-batterie alla presa di alimentazione;</li>
+<li>fissare il porta-batterie sui motori con il nastro biadesivo;</li>
+<li>inserire il sensore ultrasonico nel connettore frontale;</li>
+<li>inserire la scheda micro:bit nell'apposito alloggiamento.</li>
+</ol>
+<p class="disclaimer"><strong>ATTENZIONE!</strong> Prima di inserire micro:bit in micro:Maqueen assicurarsi che entrambi i dispositivi siano spenti.</p>
+<h3>Hardware</h3>
+<p>I due robot, sebbene basati su due schede differenti, presentano caratteristiche molto simili:</p>
+<table cellspacing="0">
+  <tr>
+    <th></th>
+    <th></th>
+    <th>mBot</th>
+    <th>micro:Maqueen</th>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Principale</td></tr>
+  <tr>
+    <td class="indentation"></td>
+    <td class="feature">Scheda di controllo</td>
+    <td><a href="https://www.makeblock.com/project/mcore">mCore</a> (Arduino)</td>
+    <td><a href="https://tech.microbit.org/hardware/">micro:bit</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Scocca</td>
+    <td>Alluminio</td>
+    <td>Bachelite</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Dimensioni</td>
+    <td>170×130×90 mm</td>
+    <td>81×85×44 mm</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Peso</td>
+    <td>400 g</td>
+    <td>75 g</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Alimentazione</td>
+    <td>LiPo/4 stilo AA</td>
+    <td>3 mini stilo AAA</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Tempo di assemblaggio</td>
+    <td>30/40 min</td>
+    <td>2 min</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Prezzo indicativo</td>
+    <td>100€</td>
+    <td>40€</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Processore</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">CPU</td>
+    <td>ATmega328P</td>
+    <td>nRF51822</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Frequenza</td>
+    <td>16MHz</td>
+    <td>16MHz</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Memoria</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Memoria Flash</td>
+    <td>32KB</td>
+    <td>256KB</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">RAM Statica</td>
+    <td>2KB</td>
+    <td>16KB</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">EEPROM</td>
+    <td>1KB</td>
+    <td>-</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">I/O</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Pin digitali</td>
+    <td>14 (6 PWM)</td>
+    <td>6/17 (2/3 PWM) <sup>(1)</sup></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Pin analogici</td>
+    <td>6</td>
+    <td>6</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia USB</td>
+    <td>Sì (A)</td>
+    <td>Sì (Micro B)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia Seriale</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia SPI</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia I2C</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Tecnologia Wireless</td>
+    <td>Bluetooth/WiFi</td>
+    <td>Bluetooth, Radio</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Porte di espansione</td>
+    <td>4 RJ25</td>
+    <td>2 servo</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Pulsanti</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Reset</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Generici</td>
+    <td>1</td>
+    <td>2</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">LED</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">LED</td>
+    <td>2 RGB</td>
+    <td>2 rossi + 4 RGB <sup>(2)</sup></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">I/R</td>
+    <td>1</td>
+    <td>1 <sup>(2)</sup></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Display</td>
+    <td>-</td>
+    <td>Matrice LED 5×5</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Attuatori</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Buzzer</td>
+    <td>Sì</td>
+    <td>Sì <sup>(2)</sup></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Driver motori CC</td>
+    <td>2</td>
+    <td>2 <sup>(2)</sup></td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Sensori</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore di luminosità</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore di temperatura</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Accelerometero</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Magnetometro</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore ultrasonico</td>
+    <td>Sì</td>
+    <td>Si</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore di linea</td>
+    <td>Sì</td>
+    <td>Si</td>
+  </tr>
+</table>
+<p class="annotation"><sup>(1)</sup> il numero di pin disponibili dipende dalla configurazione.</p>
+<p class="annotation-last"><sup>(2)</sup> il componente si trova su micro:maqueen, non su micro:bit.</p>
+<p>Una sostanziale differenza tra mBot e micro:Maqueen riguarda la disponibilità di sensori e attuatori accessori: per il primo l'elenco è molto lungo, e comprende sensori di umidità, temperatura, gas, &hellip; e attuatori come joystick, potenziometri, pinze, &hellip; collegabili alle porte di espansione RJ25 di mCore. Non mancano poi le estensioni strutturali, come ad esempio il modulo &ldquo;Six-legged Robot&rdquo; che trasforma mBot in un robot esapode.</p>
+<h3>Ambiente di sviluppo</h3>
+<p>Così come mBot ha un ambiente di programmazione dedicato, <a href="https://www.mblock.cc/en-us/">mBlock</a>, così micro:Maqueen, per il quale è stato creato <a href="http://mindplus.cc/en.html">Mind+</a>. Entrambi consentono di operare secondo due modalità:</p>
+<ul>
+<li><strong>Live</strong> (<strong>Online</strong> in Mind+): il programma viene eseguito nell'ambiente di sviluppo e comunica con la scheda grazie ad un firmware dedicato che va caricato sulla scheda stessa prima di cominciare;</li>
+<li><strong>Upload</strong> (<strong>Offline</strong> in Mind+): il programma in fase di sviluppo va prima compilato e successivamentte trasferito sulla scheda; lì vi rimane in modo permanente fino al caricamento di un nuovo programma, che lo sostituisce.</li>
+</ul>
+<p>Entrambi gli ambienti di sviluppo si presentano sotto due forme:</p>
+<ul>
+<li><strong>Online</strong> (detta anche <strong>Web</strong>): si tratta di un'applicazione web accessibile dal sito del produttore. Richiede l'installazione di un componente software che permette all'applicazione di comunicare con la scheda di controllo del robot. Utilizzabile solo in presenza di una connessione internet stabile;</li>
+<li><strong>Offline</strong> (detta anche <strong>Desktop</strong>): è un'applicazione che va installata sul proprio computer e permette di programmare il robot anche in assenza di una connessione di rete.</li>
+</ul>
+<p>L'utilizzo delle applicazioni <strong>Web</strong> necessita solo di un web browser sufficientemente moderno, mentre le versioni <strong>Desktop</strong> potrebbero non essere disponibili su alcuni sistemi operativi (tipicamente Linux).</p>
+<p>Generalmente questi ambienti di sviluppo offrono la possibilità di sviluppare i programmi secondo due paradigmi: quello grafico, basato sui blocchi, adatto ai principianti, ed uno più tradizionale, basato sulla scrittura di codice convenzionale usando linguaggi di programmazione come C++, JavaScript o Python.</p>
+<h3>Ambienti di sviluppo Web</h3>
+<p>La tabella raccoglie le principali applicazioni online che possono essere utilizzate per programmare i due robot. Necessitano di una connessione internet e l'installazione di un <strong>Web device driver</strong>, un componente software che permette all'applicazione web di comunicare con la scheda di controllo.</p>
+<table cellspacing="0">
+  <tr>
+    <th></th>
+    <th>Nome</th>
+    <th>Linguaggi</th>
+    <th>Driver</th>
+    <th>Live</th>
+    <th>Upload</th>
+    <th>Windows</th>
+    <th>Mac</th>
+    <th>Linux</th>
+    <th></th>
+  </tr>
+  <tr><td colspan="10" class="sub-header"><strong>mBot</strong></td></tr>
+  <tr>
+    <td class="indentation"></td>
+    <td class="feature">mBlock</td>
+    <td class="text">Blocchi, C</td>
+    <td class="text">mLink</td>
+    <td class="value">Sì</td>
+    <td class="value">Sì</td>
+    <td class="value">7/8/10 (64 bit)</td>
+    <td class="value">10.10</td>
+    <td class="value">64 bit</td>
+    <td class="anchor"><a href="https://ide.mblock.cc/?device#/">vai</a></td>
+  </tr>
+  <tr><td colspan="10" class="sub-header"><strong>micro:Maqueen</strong></td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Mind+</td>
+    <td class="text">Blocchi, C</td>
+    <td class="text">Mind+ Link</td>
+    <td class="value">Sì <sup>(1)</sup></td>
+    <td class="value">Sì</td>
+    <td class="value">7/8/10</td>
+    <td class="value">10.11+</td>
+    <td class="value">No</td>
+    <td class="anchor"><a href="https://ide.mindplus.top/">vai</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">MakeCode</td>
+    <td class="text">Blocchi, JavaScript</td>
+    <td class="text">-</td>
+    <td class="value">No</td>
+    <td class="value">Sì <sup>(2)</sup></td>
+    <td class="value">-</td>
+    <td class="value">-</td>
+    <td class="value">-</td>
+    <td class="anchor"><a href="https://makecode.microbit.org/">vai</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Scratch</td>
+    <td class="text">Blocchi</td>
+    <td class="text">Scratch Link</td>
+    <td class="value">Sì <sup>(3)</sup></td>
+    <td class="value">No</td>
+    <td class="value">10 v. 1709+</td>
+    <td class="value">10.13+</td>
+    <td class="value">No</td>
+    <td class="anchor"><a href="https://scratch.mit.edu/projects/editor/">vai</a></td>
+  </tr>
+</table>
+<p class="annotation"><sup>(1)</sup> Mind+ carica autonomamente il firmware adatto sulla scheda micro:bit subito dopo la connessione.</p>
+<p class="annotation"><sup>(2)</sup> Il programma va scaricato (file .hex) e copiato su micro:bit. Richiede il caricamento dell'estensione &ldquo;maqueen&rdquo;.</p>
+<p class="annotation-last"><sup>(3)</sup> Scratch supporta solo micro:bit con firmware dedicato a bordo (una copia locale è disponibile <a href="files/mbot-vs-maqueen/scratch-microbit-1.1.0.hex">qui</a>).</p>
+<p>micro:bit può essere programmato pure in Python (esiste un <a href="https://python.microbit.org/v/2.0">Editor Online</a> ufficialmente supportato). Non è escluso che attraverso questa modalità sia possibile estendere il controllo ai sensori e attuatori di micro:Maqueen posto che è noto lo schema di collegamento ai pin di micro:bit (vedi <a href="#appendix">appendice</a>).</p>
+<p>micro:bit è programmabile anche in C/C++, ma la predisposizione dell'ambiente di sviluppo in questo caso non è per nulla banale. In rete ci sono molti riferimenti, uno su tutti la pagina di istruzioni curata dalla <a href="https://lancaster-university.github.io/microbit-docs/">Lancaster University</a>.</p>
+<h3>Ambienti di sviluppo Desktop</h3>
+<p>Nessuna delle versioni più recenti degli ambienti di sviluppo <strong>Desktop</strong> funziona su Linux. L'ultima per mBot è mBlock v. 4.x, mentre non ne esiste una per micro:bit &ndash; men che meno per micro:Maqueen. Per questa ragione la tabella sottostante manca della colonna associata a questo sistema operativo:</p>
+<table cellspacing="0">
+  <tr>
+    <th></th>
+    <th>Nome</th>
+    <th>Versione</th>
+    <th>Linguaggi</th>
+    <th>Driver</th>
+    <th>Live</th>
+    <th>Upload</th>
+    <th>Windows</th>
+    <th>Mac</th>
+    <th></th>
+  </tr>
+  <tr><td colspan="10" class="sub-header"><strong>mBot</strong></td></tr>
+  <tr>
+    <td class="indentation"></td>
+    <td class="feature">mBlock 5 <sup>(1)</sup></td>
+    <td class="text">5.1.0</td>
+    <td class="text">Blocchi, C</td>
+    <td class="text">integrato</td>
+    <td class="value">Sì</td>
+    <td class="value">Sì</td>
+    <td class="value">7/10 (64 bit)</td>
+    <td class="value">10.10+</td>
+    <td class="anchor"><a href="https://www.mblock.cc/en-us/download/">scarica</a></td>
+  </tr>
+  <tr><td colspan="10" class="sub-header"><strong>micro:Maqueen</strong></td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Mind+</td>
+    <td class="text">1.6.1</td>
+    <td class="text">Blocchi, C</td>
+    <td class="text">integrato</td>
+    <td class="value">Sì</td>
+    <td class="value">Sì</td>
+    <td class="value">7/8/10</td>
+    <td class="value">10.11+</td>
+    <td class="anchor"><a href="http://mindplus.cc/download-en.html">scarica</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">MakeCode <sup>(2)</sup></td>
+    <td class="text">5.15.13</td>
+    <td class="text">Blocchi, JavaScript</td>
+    <td class="text">integrato</td>
+    <td class="value">No</td>
+    <td class="value">Sì</td>
+    <td class="value">10 v. 10240.0+</td>
+    <td class="value">N.D.</td>
+    <td class="anchor"><a href="https://www.microsoft.com/en-us/p/makecode-for-micro-bit/9pjc7sv48lcx">installa</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Scratch <sup>(3)</sup></td>
+    <td class="text">3.6.0</td>
+    <td class="text">Blocchi</td>
+    <td class="text">Scratch Link</td>
+    <td class="value">Sì</td>
+    <td class="value">No</td>
+    <td class="value">10 v. 1709+</td>
+    <td class="value">10.13+</td>
+    <td class="anchor"><a href="https://scratch.mit.edu/download">scarica</a></td>
+  </tr>
+</table>
+<p class="annotation"><sup>(1)</sup> La versione offline di mBlock supporta pure micro:bit.</p>
+<p class="annotation"><sup>(2)</sup> L'installazione della versione scaricabile dalla <a href="https://makecode.microbit.org/offline-app">dalla pagina ufficiale</a> causa l'errore <em>Impossibile eseguire questa app nel tuo PC</em>, quella disponibile nello <a href="https://www.microsoft.com/en-us/p/makecode-for-micro-bit/9pjc7sv48lcx">Store</a> invece funziona regolarmente.</p>
+<p class="annotation"><sup>(3)</sup> A causa di un <a href="https://github.com/LLK/scratch-desktop/issues/31">baco</a>, per rendere operativo il programma occorre procedere come indicato <a href="https://scratch.mit.edu/discuss/topic/354657/?page=1#post-3596047">qui</a> (verificato).</p>
+<h2>Programmazione Desktop di micro:Maqueen</h2>
+<h3>Mind+</h3>
+<p>Mind+ è l'ambiente di sviluppo ufficiale di micro:Maqueen. Essendo basato su Scratch 3, il suo aspetto risulta di certo familiare a chi ha già usato il famoso editor. Al primo avvio il programma si presenta in cinese; per cambiare la lingua basta cliccare l'icona a forma di ruota dentata in alto a destra e selezionare quella desiderata. Purtroppo l'italiano non è ancora disponibile.</p>
+<p>Sul sito ufficiale di Mind+ si trova molta documentazione &ndash; tutta in lingua inglese &ndash; sia riguardo a <a href="https://mindplus.dfrobot.com/microbit">micro:bit</a> che specifica di <a href="https://mindplus.dfrobot.com/maqueen">micro:Maqueen</a>.</p>
+<p>Per programmare micro:Maqueen è necessario innanzitutto installare i driver per la comunicazione con la scheda di controllo del robot (menu <em>Connect Device</em> &rarr; <em>Install SerialPort Driver</em>). È un'operazione fondamentale che va fatta una volta per tutte. Si procede poi caricando l'estensione omonima:</p>
+<img src="img/mbot-vs-maqueen/mindplus-maqueen-extension.png">
+<p class="illustration">L'estensione di Mind+ per micro:Maqueen.</p>
+<p class="note">Tra le schede programmabili con Mind+ figura anche Arduino!</p>
+<p>L'ambiente ora è pronto per la programmazione di micro:Maqueen.</p>
+<p>L'editor supporta sia la modalità di sviluppo <strong>Live</strong>, in cui il programma viene eseguito dal computer (qui denominata &laquo;Online&raquo;, tanto per confondere le idee!) che quella <strong>Upload</strong>, in cui il programma viene trasferito in modo permanente sulla scheda di controllo del robot (&laquo;Offline&raquo; nella terminologia Mind+). Nella modalità <strong>Live</strong> è il programma stesso che si preoccupa di caricare sulla scheda il firmware adatto; lo fa in occasione della prima connessione alla scheda:</p>
+<img src="img/mbot-vs-maqueen/mindplus-burning-firmware.png">
+<p class="illustration">Mind+ mentre trasferisce su micro:bit il firmware di supporto alla modalità <strong>Live</strong>.</p>
+<p>Al termine del caricamento Mind+ avvia la procedura di calibrazione del magnetometro:</p>
+<img src="img/mbot-vs-maqueen/mindplus-compass-calibration.png">
+<p class="illustration">Le istruzioni per la calibrazione del magnetometro.</p>
+<p>Il programma chiede di afferrare la scheda e, partendo dalla posizione orizzontale, inclinarla in modo tale da far occupare al puntino luminoso che appare al centro della matrice di LED tutte e 25 le posizioni (per maggiori dettagli consultare la <a href="https://support.microbit.org/support/solutions/articles/19000008874-calibrating-the-micro-bit-compass">documentazione ufficiale</a>).</p>
+<p>Per saggiare la funzionalità dell'editor ho realizzato un semplice programma per micro:bit in modalità <strong>Upload</strong> che mostra un cuore per un secondo quando si scuote la scheda:</p>
+<img src="img/mbot-vs-maqueen/mindplus-shake-heart.png">
+<p class="illustration">Il programma di test.</p>
+<p>Se si tenta effettua l'Upload senza prima aver connesso micro:bit si ottiene un errore:</p>
+<img src="img/mbot-vs-maqueen/mindplus-no-device-connected.png">
+<p class="illustration">Prima dell'Upload è indispensabile collegare Mind+ alla scheda.</p>
+<p>Operando in modalità <strong>Upload</strong> si ha la garanzia che il programma viene trasferito sulla scheda in modo permanente: se anche si spegne la scheda, alla successiva riaccensione il programma verrà rieseguito perché è stato salvato nell'area di memoria non volatile di micro:bit.</p>
+<p>La versione <strong>Desktop</strong> di Mind+ consente di programmare micro:bit in MicroPython. È una scelta che conviene fare all'inizio perché Mind+ non è in grado di recuperare il lavoro già svolto:</p>
+<img src="img/mbot-vs-maqueen/mindplus-switch-language.png">
+<p class="illustration">Cambiare il linguaggio di programmazione in corsa causa la perdita del codice già scritto.</p>
+<p>Ho infine messo alla prova Mind+ con un programma più complesso, lo scansa-ostacoli nella versione con <a href="mbot-firmware.html#wall-avoidance">retro-sterzata</a> incluso nel firmware di fabbrica di Bot.</p>
+<img src="img/mbot-vs-maqueen/mindplus-wall-avoidance.png">
+<p class="illustration">Il programma completo dello scansa-ostacoli.</p>
+<p>In seguito al caricamento del programma nel robot, Mind+ riporta:</p>
+<pre class="code">
+The project uses 91920 bytes,
+ occupies (35%) program memory space,
+ leaving 170224 bytes,
+ up to 262144 bytes.
+Global variables use 1892 bytes,
+ (12%) of dynamic memory,
+ leaving 14492 byte local variables,
+ up to 16384 bytes.
+upload success
+</pre>
+<p>Il programma compilato occupa quasi 90KB, non mi aspettavo tanto. Ad ogni modo, <a href="files/mbot-vs-maqueen/wall-avoidance.cpp">qui</a> il programma C++ equivalente a partire dal quale è stato ottenuto il binario. A giudicare dalla brevità del sorgente, gran parte del codice binario deriva dalle librerie di supporto.</p>
+<h3>MakeCode</h3>
+<p>MakeCode è l'ambiente di sviluppo d'elezione per micro:bit. Sviluppato da Microsoft e disponibile in versione <strong>Web</strong> e <strong>Desktop</strong>, consente di programmare la scheda micro:bit con la consueta modalità grafica dei blocchi ma anche in JavaScript. Si può passare da una forma all'altra del codice in qualunque momento; questo fa di MakeCode uno strumento adatto per chi vuole sperimentare un approccio più professionale alla programmazione senza tuttavia rinunciare a quello più intuitivo dei blocchi.</p>
+<p>Ha la caratteristica unica di possedere un emulatore dell'hardware: in mancanza della scheda fisica è possibile infatti far girare i propri programmi su una scheda virtuale con la quale l'utente può interagire simulando la pressione dei tasti di cui è dotata. Offre anche la possibilità di eseguire il programma passo-passo, cosa che facilita enormemente l'individuazione e la correzione degli errori.</p>
+<img src="img/mbot-vs-maqueen/makecode-emulator.png">
+<p class="illustration">L'emulatore micro:bit di MakeCode.</p>
+<p>A differenza di Mind+ e Scratch non supporta la modalità <strong>Live</strong>: per trasferire il programma su micro:bit bisogna scaricarlo e copiarlo manualmente nella scheda. La cosa che mi lascia perplesso è la dimensione delle immagini binarie: quella dell'esercizio iniziale, il cuore lampeggiante, supera i 600KB.</p>
+<img src="img/mbot-vs-maqueen/makecode-flashing-heart.png">
+<p class="illustration">Il programma &ldquo;Flashing Heart&rdquo; che genera un binario di oltre 600KB.</p>
+<p>MakeCode non supporta micro:Maqueen nativamente, ma esiste un'<a href="https://wiki.dfrobot.com/micro:Maqueen_for_micro:bit_SKU:ROB0148-E(ROB0148)
+">estensione apposta</a>. È facilmente individuabile filtrando per nome l'elenco delle estensioni che si trova nelle impostazioni dell'ambiente di sviluppo (click sull'icona a forma di ruota dentata che si trova in alto a destra, quindi selezionare <em>Extensions</em> e immettere la parola &laquo;maqueen&raquo; nella casella di ricerca).</p>
+<img src="img/mbot-vs-maqueen/makecode-maqueen-extension.png">
+<p class="illustration">L'estensione di MakeBlock per micro:Maqueen.</p>
+<p>MakeCode non salva le estensioni sul disco locale; ogni volta che si inizia un progetto che ne richiede una, questa va nuovamente scaricata. Se si intende utilizzare l'estensione in assenza di rete, procedere come segue:</p>
+<ol>
+ <li>avviare MakeCode;</li>
+ <li>creare un nuovo progetto;</li>
+ <li>caricare l'estensione &laquo;maqueen&raquo;;</li>
+ <li>svuotare il progetto di tutti i blocchi pre-caricati;</li>
+ <li>salvare il progetto.</li>
+</ol>
+<p>Il file di progetto così ottenuto può essere usato come punto di partenza per lo sviluppo di un programma per micro:Maqueen in situazioni in cui l'accesso a internet è precluso. Per comodità ne ho preparato una copia <a href="files/mbot-vs-maqueen/microbit-maqueen.hex">qui</a>.</p>
+<p class="note"><strong>ATTENZIONE!</strong> Il progetto va caricato nell'ambiente di sviluppo con la sequenza di comandi <em>Import</em>/<em>Import File...</em> a partire dalla pagina principale di MakeCode, non come si trattasse di un'estensione.</p>
+<p>La presenza dell'istruzione <span class="code">read IR key</span> mi fa sospettare che micro:Maqueen possa decodificare i tasti del telecomando di mBot. Per questa ragione ho dapprima caricato su micro:bit il seguente programma:</p>
+<img src="img/mbot-vs-maqueen/makecode-remote-control-test.png">
+<p class="illustration">Il programma di test di compatibilità micro:Maqueen/telecomando di mBot.</p>
+<p>Ho successivamente inserito la scheda nel connettore di micro:Maqueen, incrociato le dita e premuto un tasto a caso&hellip; Un codice numerico è apparso sul display! Lo schema qui sotto riporta il codice associato ad ognuno dei tasti del telecomando:</p>
+<img src="img/mbot-vs-maqueen/mbot-remote-control-key-codes.png">
+<p class="illustration">I codici numerici associati ai tasti del telecomando IR di mBot.</p>
+<h3>Scratch 3</h3>
+<p>Cito Scratch perché, sebbene non supporti micro:Maqueen, è comunque in grado di interfacciarsi con la scheda micro:bit, seppure solo in modalità <strong>Live</strong>:</p>
+<img src="img/mbot-vs-maqueen/scratch-microbit-extension.png">
+<p class="illustration">L'estensione micro:bit per Scratch.</p>
+<p>Speravo di poter accedere ai sensori e attuatori di micro:Maqueen attraverso le porte di espansione di micro:bit, ma purtroppo l'estensione per Scratch non lo consente:</p>
+<img src="img/mbot-vs-maqueen/scratch-microbit-blocks.png">
+<p class="illustration">I blocchi dell'estensione micro:bit di Scratch.</p>
+<p>È comunque interessante capire come Scratch si interfaccia a micro:bit. Innanzitutto la comunicazione avviene esclusivamente via Bluetooth. Il firmware di supporto assegna un identificativo univoco alla scheda, come si legge nella <a href="https://support.microbit.org/support/solutions/articles/19000026080-using-the-micro-bit-with-scratch">documentazione ufficiale</a>:</p>
+<blockquote>
+<ol>
+<li>Install Scratch Link</li>
+<li>Download and unzip the micro:bit Scratch Hex file.</li>
+<li>Flash the micro:bit over USB with the Scratch .Hex File, you will see the five character name of the micro:bit scroll across the screen eg 'zutiz'.</li>
+</ol>
+</blockquote>
+<p>L'identificativo della mia scheda è <strong>zatat</strong>. L'identificazione delle schede per nome penso possa tornare molto utile in situazioni in cui ci sono più schede attive contemporaneamente nello stesso luogo come ad esempio in un'aula scolastica, in un laboratorio di informatica, durante un CoderDojo.</p>
+<p>Per iniziare, procedere in questo modo:</p>
+<ol>
+<li>accendere micro:bit;</li>
+<li>avviare Scratch Link;</li>
+<li>avviare Scratch;</li>
+<li>caricare l'estensione micro:bit.</li>
+</ol>
+<p>Se ci si dimentica di avviare Scratch Link, il caricamento dell'estensione fallisce:</p>
+<img src="img/mbot-vs-maqueen/scratch-link-missing.png">
+<p class="illustration">Il messaggio d'errore che appare quando Scratch non riesce a connettersi con micro:bit.</p>
+<p>Quando Scratch Link è in esecuzione la sua icona è visibile nella barra delle applicazioni:</p>
+<img src="img/mbot-vs-maqueen/scratch-link-running.png">
+<p class="illustration">L'icona che segnala che Scratch Link è in esecuzione.</p>
+<p>Se Scratch Link è attivo, la scheda micro:bit è accesa ed è stata caricata con il firmware specifico per Scratch, allora appare la maschera di selezione della scheda:</p>
+<img src="img/mbot-vs-maqueen/scratch-microbit-select.png">
+<p class="illustration">La maschera di selezione della scheda micro:bit. Notare il nome.</p>
+<p>In questo caso c'è un'unica scheda in elenco, la mia.</p>
+<p>Se la scheda viene riconosciuta, si può rientrare nell'ambiente di sviluppo:</p>
+<img src="img/mbot-vs-maqueen/scratch-microbit-connected.png">
+<p class="illustration">La maschera di selezione della scheda micro:bit. Notare il nome.</p>
+<p>A questo punto si può procedere con la programmazione. Per assicurarmi che tutto funzioni a dovere ho implementato lo stesso programma di test realizzato in Mind+, quello che fa apparire il cuoricino quando si scuote la scheda:</p>
+<img src="img/mbot-vs-maqueen/scratch-microbit-shake-heart.png">
+<p class="illustration">Il programma di test.</p>
+<a name="conclusions"></a>
+<h2>Conclusioni</h2>
+<p>Posto che le due macchine hanno potenzialità simili e che i relativi ambienti di sviluppo si equivalgono, a mio avviso gli aspetti degni di nota sono:</p>
+<ul>
+<li>micro:Maqueen è sensibilmente più economico di mBot;</li>
+<li>mBot è più robusto e i suoi componenti più protetti rispetto a micro:Maqueen;</li>
+<li>micro:Maqueen ha una dotazione di sensori superiore a mBot;</li>
+<li>essendo mBot più complesso, l'assemblarlo può essere fonte di soddisfazione;</li>
+<li>il tempo risparmiato nel montaggio di micro:Maqueen può essere impiegato per studiare i sensori aggiuntivi o per affrontare tecniche di programmazione avanzate;</li>
+<li>micro:bit si presta meglio di mCore ad essere usato come scheda di sviluppo autonoma grazie alla presenza del display a LED e alla disponibilità di ambienti di sviluppo che oltre alla programmazione a blocchi consentono di sviluppare codice in JavaScript, Python e C/C++;</li>
+<li>entrambi sono mal supporati su Linux, soprattutto nella modalità <strong>Desktop</strong>.</li>
+</ul>
+<a name="appendix"></a>
+<h2>Appendice - Controllo indiretto del robot</h2>
+<p>È possibile pilotare mBot programmando mCore alla stessa stregua di un Arduino o micro:Maqueen come fosse un semplice micro:bit? In altre parole è possibile controllare i due robot attraverso un'interfaccia generica (Arduino nel primo caso, micro:bit nel secondo) ignorando le peculiarità dei due sistemi?</p>
+<p>Penso di sì, anche se non ho ancora condotto nessun esperimento in merito. Fosse realmente possibile, questa tecnica consentirebbe di programmare i robot anche in assenza di un'estensione specifica per il robot, pur di averne una in grado di gestire la scheda di controllo (vedi il caso di Scratch 3).</p>
+<p>Al netto della difficoltà di implementare i protocolli di comunicazione per i sensori più evoluti, in particolare il sensore ultrasonico e le catene di LED RGB, sapendo su quali porte della scheda di controllo sono connessi i sensori e gli attuatori del robot lo sviluppo dei programmi dovrebbe essere sufficientemente agevole.</p>
+<h3>mBot/Arduino</h3>
+<p>Analizzando lo <a href="https://github.com/Makeblock-official/mBot_Firmata/blob/master/hardware/mCore.pdf
+">schema elettrico</a> di mBot, con un po' di pazienza si ricava la corrispondenza tra i sensori, gli attuatori e le porte di espansione di mCore e i pin di Arduino cui risultano connessi:</p>
+<table cellspacing="0">
+<tr><th>Pin Arduino</th><th>Funzione mBot</th></tr>
+<tr><td class="feature">A0</td><td>Pin 5 Porta RJ25 #4</td></tr>
+<tr><td class="feature">A1</td><td>Pin 6 Porta RJ25 #4</td></tr>
+<tr><td class="feature">A2</td><td>Pin 5 Porta RJ25 #3 (Sensore ultrasonico)</td></tr>
+<tr><td class="feature">A3</td><td>Pin 6 Porta RJ25 #3 (Sensore ultrasonico)</td></tr>
+<tr><td class="feature">A6</td><td>Sensore di luminosità</td></tr>
+<tr><td class="feature">A7</td><td>Pulsante</td></tr>
+<tr><td class="feature">D0</td><td>Pin 3 Connettore P5</td></tr>
+<tr><td class="feature">D1</td><td>Pin 4 Connettore P5</td></tr>
+<tr><td class="feature">D2</td><td>LED I/R RCV</td></tr>
+<tr><td class="feature">D3</td><td>LED I/R TX</td></tr>
+<tr><td class="feature">D4</td><td>Direzione motore M2</td></tr>
+<tr><td class="feature">D5</td><td>Potenze motore M2 (PWM)</td></tr>
+<tr><td class="feature">D6</td><td>Potenze motore M1 (PWM)</td></tr>
+<tr><td class="feature">D7</td><td>Direzione motore M1</td></tr>
+<tr><td class="feature">D8</td><td>Buzzer</td></tr>
+<tr><td class="feature">D9</td><td>Pin 5 Porta RJ25 #2 (Sensore di linea)</td></tr>
+<tr><td class="feature">D10</td><td>Pin 6 Porta RJ25 #2 (Sensore di linea)</td></tr>
+<tr><td class="feature">D11</td><td>Pin 5 Porta RJ25 #1</td></tr>
+<tr><td class="feature">D12</td><td>Pin 6 Porta RJ25 #1</td></tr>
+<tr><td class="feature">D13</td><td>LED RGB</td></tr>
+</table>
+<h3>micro:Maqueen/micro:bit</h3>
+<p>Non sono riuscito a reperire in rete lo schema elettrico di micro:Maqueen; guardando però con attenzione la scheda si nota che accanto ad ogni componente è riportato il nome di un pin di micro:bit, deduco quello cui il componente è connesso. La corrispondenza è la seguente:</p>
+<table cellspacing="0">
+  <tr><th>Pin micro:bit</th><th>Funzione micro:Maqueen</th></tr>
+  <tr><td class="feature">P0</td><td>Buzzer, I/O analogico/digitale</td></tr>
+  <tr><td class="feature">P1</td><td>Sensore ultrasonico (Trigger), I/O analogico/digitale</td></tr>
+  <tr><td class="feature">P2</td><td>Sensore ultrasonico (Echo), I/O analogico/digitale</td></tr>
+  <tr><td class="feature">P8</td><td>LED sinistro</td></tr>
+  <tr><td class="feature">P12</td><td>LED destro</td></tr>
+  <tr><td class="feature">P13</td><td>Sensore di linea sinistro</td></tr>
+  <tr><td class="feature">P14</td><td>Sensore di linea destro</td></tr>
+  <tr><td class="feature">P15</td><td>LED RGB</td></tr>
+  <tr><td class="feature">P16</td><td>LED I/R</td></tr>
+  <tr><td class="feature">P19</td><td>I/O digitali</td></tr>
+  <tr><td class="feature">P20</td><td>I/O digitali</td></tr>
+</table>
+<p class="note"><strong>ATTENZIONE!</strong> I pin P0, P1 e P2 ricoprono più funzioni, evitare di creare situazioni di conflitto.</p>
+<!--
+interasse sensori di linea: mbot 1.2cm, maqueen 1.5cm -- forse il circuito di mbot non va bene per maqueen?!
+-->
+<p class="modification-notice">Pagina modificata il 18/01/2020</p>
+</body>
+</html>

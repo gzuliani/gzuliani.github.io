@@ -1,0 +1,49 @@
+p.annotation {
+ font-size: .8em;
+}
+
+p.annotation-last {
+ font-size: .8em;
+ padding-bottom: 2em;
+}
+
+table {
+ margin-left: 2em;
+}
+
+td {
+ font-size: .9em;
+}
+
+td.feature {
+ color: #2aa198;
+ white-space: nowrap;
+ font-weight: bold;
+}
+
+td.indentation {
+ width: 1em;
+}
+
+td.sub-header {
+ border-bottom: 1px solid #93a1a1;
+ color: #93a1a1;
+ font-style: italic;
+ padding-top: 1em;
+}
+
+td.text {
+ text-align: center;
+ white-space: nowrap;
+}
+
+td.value {
+ text-align: center;
+ white-space: nowrap;
+}
+
+th {
+ font-size: .9em;
+ text-align: center;
+}
+
