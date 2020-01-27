@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>micro:Maqueen imita mBot</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/maqueen-plays-mbot.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#maqueen-plays-mbot">risorse</a> | micro:maqueen imit mbot</p>
+<h1>micro:Maqueen imita mBot</h1>
+<h2>Introduzione</h2>
+<p>È possibile programmare micro:Maqueen in modo che si comporti alla stessa stregua di mBot quando inizializzato con le impostazioni di fabbrica (cfr. <a href="mbot-firmware.html">&rdquo;Studio del firmware di mBot&rdquo;</a>)? Quale ambiente di sviluppo, tra <strong>Mind+</strong> e <strong>MakeCode</strong> risulta più comodo per sviluppare un programma di tale complessità?</p>
+<p>Salta direttamente alle <a href="#conclusions">conclusioni</a>.</p>
+<h2>Premessa</h2>
+<p>L'estensione &laquo;Maqueen&raquo; per <strong>MakeCode</strong> non contiene blocchi per il controllo dei LED RGB del robot. Fortunatamente ne esiste una apposta, &laquo;<a href="https://makecode.microbit.org/pkg/microsoft/pxt-neopixel">Neopixel</a>&raquo;. Per poter indirizzare singolarmente i LED è necessario dapprima definire una <em>strip</em> di 4 LED sul pin P15 in formato GBR (micro:Maqueen monta dei LED di tipo WS2812B che, stando alle <a href="https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf">specifiche</a>, richiedono questo tipo di formato). Occorre infine creare un <em>range</em> di lunghezza 1 per ognuno dei LED:</p>
+<img src="img/maqueen-plays-mbot/makecode-neopixel.png">
+<p class="illustration">La mappatura dei 4 LED RGB di micro:Maqueen in altrettanti <em>range</em>.</p>
+<p>Fatto ciò, per accendere un singolo LED si utilizza il blocco <span class="code block">(…) show color (…)</span> selezionando il <em>range</em> ad esso associato ed il colore desiderato.</p>
+<p class="note"><strong>ATTENZIONE!</strong> L'estensione &laquo;Neopixel&raquo; è incompatibile col Bluetooth. Come riporta la documentazione ufficiale: &ldquo;This package disables BLE as the real time requirements of the WS2812 conflict with the BLE stack&rdquo;.</p>
+<h2>Guida manuale telecomandata</h2>
+<h3>Codifica dei tasti del telecomando</h3>
+<p>Avevo già verificato la codifica dei tasti del telecomando di mBot in <strong>MakeCode</strong> con quella <a href="https://www.makeblock.com/project/me-ir-remote-controller">ufficiale</a> (cfr. <a href="mbot-vs-maqueen.html">&ldquo;mBot vs. micro:Maqueen&rdquo;</a>), e ho dato per scontato che <strong>Mind+</strong> usasse la stessa mappatura. Naturalmente mi sbagliavo: qualunque tasto premessi micro:Maqueen rimaneva impassibile. Ho allora predisposto un programma per determinare i codici che <strong>Mind+</strong> assegna ai vari tasti del telecomando:</p>
+<img src="img/maqueen-plays-mbot/mindplus-ir-key-code-detector.png">
+<p class="illustration">Il programma <strong>Mind+</strong> per la decodifica dei tasti del telecomando.</p>
+<p>Lo schema sottostante riporta i codici che <strong>Mind+</strong> assegna ad ogni tasto:</p>
+<img src="img/maqueen-plays-mbot/mindplus-ir-key-codes.png">
+<p class="illustration">I codici numerici associati ai tasti del telecomando I/R di mBot.</p>
+<p>Sembra non ci sia alcuna relazione tra i codici utilizzati dai due programmi:</p>
+<table cellspacing="0">
+<tr><th>Tasto<th>MakeCode</th><th>Mind+</th></tr>
+<tr><td class="feature">A</td><td><span class="code">69</span></td><td><span class="code">93</span></td></tr>
+<tr><td class="feature">B</td><td><span class="code">70</span></td><td><span class="code">157</span></td></tr>
+<tr><td class="feature">C</td><td><span class="code">71</span></td><td><span class="code">29</span></td></tr>
+<tr><td class="feature">D</td><td><span class="code">68</span></td><td><span class="code">221</span></td></tr>
+<tr><td class="feature">↑</td><td><span class="code">64</span></td><td><span class="code">253</span></td></tr>
+<tr><td class="feature">E</td><td><span class="code">67</span></td><td><span class="code">61</span></td></tr>
+<tr><td class="feature">←</td><td><span class="code">7</span></td><td><span class="code">31</span></td></tr>
+<tr><td class="feature">⚙</td><td><span class="code">21</span></td><td><span class="code">87</span></td></tr>
+<tr><td class="feature">→</td><td><span class="code">9</span></td><td><span class="code">111</span></td></tr>
+<tr><td class="feature">0</td><td><span class="code">22</span></td><td><span class="code">151</span></td></tr>
+<tr><td class="feature">↓</td><td><span class="code">25</span></td><td><span class="code">103</span></td></tr>
+<tr><td class="feature">F</td><td><span class="code">13</span></td><td><span class="code">79</span></td></tr>
+<tr><td class="feature">1</td><td><span class="code">12</span></td><td><span class="code">207</span></td></tr>
+<tr><td class="feature">2</td><td><span class="code">24</span></td><td><span class="code">231</span></td></tr>
+<tr><td class="feature">3</td><td><span class="code">94</span></td><td><span class="code">133</span></td></tr>
+<tr><td class="feature">4</td><td><span class="code">8</span></td><td><span class="code">239</span></td></tr>
+<tr><td class="feature">5</td><td><span class="code">28</span></td><td><span class="code">199</span></td></tr>
+<tr><td class="feature">6</td><td><span class="code">90</span></td><td><span class="code">165</span></td></tr>
+<tr><td class="feature">7</td><td><span class="code">66</span></td><td><span class="code">189</span></td></tr>
+<tr><td class="feature">8</td><td><span class="code">82</span></td><td><span class="code">181</span></td></tr>
+<tr><td class="feature">9</td><td><span class="code">74</span></td><td><span class="code">173</span></td></tr>
+</table>
+<p>Se però si cambia base, qualcosa salta all'occhio:</p>
+<table cellspacing="0">
+<tr><th>Tasto<th>MakeCode</th><th>Mind+</th></tr>
+<tr><td class="feature">A</td><td><span class="code">01000101</span></td><td><span class="code">01011101</span></td></tr>
+<tr><td class="feature">B</td><td><span class="code">01000110</span></td><td><span class="code">10011101</span></td></tr>
+<tr><td class="feature">C</td><td><span class="code">01000111</span></td><td><span class="code">00011101</span></td></tr>
+<tr><td class="feature">D</td><td><span class="code">01000100</span></td><td><span class="code">11011101</span></td></tr>
+<tr><td class="feature">↑</td><td><span class="code">01000000</span></td><td><span class="code">11111101</span></td></tr>
+<tr><td class="feature">E</td><td><span class="code">01000011</span></td><td><span class="code">00111101</span></td></tr>
+<tr><td class="feature">←</td><td><span class="code">00000111</span></td><td><span class="code">00011111</span></td></tr>
+<tr><td class="feature">⚙</td><td><span class="code">00010101</span></td><td><span class="code">01010111</span></td></tr>
+<tr><td class="feature">→</td><td><span class="code">00001001</span></td><td><span class="code">01101111</span></td></tr>
+<tr><td class="feature">0</td><td><span class="code">00010110</span></td><td><span class="code">10010111</span></td></tr>
+<tr><td class="feature">↓</td><td><span class="code">00011001</span></td><td><span class="code">01100111</span></td></tr>
+<tr><td class="feature">F</td><td><span class="code">00001101</span></td><td><span class="code">01001111</span></td></tr>
+<tr><td class="feature">1</td><td><span class="code">00001100</span></td><td><span class="code">11001111</span></td></tr>
+<tr><td class="feature">2</td><td><span class="code">00011000</span></td><td><span class="code">11100111</span></td></tr>
+<tr><td class="feature">3</td><td><span class="code">01011110</span></td><td><span class="code">10000101</span></td></tr>
+<tr><td class="feature">4</td><td><span class="code">00001000</span></td><td><span class="code">11101111</span></td></tr>
+<tr><td class="feature">5</td><td><span class="code">00011100</span></td><td><span class="code">11000111</span></td></tr>
+<tr><td class="feature">6</td><td><span class="code">01011010</span></td><td><span class="code">10100101</span></td></tr>
+<tr><td class="feature">7</td><td><span class="code">01000010</span></td><td><span class="code">10111101</span></td></tr>
+<tr><td class="feature">8</td><td><span class="code">01010010</span></td><td><span class="code">10110101</span></td></tr>
+<tr><td class="feature">9</td><td><span class="code">01001010</span></td><td><span class="code">10101101</span></td></tr>
+</table>
+<p>Le sequenze binarie di <strong>Mind+</strong> sono quelle di <strong>MakeCode</strong> negate e rovesciate, segno che uno dei due ambienti non interpreta nel modo corretto il segnale raccolto dal sensore I/R. Penso si tratti di <strong>Mind+</strong>, dato che i codici di <strong>MakeCode</strong> corrispondono a quelli riportati nella documentazione ufficiale.</p>
+<h3>Interrogazione del sensore I/R</h3>
+<p>Nè <strong>Mind+</strong> nè <strong>MakeCode</strong> consentono di interrogare il sensore I/R in modo sicrono; entrambi permettono di eseguire del codice in caso di ricezione di un comando (cfr. blocco <span class="code block">when (P16) received [infrared signal]</span> di <strong>Mind+</strong> e <span class="code block">on IR received [message]</span> di <strong>MakeCode</strong>). L'estensione &laquo;Maqueen&raquo; di <strong>MakeCode</strong> comprende il blocco <span class="code block">read IR key</span>, che però fornisce il valore dell'ultimo tasto premuto &ndash; non permette quindi di stabilire se in un dato istante nessuno dei tasti del telecomando è premuto.</p>
+<p>Con i blocchi a disposizione non è quindi possibile implementare il <em>polling</em> dello stato del telecomando come fa mBot, che si ferma automaticamente quando si rilascia il tasto direzionale che lo ha messo in moto. Per questa ragione ho deciso di assegnare al tasto centrale, quello con l'immagine della ruota dentata, la funzione di arresto dei motori. Attenzione dunque: premendo uno dei tasti direzionali il robot inizierà a muoversi, e continuerà a farlo fino a quando non riceverà il comando di stop.</p>
+<h2>Scansa-ostacoli</h2>
+<p>Nulla di particolare da segnalare nell'implementazione di questo comportamento.</p>
+<h2>Segui la linea</h2>
+<p>A differenza di <strong>mBlock</strong>, nè <strong>Mind+</strong> nè <strong>MakeCode</strong> dispongono di un blocco per stabilire lo stato d'insieme del sensore di linea; è dunque necessario interrogare separatamente i due recettori col blocco <span class="code block">read […] line tracking sensor</span> comune ai due ambienti di lavoro. In entrambi i casi il valore ritornato è 1 se il sensore si trova su una superficie chiara, 0 se si trova su una superficie scura.</p>
+<p>Da segnalare che ad alte velocità il comportamento di micro:Maqueen è tutt'altro che ottimale quando messo alla prova sul circuito di test di mBot; evidentemente il diametro inferiore delle ruote rispetto a quelle di mBot, la carreggiata inferiore e l'interasse maggiore tra i due recettori del sensore di linea &ndash; 1.5cm contro 1.3cm &ndash; mal si sposano con il raggio di curvatura 1:5 adottato dal programma per mBot.</p>
+<h2>Altri aspetti</h2>
+<p>In <strong>MakeCode</strong> è possibile creare dei programmi non validi. Mi è capitato per esempio di:</p>
+<ul>
+<li>inserire il blocco <span class="code block">set [strip] to …</span> nel blocco <span class="code block">on start</span>;</li>
+<li>rinominare la variabile <span class="code block">strip</span> in <span class="code block">my strip</span>;</li>
+<li>portare il numero di LED da <span class="code block">24</span> a <span class="code block">4</span>;</li>
+<li>inserire il blocco <span class="code block">[strip] show color …</span> nel blocco <span class="code block">forever</span>:</li>
+</ul>
+<img src="img/maqueen-plays-mbot/makecode-error.png">
+<p class="illustration">Un programma invalido.</p>
+<p>Ci sono vari indizi che avrebbero dovuto richiamare la mia attenzione, uno su tutti il contorno giallo del blocco che contiene l'errore &ndash; la variabile <span class="code block">strip</span> non esiste più da quando l'ho rinominata. Inoltre, seppur per un breve lasso di tempo, in basso al centro è apparso questo avviso:</p>
+<img src="img/maqueen-plays-mbot/makecode-warning.png">
+<p class="illustration">Il messaggio d'errore apparso per pochi istanti nella parte inferiore dell'editor.</p>
+<p>Non ultimo, l'emulatore in alto a sinistra si è arrestato mostrando una faccina triste:</p>
+<img src="img/maqueen-plays-mbot/makecode-emulator-disabled.png">
+<p class="illustration">In caso di errore l'emulatore si blocca.</p>
+<p>Ignorando tutto ciò ho caricato il programma sulla scheda. Anziché accendere i LED di Maqueen di bianco, micro:bit ha mostrato sul suo display, in sequenza, una faccina triste, un 9, un 8, un altro 9, per poi ricominciare da capo. Immaginando che si trattasse di una segnalazione d'errore, ho cercato in rete il codice d'errore 989 associato a micro:bit. Sono così giunto alla pagina ufficiale che descrive i <a href="https://microbit.org/guide/error-codes/">codici d'errore</a> di micro:bit, scoperendo che al codice 989 corrisponde l'errore <em>object is null</em>. Da lì è stato facile individuare l'errore e correggerlo.</p>
+<a name="conclusions"></a>
+<h2>Conclusioni</h2>
+<p>micro:Maqueen può imitare mBot a patto di modificare la logica di controllo del movimento con il telecomando: mentre mBot si ferma automaticamente quando nessuno dei tasti direzionali è premuto, micro:Maqueen va arrestato con un comando apposito. Non c'è modo, nè in <strong>Mind+</strong> nè in <strong>MakeCode</strong>, di verificare lo stato del telecomando a un dato istante.</p>
+<p>Sono disponibili sia il <a href="files/maqueen-plays-mbot/maqueen-plays-mbot-mindplus.sb3">file di progetto</a> per <strong>Mind+</strong> che l'<a href="files/maqueen-plays-mbot/maqueen-plays-mbot-makecode.hex">immagine binaria</a> pronta per essere caricata su micro:bit realizzata con <strong>MakeCode</strong>. Per i più curiosi ci sono pure il <a href="files/maqueen-plays-mbot/maqueen-plays-mbot-mindplus.cpp">sorgente C++</a> prodotto da <strong>Mind+</strong> e il <a href="files/maqueen-plays-mbot/maqueen-plays-mbot-makecode.js">codice JavaScript</a> sintetizzato da <strong>MakeCode</strong>.</p>
+<p>Per quando riguarda la dimensione del programma compilato, l'Upload in <strong>Mind+</strong> riporta:</p>
+<pre class="code">
+The project uses 199136 bytes, occupies (76%) program memory space, leaving 63008 bytes, up to 262144 bytes.
+Global variables use 8228 bytes, (50%) of dynamic memory, leaving 8156 byte local variables, up to 16384 bytes.
+upload success
+</pre>
+<p>L'immagine binaria scaricata da <strong>MakeCode</strong> pesa invece circa 680KB.</p>
+<p>Infine, ecco come si presentano i due programmi (cliccare sulle immagini per ingrandirle):</p>
+<a href="img/maqueen-plays-mbot/mindplus-program.png"><img src="img/maqueen-plays-mbot/mindplus-program.png" width="400"></a>
+<p class="illustration">Il programma sviluppato con Mind+.</p>
+<a href="img/maqueen-plays-mbot/makecode-program.png"><img src="img/maqueen-plays-mbot/makecode-program.png" width="400"></a>
+<p class="illustration">Il programma sviluppato con MakeCode.</p>
+<p class="modification-notice">Pagina modificata il 27/01/2020</p>
+</body>
+</html>

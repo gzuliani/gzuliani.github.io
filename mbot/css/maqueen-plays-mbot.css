@@ -1,0 +1,25 @@
+table {
+ margin-left: 2em;
+}
+
+span.block {
+ background: #eee8d5;
+ border: 1px solid #586e75;
+ font-size: .8em;
+ padding: 2px;
+}
+
+th {
+ text-align: center;
+}
+
+td {
+ font-size: .9em;
+ text-align: center;
+}
+
+td.feature {
+ color: #2aa198;
+ white-space: nowrap;
+ font-weight: bold;
+}
