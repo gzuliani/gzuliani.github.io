@@ -203,6 +203,15 @@ max_power       = 3300 # max possible power (in W) provided by energy company
 <li>La scheda Raspberry Pi 3 Mod. B non ha un RTC a bordo. Durante gli esperimenti effettuati, avendo la connettività necessaria (essendo collegata con un cavo Ethernet ad un modem/router collegato in rete), ha allineato l'orologio interno consultando un <em>time server</em> pubblico. Non ho verificato quale <em>timestamp</em> venga attribuito ai campioni nel caso l'accesso alla rete non sia disponibile;</li>
 <li>EmonCMS dispone di funzionalità molto avanzate: sarebbe opportuno spendere del tempo per esplorarle nel dettaglio.</li>
 </ul>
+<br>
+<p class="update"><strong>[Aggiornamento 29/01/2020]</strong></p>
+<p>Il problema dell'assenza di un RTC è facilmente risolvibile acquistando uno dei vari moduli disponibili in commercio, avendo configurato opportunamente il sistema operativo. Particolarmente adatto allo scopo è l'RTC DS3231, in particolare l'edizione &ldquo;DS3231 for PI&rdquo; pensata appositamente per le schede Raspberry Pi mod. 3 e 4:</p>
+<img src="img/emoncms/ds3231-for-pi.jpg">
+<p class="illustration">Il modulo DS3231 for PI</p>
+<p>Il modulo va inserito nella porta GPIO come mostrato in figura:</p>
+<img src="img/emoncms/ds3231-for-pi-mounted.jpg">
+<p class="illustration">Collegamento del modulo DS3231 for PI alla scheda</p>
+<p>In rete si trovano vari tutorial che spiegano come configurare emonSD affinché ricavi la data e l'ora dall'RTC, uno tra i più chiari &ndash; e quello che in definitiva ho seguito &ndash; mi è sembrato <a href="https://pimylifeup.com/raspberry-pi-rtc/">Raspberry Pi RTC: Adding a Real Time Clock</a>. Ad ogni buon conto ho <a href="files/emoncms/ds3231.md">tenuto traccia</a> di ogni singolo passaggio eseguito per l'installazione dell'RTC sulla mia Raspberry.</p>
 <p class="modification-notice">Pagina modificata il 15/12/2019</p>
 </body>
 </html>
