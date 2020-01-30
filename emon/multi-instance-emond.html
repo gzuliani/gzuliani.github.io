@@ -9,9 +9,9 @@
 <body>
 <p class="page-path"><a href="../index.html#multi-instance-emond">risorse</a> | emond multi-istanza</p>
 <h1>emond multi-istanza</h1>
-<p class="note">Questi appunti costituiscono un'estensione dell'esperimento <a href="emoncms.html">Monitoraggio consumi con EmonCMS</a>.</p>
+<p class="note">Questi appunti costituiscono un'estensione dell'esperimento <a href="emoncms.html">Monitoraggio consumi con Emoncms</a>.</p>
 <h2>Introduzione</h2>
-<p>Il servizio <a href="http://ondrej1024.github.io/emond/">emond</a> è in grado di monitorare un contatore elettronico di energia. Come fare se i contatori da controllare sono due o più? La domanda è già stata posta nei <a href="https://openenergymonitor.org/forum-archive/node/5825.html">forum di EmonCMS</a> e la risposta l'ha fornita l'autore stesso di emond:</p>
+<p>Il servizio <a href="http://ondrej1024.github.io/emond/">emond</a> è in grado di monitorare un contatore elettronico di energia. Come fare se i contatori da controllare sono due o più? La domanda è già stata posta nei <a href="https://openenergymonitor.org/forum-archive/node/5825.html">forum di Emoncms</a> e la risposta l'ha fornita l'autore stesso di emond:</p>
 <blockquote>
 I think it should be possible to run 2 instances of emond on the same RPi, though I have never tried. You just have to change the hardcoded config file name for one of them so you can have two different configurations (which you need to specify 2 different GPIO inputs).
 <br>
@@ -216,13 +216,13 @@ $ sudo service --status-all
  ....
 </pre>
 <p>L'indicazione che entrambe le istanze sono attive è il risultato atteso.</p>
-<h2>EmonCMS</h2>
-<p>La rinomina dell'istanza originale del servizio emond da <span class="daemon">emond</span> a <span class="daemon">emon-hp1</span> è del tutto trasparente per EmonCMS; collegando l'unico contatore che ho a disposizione sul pin 25 della porta GPIO le letture continuano ad essere associate al nodo 1, come si evince dalla pagina <strong>Input</strong>:</p>
+<h2>Emoncms</h2>
+<p>La rinomina dell'istanza originale del servizio emond da <span class="daemon">emond</span> a <span class="daemon">emon-hp1</span> è del tutto trasparente per Emoncms; collegando l'unico contatore che ho a disposizione sul pin 25 della porta GPIO le letture continuano ad essere associate al nodo 1, come si evince dalla pagina <strong>Input</strong>:</p>
 <img src="img/multi-instance-emond/emon-hp1.png">
-<p class="illustration">Il nome dell'istanza di emond non ha effetto su EmonCMS, ciò che conta è il <span class="code">node_number</span></p>
+<p class="illustration">Il nome dell'istanza di emond non ha effetto su Emoncms, ciò che conta è il <span class="code">node_number</span></p>
 <p>Se collego il contatore al pin 24 della porta GPIO allora entra in gioco la seconda istanza di emond, quella denominata <span class="daemon">emon-hp2</span>, associata al nodo 2:</p>
 <img src="img/multi-instance-emond/emon-hp2.png">
-<p class="illustration">EmonCMS mostra che ora i dati giungono dal nodo 2</p>
+<p class="illustration">Emoncms mostra che ora i dati giungono dal nodo 2</p>
 <p>Conviene associare un device al nodo 2, come è già stato fatto inizialmente per il nodo 1. Per accedere alla maschera di configurazione è sufficiente selezionare l'icona a forma di chiave inglese associata al nodo:</p>
 <img src="img/multi-instance-emond/emon-hp2-device.png">
 <p class="illustration">Le proprietà del device associato al secondo contatore</p>

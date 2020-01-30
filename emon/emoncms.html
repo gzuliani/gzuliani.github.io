@@ -2,12 +2,12 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"/>
-<title>Monitoraggio consumi con EmonCMS</title>
+<title>Monitoraggio consumi con Emoncms</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#emon">risorse</a> | monitoraggio consumi con emoncms</p>
-<h1>Monitoraggio consumi con EmonCMS</h1>
+<h1>Monitoraggio consumi con Emoncms</h1>
 <p>L'obiettivo di questo esperimento è quello di monitorare l'andamento temporale dei consumi di una pompa di calore impiegando un contatore elettronico di energia elettrica monofase con uscita a impulsi.</p>
 <h2>Il contatore</h2>
 <p>Il contatore di energia DDS238-1 misura il consumo di energia attiva in un impianto a 220V:</p>
@@ -47,8 +47,8 @@ PINK   FLASHING RATE PROPORTIONAL TO LOAD
        (1000imp/kWh)
 </pre>
 <h2>emond</h2>
-<p><a href="http://ondrej1024.github.io/emond/">emond</a> (Smart energy monitor device software for EmonCMS) è un modulo software C in grado di estrapolare le misure di energia consumata dalla sequenza di impulsi generati da un contatore digitale per poi inviarle a un'instanza di <a href="https://emoncms.org/">EmonCMS</a>, un'applicazione web il cui scopo è elaborare, memorizzare e visualizzare questa tipologia di dati. emond gira su Raspberry Pi e si interfaccia al contatore digitale tramite due pin della porta GPIO. Poiché esiste una versione di EmonCMS specifica per Raspberry Pi, e avendone una a disposizione (una Raspberry Pi 3 Mod. B per la precisione), ho deciso fare qualche prova in merito.</p>
-<h2>Installazione di EmonCMS</h2>
+<p><a href="http://ondrej1024.github.io/emond/">emond</a> (Smart energy monitor device software for Emoncms) è un modulo software C in grado di estrapolare le misure di energia consumata dalla sequenza di impulsi generati da un contatore digitale per poi inviarle a un'instanza di <a href="https://emoncms.org/">Emoncms</a>, un'applicazione web il cui scopo è elaborare, memorizzare e visualizzare questa tipologia di dati. emond gira su Raspberry Pi e si interfaccia al contatore digitale tramite due pin della porta GPIO. Poiché esiste una versione di Emoncms specifica per Raspberry Pi, e avendone una a disposizione (una Raspberry Pi 3 Mod. B per la precisione), ho deciso fare qualche prova in merito.</p>
+<h2>Installazione di Emoncms</h2>
 <p>Per iniziare ho scaricato l'immagine per Raspberry Pi dal <a href="https://github.com/openenergymonitor/emonpi/wiki/emonSD-pre-built-SD-card-Download-&amp;-Change-Log">sito ufficiale</a>. L'ultima, recentissima (17/10/2019), è disponibile <a href="http://files.openenergymonitor.org/emonSD-17Oct19.img.zip">qui</a>. Ho usato <em>Win32 Disk Imager</em> per trasferire l'immagine su una SD card da 16GB. Come da istruzioni ho collegato la Raspberry Pi al router che governa la rete locale con un cavo Ethernet. Le credenziali per il login sono <strong>pi/emonpi2016</strong> (quelle per l'accesso ai vari servizi installati in questa distribuzione - MySQL, MQTT, &hellip; - sono riportate in una <a href="https://guide.openenergymonitor.org/technical/credentials/">pagina dedicata</a>).</p>
 <p>Nella documentazione ufficiale si legge:</p>
 <blockquote>
@@ -64,14 +64,14 @@ $ sudo emonSDexpand
 $ cd /boot
 $ sudo touch ssh
 </pre>
-<p>EmonCMS a questo punto è raggiungibile all'indirizzo <code>http://&lt;raspberrypi-ip&gt;/</code> da qualunque dispositivo connesso alla rete locale. L'IP assegnato alla Raspberry Pi è ricavabile direttamente dal terminale con il comando <code>ifconfig</code> oppure consultando il router, se quest'ultimo lo permette.</p>
+<p>Emoncms a questo punto è raggiungibile all'indirizzo <code>http://&lt;raspberrypi-ip&gt;/</code> da qualunque dispositivo connesso alla rete locale. L'IP assegnato alla Raspberry Pi è ricavabile direttamente dal terminale con il comando <code>ifconfig</code> oppure consultando il router, se quest'ultimo lo permette.</p>
 <h3>Configurazione preliminare</h3>
-<p>Conclusa l'installazione EmonCMS è già in grado di ricevere dati dai sensori; per ogni dato ricevuto l'applicativo crea un nuovo <em>input</em> nell'omonima pagina. Nella terminologia di EmonCMS un input rappresenta una sorgente di dati che può eventualmente essere storicizzata in uno o più <em>feed</em>, che rappresentano invece dei campionamenti dei valori di un input.</p>
-<p>La distribuzione di EmonCMS che ho installato è corredata di alcuni moduli aggiuntivi, tra i quali <a href="https://github.com/emoncms/device">Device</a>. Un <em>device</em> rappresenta un dispositivo fisico in grado di fornire uno o più valori di energia (istantaneo, giornaliero, mensile, &hellip;) e/o valori associati a grandezze diverse (energia, temperatura, umidità, &hellip;); in EmonCMS i device sono utilizzati per aggregare più input provenienti da un unico apparato di misura.</p>
+<p>Conclusa l'installazione Emoncms è già in grado di ricevere dati dai sensori; per ogni dato ricevuto l'applicativo crea un nuovo <em>input</em> nell'omonima pagina. Nella terminologia di Emoncms un input rappresenta una sorgente di dati che può eventualmente essere storicizzata in uno o più <em>feed</em>, che rappresentano invece dei campionamenti dei valori di un input.</p>
+<p>La distribuzione di Emoncms che ho installato è corredata di alcuni moduli aggiuntivi, tra i quali <a href="https://github.com/emoncms/device">Device</a>. Un <em>device</em> rappresenta un dispositivo fisico in grado di fornire uno o più valori di energia (istantaneo, giornaliero, mensile, &hellip;) e/o valori associati a grandezze diverse (energia, temperatura, umidità, &hellip;); in Emoncms i device sono utilizzati per aggregare più input provenienti da un unico apparato di misura.</p>
 <p>Per creare un nuovo device si accede alla pagina <strong>Input</strong> e si preme il pulsante <strong>New device</strong>; a questo punto è sufficiente compilare la maschera che appare selezionando il tipo di dispositivo fisico associato al device (<strong>Split Single Phase Meter</strong> nel mio caso) e indicando l'identificativo numerico attribuito all'apparato di misura (<strong>1</strong>). Completare il modulo indicando il nome simbolico del nodo (<strong>heatpump</strong>) e il luogo di installazione (<strong>home</strong>).</p>
 <img src="img/emoncms/configure-device.png">
 <p class="illustration">Definizione del device associato al contatore</p>
-<p>Prima di proseguire con la configurazione di EmonCMS conviene installare il modulo di interfaccia del contatore emond.</p>
+<p>Prima di proseguire con la configurazione di Emoncms conviene installare il modulo di interfaccia del contatore emond.</p>
 <h2>Installazione di emond</h2>
 <p>Occorre dapprima installare le dipendenze del modulo:</p>
 <pre class="code">
@@ -99,7 +99,7 @@ wh_per_pulse    = 1    # Wh per pulse (from the Energy meter setting)
 pulse_length    = 30   # pulse length (in ms), leave blank for auto detection
 max_power       = 3300 # max possible power (in W) provided by energy company
 </pre>
-<p>La sezione <code>webapi</code> contiene l'indirizzo dell'API di EmonCMS preposta alla ricezione dei valori generati dal contatore, la frequenza massima di aggiornamento e il numero del nodo assegnato al contatore:</p>
+<p>La sezione <code>webapi</code> contiene l'indirizzo dell'API di Emoncms preposta alla ricezione dei valori generati dal contatore, la frequenza massima di aggiornamento e il numero del nodo assegnato al contatore:</p>
 <pre class="code">
 ...
 [webapi]
@@ -111,7 +111,7 @@ node_number     = 1                # Identifier of your node in EmonCMS
 <p>Il valore del parametro <code>api_key</code> si ricava dalla sezione <strong>Apikey authentication</strong> della pagina <strong>Input API Help</strong>, raggiungibile dalla pagina <strong>Input</strong> dell'applicativo web. Copiare la chiave <strong>Read &amp; Write</strong>, quella di sola lettura non è sufficiente:</p>
 <img src="img/emoncms/input-api-key.png">
 <p class="illustration">La chiave per l'invio dei valori di input</p>
-<p>Stando alla documentazione ufficiale se emond è installato nella stessa macchina che ospita EmonCMS l'uso della chiave non è obbligatorio:</p>
+<p>Stando alla documentazione ufficiale se emond è installato nella stessa macchina che ospita Emoncms l'uso della chiave non è obbligatorio:</p>
 <blockquote>
 <p>To post data from a remote device you will need to include in the request url your write apikey. This give your device write access to your emoncms account, allowing it to post data.</p>
 </blockquote>
@@ -156,7 +156,7 @@ Nov 27 20:58:30 emonpi emond[3142]: Detected ending pulse out of sequence
 <img src="img/emoncms/test-circuit.jpg">
 <p class="illustration">Il circuito approntato per il test</p>
 <h3>Dettagli implementativi</h3>
-<p>emond invia a EmonCMS tre valori: il conteggio degli impulsi generati dal contatore dall'ultimo invio diviso per l'intervallo di tempo trascorso (consumo istantaneo), il conteggio degli impulsi a partire dalla mezzanotte (energia consumata nella giornata corrente) e quello degli impulsi a partire dalla mezzanotte del primo giorno del mese (energia consumata nel mese corrente). Se il parametro <code>wh_per_pulse</code> è impostato correttamente i valori di potenza risultano essere espressi in W, quelli di energia in Wh. I dati sono inviati a EmonCMS per mezzo dell'API <code>/input/post.json</code> nel formato <code>JSON like</code>. La richiesta viene trasmessa sfruttando libcurl e assume la seguente forma:</p>
+<p>emond invia a Emoncms tre valori: il conteggio degli impulsi generati dal contatore dall'ultimo invio diviso per l'intervallo di tempo trascorso (consumo istantaneo), il conteggio degli impulsi a partire dalla mezzanotte (energia consumata nella giornata corrente) e quello degli impulsi a partire dalla mezzanotte del primo giorno del mese (energia consumata nel mese corrente). Se il parametro <code>wh_per_pulse</code> è impostato correttamente i valori di potenza risultano essere espressi in W, quelli di energia in Wh. I dati sono inviati a Emoncms per mezzo dell'API <code>/input/post.json</code> nel formato <code>JSON like</code>. La richiesta viene trasmessa sfruttando libcurl e assume la seguente forma:</p>
 <pre class="code">
 &lt;api_base_uri&gt;/input/post.json?
    apikey=&lt;api_key&gt;
@@ -164,7 +164,7 @@ Nov 27 20:58:30 emonpi emond[3142]: Detected ending pulse out of sequence
    &amp;json={power:...,energy_day:...,energy_month:...}
 </pre>
 <p>I valori tra parentesi angolate sono quelli ricavati dal file di configurazione.</p>
-<h2>Configurazione di EmonCMS</h2>
+<h2>Configurazione di Emoncms</h2>
 <p>Se il contatore è stato cablato correttamente e il servizio di monitoraggio è in esecuzione la pagina <strong>Input</strong> mostra l'ultimo valore ricevuto da emond e il tempo trascorso da quando questo è stato ricevuto (in verde se ricevuto da non più di 25 secondi, arancio se ricevuto da non più di un minuto, rosso altrimenti).</p>
 <img src="img/emoncms/input-page.png">
 <p class="illustration">Pagina degli input</p>
@@ -175,12 +175,12 @@ Nov 27 20:58:30 emonpi emond[3142]: Detected ending pulse out of sequence
 <p>Dopo qualche tempo, nella pagina del feed appena definito (raggiungibile selezionandolo dall'elenco di tutti i feed definiti presente nella pagina <strong>Feeds</strong>) sarà possibile verificare l'andamento temporale dei consumi:</p>
 <img src="img/emoncms/logging-feed-graph.png">
 <p class="illustration">Andamento temporale dei consumi</p>
-<p>Da questa pagina è possibile scaricare i dati utilizzati per popolare il grafico (attenzione: non quelli effettivamente salvati!) in formato CSV. Il download dei dati storici reali (<strong>Full Export</strong> nella terminologia EmonCMS) è disponibile nella pagina <strong>Feeds</strong>, selezionando il feed di interesse e premendo il pulsante <strong>Download</strong>:</p>
+<p>Da questa pagina è possibile scaricare i dati utilizzati per popolare il grafico (attenzione: non quelli effettivamente salvati!) in formato CSV. Il download dei dati storici reali (<strong>Full Export</strong> nella terminologia Emoncms) è disponibile nella pagina <strong>Feeds</strong>, selezionando il feed di interesse e premendo il pulsante <strong>Download</strong>:</p>
 <img src="img/emoncms/feed-page-download-button.png">
 <p class="illustration">Il pulsante di scaricamento dei dati del feed</p>
 <p>Per maggiori informazioni circa la natura dei feed fare riferimento alla sezione <strong>Log Locally</strong> e successive della <a href="https://guide.openenergymonitor.org/setup/local/">documentazione ufficiale</a>.</p>
-<h3>Se EmonCMS non riceve alcun dato</h3>
-<p>Se EmonCMS non riceve alcun dato la causa potrebbe essere che il carico sotto controllo stia richiedendo una quantità di energia al di sotto della soglia di sensibilità del contatore (caso verificatosi tentando di monitorare il consumo di una lampadina LED da 5W): provare a sostituire il carico con un'apparecchiatura più avida di energia (es. stufetta da 1kW). Ciò è dovuto ad una peculiare caratteristica di emond che verifica se è giunta l'ora di inviare a EmonCMS il conteggio degli impulsi generati dal contatore  solo in corrispondenza al ricevimento di un nuovo impulso: se il carico non consuma a sufficienza il contatore non genererà alcun impulso e emond non avrà modo di inviare i dati a EmonCMS. Il parametro <code>api_update_rate</code> è quindi l'intervallo di tempo minimo che intercorre tra due invii successivi: se i consumi sono nulli o prossimi allo zero possono passare ore prima che emond invii nuovi dati a EmonCMS.</p>
+<h3>Se Emoncms non riceve alcun dato</h3>
+<p>Se Emoncms non riceve alcun dato la causa potrebbe essere che il carico sotto controllo stia richiedendo una quantità di energia al di sotto della soglia di sensibilità del contatore (caso verificatosi tentando di monitorare il consumo di una lampadina LED da 5W): provare a sostituire il carico con un'apparecchiatura più avida di energia (es. stufetta da 1kW). Ciò è dovuto ad una peculiare caratteristica di emond che verifica se è giunta l'ora di inviare a Emoncms il conteggio degli impulsi generati dal contatore  solo in corrispondenza al ricevimento di un nuovo impulso: se il carico non consuma a sufficienza il contatore non genererà alcun impulso e emond non avrà modo di inviare i dati a Emoncms. Il parametro <code>api_update_rate</code> è quindi l'intervallo di tempo minimo che intercorre tra due invii successivi: se i consumi sono nulli o prossimi allo zero possono passare ore prima che emond invii nuovi dati a Emoncms.</p>
 <p>Un altro problema che ha causato il mancato invio dei dati è stata l'errata configurazione del servizio di monitoraggio, nella fattispecie il valore assegnato al parametro <code>pulse_length</code>. Impostato a 30ms come da specifiche del contatore non permetteva a emond di individuare correttamente gli impulsi generati dal contatore. Il motivo è stato chiaro nel momento in cui ho consultato il syslog:</p>
 <pre class="code">
 $ tail -f /var/log/syslog
@@ -201,7 +201,7 @@ max_power       = 3300 # max possible power (in W) provided by energy company
 <h2>Punti aperti</h2>
 <ul>
 <li>La scheda Raspberry Pi 3 Mod. B non ha un RTC a bordo. Durante gli esperimenti effettuati, avendo la connettività necessaria (essendo collegata con un cavo Ethernet ad un modem/router collegato in rete), ha allineato l'orologio interno consultando un <em>time server</em> pubblico. Non ho verificato quale <em>timestamp</em> venga attribuito ai campioni nel caso l'accesso alla rete non sia disponibile;</li>
-<li>EmonCMS dispone di funzionalità molto avanzate: sarebbe opportuno spendere del tempo per esplorarle nel dettaglio.</li>
+<li>Emoncms dispone di funzionalità molto avanzate: sarebbe opportuno spendere del tempo per esplorarle nel dettaglio.</li>
 </ul>
 <br>
 <p class="update"><strong>[Aggiornamento 29/01/2020]</strong></p>
