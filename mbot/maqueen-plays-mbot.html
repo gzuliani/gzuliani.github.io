@@ -77,6 +77,29 @@
 <tr><td class="feature">9</td><td><span class="code">01001010</span></td><td><span class="code">10101101</span></td></tr>
 </table>
 <p>Le sequenze binarie di <strong>Mind+</strong> sono quelle di <strong>MakeCode</strong> negate e rovesciate, segno che uno dei due ambienti non interpreta nel modo corretto il segnale raccolto dal sensore I/R. Penso si tratti di <strong>Mind+</strong>, dato che i codici di <strong>MakeCode</strong> corrispondono a quelli riportati nella documentazione ufficiale.</p>
+<p class="update"><strong>[Aggiornamento 01/02/2020]</strong></p>
+<p>Ho chiesto lumi a riguardo a Mindplus. La risposta è arrivata un paio di giorni dopo:</p>
+<blockquote>Hello Gianfranco,<br>
+Nothing is wrong, different software handles it differently, just to make the result look easier to operate. You just need to get the value of the case first, and then use the conditions to determine what to do when the value of the infrared remote control is equal to this value. In MinkPlus's MaQueen kit, the last byte of this remote control hex is taken and converted into decimal display.</blockquote>
+<p>A corredo del messaggio c'era questa immagine (click per ingrandirla):</p>
+<a href="img/maqueen-plays-mbot/mindplus-ir-codes-explanation.png"><img src="img/maqueen-plays-mbot/mindplus-ir-codes-explanation.png" width=400></a>
+<p class="illustration">Schematizzazione dell'algoritmo di Mindplus che realizza la codifica dei tasti</p>
+<p>Il codice assegnato al tasto è dunque l'ultimo byte del pacchetto ricevuto dal telecomando.</p>
+<p>Come indicato sul sito ufficiale, il telecomando di mBot adotta l'&laquo;IR NEC protocol&raquo;, le cui specifiche si possono trovare <a href="https://techdocs.altium.com/display/FPGA/NEC+Infrared+Transmission+Protocol">qui</a>. Saltano agli occhi due particolari, qui sotto evidenziati:</p>
+<blockquote>When a key is pressed on the remote controller, the message transmitted consists of the following, in order:
+<ul>
+<li>a 9ms leading pulse burst (&hellip;)</li>
+<li>a 4.5ms space</li>
+<li>the 8-bit address for the receiving device</li>
+<li>the 8-bit logical inverse of the address</li>
+<li>the 8-bit command</li>
+<li>the 8-bit <strong>logical inverse</strong> of the command</li>
+<li>a final 562.5µs pulse burst to signify the end of message transmission.</li>
+</ul>
+The four bytes of data bits are each sent <strong>least significant bit first.</strong></blockquote>
+<p>Questo spiega definitivamente la difformità nelle due decodifiche: anziché utilizzare il terzo byte, quello che contiene il dato reale, Mindplus prende il quarto, che contiene il dato negato; inoltre non riordina i bit nono la posizione in cui si trovano non sia quella corretta:</p>
+<img src="img/maqueen-plays-mbot/nec-message-frame.png">
+<p class="illustration">Il protocollo NEC trasmette i byte a partire dal bit meno significativo</p>
 <h3>Interrogazione del sensore I/R</h3>
 <p>Nè <strong>Mind+</strong> nè <strong>MakeCode</strong> consentono di interrogare il sensore I/R in modo sicrono; entrambi permettono di eseguire del codice in caso di ricezione di un comando (cfr. blocco <span class="code block">when (P16) received [infrared signal]</span> di <strong>Mind+</strong> e <span class="code block">on IR received [message]</span> di <strong>MakeCode</strong>). L'estensione &laquo;Maqueen&raquo; di <strong>MakeCode</strong> comprende il blocco <span class="code block">read IR key</span>, che però fornisce il valore dell'ultimo tasto premuto &ndash; non permette quindi di stabilire se in un dato istante nessuno dei tasti del telecomando è premuto.</p>
 <p>Con i blocchi a disposizione non è quindi possibile implementare il <em>polling</em> dello stato del telecomando come fa mBot, che si ferma automaticamente quando si rilascia il tasto direzionale che lo ha messo in moto. Per questa ragione ho deciso di assegnare al tasto centrale, quello con l'immagine della ruota dentata, la funzione di arresto dei motori. Attenzione dunque: premendo uno dei tasti direzionali il robot inizierà a muoversi, e continuerà a farlo fino a quando non riceverà il comando di stop.</p>
