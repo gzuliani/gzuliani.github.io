@@ -10,6 +10,8 @@
 <p class="page-path"><a href="../index.html#multi-instance-emond">risorse</a> | emond multi-istanza</p>
 <h1>emond multi-istanza</h1>
 <p class="note">Questi appunti costituiscono un'estensione dell'esperimento <a href="emoncms.html">Monitoraggio consumi con Emoncms</a>.</p>
+<p class="update"><strong>[Aggiornamento 01/02/2020]</strong></p>
+<p>Ondrej Wisniewski, l'autore di emond, ha recentemente integrato nel branch principale del suo <a href="https://github.com/ondrej1024/emond">repository git</a> le modifiche qui proposte. Non è quindi più necessario intervenire sui sorgenti, basta scaricare il software così com'è e seguire le <a href="https://github.com/ondrej1024/emond#running-a-second-instance">istruzioni</a> per installare le istanze addizionali.</p>
 <h2>Introduzione</h2>
 <p>Il servizio <a href="http://ondrej1024.github.io/emond/">emond</a> è in grado di monitorare un contatore elettronico di energia. Come fare se i contatori da controllare sono due o più? La domanda è già stata posta nei <a href="https://openenergymonitor.org/forum-archive/node/5825.html">forum di Emoncms</a> e la risposta l'ha fornita l'autore stesso di emond:</p>
 <blockquote>
@@ -32,7 +34,7 @@ As an alternative emond could be transformed into a multi threaded program which
 ...
    openlog("<strong>emond</strong>", LOG_PID|LOG_CONS, LOG_USER);
 </pre>
-<p>In questo caso è necessario personalizzare il nome del file di configurazione, il nome del file contenente lo storico dei dati e il nome identificativo dei messaggi inviati al syslog. Per questa ragione predispongo tre buffer che conterranno i nomi per questi oggetti, quindi i nomi standard (da utilizzare nel caso il suffisso non sia sttato specificato), infine tre template che rappresentano i nomi per i tre oggetti al netto del suffisso:</p>
+<p>In questo caso è necessario personalizzare il nome del file di configurazione, il nome del file contenente lo storico dei dati e il nome identificativo dei messaggi inviati al syslog. Per questa ragione predispongo tre buffer che conterranno i nomi per questi oggetti, quindi i nomi standard (da utilizzare nel caso il suffisso non sia stato specificato), infine tre template che rappresentano i nomi per i tre oggetti al netto del suffisso:</p>
 <pre class="code">
 <del>#define CONFIG_FILE "/etc/emon.conf"
 #define NV_FILENAME "emond.dat"</del>
@@ -52,7 +54,7 @@ char NV_FILENAME [BUFFER_SIZE];
 #define NV_FILENAME_TEMPLATE "emond-%s.dat"
 </ins>
 </pre>
-<p>I nomi definitivi vengono determinati all'avvio del programma a seconda che il suffisso sia stato specificato (<span class="code">argc==2</span>) oppure no (<span class="code">argc==1</span>):</p>
+<p>I nomi definitivi sono determinati all'avvio del programma a seconda che il suffisso sia stato specificato (<span class="code">argc==2</span>) oppure no (<span class="code">argc==1</span>):</p>
 <pre class="code">
 int main(int argc, char **argv)
 {
@@ -62,7 +64,6 @@ int main(int argc, char **argv)
         snprintf(DAEMON_NAME, BUFFER_SIZE, DAEMON_NAME_TEMPLATE, suffix);
         snprintf(CONFIG_FILE, BUFFER_SIZE, CONFIG_FILE_TEMPLATE, suffix);
         snprintf(NV_FILENAME, BUFFER_SIZE, NV_FILENAME_TEMPLATE, suffix);
-
    }
    else
    {
@@ -163,7 +164,7 @@ Dec 16 21:13:55 emonpi emon-hp1[3673]: Data file /media/data/emond-hp1.dat not y
 <pre class="code">
 $ sudo update-rc.d emon-hp1 defaults
 </pre>
-<p>A conclusione di questa fase, ora che lo script <span class="file">emond</span> non esiste più (è stato rinominato in <span class="file">emon-hp1</span>) si procede con la rimozione del servizio:</p>
+<p>A conclusione di questa fase, ora che lo script <span class="file">emond</span> non esiste più (è stato rinominato in <span class="file">emon-hp1</span>) si procede con la rimozione del vecchio servizio:</p>
 <pre class="code">
 $ sudo update-rc.d emon remove
 </pre>
