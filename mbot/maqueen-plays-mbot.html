@@ -100,6 +100,10 @@ The four bytes of data bits are each sent <strong>least significant bit first.</
 <p>Questo spiega definitivamente la difformità nelle due decodifiche: anziché utilizzare il terzo byte, quello che contiene il dato reale, Mindplus prende il quarto, che contiene il dato negato; inoltre non riordina i bit nono la posizione in cui si trovano non sia quella corretta:</p>
 <img src="img/maqueen-plays-mbot/nec-message-frame.png">
 <p class="illustration">Il protocollo NEC trasmette i byte a partire dal bit meno significativo</p>
+<p class="update"><strong>[Aggiornamento 03/02/2020]</strong></p>
+<p>Ho fatto presente la cosa a Mindplus, che ha replicato:</p>
+<blockquote>yes, The processing methods and results of makecode and mblock and mindplus may be different or the same, because different developers have different ideas.</blockquote>
+<p>Penso non sia necessario proseguire oltre nella conversazione.</p>
 <h3>Interrogazione del sensore I/R</h3>
 <p>Nè <strong>Mind+</strong> nè <strong>MakeCode</strong> consentono di interrogare il sensore I/R in modo sicrono; entrambi permettono di eseguire del codice in caso di ricezione di un comando (cfr. blocco <span class="code block">when (P16) received [infrared signal]</span> di <strong>Mind+</strong> e <span class="code block">on IR received [message]</span> di <strong>MakeCode</strong>). L'estensione &laquo;Maqueen&raquo; di <strong>MakeCode</strong> comprende il blocco <span class="code block">read IR key</span>, che però fornisce il valore dell'ultimo tasto premuto &ndash; non permette quindi di stabilire se in un dato istante nessuno dei tasti del telecomando è premuto.</p>
 <p>Con i blocchi a disposizione non è quindi possibile implementare il <em>polling</em> dello stato del telecomando come fa mBot, che si ferma automaticamente quando si rilascia il tasto direzionale che lo ha messo in moto. Per questa ragione ho deciso di assegnare al tasto centrale, quello con l'immagine della ruota dentata, la funzione di arresto dei motori. Attenzione dunque: premendo uno dei tasti direzionali il robot inizierà a muoversi, e continuerà a farlo fino a quando non riceverà il comando di stop.</p>
