@@ -1,0 +1,16 @@
+p.formula {
+ color: #2aa198;
+ font-size: 0.9em;
+ font-weight: bold;
+ text-align: center;
+}
+
+span.file {
+ font-style: italic;
+}
+
+span.formula {
+ color: #2aa198;
+ font-size: 0.9em;
+ font-weight: bold;
+}

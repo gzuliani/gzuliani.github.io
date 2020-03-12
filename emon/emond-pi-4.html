@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>emond su Raspberry Pi Mod. 4</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/emond-pi-4.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#emond-pi-4">risorse</a> | emond su raspberry pi 4</p>
+<h1>emond su Raspberry Pi Mod. 4</h1>
+<p>Alcune considerazioni riguardanti la messa in opera di emond su una Raspberry Pi Mod. 4.</p>
+<h2>Emoncms</h2>
+<p>Una brevissima annotazione circa Emoncms: la versione per Raspberry Pi Mod. 4 manca della possibilità di arrestare o riavviare la scheda, funzionalità molto utile e disponibile nella versione per Raspberry Pi Mod. 3B (cfr. <a href="https://community.openenergymonitor.org/t/raspberry-pi-4/11242?page=2">emoncms: no shutdown button</a>).</p>
+<h2>wiringPi</h2>
+<p>L'ultima versione ufficiale della libreria <a href="http://wiringpi.com/">WiringPi</a> non funziona correttamente sulla scheda Raspberry Pi Mod. 4.  La cosa è nota, tanto che l'autore aveva rilasciato una nuova versione pacchettizzata (cfr. <a href="http://wiringpi.com/wiringpi-updated-to-2-52-for-the-raspberry-pi-4b/">wiringPi updated to 2.52 for the Raspberry Pi 4B</a>) ma, a causa di alcune polemiche nate in conseguenza di questa scelta (rilasciare subito la libreria in forma binaria rimandando la pubblicazione del codice sorgente), l'autore ha infine deciso di abbandonare lo sviluppo di questo progetto (cfr. <a href="http://wiringpi.com/wiringpi-deprecated/">wiringPi – deprecated…</a>).</p>
+<p>Vari sono i problemi segnalati, in particolare sulla corretta temporizzazione della GPIO e sulla configurazione di default dei resistori di pull-up e pull-down (cfr. ad esempio <a href="https://raspberrypi.stackexchange.com/questions/104312/setting-pull-up-pull-down-mode-doesnt-work-mostly">Setting Pull Up/Pull Down mode doesn't work (mostly)</a>). Qualcuno è già al lavoro per risolvere questi problemi, come testimoniano per esempio le patch <a href="https://github.com/WiringPi/WiringPi/commit/651136a110d1a63320193d4f7d39e9399762847e">Keeping compatibility of hardware clock of Pi 4 with earlier versions</a>
+ e <a href="https://github.com/neuralassembly/raspi/blob/master/wp-pi4.patch">Fix for pullup/down function for Pi 4</a>.</p>
+<p>Stando a quanto riportato in <a href="https://community.home-assistant.io/t/pi-4-adn-gpio-issues/137136">Pi 4 and Gpio Issues</a> e soprattutto nella sezione della documentazione ufficiale <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/README.md">dedicata al chip BCM2835</a> (in particolare l'elenco a pag. 84) sembrava si potesse trattare di un'errata selezione dei resistori di pull-up da parte di emond, ma a posteriori questa ipotesi si è rivelata falsa.</p>
+<p>Il passo risolutivo è stato quello di installare una versione non ufficiale della libreria, in particolare la versione 2.60 scaricabile da <a href="https://github.com/WiringPi/WiringPi">questo respository git</a>.</p>
+<h2>Detected invalid pulse</h2>
+<p>L'installazione della versione non ufficiale della libreria WiringPi ha permesso a emond di riconoscere gli impulsi generati dal contatore di energia e di inviare a Emoncms i dati di potenza come atteso. Consultando il syslog si nota tuttavia la presenza di un considerevole numero di errori di tipo <em>&ldquo;Detected starting pulse out of sequence&rdquo;</em> e <em>&ldquo;Detected ending pulse out of sequence&rdquo;</em>, e più raramente errori di tipo <em>&ldquo;Detected invalid pulse&rdquo;</em>.</p>
+<p>Analizzando il codice sorgente di emond si giunge alla conclusione che gli errori più frequenti sono probabilmente causati da impulsi con fronti di salita/discesa particolarmente rumorosi. Il programma infatti registra un interrupt-handler in corrispondenza del rilevamento di un fronte sul pin della GPIO al quale è connesso il contatore; quando l'elettronica registra una variazione del livello elettrico del terminale, emond attiva la seguente procedura (in pseudo-codice):</p>
+<p class="note"><strong>NOTA</strong>: il segnale generato dal contatore di energia è normalmente alto, per tale motivo l'inizio di un impulso è associato a un fronte di discesa, mentre il suo termine a uno di salita (vedere più avanti le forme d'onda catturate dall'oscilloscopio per una conferma).</p>
+<pre class="code">
+SE FRONTE_DI_DISCESA
+    SE IMPULSO_INIZIATO
+        SEGNALA_ERRORE "Detected starting pulse"
+    ALTRIMENTI
+        SEGNA IMPULSO_INIZIATO
+        AVVIA CRONOMETRO
+SE FRONTE_DI_SALITA
+        SE IMPULSO_INIZIATO
+            SEGNA IMPULSO_FINITO
+            FERMA CRONOMETRO
+            DETERMINA LUNGHEZZA_IMPULSO
+            SE LUNGHEZZA_IMPULSO FUORI TOLLERANZA
+                SEGNALA_ERRORE "Detected invalid pulse"
+            ALTRIMENTI
+                DETERMINA POTENZA_CONSUMATA
+                INVIA POTENZA_CONSUMATA A EMONCMS
+        ALTRIMENTI
+            SEGNALA_ERRORE "Detected ending pulse"
+</pre>
+<p>L'errore <em>&ldquo;Detected starting pulse out of sequence&rdquo;</em> indica quindi che sono stati registrati due fronti di discesa consecutivi, mentre <em>&ldquo;Detected ending pulse out of sequence&rdquo;</em> segnala che sono stati rilevati due fronti di salita in successione. Queste condizioni possono invero verificarsi se il segnale impulsivo è affetto da rumore. La perfetta forma del segnale generato dal contatore di energia suggerisce tuttavia di ricercare altrove la causa di questo tipo di errori:</p>
+<img src="img/emond-pi-4/pulse-1s.jpg">
+<p class="illustration">Segnale del contatore alla scala temporale di 1s.</p>
+<p>Il segnale è stato acquisito sul pin di ingresso della porta GPIO della scheda Raspberry Pi Mod. 4 collegato al terminale SO+ del contatore di energia da 1000imp/kWh. Il carico di prova era costituito da una stufetta da 1kW. Il periodo del segnale è molto prossimo a quello atteso, pari a 3.6s (1000 impulsi/h &rArr; f = 0.28Hz). I fronti dell'impulso appaiono quasi verticali.</p>
+<img src="img/emond-pi-4/pulse-20ms.jpg">
+<p class="illustration">Dettaglio di un impulso (durata nominale=90ms). I fronti non presentano distorsioni.</p>
+<p>Non avendo mezzi per determinare la causa alla base di queste segnalazioni spurie (il chip che gestisce la GPIO? ancora WiringPi? altro?), posto che la loro presenza non compromette il buon funzionamento dell'intero sistema, si è deciso di ignorarle &mdash; non dimenticando tuttavia che sulla scheda Raspberry Pi Mod. 3 queste incongruenze non si presentano.</p>
+<h2>Cadute di potenza</h2>
+<p>Dopo alcune ore di funzionamento continuato del sistema di monitoraggio della pompa di calore, la curva della potenza assorbita appariva così in Emoncms:</p>
+<img src="img/emond-pi-4/heatpump-power-drop.png">
+<p class="illustration">La curva di potenza inaspettata.</p>
+<p>Quello in figura non è il comportamento atteso di una pompa di calore, deve trattarsi per forza di un malfunzionamento del sistema emond/Emoncms. A cosa possono essere dovute quelle cadute di potenza inattese? L'analisi ha avuto inizio dai dati registrati da Emoncms:</p>
+<pre class="code">
+26/02/2020 19.12.56 1277
+26/02/2020 19.13.18 1277
+26/02/2020 19.13.41 1279
+26/02/2020 19.14.03 1279
+26/02/2020 19.14.26 1277
+26/02/2020 19.14.48  638
+26/02/2020 19.15.11 1277
+26/02/2020 19.15.33 1277
+26/02/2020 19.15.56 1283
+26/02/2020 19.16.18 1281
+26/02/2020 19.16.44  640
+26/02/2020 19.17.06 1281
+26/02/2020 19.17.29 1281
+26/02/2020 19.17.51 1283
+26/02/2020 19.18.13 1282
+26/02/2020 19.18.36 1279
+26/02/2020 19.18.58 1279
+26/02/2020 19.19.21 1281
+26/02/2020 19.19.43 1283
+</pre>
+<p class="illustration">Frammento di file CSV con alcune cadute di potenza.</p>
+<p>Salta subito agli occhi che i valori in corrispondenza alle cadute di potenza sono circa la metà di quelli attesi. Il syslog riporta qualche evento degno di nota negli stessi istanti?</p>
+<pre class="code">
+...
+Feb 26 20:12:05 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:08 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:12:08 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:08 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:11 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:13 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:13 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:16 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:19 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:12:19 emonpi emon-pwr1[407]: Detected invalid pulse (length=92 ms)
+Feb 26 20:12:22 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:22 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:25 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:28 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:33 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:36 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:39 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:39 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:44 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:47 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:47 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:50 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:53 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:12:59 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:01 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:01 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:04 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:10 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:10 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:13 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:15 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:15 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:18 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:21 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:21 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:24 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:27 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:30 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:30 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:32 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:32 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:35 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:35 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:38 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:41 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:44 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:46 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:46 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:49 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:49 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:55 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:13:58 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:03 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:06 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:09 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:14:09 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:12 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:14:15 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:17 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:14:20 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:23 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:23 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:26 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:31 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:34 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:46 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:14:46 emonpi emon-pwr1[407]: Detected invalid pulse (length=94 ms)
+Feb 26 20:14:48 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:54 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:54 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:14:57 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:00 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:00 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:01 emonpi CRON[13938]: (root) CMD (/usr/local/bin/wifi-check &gt; /var/log/emoncms/wificheck.log 2&gt;&amp;1)
+Feb 26 20:15:05 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:05 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:08 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:11 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:14 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:22 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:22 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:28 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:31 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:31 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:33 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:39 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:42 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:45 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:50 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:53 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:53 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:56 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:15:59 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:15:59 emonpi emon-pwr1[407]: Detected invalid pulse (length=92 ms)
+Feb 26 20:16:01 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:01 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:04 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:04 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:07 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:13 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:16 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:16 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:18 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:18 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:21 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:24 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:24 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:27 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:30 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:16:30 emonpi emon-pwr1[407]: Detected invalid pulse (length=93 ms)
+Feb 26 20:16:35 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:38 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:38 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:41 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:16:41 emonpi emon-pwr1[407]: Detected invalid pulse (length=93 ms)
+Feb 26 20:16:44 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:46 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:52 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:52 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:55 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:55 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:58 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:16:58 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:00 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:01 emonpi CRON[14105]: (root) CMD (   cd / &amp;&amp; run-parts --report /etc/cron.hourly)
+Feb 26 20:17:01 emonpi systemd[1]: Reloading Log2Ram.
+Feb 26 20:17:01 emonpi log2ram[14115]: sending incremental file list
+Feb 26 20:17:01 emonpi log2ram[14115]: auth.log
+Feb 26 20:17:01 emonpi log2ram[14115]: daemon.log
+Feb 26 20:17:01 emonpi log2ram[14115]: log2ram.log
+Feb 26 20:17:01 emonpi log2ram[14115]: syslog
+Feb 26 20:17:01 emonpi log2ram[14115]: emoncms/wificheck.log
+Feb 26 20:17:01 emonpi log2ram[14115]: logrotate/
+Feb 26 20:17:01 emonpi log2ram[14115]: logrotate/logrotate.log
+Feb 26 20:17:01 emonpi log2ram[14115]: logrotate/logrotate.status
+Feb 26 20:17:01 emonpi log2ram[14115]: sent 237,253 bytes  received 10,373 bytes  495,252.00 bytes/sec
+Feb 26 20:17:01 emonpi log2ram[14115]: total size is 2,927,018  speedup is 11.82
+Feb 26 20:17:01 emonpi systemd[1]: Reloaded Log2Ram.
+Feb 26 20:17:09 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:14 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:23 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:26 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:26 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:29 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:34 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:37 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:37 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:40 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:17:40 emonpi emon-pwr1[407]: Detected invalid pulse (length=92 ms)
+Feb 26 20:17:43 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:43 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:48 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:54 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:57 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:17:57 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:02 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:11 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:13 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:18:16 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:16 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:19 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:25 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:27 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:27 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:30 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:33 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:33 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:36 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:42 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:44 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:44 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:47 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:47 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:50 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:53 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:53 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:56 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:18:58 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:07 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:12 emonpi emon-pwr1[407]: Detected starting pulse out of sequence
+Feb 26 20:19:15 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:15 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:18 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:21 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:24 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:27 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:32 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:35 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:38 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:41 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:43 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:49 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:52 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:52 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:55 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+Feb 26 20:19:55 emonpi emon-pwr1[407]: Detected ending pulse out of sequence
+...
+</pre>
+<p class="illustration">Contenuto del syslog intorno alle 19:15.</p>
+<p>Notare che il syslog riporta gli eventi nell'ora locale, mentre il CSV scaricato da Emoncms usa in UTC. La difformità è stata individuata confrontando l'orario di avvio del sistema riportato nel syslog con il timestamp associato ai primi campioni acquisiti da Emoncms. La risoluzione di questo problema è rimandata a più tardi.</p>
+<p>Poiché il syslog è saturo di errori relativi alla presenza di fronti di salita e discesa spuri, è stato predisposto uno script python che intercala gli eventi salienti registrati nel syslog con i campioni acquisiti da Emoncms uniformando gli orari a quelli del syslog:</p>
+<pre class="code">
+...
+26 20:12:56 1277
+26 20:13:18 1277
+26 20:13:41 1279
+26 20:14:03 1279
+26 20:14:26 1277
+26 20:14:46 Detected invalid pulse (length=94 ms)
+26 20:14:48 638
+26 20:15:11 1277
+26 20:15:33 1277
+26 20:15:56 1283
+26 20:15:59 Detected invalid pulse (length=92 ms)
+26 20:16:18 1281
+26 20:16:30 Detected invalid pulse (length=93 ms)
+26 20:16:41 Detected invalid pulse (length=93 ms)
+26 20:16:44 640
+26 20:17:06 1281
+26 20:17:29 1281
+26 20:17:40 Detected invalid pulse (length=92 ms)
+26 20:17:51 1283
+26 20:18:13 1282
+26 20:18:36 1279
+26 20:18:58 1279
+26 20:19:21 1281
+26 20:19:43 1283
+...
+</pre>
+<p class="illustration">Risultato della sincronizzazione tra syslog e file CSV.</p>
+<p>Emerge chiaramente il fatto che prima di una caduta di potenza si presenta sempre un errore di tipo <em>&ldquo;Detected invalid pulse&rdquo;</em>, mentre il contrario non sempre è vero.</p>
+<p>Le cadute di potenza presentano quindi un valore dimezzato rispetto a quello atteso e si verificano in concomitanza con il rifiuto di un impulso. Come fa emond a stabilire il valore di potenza assorbito? Il codice sorgente parla chiaro:</p>
+<pre class="code">
+...
+
+/* Calculate elapsed time since last pulse occured */
+t_diff = time_diff_ms(now_ts, prev_ts);
+
+/* Filter pulses which occur very close to each other (possible glitches) */
+if (t_diff &gt; MIN_PULSE_PERIOD_MS)
+{
+   /* Calculate instant power (in Watt) and display it */
+   power = (unsigned int)(config.wh_per_pulse*3600000.0/t_diff);
+   ...
+</pre>
+<p class="illustration">Metodo di calcolo della potenza istantanea di emond.</p>
+<p>emond determina il valore della potenza istantanea quando rileva la presenza di un nuovo impulso. Il valore di potenza è calcolato moltiplicando il numero di Wh corrispondenti ad un singolo impulso generato dal contatore per la frequenza attuale del segnale impulsivo. Il primo parametro si ricava dal file di configurazione, ed è una caratteristica del contatore; in questo caso, poiché il contatore genera 1000 impulsi per ogni kWh assorbito, ad ogni impulso corrisponde esattamente 1Wh (il parametro <span class="code">config.wh_per_pulse</span> vale perciò 1). Il valore di frequenza è ottenuto stimando il periodo del segnale impulsivo, determinato come il tempo che intercorre tra due impulsi successivi (cfr. parametro <span class="code">t_diff</span>). La costante <span class="code">3600000.0</span> ha lo scopo di trasformare il valore di potenza in W.</p>
+<p>Nel caso della pompa di calore da 1400W, il periodo atteso è pari a 2.57s:</p>
+<img src="img/emond-pi-4/emond-instant-power-period.png">
+<p class="illustration">Periodo del segnale impulsivo per un assorbimento di 1400W (disegno non in scala).</p>
+<p>emond determina il valore della potenza istantanea per ogni impulso ricevuto; applicando la formula vista prima, sapendo che <span class="code">wh_per_pulse</span> è pari a 1 e <span class="code">t_diff</span> circa 2570, il risultato sarà:</p>
+<p class="formula">power = pwh_per_pulse * 3600000 / t_diff</p>
+<p class="formula">power &asymp; 1 * 3600000 / 2570</p>
+<p class="formula">power &asymp; 1400</p>
+<p>Poiché la stima del periodo viene continuamente aggiornata, e considerato che il sistema nella sua completezza non è real-time, è logico attendersi delle lievi fluttuazioni del valore di potenza determinato da emond:</p>
+<img src="img/emond-pi-4/emond-instant-power-values.png">
+<p class="illustration">Valori di potenza determinati da emond in corrispondenza di ogni impulso.</p>
+<p>emond non invia a Emoncms tutti i valori di potenza che determina; la trasmissione avviene solo se è trascorso l'intervallo minimo prefissato dall'ultimo invio (cfr. parametro di configurazione <span class="code">api_update_rate</span>, default: 20s). Per questa ragione, gran parte dei valori di potenza che emond determina vengono scartati, ma di tanto in tanto qualcuno di essi viene inoltrato a Emoncms:</p>
+<img src="img/emond-pi-4/emond-instant-power-value-sent.png">
+<p class="illustration">Non tutti i valori di potenza determinati da emond vengono trasmessi a Emoncms.</p>
+<h3>Cosa accade quando un impulso viene scartato?</h3>
+<p>Quando un impulso viene scartato, il valore di potenza verrà determinato all'arrivo dell'impulso successivo, quando l'intervallo di tempo trascorso dall'ultimo impulso riconosciuto come valido risulterà doppio rispetto al vero, generando così un valore di potenza dimezzato rispetto a quello atteso:</p>
+<img src="img/emond-pi-4/emond-invalid-pulse-period.png">
+<p class="illustration">Scartare un impulso ha l'effetto di raddoppiare l'intervallo tra due impulsi successivi.</p>
+<p>Il valore di potenza diventa:</p>
+<p class="formula">power = pwh_per_pulse * 3600000 / t_diff</p>
+<p class="formula">power &asymp; 1 * 3600000 / 5140</p>
+<p class="formula">power &asymp; 700</p>
+<img src="img/emond-pi-4/emond-invalid-pulse-values.png">
+<p class="illustration">Caduta di potenza causata da un impulso non valido.</p>
+<p>Perché la presenza di un impulso non valido non sempre causa una caduta di potenza? La ragione è legata al fatto che non tutti i valori di potenza vengono trasmessi a Emoncms. Affinché Emoncms registri una caduta di potenza è necessario che emond scarti l'impulso che precede quello in corrispondenza del quale avviene l'invio del dato di potenza:</p>
+<img src="img/emond-pi-4/emond-invalid-pulse-value-sent.png">
+<p class="illustration">Caso &laquo;sfortunato&raquo;: il dato inviato a Emoncms è proprio quello inficiato dall'impulso scartato.</p>
+<h3>Perché un impulso viene scartato?</h3>
+<p>Il sistema emond/Emoncms installato sulla scheda Raspberry Pi Mod. 3 non ha evidenziato questo problema, ma sulla scheda più recente una certa quantità di impulsi vengono scartati perché la loro durata si discosta di più del 5% rispetto alla durata nominale dell'impulso, che è nominalmente pari a 90ms e che emond ha stimato essere 88ms:</p>
+<pre class="code">
+Feb 26 17:46:17 emonpi emon-pwr1[407]: Using pulse lenght 88 ms as reference
+</pre>
+<p>Scorrendo il syslog si nota che la maggioranza degli impulsi rigettati hanno durata compresa tra 92 e 94 ms. Ciò è perfettamente in linea con il criterio adottato da emond:</p>
+<pre class="code">
+/* tolerance for pulse verification (in %) */
+#define PULSE_TOLERANCE 5
+...
+
+   unsigned long pulse_delta = (config.pulse_length*PULSE_TOLERANCE)/100;
+   ...
+
+         /* Check if pulse lenght is within expected limits
+          * (from energy meter data sheet), apply a tolerance
+          */
+         if (pulse_length &gt; (config.pulse_length-pulse_delta) &amp;&amp;
+             pulse_length &lt; (config.pulse_length+pulse_delta))
+         {
+            /* Pulse is valid, but more checks will be performed */
+            ...
+         }
+         else
+         {
+            syslog(LOG_DAEMON | LOG_WARNING,
+              "Detected invalid pulse (length=%lu ms)\n", pulse_length);
+         }
+</pre>
+<p><span class="code">pulse_delta</span> vale 4 (essendo un intero, il risultato della divisione <span class="formula">88 &times; 5 / 100 = 4.4</span> viene troncato), e questo fa sì che il programma accetti solo impulsi di durata compresa tra 85 e 91ms, estremi inclusi.</p>
+<p>La soluzione consiste nell'aumentare il valore della costante <span class="code">PULSE_TOLERANCE</span> a 10, ricompilare il programma e sostituire l'eseguibile di emond nella cartella <span class="file">/usr/local/bin</span> con la nuova versione dopo aver arrestato i servizi.</p>
+<img src="img/emond-pi-4/heatpump-power-constant.png">
+<p class="illustration">La curva di potenza priva delle cadute generata dalla nuova versione di emond.</p>
+<h2>Orario sfalsato tra syslog e Emoncms</h2>
+<p>Analizzando i dati per determinare l'origine del problema appena descritto è emerso uno scostamento di un'ora esatta tra gli orari riportati nel syslog e quelli salvati all'interno dei file CSV scaricati da Emoncms. Il problema è di immediata risoluzione, basta impostare la timezone corretta nell'area amministrativa di Emoncms come riportato in <a href="https://community.openenergymonitor.org/t/timestamp-issue-when-importing-csv-exported-data-from-emoncms-org-feeds-list/7863">Timestamp Issue when Importing CSV Exported data from emoncms.org FEEDS list</a>.</p>
+<h2>Error performing Web API request</h2>
+<p>Un'ultima segnalazione circa un errore che si è presentato una volta sola ma che vale la pena citare: <em>&ldquo;Error performing Web API request: return code=7&rdquo;</em>. Si tratta di un errore generato dalla libreria libcurl che emond usa per trasmettere i dati a Emoncms. Il codice d'errore 7 è associato all'errore <em>&ldquo;Failed to connect to host or proxy&rdquo;</em> (cfr. <a href="https://curl.haxx.se/libcurl/c/libcurl-errors.html">libcurl error codes</a>). L'errore è probabilmente riconducibile al fatto che il servizio emond ha tentato di accedere alla Web API di Emoncms quando questa non era ancora operativa, una condizione che può presentarsi per esempio all'avvio del sistema.</p>
+<p class="modification-notice">Pagina modificata il 12/03/2020</p>
+</body>
+</html>
