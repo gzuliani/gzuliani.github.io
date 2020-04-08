@@ -229,7 +229,7 @@ void loop() {
  <li><strong>F</strong>: set ospiti.</li>
 </ul>
 <p>Una nota sulla sezione F: se il set ospiti è 1 o 4 la parte terminale del segnale si trasforma, mostrando una coda a 0V di lunghezza variabile, pari a una o due volte lo spazio che separa la sezione D dalla sezione E.</p>
-<p>La durata del segnale è di poco inferiore a 2ms, mentre la distanza tra due treni di impulsi è pari a circa 16ms &ndash; può essere riconducibile a qualche tipo di conteggio su 15 bit (2<sup>15</sup>=32768)?</p>
+<p>La durata del segnale è di poco inferiore a 2ms, mentre la distanza tra due treni di impulsi è pari a circa 16ms &ndash; può essere riconducibile a qualche tipo di conteggio su 14 bit (2<sup>14</sup>=16384)?</p>
 <img src="img/arduino-scoreboard/IMG_20180104_175940.jpg">
 <p class="illustration">Distanza tra due trasmissioni successive del segnale</p>
 <p>Per studiare meglio il formato di codifica delle informazioni ho effettuato alcune nuove acquisizioni utilizzando una scala temporale più spinta. Esaminando attentamente le forme d'onda posso dire senza dubbio che ogni cifra viene codificata sempre allo stesso modo, indipendentemente dal fatto che si tratti del set, di una cifra del punteggio o del contaminuti:</p>
