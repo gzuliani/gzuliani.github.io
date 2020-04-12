@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Arduino gioca a Dino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-plays-dino.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-plays-dino">risorse</a> | arduino gioca a dino</p>
+<h1>Arduino gioca a Dino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Recentemente sono apparse in rete diverse realizzazioni di questo simpatico progetto: programmare Arduino affinché giochi da sè a &laquo;Dino&raquo;, il videogioco che Chrome propone quando non c'è rete. Tra i tanti esempi disponibili, ne cito tre: <a href="https://www.tomshardware.com/news/how-to-beat-googles-chrome-dinosaur-game-with-arduino">How to Beat Google's Chrome Dinosaur Game with Arduino</a> in Tom's Hardware, <a href="https://www.reddit.com/r/arduino/comments/c5o4kf/i_made_an_automated_dinosaur_game_bot/">I made an automated dinosaur game bot</a> in Reddit, <a href="https://diyodemag.com/projects/tricking_t-rex_arduino-based_chrome_dino_game">Tricking T-Rex &ndash; Arduino-Based Chrome Dino Game</a> pubblicato su DIYODE.</p>
+<p>Considerato che i componenti necessari alla realizzazione sono disponibili nello Starter Pack di Arduino, complice il <em>lock-down</em> di questi giorni che mi regala un po' di tempo libero, ho deciso di cimentarmi anch'io nell'impresa.</p>
+<h2>Dino</h2>
+<p><a href="https://www.blog.google/products/chrome/chrome-dino/">Dino</a> è un gioco integrato nel browser Chrome che appare quando l'accesso a Internet non è disponibile. Lo si può richiamare a piacere, sempre da Chrome, accedendo all'indirizzo <a href="chrome://dino/">chrome://dino/</a>. La meccanica di gioco è elementare: bisogna evitare che il T-Rex urti gli ostacoli che gli si parano davanti durante la sua corsa (cactus nella prima fase di gioco, cui successivamente si aggiungono pterosauri) premendo al momento opportuno la barra spaziatrice o il tasto freccia-su per far spiccare un bel salto al dinosauro. Nella seconda fase di gioco, per evitare i pterosauri che volano a mezza altezza, bisogna ricorrere al tasto freccia-giù, che fa accovacciare il protagonista:</p>
+<img src="img/arduino-plays-dino/screenshot.png">
+<p class="illustration">Una fase del gioco &laquo;Dino&raquo;</p>
+<h2>Il circuito</h2>
+<p>Due sono i componenti principali del circuito: un fotoresistore che, applicato allo schermo, ha lo scopo di indicare l'avvicinarsi di un ostacolo (il fotoresistore registrerà una diminuzione di luminosità al passaggio dell'ostacolo, essendo questo molto più scuro dello sfondo); un servomotore che, opportunamente posizionato, agisce sulla barra spaziatrice e fa saltare il dinosauro. A completare il circuito una resistenza da 10K&ohm; per il partitore del fotoresistore e un condensatore da 100&micro;F per agevolare il servomotore nello spunto:</p>
+<img src="img/arduino-plays-dino/schematic.png">
+<p class="illustration">Lo schema elettrico</p>
+<img src="img/arduino-plays-dino/wiring-diagram.png">
+<p class="illustration">Il cablaggio del circuito</p>
+<img src="img/arduino-plays-dino/circuit.jpg">
+<p class="illustration">Realizzazione pratica del circuito</p>
+<table>
+<tr>
+<td><img src="img/arduino-plays-dino/servo.jpg"></td>
+<td><img src="img/arduino-plays-dino/photoresistor.jpg"></td>
+</tr>
+<tr>
+<td><p class="illustration">Il servomotore</p></td>
+<td><p class="illustration">Il fotoresistore</p></td>
+</tr>
+</table>
+<p>Realizzare il circuito è stato semplice. Più complicato è stato individuare il punto ottimale in cui fissare il fotoresistore sullo schermo; troppo a sinistra e il salto avviene in ritardo, troppo a destra e il salto avviene troppo in anticipo &ndash; quest'ultimo problema in linea di principio è risolvibile ritardando l'azione del servomotore:</p>
+<img src="img/arduino-plays-dino/photoresistor-on-screen.jpg">
+<p class="illustration">Il fotoresistore applicato allo schermo con dello scotch</p>
+<p>A causa della resistenza offerta dalla barra spaziatrice non ho trovato altro modo di condurre gli esperimenti che tenere in posizione il servomotore con le mani: per quanto scotch usassi, dopo poche attivazioni esso tendeva a perdere la sua posizione e la sua azione diventava inefficace. Forse del nastro adesivo più robusto (isolante, telato?) avrebbe giovato.</p>
+<p>Infine, è stato particolarmente tedioso stabilire la soglia di luminosità per l'attivazione del servomotore: le condizioni ambientali sono determinanti, sarebbe perlomento opportuno proteggere il fotoresistore dalla luce ambientale, meglio ancora operare in un luogo ove questa sia controllabile. Ad ogni modo, ritengo il risultato finale soddisfacente, avendo Arduino ha superato con successo la prima fase del gioco, accumulando ben 609 punti prima di scontrarsi con uno pterosauro:</p>
+<img src="img/arduino-plays-dino/game-over.png">
+<p class="illustration">Il primo pterosauro è stato fatale!</p>
+<p>Il programma è banale. Il livello di luminosità registrato dal fotoresistore viene controllato ciclicamente; quando questo scende sotto la soglia prefissata si aziona il servomotore:</p>
+<pre class="code">
+#include &lt;Servo.h&gt;
+
+Servo my_servo;
+
+const int SERVO_PIN = 9;
+
+const int ARM_UP = 90;
+const int ARM_DOWN = 0;
+const int PRESS_DURATION = 500;
+
+const int SENSOR_PIN = A0;
+const int SENSOR_THRESHOLD = 600;
+
+void setup() {
+  my_servo.attach(SERVO_PIN);
+  my_servo.write(ARM_UP);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int light_level = analogRead(SENSOR_PIN);
+  Serial.print(&quot;light_level:&quot;);
+  Serial.println(light_level);
+  if (light_level&lt;SENSOR_THRESHOLD) {
+    my_servo.write(ARM_DOWN);
+    delay(PRESS_DURATION);
+    my_servo.write(ARM_UP);
+  }
+}
+</pre>
+<p>Per finire, un breve video che mostra il circuito in azione:</p>
+<video width="600" controls>
+ <source src="img/arduino-plays-dino/arduino-plays-dino.mp4" type="video/mp4">
+</video>
+<p class="modification-notice">Pagina modificata il 12/04/2020</p>
+</body>
+</html>
