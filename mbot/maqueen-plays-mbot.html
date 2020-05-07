@@ -97,7 +97,7 @@ Nothing is wrong, different software handles it differently, just to make the re
 <li>a final 562.5µs pulse burst to signify the end of message transmission.</li>
 </ul>
 The four bytes of data bits are each sent <strong>least significant bit first.</strong></blockquote>
-<p>Questo spiega definitivamente la difformità nelle due decodifiche: anziché utilizzare il terzo byte, quello che contiene il dato reale, Mindplus prende il quarto, che contiene il dato negato; inoltre non riordina i bit nono la posizione in cui si trovano non sia quella corretta:</p>
+<p>Questo spiega definitivamente la difformità nelle due decodifiche: anziché utilizzare il terzo byte, quello che contiene il dato reale, Mindplus prende il quarto, che contiene il dato negato; inoltre non riordina i bit nonostante la posizione in cui si trovano non sia quella corretta:</p>
 <img src="img/maqueen-plays-mbot/nec-message-frame.png">
 <p class="illustration">Il protocollo NEC trasmette i byte a partire dal bit meno significativo</p>
 <p class="update"><strong>[Aggiornamento 03/02/2020]</strong></p>
