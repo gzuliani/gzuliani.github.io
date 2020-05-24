@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Salvaschermo per ZX Spectrum 48K</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/zx-screen-saver.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#zx-screen-saver">risorse</a> | salvaschermo per zx spectrum 48k</p>
+<h1>Salvaschermo per ZX Spectrum 48K</h1>
+<p>In un vecchio quaderno ho trovato alcuni appunti che spiegano come realizzare un salvaschermo per lo ZX Spectrum 48K in linguaggio macchina. Riportano la data del 6 settembre 1987:</p>
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td><a href="img/zx-screen-saver/page-1.jpg"><img src="img/zx-screen-saver/page-1_small.jpg"></a></td>
+<td><a href="img/zx-screen-saver/page-2.jpg"><img src="img/zx-screen-saver/page-2_small.jpg"></a></td>
+<td><a href="img/zx-screen-saver/page-3.jpg"><img src="img/zx-screen-saver/page-3_small.jpg"></a></td>
+</tr>
+<tr>
+<td colspan="3"><p class="illustration">Le pagine degli appunti. Click sulle immagini per ingrandirle.</p></td>
+</tr>
+</table>
+<p>Ecco come viene presentata la routine:</p>
+<blockquote>Questa utility ha il compito di ridurre i consumi elettrici durante la stesura del programmi. Spesso accade, infatti, che il monitor rimane acceso per lunghi periodi di tempo, ed è praticamente inutilizzato (di solito durante le lunghe riflessioni sui listati); ecco quindi che la routine, dopo un periodo di tempo regolabile (inizialmente 30 secondi) in cui la tastiera è rimasta inutilizzata, &ldquo;spegne&rdquo; il monitor, oscurando completamente il video. La situazione rimane tale fino alla prossima pressione di un tasto qualsiasi (SHIFT compresi). La routine è lunga un centinaio di byte, allocata nelle ultime 5 pagine della RAM (3 usate per la memorizzazione dei colori). Non è rilocabile in quanto usa le interrupt vettorizzate (modo 2).</blockquote>
+<p>Alla descrizione segue il listato assembly della routine salvaschermo:</p>
+<pre class="code">
+Addr  Data        Label     OpCode          Comment
+-------------------------------------------------------------------------------
+
+                  ATTRS     equ $fb00       ; buffer per il salvataggio degli
+                                            ; attributi durante il "black-out"
+
+FEEE  F3                    di
+FEEF  21 6A B0              ld hl,COUNTER   ; azzeramento del contatore di
+FEF2  36 00                 ld (hl),$00     ; frame passati senza che l'utente
+FEF4  23                    inc hl          ; abbia premuto un tasto
+FEF5  36 00                 ld (hl),$00
+FEF7  3E FE                 ld a,$fe        ; attivazione delle interruzioni
+FEF9  ED 47                 ld i,a          ; vettorizzate (l'entry point
+FEFB  ED 5E                 im 2            ; dell'interrupt handler si trova
+FEFD  FB                    ei              ; all'indirizzo $feff)
+FEFE  C9                    ret
+
+FEFF  01                    db $01          ; indirizzo dell'interrupt handler
+FF00  FF                    db $ff          ; ($ff01)
+
+FF01  F5                    push af         ; entry point dell'interrupt handler
+FF02  C5                    push bc
+FF03  D5                    push de
+FF04  E5                    push hl
+FF05  2A 6A B0              ld hl,(COUNTER) ; carica il valore del contatore
+FF08  DB FE                 in a,($fe)      ; l'utente sta premendo un tasto?
+FF0A  2F                    cpl
+FF0B  E6 1F                 and $1f
+FF0D  20 3B                 jr nz,RESET     ; se sì, azzera il contatore ed esci
+FF0F  23                    inc hl          ; no, perciò incrementa il contatore
+FF10  22 6A B0              ld (COUNTER),hl
+FF13  3E 06                 ld a,$06        ; sono passati più di 30 secondi
+FF15  94                    sub h           ; dall'ultima volta che è stato
+FF16  20 38                 jr nz,END       ; premuto un tasto? se no, esci
+FF18  F3                    di              ; se sì...
+FF19  21 00 58              ld hl,$5800     ; copia l'area degli attributi dello
+FF1C  E5                    push hl         ; schermo nel buffer temporaneo
+FF1D  11 00 FB              ld de,ATTRS
+FF20  01 00 03              ld bc,$0300
+FF23  C5                    push bc
+FF24  ED B0                 ldir
+FF26  C1                    pop bc
+FF27  E1                    pop hl
+FF28  3A 48 5C              ld a,($5c48)    ; memorizza il colore del bordo
+FF2B  08                    ex af,af'       ; attuale in A'
+FF2C  36 00       BLACK     ld (hl),$00     ; scurisci tutto lo schermo...
+FF2E  23                    inc hl
+FF2F  7C                    ld a,h
+FF30  FE 5C                 cp $5c
+FF32  20 F8                 jr nz,BLACK
+FF34  AF                    xor a
+FF35  D3 FE                 out ($fe),a     ; ...bordo compreso
+FF37  DB FE       WAIT      in a,($fe)      ; attendi la pressione di un tasto
+FF39  2F                    cpl
+FF3A  E6 1F                 and $1f
+FF3C  28 F9                 jr z,WAIT
+FF3E  21 00 FB              ld hl,ATTRS     ; ripristina l'area degli attributi
+FF41  11 00 58              ld de,$5800     ; dello schermo allo stato originale
+FF44  ED B0                 ldir
+FF46  08                    ex af,af'       ; ripristina il colore del bordo
+FF47  32 48 5C              ld ($5c48),a
+FF4A  26 00       RESET     ld h,$00        ; azzera il contatore di frame
+FF4C  6C                    ld l,h          ; passati dall'ultima pressione di
+FF4D  22 6A B0              ld (COUNTER),hl ; un tasto
+FF50  E1          END       pop hl
+FF51  D1                    pop de
+FF52  C1                    pop bc
+FF53  F1                    pop af
+FF54  FB                    ei
+FF55  C3 38 00              jp $0038        ; prosegui con l'interrupt handler
+                                            ; di sistema...
+
+FF58  00          COUNTER   db $00          ; contatore di frame trascorsi
+FF59  00                    db $00          ; dall'ultima pressione di un tasto
+</pre>
+<p>Funziona veramente? Ho caricato in <a href="http://fuse-emulator.sourceforge.net/">Fuse</a>, l'emulatore che uso di solito, il nastro di <a href="https://www.worldofspectrum.org/infoseekid.cgi?id=0008012">CHAMP</a>, uno degli assemblatori che usavo al tempo, e ho cominciato a ricopiare il listato:</p>
+<img src="img/zx-screen-saver/champ-editor.png">
+<p class="illustration">Il listato del salvaschermo in CHAMP</p>
+<p>Dopo qualche minuto di lavoro ero in condizione di lanciare l'assembler:</p>
+<img src="img/zx-screen-saver/champ-assembly.png">
+<p class="illustration">Responso dell'assembler</p>
+<p class="note">CHAMP non permette di fissare l'inidirizzo di origine del codice macchina nell'area di memoria prevista per la routine del salvaschermo. Ho perciò scelto di lavorare più in basso, all'indirizzo <span class="code">$b000</span>, ricordandomi di caricare il codice macchina all'indirizzo <span class="code">$feee</span> per il lancio; poiché i cicli interni usano salti relativi, non corro rischi di sorta a eseguire il codice in una zona di memoria diversa rispetto a dove è stato assemblato.</p>
+<p>Come da buona abitudine in questi casi, prima di attivare il salvaschermo ho salvato sia il codice sorgente che quello compilato. Fortunatamente non ho tralasciato nessun dettaglio durante la trascrizione ed il codice compilato funziona perfettamente. Per vederlo in azione è sufficiente caricare il nastro <a href="tzx/screensaver.tzx">screensaver.tzx</a> nell'emulatore e dare i comandi:</p>
+<pre class="code">
+CLEAR 64255
+LOAD "SCRSVR"CODE 65262
+RANDOMIZE USR 65262
+</pre>
+<h2>Principio di funzionamento</h2>
+<p>Il codice si aggancia alla routine del sistema operativo che effettua la scansione della tastiera, azzerando un contatore interno ogni volta che viene premuto un tasto. Nel caso il valore assunto dal contatore indica che sono trascorsi più di 30 secondi dall'ultima pressione di un tasto il codice oscura lo schermo ed entra in un ciclo dal quale si esce alla successiva pressione di un tasto; all'uscita del ciclo lo schermo viene riportato allo stato originale.</p>
+<h3>Aggancio alla routine di scansione della tastiera</h3>
+<p>La routine che si occupa della scansione della tastiera si trova all'indirizzo <span class="code">$0038</span> (cfr. <a href="https://skoolkid.github.io/rom/asm/0038.html">&ldquo;Routine at 0038&rdquo;</a> in &laquo;The Complete Spectrum ROM Disassembly&raquo;). Durante il suo normale funzionamento lo Spectrum genera un'interruzione mascherabile all'inizio di ogni quadro video (cfr. <a href="http://www.breakintoprogram.co.uk/computers/zx-spectrum/interrupts">&ldquo;Interrupts&rdquo;</a> in &laquo;L BREAK into program&raquo;); poiché lo Spectrum opera in modalità IM 1, nella quale la ricezione di un'interruzione causa il salto all'indirizzo <span class="code">$0038</span>, la routine di scansione della tastiera viene richiamata ogni 20ms (lo ZX Spectrum genera infatti 50 quadri video al secondo).</p>
+<p>Il codice si aggancia alla routine di scansione della tastiera attivando le interruzioni vettorizzate. Quando lo Z80 opera in modalità <span class="code">IM 2</span>, alla ricezione di un'interruzione costruisce un indirizzo a 16 bit utilizzando il contenuto del registro <span class="code">I</span> come byte più significativo e lo stato del bus dati in quell'istante (assunto essere <span class="code">$ff</span>) come byte meno significativo; tale indirizzo viene utilizzato per accedere in RAM e leggere un indirizzo a 16 bit che rappresenta l'indirizzo cui si trova l'interrupt handler. Nel dettaglio, il salvaschermo carica nel registro <span class="code">I</span> il valore <span class="code">$fe</span>, di fatto fissando l'indirizzo dell'entry point dell'interrupt handler a <span class="code">$feff</span>. Poiché alle celle di indirizzo <span class="code">$feff</span> e <span class="code">$ff00</span> il codice attribuisce rispettivamente i valori <span class="code">$01</span> e <span class="code">$ff</span>, <span class="code">$ff01</span> è l'indirizzo di inizio della routine del salvaschermo.</p>
+<h3>Tempo trascorso dalla pressione dell'ultimo tasto</h3>
+<p>La prima parte del codice della routine del salvaschermo si occupa di incrementare un contatore a 16 bit ad ogni invocazione, quindi ogni 20ms, azzerandolo nel caso in cui un tasto risulti premuto in quel preciso istante. Se ciò non è, il codice determina quanto tempo è passato dall'ultima volta che un tasto è stato premuto verificando il valore del byte più significativo del contatore. Poiché il contatore viene incrementato ogni 20ms, il byte più significativo aumenta di un'unità ogni 256&times;20ms = 5.12s, raggiungendo il valore di 6 dopo poco più di 30s. Questo è dunque il valore che deve assumere il byte più alto del contatore affinché venga attivato il salvaschermo.</p>
+<h3>Oscuramento dello schermo</h3>
+<p>L'oscuramento si ottiene azzerando i valori di BORDER, PAPER e INK su tutta l'area dello schermo. Lo stato dei pixel non viene modificato, ciò che cambia sono gli attributi associati alle posizioni carattere. Dovendo ripristinare lo stato dello schermo alla successiva pressione di un tasto, prima di procedere con l'oscuramento occorre salvare gli attributi correnti. Per far ciò la routine ricopia l'area preposta in un buffer temporaneo, mentre il colore del bordo viene ricavato dal valore della variabile d'ambiente <span class="code">BORDCR</span> e conservato nel registro <span class="code">A'</span>. Durante l'oscuramento il codice entra in un ciclo interno durante il quale non viene richiamata la routine di scansione della tastiera: per tale ragione il resto del sistema entra in una sorta di stato di ibernazione. L'uscita dal ciclo avviene in corrispondenza della pressione di un tasto qualunque.</p>
+<p></p>
+<h2>Osservazioni</h2>
+<p>A distanza di più di trent'anni mi sento di fare alcune critiche al codice:</p>
+<ul>
+<li>per quanto nella realtà dei fatti accada quasi sempre che il byte letto dal bus dati sia sempre <span class="code">$ff</span>, questa assunzione non ha validità generale e dipende per esempio dalla configurazione hardware dello ZX Spectrum;</li>
+<li>
+<p>sarebbe opportuno assegnare un nome parlante ai <em>magic numbers</em>  <span class="code">$5800</span> e <span class="code">$5c48</span> che appaiono nel listato, considerato ciò che rappresentano:</p>
+<pre class="code">
+                  ATTRS     equ $5800       ; indirizzo di inizio dell'area
+                                            ; degli attributi dello schermo
+                  BORDCR    equ $5c48       ; variabile di sistema che contiene
+                                            ; il colore attuale del bordo
+                  BUFFER    equ $fb00       ; buffer per il salvataggio degli
+                                            ; attributi durante il "black-out"
+</pre>
+</li>
+<li>c'è spazio per ottimizzare il codice;</li>
+<li>
+<p>c'è spazio per ottimizzare il layout del codice in memoria:</p>
+<img src="img/zx-screen-saver/memory-map.png">
+<p>si potrebbe per esempio traslare il buffer degli attributi a ridosso del codice;</p>
+<p class="illustration">In blu il buffer per gli attributi, in arancio il codice</p>
+</li>
+<li>
+<p>il codice potrebbe essere reso più consistente; per esempio la variabile <span class="code">COUNTER</span> viene azzerata in due modi diversi in due contesti diversi senza una valida ragione:</p>
+<pre class="code">
+FEEF  21 6A B0              ld hl,COUNTER
+FEF2  36 00                 ld (hl),$00
+FEF4  23                    inc hl
+FEF5  36 00                 ld (hl),$00
+</pre>
+<pre class="code">
+FF4A  26 00       RESET     ld h,$00
+FF4C  6C                    ld l,h
+FF4D  22 6A B0              ld (COUNTER),hl
+</pre>
+</li>
+<li>il comando <span class="code">NEW</span> disattiva il salvaschermo;</li>
+<li>
+<p>manca l'indicazione su come configurare il salvaschermo, per esempio:</p>
+<pre class="code">
+POKE 65300,INT (time/5.12)
+</pre>
+</li>
+<li>manca il modo di disattivare il salvaschermo.</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 24/05/2020</p>
+</body>
+</html>
