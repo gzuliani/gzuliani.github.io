@@ -22,7 +22,10 @@
 </table>
 <p>Ecco come viene presentata la routine:</p>
 <blockquote>Questa utility ha il compito di ridurre i consumi elettrici durante la stesura del programmi. Spesso accade, infatti, che il monitor rimane acceso per lunghi periodi di tempo, ed è praticamente inutilizzato (di solito durante le lunghe riflessioni sui listati); ecco quindi che la routine, dopo un periodo di tempo regolabile (inizialmente 30 secondi) in cui la tastiera è rimasta inutilizzata, &ldquo;spegne&rdquo; il monitor, oscurando completamente il video. La situazione rimane tale fino alla prossima pressione di un tasto qualsiasi (SHIFT compresi). La routine è lunga un centinaio di byte, allocata nelle ultime 5 pagine della RAM (3 usate per la memorizzazione dei colori). Non è rilocabile in quanto usa le interrupt vettorizzate (modo 2).</blockquote>
-<p>Alla descrizione segue il listato assembly della routine salvaschermo:</p>
+<p>In realtà scopo del salvaschermo è preservare i fosfori dei vecchi monitor CRT ed evitare che si formino immagini fantasma (cfr. <a href="https://it.wikipedia.org/wiki/Salvaschermo">Salvaschermo</a> su wikipedia). Se un'immagine permane sullo schermo per tempi molto lunghi può accadere che i fosfori in corrispondenza dei pixel accesi si deteriorino a tal punto da lasciarla impressa anche a monitor spento:</p>
+<img src="img/zx-screen-saver/ghost-image.png">
+<p class="illustration">Esempio di immagine fantasma causata da un consumo irregolare dei fosfori.</p>
+<p>Ad ogni modo, alla descrizione segue il listato assembly, qui leggermente riadattato:</p>
 <pre class="code">
 Addr  Data        Label     OpCode          Comment
 -------------------------------------------------------------------------------
