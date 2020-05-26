@@ -142,9 +142,8 @@ RANDOMIZE USR 65262
 </li>
 <li>c'è spazio per ottimizzare il codice;</li>
 <li>
-<p>c'è spazio per ottimizzare il layout del codice in memoria:</p>
+<p>c'è spazio per ottimizzare il layout del codice in memoria, per esempio traslando il buffer degli attributi a ridosso del codice vero e proprio:</p>
 <img src="img/zx-screen-saver/memory-map.png">
-<p>si potrebbe per esempio traslare il buffer degli attributi a ridosso del codice;</p>
 <p class="illustration">In blu il buffer per gli attributi, in arancio il codice</p>
 </li>
 <li>
@@ -161,6 +160,7 @@ FF4C  6C                    ld l,h
 FF4D  22 6A B0              ld (COUNTER),hl
 </pre>
 </li>
+<li>la variabile <span class="code">COUNTER</span> è superflua: il codice potrebbe sfruttare il byte mediano della variabile di sistema <span class="code">FRAMES</span> per ottenere il medesimo effetto;</li>
 <li>il comando <span class="code">NEW</span> disattiva il salvaschermo;</li>
 <li>
 <p>manca l'indicazione su come configurare il salvaschermo, per esempio:</p>
