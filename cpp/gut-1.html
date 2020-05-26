@@ -1,23 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="windows-1252"/>
+<meta charset="utf-8"/>
 <title>Good Unit Tests /1</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-<!--
-testing inteso non come mezzo per trovare i bachi, ma per confermare l'aspettativa che qualcosa fa quel che dovrebbe
-(tests are not for finding bugs; tests are the confirmation of a belief that something works the way it should)
-un modo insomma per misurare l'aderenza alle specifiche
-ma allora, perché non esplicitare queste aspettative nel test?
-il codice di test esplicita i requisiti; la sua esecuzione li verifica
-perseguire il black box testing: se entro nel dettaglio del come, anziché del cosa, i test diventano dipendenti dall'implementazione, quindi sensibili al refactoring: sbagliato!
-qui si parla comunque solo di unit test (classes/funcions), in particolare di interfacce e contratti
-integration e system tests vanno gestiti con altri strumenti più idonei
-
-tipi di unit test: passivo (POUT), attivo (TDD) e reattivo (DDT, defect-driven test)
--->
 <p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
 <h1>Good Unit Tests /1</h1>
 <h2>Introduzione</h2>
@@ -480,7 +468,7 @@ int main() {
 // ...\check.cpp(132): b1 == b2 evaluates to 1 == 0
 </pre>
 <h4>Interi</h4>
-<p>A volte &egrave; utile disporre del tipo <span class="code">signed</span>/<span class="code">unsigned</span> di un valore intero, o la sua dimensione effettiva; altre volte è conveniente rappresentarlo in una base specifica. Il codice sottostante consente di definire la base di rappresentazione dei valori interi (macro <span class="code">INT_BASE</span>) e dei caratteri (<span class="code">CHAR_BASE</span>), avendo come opzioni quella decimale (<span class="code">Dex</span>) o esadecimale (<span class="code">Hex</span>):</p>
+<p>A volte &egrave; utile disporre del tipo <span class="code">signed</span>/<span class="code">unsigned</span> di un valore intero, o la sua dimensione effettiva; altre volte &egrave; conveniente rappresentarlo in una base specifica. Il codice sottostante consente di definire la base di rappresentazione dei valori interi (macro <span class="code">INT_BASE</span>) e dei caratteri (<span class="code">CHAR_BASE</span>), avendo come opzioni quella decimale (<span class="code">Dex</span>) o esadecimale (<span class="code">Hex</span>):</p>
 <pre class="code">
 #include &lt;iomanip&gt;
 

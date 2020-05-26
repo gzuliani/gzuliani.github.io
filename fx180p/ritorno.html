@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="windows-1252"/>
+<meta charset="utf-8"/>
 <title>Ritorno al futuro</title>
 <link rel='stylesheet' type='text/css' href='../css/main.css'/>
 <link rel='stylesheet' type='text/css' href='css/fx180p.css'/>
@@ -14,7 +14,7 @@
 <p>Il programma determina la durata del viaggio cos&igrave; come misurato dall'orologio della navicella, producendo una condizione d'errore nel caso questi superi i 70 anni; successivamente visualizza il tempo trascorso sulla terra, emettendo infine uno 0 se questi differisce al pi&ugrave; 5 anni dal tempo inizialmente programmato, con condizione d'errore in caso contrario.</p>
 <p class="note">Nota: per comodit&agrave; conviene limitare il numero di cifre decimali in uso (FIX 2/FIX 3) durante il gioco.</p>
 <h2>Fisica (approssimata) del gioco</h2>
-<p>Poich&eacute; la navicella percorre la distanza d a velocit&agrave; costante v=kc, il tempo impiegato è t<sub>nav</sub>=d/k; poich&eacute; la navicella procede ad una velocit&agrave; prossima a quella della luce, il tempo trascorso sulla terra risulta invece essere t<sub>terra</sub>=t<sub>nav</sub>/&radic;(1-k&sup2;)</p>
+<p>Poich&eacute; la navicella percorre la distanza d a velocit&agrave; costante v=kc, il tempo impiegato &egrave; t<sub>nav</sub>=d/k; poich&eacute; la navicella procede ad una velocit&agrave; prossima a quella della luce, il tempo trascorso sulla terra risulta invece essere t<sub>terra</sub>=t<sub>nav</sub>/&radic;(1-k&sup2;)</p>
 <h2>Uso delle memorie</h2>
 <ul>
 	<li>K1 contiene la durata programmata del viaggio, espressa in anni terrestri;</li>
@@ -48,7 +48,7 @@
 	<li>
 		<p>L'utente prova ad aumentare la distanza da percorrere:</p>
 		<p><span class="key">P1</span> &rarr; <span class="display">0</span> <span class="key">1</span> <span class="key">0</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">100.00</span> <span class="key">7</span> <span class="key">0</span> <span class="key">RUN</span> &rarr; <span class="display">70.00</span> <span class="key">.</span> <span class="key">9</span> <span class="key">RUN</span> &rarr; <span class="display">77.78</span> <span class="key">RUN</span> &rarr; <span class="display">E</span></p>
-		<p>Il viaggio &egrave; durato più di 77 anni, troppi anche per un giovane astronauta!</p>
+		<p>Il viaggio &egrave; durato pi&ugrave; di 77 anni, troppi anche per un giovane astronauta!</p>
 	</li>
 	<li>
 		<p>L'utente prova ad aumentare la velocit&agrave; di crociera:</p>

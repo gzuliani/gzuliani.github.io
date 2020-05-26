@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="windows-1252"/>
+<meta charset="utf-8"/>
 <title>SciTE/markdown</title>
 <link rel='stylesheet' type='text/css' href='../css/main.css'/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#scite-markdown">risorse</a> | scite/markdown</p>
 <h1>SciTE/markdown</h1>
-<p>Quel che segue &egrave; l'adattamento del messaggio <a href="https://groups.google.com/forum/?fromgroups=#!topic/scite-interest/ykjdisitDvY=">SciTE and Markdown</a> che ho inviato alla mailing list <a href="http://groups.google.com/group/scite-interest">scite-interest</a> nel quale riporto alcuni risultati che ho ottenuto nella configurazione di SciTE per il supporto a <a href="http://daringfireball.net/projects/markdown/">markdown</a>. L'originale in markdown è disponibile <a href="files/scite-markdown/readme.md">qui</a>.</p>
+<p>Quel che segue &egrave; l'adattamento del messaggio <a href="https://groups.google.com/forum/?fromgroups=#!topic/scite-interest/ykjdisitDvY=">SciTE and Markdown</a> che ho inviato alla mailing list <a href="http://groups.google.com/group/scite-interest">scite-interest</a> nel quale riporto alcuni risultati che ho ottenuto nella configurazione di SciTE per il supporto a <a href="http://daringfireball.net/projects/markdown/">markdown</a>. L'originale in markdown Ã¨ disponibile <a href="files/scite-markdown/readme.md">qui</a>.</p>
 <blockquote>
 <h1>Markdown and SciTE</h1>
 <p><em>How to get a live preview (on Firefox) of a markdown file.</em></p>
@@ -127,7 +127,7 @@ end
   end
 </pre>
 <p class="update"><strong>Aggiornamento [13/04/2015]</strong></p>
-<p>L'attivazione della <em>live preview</em> dei file markdown su Ubuntu 14.04 ha richiesto alcuni adattamenti a causa di alcune modifiche che nel tempo sono state introdotte nell'estensione. L'ambiente nel quale è avvenuta l'installazione comprende:</p>
+<p>L'attivazione della <em>live preview</em> dei file markdown su Ubuntu 14.04 ha richiesto alcuni adattamenti a causa di alcune modifiche che nel tempo sono state introdotte nell'estensione. L'ambiente nel quale Ã¨ avvenuta l'installazione comprende:</p>
 <ul>
 <li>Ubuntu 14.04</li>
 <li>SciTE 3.3.5</li>
@@ -148,12 +148,12 @@ sudo python setup.py install
 cd ..
 sudo rm -r xhtml_wrap
 </pre>
-<p>Non è necessario installare il pacchetto <span class="code">mdx_smartypants</span> perché se ne fa carico direttamente il pacchetto principale <span class="code">Markdown</span>, che offre altre interessanti estensioni come le note a piè pagina e le <em>definition lists</em>.</p>
-<p>A partire dalla versione 2.6, il pacchetto <span class="code">Markdown</span> non accetta più le configurazioni delle estensioni sulla riga di comando, che vanno invece passate su file YAML/JSON. La riga di comando diventa perciò:</p>
+<p>Non Ã¨ necessario installare il pacchetto <span class="code">mdx_smartypants</span> perchÃ© se ne fa carico direttamente il pacchetto principale <span class="code">Markdown</span>, che offre altre interessanti estensioni come le note a piÃ¨ pagina e le <em>definition lists</em>.</p>
+<p>A partire dalla versione 2.6, il pacchetto <span class="code">Markdown</span> non accetta piÃ¹ le configurazioni delle estensioni sulla riga di comando, che vanno invece passate su file YAML/JSON. La riga di comando diventa perciÃ²:</p>
 <pre class="code">
 $(python.scripts.dir)/markdown_py -c $(SciteUserHome)/.scite/markdown_py.json &hellip;
 </pre>
-<p>La configurazione in formato json è:</p>
+<p>La configurazione in formato json Ã¨:</p>
 <pre class="code">
 {
     "mdx_xhtml_wrap": {
@@ -164,7 +164,7 @@ $(python.scripts.dir)/markdown_py -c $(SciteUserHome)/.scite/markdown_py.json &h
         ]
     }
 }</pre>
-<p>Il comando di caricamento del file html nel browser predefinito è diverso per le due piattaforme:</p>
+<p>Il comando di caricamento del file html nel browser predefinito Ã¨ diverso per le due piattaforme:</p>
 <pre class="code">
 ...
 
@@ -188,11 +188,11 @@ command.21.$(file.patterns.markdown)=$(markdown.script) \
 user.shortcuts=Ctrl+3|1121|
 </pre>
 <p class="note"><strong>Nota 1:</strong> l'estensione <span class="code">markdown.extensions.toc</span> funziona solo con Python 2.7 e versioni successive: tale opzione va rimossa nel caso si usi una versione precedente.</p>
-<p class="note"><strong>Nota 2:</strong> le estensioni <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> generano un <span class="code">DeprecationWarning</span> che però non pregiudica la conversione.</p>
+<p class="note"><strong>Nota 2:</strong> le estensioni <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> generano un <span class="code">DeprecationWarning</span> che perÃ² non pregiudica la conversione.</p>
 <p class="update"><strong>Aggiornamento [20/05/2015]</strong></p>
-<p>Firefox ha qualche <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=673087">problema</a> a renderizzare pagine HTML codificate UTF-8 se questa non è esplicitamente dichiarata nell'apposito nodo <span class="code">meta</span>. Poiché l'estensione  <span class="code">mdx_xhtml_wrap</span> non lo fa, conviene, <strong>prima di installarla</strong>, applicare questa <a href="files/scite-markdown/meta-charset.patch"><em>patch</em></a> (o, alternativamente, agire direttamente sui sorgenti già installati).</p>
+<p>Firefox ha qualche <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=673087">problema</a> a renderizzare pagine HTML codificate UTF-8 se questa non Ã¨ esplicitamente dichiarata nell'apposito nodo <span class="code">meta</span>. PoichÃ© l'estensione  <span class="code">mdx_xhtml_wrap</span> non lo fa, conviene, <strong>prima di installarla</strong>, applicare questa <a href="files/scite-markdown/meta-charset.patch"><em>patch</em></a> (o, alternativamente, agire direttamente sui sorgenti giÃ  installati).</p>
 <p class="update"><strong>Aggiornamento [11/12/2018]</strong></p>
-<p>Una recente installazione del pacchetto Markdown (v. 3.0.1) ha evidenziato un problema di compatibilità con alcune estensioni di terze parti, <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> in particolare. Il problema si risolve modificando il metodo <span class="code">makeExtension</span> nei file sorgente presenti nella cartella <span class="code">site-packages</span>:</p>
+<p>Una recente installazione del pacchetto Markdown (v. 3.0.1) ha evidenziato un problema di compatibilitÃ  con alcune estensioni di terze parti, <span class="code">mdx_ins_del</span> e <span class="code">mdx_cite</span> in particolare. Il problema si risolve modificando il metodo <span class="code">makeExtension</span> nei file sorgente presenti nella cartella <span class="code">site-packages</span>:</p>
 <pre class="code">
 [file mdx_cite.py]
 ...

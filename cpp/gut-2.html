@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="windows-1252"/>
+<meta charset="utf-8"/>
 <title>Good Unit Tests /2</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -19,7 +19,7 @@ int main() {
   return 0;
 }
 </pre>
-<p class="todo">Rinunciare al controllo del tipo di eccezione lanciata è molto limitante; come spiegarlo?</p>
+<p class="todo">Rinunciare al controllo del tipo di eccezione lanciata &egrave; molto limitante; come spiegarlo?</p>
 <p>Il mancato lancio di una qualunque eccezione dev'essere trattata alla stessa stregua di un fallimento di <span class="code">CHECK</span>:</p>
 <pre class="code">
 #define THROWS(expr_, exception_) \

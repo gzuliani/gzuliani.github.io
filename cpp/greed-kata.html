@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="windows-1252"/>
+<meta charset="utf-8"/>
 <title>Greed dice game Kata</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#greed-kata">risorse</a> | greed kata</p>
 <h1>Greed dice game Kata</h1>
-<p>Ho trovato un riferimento al kata in oggetto in un <a href="https://twitter.com/xpmatteo/status/744186001925480448">tweet</a> di <a href="https://twitter.com/xpmatteo">@xpmatteo</a>, così ho deciso di affrontarlo in C++. Il gioco<sup><a href="#ref-2">[2]</a></sup> consiste nel lanciare cinque dadi e nel determinare il punteggio della configurazione ottenuta applicando ciclicamente le seguenti regole fino all'esaurimento dei dadi:</p>
+<p>Ho trovato un riferimento al kata in oggetto in un <a href="https://twitter.com/xpmatteo/status/744186001925480448">tweet</a> di <a href="https://twitter.com/xpmatteo">@xpmatteo</a>, cosÃ¬ ho deciso di affrontarlo in C++. Il gioco<sup><a href="#ref-2">[2]</a></sup> consiste nel lanciare cinque dadi e nel determinare il punteggio della configurazione ottenuta applicando ciclicamente le seguenti regole fino all'esaurimento dei dadi:</p>
 <ol>
 <li>la tripletta &#x2680;&#x2680;&#x2680; vale 1000 punti;</li>
 <li>ogni altra tripletta vale 100 volte il punto dei dadi (&#x2681;&#x2681;&#x2681; vale 200 punti);</li>
 <li>un singolo &#x2680; vale 100 punti;</li>
 <li>un singolo &#x2684; vale 50 punti;</li>
-<li>qualunque altra combinazione non dà diritto ad alcun punto;</li>
+<li>qualunque altra combinazione non dÃ  diritto ad alcun punto;</li>
 <li>una volta applicata una regola, i dadi coinvolti vengono scartati.</li>
 </ol>
 <h3>1000 punti per tre &ldquo;uno&rdquo;</h3>
@@ -28,7 +28,7 @@ TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
   CHECK(score({1, 1, 1}) == 1000);
 }</ins>
 </pre>
-<p>Il compilatore termina con errore, mancando la definizione della funzione <span class="code">score</span>; l'implementazione minima che soddisfa il test è tuttavia banale:</p>
+<p>Il compilatore termina con errore, mancando la definizione della funzione <span class="code">score</span>; l'implementazione minima che soddisfa il test Ã¨ tuttavia banale:</p>
 <pre class="code">
 #include &quot;gut.h&quot;
 
@@ -49,7 +49,7 @@ TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
  */
 </pre>
 <h3>Refactoring #1</h3>
-<p>Il parametro <span class="code">roll</span> della funzione <span class="code">score</span> è di tipo troppo generico, meglio circostanziare il contesto:</p>
+<p>Il parametro <span class="code">roll</span> della funzione <span class="code">score</span> Ã¨ di tipo troppo generico, meglio circostanziare il contesto:</p>
 <pre class="code">
 #include &quot;gut.h&quot;
 
@@ -91,7 +91,7 @@ TEST(&quot;a set of three 1&apos;s is worth 1000 points&quot;) {
  * FAILED - 5 failure(s) in 1 test(s).
  */
 </pre>
-<p>Modificare la funzione <span class="code">score</span> per far passare anche questo secondo test non è complicato:</p>
+<p>Modificare la funzione <span class="code">score</span> per far passare anche questo secondo test non Ã¨ complicato:</p>
 <pre class="code">
 ...
 
@@ -114,7 +114,7 @@ int score(const Roll&amp; <del>/*</del>roll<del>*/</del>) {
  */
 </pre>
 <h3>100 punti per un singolo &ldquo;uno&rdquo;</h3>
-<p>Un nuovo test controlla il punteggio assegnato al dado 1 in virtù della terza regola:</p>
+<p>Un nuovo test controlla il punteggio assegnato al dado 1 in virtÃ¹ della terza regola:</p>
 <pre class="code">
 ...
 
@@ -132,7 +132,7 @@ int score(const Roll&amp; <del>/*</del>roll<del>*/</del>) {
  * FAILED - 1 failure(s) in 1 test(s).
  */
 </pre>
-<p>Viene di conseguenza modificata la funzione <span class="code">score</span>, ancora una volta senza troppe difficoltà:</p>
+<p>Viene di conseguenza modificata la funzione <span class="code">score</span>, ancora una volta senza troppe difficoltÃ :</p>
 <pre class="code">
 ...
 
@@ -155,7 +155,7 @@ int score(const Roll&amp; roll) {
  */
 </pre>
 <h3>Refactoring #2</h3>
-<p>Essendo <span class="code">first_die</span> riferito una volta sola, il riferimento locale può essere eliminato:</p>
+<p>Essendo <span class="code">first_die</span> riferito una volta sola, il riferimento locale puÃ² essere eliminato:</p>
 <pre class="code">
 ...
 
@@ -187,7 +187,7 @@ int score(const Roll&amp; roll) {
  * FAILED - 1 failure(s) in 1 test(s).
  */
 </pre>
-<p>Per far passare anche questo test è sufficiente aggiungere la nuova casistica in <span class="code">score</span>:</p>
+<p>Per far passare anche questo test Ã¨ sufficiente aggiungere la nuova casistica in <span class="code">score</span>:</p>
 <pre class="code">
 ...
 
@@ -210,7 +210,7 @@ int score(const Roll&amp; roll) {
  */
 </pre>
 <h3>Refactoring #3</h3>
-<p>La presenza di molteplici clausole <span class="code">if</span>/<span class="code">else</span> sta minando la qualità dell'implementazione della funzione <span class="code">score</span>; conviene cambiare approccio. Una possibilità è distinguere la definizione delle regole del gioco dalla loro applicazione. A tal scopo si introduce l'oggetto <span class="code">Rule</span>, che verifica se una data configurazione di dadi corrisponde ad una sequenza prefissata, e fornisce il punteggio ad essa associato; la funzione <span class="code">score</span> si limita così a selezionare ed applicare la regola più adatta alla configurazione di dadi corrente, rispettando ovviamente l'ordine richiesto:</p>
+<p>La presenza di molteplici clausole <span class="code">if</span>/<span class="code">else</span> sta minando la qualitÃ  dell'implementazione della funzione <span class="code">score</span>; conviene cambiare approccio. Una possibilitÃ  Ã¨ distinguere la definizione delle regole del gioco dalla loro applicazione. A tal scopo si introduce l'oggetto <span class="code">Rule</span>, che verifica se una data configurazione di dadi corrisponde ad una sequenza prefissata, e fornisce il punteggio ad essa associato; la funzione <span class="code">score</span> si limita cosÃ¬ a selezionare ed applicare la regola piÃ¹ adatta alla configurazione di dadi corrente, rispettando ovviamente l'ordine richiesto:</p>
 <pre class="code">
 #include &quot;gut.h&quot;
 <ins>#include &lt;algorithm&gt;</ins>
@@ -246,7 +246,7 @@ public:
 };</ins>
 ...
 </pre>
-<p>Come anticipato, la funzione <span class="code">score</span> seleziona la prima regola applicabile, e ritorna il punteggio associato; nel caso non sia stata possibile applicare alcuna regola, il punteggio della configurazione è nullo:</p>
+<p>Come anticipato, la funzione <span class="code">score</span> seleziona la prima regola applicabile, e ritorna il punteggio associato; nel caso non sia stata possibile applicare alcuna regola, il punteggio della configurazione Ã¨ nullo:</p>
 <pre class="code">
 ...
 int score(const Roll&amp; roll) {
@@ -297,7 +297,7 @@ int score(const Roll&amp; roll) {
  */
 </pre>
 <h3>Applicazione ciclica delle regole /1</h3>
-<p><span class="code">score</span> si limita ad attivare la prima regola pertinente, ma in realtà deve applicarle in sequenza fino all'esaurimento dei dadi. Un nuovo test evidenzia questa non-conformità:</p>
+<p><span class="code">score</span> si limita ad attivare la prima regola pertinente, ma in realtÃ  deve applicarle in sequenza fino all'esaurimento dei dadi. Un nuovo test evidenzia questa non-conformitÃ :</p>
 <pre class="code">
 ...
 
@@ -352,7 +352,7 @@ int score(const Roll&amp; roll) {
  */
 </pre>
 <h3>Refactoring #4</h3>
-<p>Il secondo commento della funzione <span class="code">score</span> è una chiara indicazione che si può fare meglio:</p>
+<p>Il secondo commento della funzione <span class="code">score</span> Ã¨ una chiara indicazione che si puÃ² fare meglio:</p>
 <pre class="code">
 ...
 
@@ -372,7 +372,7 @@ int score(const Roll&amp; roll) {
 }
 </pre>
 <h3>Applicazione ciclica delle regole /2</h3>
-<p>Il ciclo realizzato dalla funzione <span class="code">score</span> non soddisfa pienamente i requisiti iniziali, poiché si arresta alla prima regola disattesa anziché proseguire fino all'esaurimento dei dadi, come dimostra il seguente test:</p>
+<p>Il ciclo realizzato dalla funzione <span class="code">score</span> non soddisfa pienamente i requisiti iniziali, poichÃ© si arresta alla prima regola disattesa anzichÃ© proseguire fino all'esaurimento dei dadi, come dimostra il seguente test:</p>
 <pre class="code">
 ...
 
@@ -415,7 +415,7 @@ int score(const Roll&amp; roll) {
  */
 </pre>
 <h3>Refactoring #5</h3>
-<p>I due <span class="code">return</span> della funzione <span class="code">score</span> hanno forma molto simile, e viene naturale chiedersi se è possibile eliminarne uno. La regola di <em>fallback</em> implicitamente implementata dal secondo <span class="code">return</span> potrebbe essere esplicitata sotto forma di <span class="code">Rule</span>? Dopotutto, sarebbe sufficiente definire una nuova regola il cui metodo <span class="code">match</span> torna sempre <span class="code">true</span>, il cui punteggio è nullo, e ha <span class="code">length</span> pari a 1. D'altra parte, il C++ non consente di memorizzare oggetti di tipo diversi all'interno di un array; occorre allora separare le due responsabilità assegnate alla classe <span class="code">Rule</span>: la verifica dell'applicabilità della regola viene ora attribuito ad un nuovo oggetto, denominato <span class="code">Match</span>, mentre <span class="code">Rule</span> conserva il punteggio associato alla regola:</p>
+<p>I due <span class="code">return</span> della funzione <span class="code">score</span> hanno forma molto simile, e viene naturale chiedersi se Ã¨ possibile eliminarne uno. La regola di <em>fallback</em> implicitamente implementata dal secondo <span class="code">return</span> potrebbe essere esplicitata sotto forma di <span class="code">Rule</span>? Dopotutto, sarebbe sufficiente definire una nuova regola il cui metodo <span class="code">match</span> torna sempre <span class="code">true</span>, il cui punteggio Ã¨ nullo, e ha <span class="code">length</span> pari a 1. D'altra parte, il C++ non consente di memorizzare oggetti di tipo diversi all'interno di un array; occorre allora separare le due responsabilitÃ  assegnate alla classe <span class="code">Rule</span>: la verifica dell'applicabilitÃ  della regola viene ora attribuito ad un nuovo oggetto, denominato <span class="code">Match</span>, mentre <span class="code">Rule</span> conserva il punteggio associato alla regola:</p>
 <pre class="code">
 ...
 
@@ -463,7 +463,7 @@ static Rule greed_rules[] = {
 };
 ...
 </pre>
-<p>A questo punto è possibile implementare la <em>fallback-rule</em>, introducendo un nuovo oggetto <span class="code">Match</span> dalle caratteristiche già discusse:</p>
+<p>A questo punto Ã¨ possibile implementare la <em>fallback-rule</em>, introducendo un nuovo oggetto <span class="code">Match</span> dalle caratteristiche giÃ  discusse:</p>
 <pre class="code">
 ...
 
@@ -481,7 +481,7 @@ static Rule greed_rules[] = {
   <ins>Rule(new Fallback(),             0),</ins>
 };
 </pre>
-<p>La presenza della nuova regola rende superfluo il <span class="code">return</span> finale in <span class="code">score</span>, dato che ad ogni ciclo una regola applicabile sarà sempre disponibile:</p>
+<p>La presenza della nuova regola rende superfluo il <span class="code">return</span> finale in <span class="code">score</span>, dato che ad ogni ciclo una regola applicabile sarÃ  sempre disponibile:</p>
 <pre class="code">
 #include &quot;gut.h&quot;
 #include &lt;algorithm&gt;
@@ -517,9 +517,9 @@ int score(const Roll&amp; roll) {
  * OK - all tests passed.
  */
 </pre>
-<p>L'<span class="code">assert</span> sull'effettiva disponibilità di una regola applicabile è d'obbligo!</p>
+<p>L'<span class="code">assert</span> sull'effettiva disponibilitÃ  di una regola applicabile Ã¨ d'obbligo!</p>
 <h3>L'ordine dei dadi non conta</h3>
-<p>Il codice sviluppato presuppone che i dadi si presentino sempre in ordine crescente, ma questo non è un prerequisito; un test per verificare che il calcolo del punteggio funziona anche in assenza di questa condizione è il seguente:</p>
+<p>Il codice sviluppato presuppone che i dadi si presentino sempre in ordine crescente, ma questo non Ã¨ un prerequisito; un test per verificare che il calcolo del punteggio funziona anche in assenza di questa condizione Ã¨ il seguente:</p>
 <pre class="code">
 ...
 
