@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Suggeritore per Sudoku</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/sudoku-hints.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#sudoku-hints">risorse</a> | suggeritore per sudoku</p>
+<h1>Suggeritore per Sudoku</h1>
+<p>Alcuni giorni fa ho affrontato il mio primo Sudoku:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║ 1 │   │ 7 ║   │ 9 │   ║ 6 │ 5 │ 8 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 3 ║   │ 6 │ 7 ║   │   │ 4 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║ 4 │ 1 │   ║ 9 │ 7 │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │   ║ 9 │ 3 │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │   │   ║   │   │   ║ 3 │ 8 │ 6 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 7 │   │   ║ 4 │   │ 1 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 3 │   │   ║ 6 │   │ 1 ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 5 │   ║   │   │   ║ 1 │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 4 │   │ 1 ║ 3 │   │   ║ 7 │   │ 2 ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Lo schema iniziale del Sudoku, classificato come facile.</p>
+<p>Poiché mi sono inceppato in più punti, ho deciso di realizzare un programma che suggerisca la prossima mossa. Di risolutori in rete ne ho trovato molti, ma nessun &ldquo;suggeritore&rdquo; &ndash; non che abbia cercato molto, per la verità. La strategia iniziale è banale: evidenziare le caselle per le quali esiste un solo possibile candidato.</p>
+<p>Le righe, colonne e quadrati dello schema di gioco sono indicizzati come in figura:</p>
+<pre class="code">
+     0   1   2   3   4   5   6   7   8
+   ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+ 0 ║           ║           ║           ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 1 ║     0     ║     1     ║     2     ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 2 ║           ║           ║           ║
+   ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+ 3 ║           ║           ║           ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 4 ║     3     ║     4     ║     5     ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 5 ║           ║           ║           ║
+   ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+ 6 ║           ║           ║           ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 7 ║     6     ║     7     ║     8     ║
+   ╟─         ─╫─         ─╫─         ─╢
+ 8 ║           ║           ║           ║
+   ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Numerazione delle righe, delle colonne e dei quadrati.</p>
+<p>Ognuna delle caselle contiene l'elenco dei possibili candidati che può ospitare. Inizialmente l'insieme dei candidati è formato da tutti i numeri compresi tra 1 e 9:</p>
+<pre class="code">
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+
+class Cell:
+
+    def __init__(self):
+        self.value = None
+        self.candidates = [*range(1, 10)]
+
+    def set(self, n):
+        self.value = n
+        self.candidates = []
+
+    def remove_candidate(self, n):
+        if n in self.candidates:
+            self.candidates.remove(n)
+</pre>
+<p>La classe <span class="code">Board</span> rappresenta lo schema di gioco. Ha il compito di inizializzare tutte le caselle e raggrupparle nelle righe, colonne e quadrati che caratterizzano il Sudoku. Offre inoltre accesso alle stesse attraverso la classica indicizzazione matriciale:</p>
+<pre class="code">
+class Board:
+
+    def __init__(self):
+        self.cells = [[Cell() for col in range(9)] for row in range(9)]
+        self.rows = self.cells
+        self.cols = [[self.cells[row][col] for row in range(9)]
+                     for col in range(9)]
+        self.sqrs = [[self.cells[square_top + row][square_left + col]
+                     for row in range(3) for col in range(3)]
+                     for square_top in [0, 3, 6] for square_left in
+                     [0, 3, 6]]
+
+    def __getitem__(self, key):
+        return self.rows[key]
+</pre>
+<p>La classe <span class="code">Board</span> ha anche la responsabilità di aggiornare l'elenco dei candidati delle caselle. Quando un numero viene inserito in una casella questo va rimosso dall'elenco dei candidati delle caselle appartenenti alla stessa riga, colonna e quadrato di quella appena chiusa:</p>
+<pre class="code">
+class Board:
+
+    ...
+
+    <ins>def set(self, row, col, n):
+        cell = self.cells[row][col]
+        if cell.value:
+            print(&apos;invalid move&apos;)
+            return
+        cell.set(n)
+        self._remove_candidate_from_row(row, n)
+        self._remove_candidate_from_col(col, n)
+        square = 3 * int(row / 3) + int(col / 3)
+        self._remove_candidate_from_square(square, n)
+
+    def _remove_candidate_from_row(self, row, n):
+        for cell in self.rows[row]:
+            cell.remove_candidate(n)
+
+    def _remove_candidate_from_col(self, col, n):
+        for cell in self.cols[col]:
+            cell.remove_candidate(n)
+
+    def _remove_candidate_from_square(self, square, n):
+        for cell in self.sqrs[square]:
+            cell.remove_candidate(n)</ins>
+</pre>
+<p>È giunto il momento di visualizzare lo schema di gioco sul terminale:</p>
+<pre class="code">
+class Terminal:
+
+    def print_cell(self, cell):
+        if cell.value:
+            return &apos; {} &apos;.format(str(cell.value))
+        elif len(cell.candidates) == 1:
+            return &apos;&lt;{}&gt;&apos;.format(cell.candidates[0])
+        else:
+            return &apos;   &apos;
+
+    def print_board(self, board):
+        print(&apos;╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗&apos;)
+        for r, row in enumerate(board.rows):
+            print(&apos;║&apos;, end=&apos;&apos;)
+            for c, cell in enumerate(row):
+                print(&apos;{}{}&apos;.format(
+                    self.print_cell(cell), &apos;║&apos; if c % 3 == 2 else &apos;│&apos;), end=&apos;&apos;)
+            if r == 8:
+                print(&apos;\n╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝&apos;)
+            elif r % 3 == 2:
+                print(&apos;\n╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣&apos;)
+            else:
+                print(&apos;\n╟───┼───┼───╫───┼───┼───╫───┼───┼───╢&apos;)
+</pre>
+<p>Una casella vuota è rappresentata da uno spazio, una chiusa dal valore ad essa assegnato. Se una casella è ancora vuota e ha un unico candidato in elenco allora questo viene mostrato tra parentesi angolari a mo' di suggerimento.</p>
+<p>Il codice per caricare la configurazione iniziale è il seguente:</p>
+<pre class="code">
+board = Board()
+
+board.set(0, 0, 1)
+board.set(0, 2, 7)
+board.set(0, 4, 9)
+board.set(0, 6, 6)
+board.set(0, 7, 5)
+board.set(0, 8, 8)
+
+board.set(1, 2, 3)
+board.set(1, 4, 6)
+board.set(1, 5, 7)
+board.set(1, 8, 4)
+
+board.set(2, 3, 4)
+board.set(2, 4, 1)
+board.set(2, 6, 9)
+board.set(2, 7, 7)
+
+board.set(3, 3, 9)
+board.set(3, 4, 3)
+
+board.set(4, 0, 9)
+board.set(4, 6, 3)
+board.set(4, 7, 8)
+board.set(4, 8, 6)
+
+board.set(5, 2, 2)
+board.set(5, 3, 7)
+board.set(5, 6, 4)
+board.set(5, 8, 1)
+
+board.set(6, 0, 3)
+board.set(6, 3, 6)
+board.set(6, 5, 1)
+
+board.set(7, 1, 5)
+board.set(7, 6, 1)
+board.set(7, 8, 9)
+
+board.set(8, 0, 4)
+board.set(8, 2, 1)
+board.set(8, 3, 3)
+board.set(8, 6, 7)
+board.set(8, 8, 2)
+
+terminal = Terminal()
+terminal.print_board(board)
+</pre>
+<p>L'effetto è mostrato qui sotto:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║ 1 │   │ 7 ║&lt;2&gt;│ 9 │   ║ 6 │ 5 │ 8 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 3 ║   │ 6 │ 7 ║&lt;2&gt;│   │ 4 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║ 4 │ 1 │   ║ 9 │ 7 │&lt;3&gt;║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │   ║ 9 │ 3 │   ║   │&lt;2&gt;│   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │   │   ║   │   │   ║ 3 │ 8 │ 6 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 7 │   │   ║ 4 │&lt;9&gt;│ 1 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 3 │   │   ║ 6 │   │ 1 ║   │&lt;4&gt;│&lt;5&gt;║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 5 │   ║   │   │   ║ 1 │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 4 │   │ 1 ║ 3 │   │   ║ 7 │&lt;6&gt;│ 2 ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Lo schema iniziale con i suggerimenti in evidenza.</p>
+<p>Conviene estendere il programma per consentire all'utente di chiudere una casella. Per semplicità la mossa è costituita da una sequenza di tre cifre che rappresentano le coordinate della casella da chiudere e il numero da inserire (per comodità le coordinate partono da 1 anziché da zero):</p>
+<pre class="code">
+class Terminal:
+
+    ...
+
+    <ins>def read_move(self, prompt):
+        return input(prompt)</ins>
+
+
+terminal = Terminal()
+<del>terminal.print_board(board)</del>
+
+<ins>while True:
+    terminal.print_board(board)
+    move = terminal.read_move(&apos;Your move (RCN): &apos;)
+    board.set(int(move[0]) - 1, int(move[1]) - 1, int(move[2]))</ins>
+</pre>
+<p>Seguendo i suggerimenti in breve si completa lo schema:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║ 1 │ 4 │ 7 ║ 2 │ 9 │ 3 ║ 6 │ 5 │ 8 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 8 │ 9 │ 3 ║ 5 │ 6 │ 7 ║ 2 │ 1 │ 4 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 2 │ 6 │ 5 ║ 4 │ 1 │ 8 ║ 9 │ 7 │ 3 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 6 │ 1 │ 8 ║ 9 │ 3 │ 4 ║ 5 │ 2 │ 7 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │ 7 │ 4 ║ 1 │ 2 │ 5 ║ 3 │ 8 │ 6 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 5 │ 3 │ 2 ║ 7 │ 8 │ 6 ║ 4 │ 9 │ 1 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 3 │ 2 │ 9 ║ 6 │ 7 │ 1 ║ 8 │ 4 │ 5 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 7 │ 5 │ 6 ║ 8 │ 4 │ 2 ║ 1 │ 3 │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 4 │ 8 │ 1 ║ 3 │ 5 │ 9 ║ 7 │ 6 │ 2 ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Soluzione dello schema iniziale ottenuta seguendo i suggerimenti proposti dal programma.</p>
+<p>Scarica <a href="files/sudoku-hints/sudoku-single-candidate.py">questa versione</a> del suggeritore.</p>
+<h2>Non è così semplice come sembra...</h2>
+<p>La settimana successiva la stessa rivista ha pubblicato questo schema:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║   │ 4 │   ║   │   │   ║   │ 2 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │   │   ║   │   │   ║   │   │ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 5 ║ 7 │   │ 2 ║ 6 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 8 ║ 6 │   │ 9 ║ 4 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 3 │   │ 7 ║ 5 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 6 ║ 5 │   │ 8 ║ 1 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 1 │   │   ║   │   │   ║   │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 7 │   ║   │   │   ║   │ 4 │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Il secondo Sudoku, di media difficoltà.</p>
+<p>Ho modificato il programma per caricare la nuova configurazione e con stupore ho notato che esso non fornisce alcun suggerimento. Appare infatti chiaro che ci sono almeno due caselle che possono essere subito chiuse:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║   │ 4 │   ║   │   │   ║   │ 2 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │ <span class="candidate">2</span> │   ║   │   │   ║   │   │ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 5 ║ 7 │   │ 2 ║ 6 │   │ <span class="candidate">4</span> ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 8 ║ 6 │   │ 9 ║ 4 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 3 │   │ 7 ║ 5 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 6 ║ 5 │   │ 8 ║ 1 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 1 │   │   ║   │   │   ║   │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 7 │   ║   │   │   ║   │ 4 │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Almeno due caselle possono essere immediatamente chiuse.</p>
+<p>Riflettendoci un po' sopra mi rendo conto che l'unicità del candidato è solo uno dei casi che consente la chiusura di una casella. Una casella può infatti essere chiusa anche quando è l'unica a possedere un candidato rispetto alle caselle della stessa riga, della stessa colonna o dello stesso quadrato. Per esempio, sebbene la casella centrale del quadrato in alto a sinistra annoveri tra i suoi candidati i numeri 1, 2, 6 e 8, essa è l'unica della seconda riga (e pure del primo quadrato) a contemplare il 2, perciò deve necessariamente contenere tale numero. Similmente, l'ultima casella della terza riga ha candidati i numeri 1, 4 e 8, ma è l'unica dell'ultima colonna (e anche del quadrato in alto a destra) ad ammettere il 4; per tale ragione essa non può che ospitare il 4.</p>
+<p>Occorre quindi modificare il programma tenendo conto di questa nuova casistica. Estendo innanzitutto la classe <span class="code">Cell</span> con un nuovo attributo <span class="code">lone_candidate</span> che contiene l'eventuale candidato &ldquo;solitario&rdquo;:</p>
+<pre class="code">
+class Cell:
+
+    def __init__(self):
+        self.value = None
+        self.candidates = [*range(1, 10)]
+        <ins>self.lone_candidate = None</ins>
+
+    def set(self, n):
+        self.value = n
+        self.candidates = []
+        <ins>self.lone_candidate = None</ins>
+
+    ...
+</pre>
+<p>Prima di ogni mossa il programma deve verificare la presenza di candidati solitari in ognuna delle righe, delle colonne e dei quadrati dello schema. La classe <span class="code">Board</span> offre un accesso a questi aggregati di caselle:</p>
+<pre class="code">
+class Board:
+
+    ...
+
+    <ins>def cell_clusters(self):
+        return self.rows + self.cols + self.sqrs</ins>
+</pre>
+<p>Il metodo <span class="code">find_lone_candidates</span> ha il compito di trovare i candidati solitari:</p>
+<pre class="code">
+<ins>import collections</ins>
+
+...
+
+<ins>def find_lone_candidates(cells):
+    histogram = collections.defaultdict(set)
+    for cell in cells:
+        for candidate in cell.candidates:
+            histogram[candidate].add(cell)
+    return [(v.pop(), k) for k, v in histogram.items() if len(v) == 1]</ins>
+</pre>
+<p>La funzione prepara dapprima un dizionario che associa ad ogni candidato l'elenco delle caselle in cui è stato trovato; ritorna un elenco di tuple (casella, candidato) per ognuna delle caselle che contengono un candidato solitario. Il programma principale utilizza questa informazione per inizializzare l'attributo <span class="code">lone_candidate</span> delle caselle così trovate:</p>
+<pre class="code">
+...
+
+while True:
+    <ins>for cluster in board.cell_clusters():
+        for cell, candidate in find_lone_candidates(cluster):
+            cell.lone_candidate = candidate</ins>
+    terminal.print_board(board)
+    move = terminal.read_move(&apos;Your move (RCN): &apos;)
+    board.set(int(move[0]) - 1, int(move[1]) - 1, int(move[2]))
+</pre>
+<p>Non resta che mostrare questi nuovi candidati:</p>
+<pre class="code">
+class Terminal:
+
+    def print_cell(self, cell):
+        if cell.value:
+            return &apos; {} &apos;.format(str(cell.value))
+        elif len(cell.candidates) == 1:
+            return &apos;&lt;{}&gt;&apos;.format(cell.candidates[0])
+        <ins>elif cell.lone_candidate:
+            return &apos;[{}]&apos;.format(cell.lone_candidate)</ins>
+        else:
+            return &apos;   &apos;
+
+    ...
+</pre>
+<p>L'effetto del nuovo codice è quello sperato:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║   │ 4 │   ║   │   │   ║   │ 2 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │[2]│   ║   │   │   ║   │   │ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 5 ║ 7 │   │ 2 ║ 6 │   │[4]║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 8 ║ 6 │   │ 9 ║ 4 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 3 │   │ 7 ║ 5 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 6 ║ 5 │   │ 8 ║ 1 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 1 │   │   ║   │   │   ║   │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 7 │   ║   │   │   ║   │ 4 │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Il programma ora riconosce i candidati solitari.</p>
+<p>Applicando i suggerimenti proposti dal programma si giunge a alla soluzione:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║ 6 │ 4 │ 7 ║ 1 │ 3 │ 5 ║ 9 │ 2 │ 8 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │ 2 │ 1 ║ 8 │ 6 │ 4 ║ 7 │ 5 │ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 3 │ 8 │ 5 ║ 7 │ 9 │ 2 ║ 6 │ 1 │ 4 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 5 │ 3 │ 8 ║ 6 │ 2 │ 9 ║ 4 │ 7 │ 1 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 7 │ 6 │ 9 ║ 4 │ 5 │ 1 ║ 3 │ 8 │ 2 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 4 │ 1 │ 2 ║ 3 │ 8 │ 7 ║ 5 │ 9 │ 6 ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 2 │ 9 │ 6 ║ 5 │ 4 │ 8 ║ 1 │ 3 │ 7 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 1 │ 5 │ 4 ║ 2 │ 7 │ 3 ║ 8 │ 6 │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 8 │ 7 │ 3 ║ 9 │ 1 │ 6 ║ 2 │ 4 │ 5 ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Soluzione del secondo Sudoku ottenuta grazie ai suggerimenti.</p>
+<p>Il programma non ha sfigurato nemmeno con un paio di Sudoku trovati in rete e classificati rispettivamente difficile e molto difficile. Nel secondo schema si riconoscono i suggerimenti relativi ai candidati singoli e quelli solitari:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗    ╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║   │   │   ║ 3 │ 6 │ 7 ║   │ 9 │   ║    ║   │[1]│ 2 ║ 5 │   │[8]║   │ 7 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║[2]│   │ 4 ║ 5 │   │   ║    ║   │   │ 4 ║ 1 │ 6 │   ║   │ 8 │[5]║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 2 │   ║   │ 9 │   ║   │   │   ║    ║   │ 5 │ 8 ║[2]│   │   ║   │ 4 │[1]║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣    ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 3 │   │ 8 ║   │ 2 │   ║   │   │ 9 ║    ║   │[8]│&lt;7&gt;║   │ 2 │ 5 ║   │[1]│ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │   │ 8 ║   │ 5 │   ║    ║[2]│   │   ║   │ 8 │ 1 ║   │   │ 7 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 4 │   │   ║ 6 │   │   ║[8]│ 7 │   ║    ║ 1 │ 6 │   ║   │   │   ║   │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣    ╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║ 9 │   │   ║   │   │   ║   │ 6 │   ║    ║ 8 │   │   ║   │   │ 7 ║ 1 │[3]│   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 5 ║   │   │ 3 ║[9]│   │ 8 ║    ║   │   │ 9 ║ 3 │   │ 2 ║ 7 │&lt;6&gt;│[8]║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢    ╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 7 ║   │   │[6]║ 1 │   │   ║    ║ 3 │   │[1]║[8]│   │[6]║ 5 │   │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝    ╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p class="illustration">Schema difficile a sinistra, molto difficile a destra.</p>
+<p>Scarica <a href="files/sudoku-hints/sudoku-lone-candidates.py">questa versione</a> del suggeritore.</p>
+<h2>Limiti dell'algoritmo</h2>
+<p>L'algoritmo è sempre efficace? Penso dipenda da come è stato predisposto lo schema: se questo offre un'unica via verso la soluzione &ndash; come tutti i (pochi) Sudoku sui quali l'ho collaudato &ndash;, l'algoritmo dà buona prova di sè. Se viceversa la strada non è univoca e può accadere di dover tornare sui propri passi, allora l'algoritmo potrebbe non essere d'aiuto. Uno di questi casi è lo schema proposto in <a href="https://www.telegraph.co.uk/news/science/science-news/9359579/Worlds-hardest-sudoku-can-you-crack-it.html">World's hardest sudoku: can you crack it?</a>:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║ 8 │   │   ║   │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 3 ║ 6 │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 7 │   ║   │ 9 │   ║ 2 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │ 5 │   ║   │   │ 7 ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │ 4 │ 5 ║ 7 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║ 1 │   │   ║   │ 3 │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 1 ║   │   │   ║   │ 6 │ 8 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 8 ║ 5 │   │   ║   │ 1 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 9 │   ║   │   │   ║ 4 │   │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+</pre>
+<p>Il programma in questo caso non emette alcun suggerimento. Non sono un esperto di Sudoku, ma immagino che lo schema contenga alcune ambiguità che vanno risolte scartando quelle che portano a situazioni inconsistenti.</p>
+<h2>Suggerimento a richiesta</h2>
+<p>Anziché mostrare i suggerimenti direttamente nello schema, è preferibile che sia l'utente a richiedere uno; il programma allora gliene propone uno a caso tra quelli disponibili.</p>
+<p>Il primo intervento riguarda la visualizzazione del contenuto delle caselle:</p>
+<pre class="code">
+class Cell:
+
+    def __init__(self):
+        self.value = None
+        self.candidates = [*range(1, 10)]
+        <del>self.lone_candidate = None</del>
+
+    def set(self, n):
+        self.value = n
+        self.candidates = []
+        <del>self.lone_candidate = None</del>
+
+    ...
+
+
+class Terminal:
+
+    def print_cell(self, cell):
+        if cell.value:
+            return &apos; {} &apos;.format(str(cell.value))
+<del>        elif len(cell.candidates) == 1:
+            return &apos;&lt;{}&gt;&apos;.format(cell.candidates[0])
+        elif cell.lone_candidate:
+            return &apos;[{}]&apos;.format(cell.lone_candidate)</del>
+        else:
+            return &apos;   &apos;
+</pre>
+<p>L'utente chiede un suggerimento immettendo il carattere &laquo;H&raquo; come mossa:</p>
+<pre class="code">
+...
+
+terminal = Terminal()
+<ins>terminal.print_board(board)</ins>
+
+while True:
+<del>    for cluster in board.cell_clusters():
+        for cell, candidate in find_lone_candidates(cluster):
+            cell.lone_candidate = candidate
+    terminal.print_board(board)</del>
+    move = terminal.read_move(&apos;Your move (RCN<ins> or `H` for help</ins>): &apos;)
+    <ins>if move == &apos;H&apos;:
+        show_hint(board)
+    else:</ins>
+        board.set(int(move[0]) - 1, int(move[1]) - 1, int(move[2]))
+        <ins>terminal.print_board(board)</ins>
+</pre>
+<p>Il metodo <span class="code">show_hint</span>, dopo aver verificato la disponibilità di almeno un suggerimento, ne sceglie uno a caso e lo propone all'utente sottoforma di terna (riga, colonna, valore):</p>
+<pre class="code">
+...
+
+import collections
+<ins>import random</ins>
+
+...
+
+<ins>class Hint:
+
+    def __init__(self, cell, value):
+        self.cell = cell
+        self.value = value</ins>
+
+
+def find_lone_candidates(cells):
+    histogram = collections.defaultdict(set)
+    for cell in cells:
+        for candidate in cell.candidates:
+            histogram[candidate].add(cell)
+    return [<ins>Hint</ins>(v.pop(), k) for k, v in histogram.items() if len(v) == 1]
+
+
+<ins>def show_hint(board):
+    hints = find_hints(board)
+    if not hints:
+        print(&apos;sorry, no help available&apos;)
+    hint = random.sample(hints, 1)[0]
+    print(&apos;{}{}{}&apos;.format(hint.cell.row + 1, hint.cell.col + 1, hint.value))</ins>
+</pre>
+<p>Il metodo appena introdotto richiede che ogni casella conosca le proprie coordinate:</p>
+<pre class="code">
+...
+
+class Cell:
+
+    def __init__(self<ins>, row, col</ins>):
+        <ins>self.row = row
+        self.col = col</ins>
+        self.value = None
+        self.candidates = [*range(1, 10)]
+
+...
+
+class Board:
+
+    def __init__(self):
+        self.cells = [[Cell(<ins>row, col</ins>) for col in range(9)] for row in range(9)]
+        self.rows = self.cells
+        ...
+</pre>
+<p>L'individuazione dei suggerimenti è a carico del metodo <span class="code">find_hints</span> che unisce in un unico insieme i suggerimenti derivati dalla presenza di un solo candidato con quelli associati ai candidati solitari così da eliminare eventuali duplicati:</p>
+<pre class="code">
+...
+
+<ins>def find_single_candidates(cells):
+    return [Hint(cell, cell.candidates[0]) for cell in cells
+            if len(cell.candidates) == 1]</ins>
+
+
+<ins>def find_hints(board):
+    return set([hint for row in board.rows for hint in
+               find_single_candidates(row)] + [hint for cluster in
+               board.cell_clusters() for hint in
+               find_lone_candidates(cluster)])</ins>
+</pre>
+<p>Il programma ora non mostra più i suggerimenti, ma ne fornisce uno a richiesta:</p>
+<pre class="code">
+╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗
+║   │ 4 │   ║   │   │   ║   │ 2 │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 9 │   │   ║   │   │   ║   │   │ 3 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 5 ║ 7 │   │ 2 ║ 6 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 8 ║ 6 │   │ 9 ║ 4 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │   ║   │   │   ║   │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │   │ 2 ║ 3 │   │ 7 ║ 5 │   │   ║
+╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣
+║   │   │ 6 ║ 5 │   │ 8 ║ 1 │   │   ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║ 1 │   │   ║   │   │   ║   │   │ 9 ║
+╟───┼───┼───╫───┼───┼───╫───┼───┼───╢
+║   │ 7 │   ║   │   │   ║   │ 4 │   ║
+╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝
+Your move (RCN or `H` for help): H
+394
+Your move (RCN or `H` for help): H
+222
+Your move (RCN or `H` for help): H
+222
+Your move (RCN or `H` for help): H
+394
+Your move (RCN or `H` for help): H
+394
+Your move (RCN or `H` for help):
+</pre>
+<p class="illustration">La nuova modalità d'uso del programma.</p>
+<p>Scarica <a href="files/sudoku-hints/sudoku-hints.py">questa versione</a> del suggeritore.</p>
+<h2>Punti aperti</h2>
+<p>Il programma è ancora incompleto: non è possibile annullare una mossa o semplicemente svuotare una casella. Potrebbe essere interessante aggiungere un'opzione che impedisca all'utente di effettuare mosse non valide, o per lo meno le evidenzi in qualche modo. Il programma potrebbe arrestarsi automaticamente al completamento dello schema indicando se la configurazione finale rappresenta una soluzione accettabile. L'interazione con l'utente è in generale piuttosto macchinosa e sarebbe preferibile una soluzione punta-e-clicca.</p>
+<p class="modification-notice">Pagina modificata il 18/08/2020</p>
+</body>
+</html>
