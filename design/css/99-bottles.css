@@ -1,0 +1,19 @@
+pre.script {
+ background: #ffffff;
+ color: #000000;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .8em;
+ line-height: 1.2em;
+ margin-top: 2em;
+ padding: 1em;
+ white-space: pre-wrap; /* line wrap */
+ width: 50em;
+}
+
+td.separator {
+ height: 1em;
+}
+
+td.verse {
+ font-style: italic;
+}

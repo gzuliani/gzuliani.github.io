@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>99 bottiglie di... C++</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/99-bottles.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#99-bottles">risorse</a> | 99 bottiglie di... c++</p>
+<h1>99 bottiglie di... C++</h1>
+<p>&ldquo;99 bottles of beer&rdquo; è un brano musicale tradizionale degli Stati Uniti, caratterizzato da un testo molto lungo e ripetitivo. Per questa ragione viene a volte usato per valutare l'espressività di un linguaggio di programmazione verificando la comprensibilità del codice sorgente che genera il testo dell'intera canzone.</p>
+<p>Il sito <a href="http://99-bottles-of-beer.net">99-bottles-of-beer.net</a> raccoglie più di 1500 soluzioni diverse al problema, ma in questi giorni (agosto 2020) non è raggiungibile. In compenso, diverse realizzazioni alternative sono disponibili su <a href="http://www.rosettacode.org/wiki/99_Bottles_of_Beer">Rosetta Code</a>. Una curiosità: Donald Knuth <a href="files/99-bottles/knuth_song_complexity.pdf">ha dimostrato</a> che la complessità della canzone è O(logN)!</p>
+<p>Recentemente è uscita la seconda edizione di un libro che affronta il problema nel dettaglio: si intitola <a href="https://sandimetz.com/99bottles">99 bottles of OO</a>, a cura di Sandi Metz, Katrina Owen e TJ Stankus.</p>
+<h2>Soluzione di Kent Beck</h2>
+<p>Nell'articolo <a href="https://leftsideagile.com/index.php?post/2020/02/16/The-Beginning-of-Extreme-Programming">The Beginning of Extreme Programming</a> Chet Hendrickson ricorda che Extreme Programming ebbe origine quando Kent Beck affrontò quasi per scherzo il problema delle 99 bottiglie di birra:</p>
+<blockquote>Kent Beck's Smalltalk implementation of '99 Bottles of Beer On The Wall' was the spark that launched Extreme Programming.
+<br>
+<br>
+As a member of the Chrysler C3 team, I was challenged to learn how to build systems using Object Oriented techniques. One of the tools I and others on the team used was the comp.lang.smalltalk discussion group. Late in 1995, someone posted a message to most of the comp.lang groups asking the a program be posted in the group's language showing how the lyrics to the song '99 Bottles of Beer on the Wall' should be generated. There were several postings in the Smalltalk group, most of which were not too inspiring. I then saw the code listed below. A little while later, we decided we needed help performance tuning our application, and I suggested we talk to this Beck guy.
+<br>
+<br>
+It turns out that our code was too much like that that did not impress me and with Kent's (,and Ron Jeffries's, Martin Fowler's, Jim Huangs's, and Ken Auer's) we built a system that looked much more like this one.</blockquote>
+<p>Riprecorro le tracce di Kent Beck utilizzando il linguaggio C++.</p>
+<pre class="script">
+<strong>Subject: Re: 99 bottles of beer, auf Smalltalk</strong>
+
+Date: 1996/01/26
+Author: Kent Beck
+
+There has been a discussion recently on comp.lang.smalltalk about how best to represent the song "99 Bottles of Beer on the Wall" in Smalltalk. Apparently, there has been some use of this song as a way of benchmarking various programming languages.
+
+I found the Smalltalk implementations appalling in their lack of use of the facilities that make Smalltalk so powerful. In particular, the previously published solutions all made heavy use of iteration and conditional logic.
+
+In my quest for intellectual purity, the limits of absurdity, and a decent distraction from this nasty cold, I have undertaken to write the one true definitive Smalltalk version. I hereby place the following code, written in literate program form, into the public domain, to stand as a monument for the ages, or until my hard disk crashes again, whichever comes first.
+
+<strong>Specification</strong>
+
+We need a program which takes as input, N, a number of bottles of beer and produces as output a string containing the N+l verses of the bottles of beer song. For N=3, the expected output is:
+
+3 bottles of beer on the wall
+3 bottles of beer
+Take one down and pass it around
+2 bottles of beer on the wall
+
+2 bottles of beer on the wall
+2 bottles of beer
+Take one down and pass it around
+1 bottle of beer on the wall
+
+1 bottle of beer on the wall
+1 bottle of beer
+Take it down and pass it around
+No bottles of beer on the wall
+
+No bottles of beer on the wall
+No bottles of beer
+There are no more to pass around
+No bottles of beer on the wall
+
+Note the subtle changes, verse to verse, that will necessitate the application of powerful object-oriented techniques. The third line changes, as does the plurality of the number of bottles.
+
+<strong>Verse</strong>
+
+The fundamental question in any object oriented development is "what is my first object?" Until this question is answered aright, nothing else the developer does will be of much use. Fortunately, we have in "song" a natural unit of computation, the Verse. Introducing varying kinds of Verses will allow us to capture with polymorphic messages logic that must be expressed as explicit conditionals in procedural languages. Such future flexibility is of uncertain use with a problem like BOB (Bottles of Beer song), but that's the thing about future requirements, you don't know what they're going to be.
+
+ Object
+   subclass: #Verse
+   instanceVariableNames: 'stream'
+   classVariableNames: ''
+   poolDictionaries: ''
+</pre>
+<p>Immagino Beck si riferisca alle strofe (in grassetto le differenze dalla strofa precedente):</p>
+<table cellpadding="0" cellspacing="0">
+<tr><td>N&gt;2</td><td class="verse">N bottles of beer on the wall<br>N bottles of beer<br>Take one down and pass it around<br>N-1 bottles of beer on the wall</td></tr>
+<tr><td colspan="2" class="separator"></td></tr>
+<tr><td>N=2</td><td class="verse">2 bottles of beer on the wall<br>2 bottles of beer<br>Take one down and pass it around<br>1 <strong>bottle</strong> of beer on the wall</td></tr>
+<tr><td colspan="2" class="separator"></td></tr>
+<tr><td>N=1</td><td class="verse">1 <strong>bottle</strong> of beer on the wall<br>1 <strong>bottle</strong> of beer<br>Take <strong>it</strong> down and pass it around<br><strong>No bottles</strong> of beer on the wall</td></tr>
+<tr><td colspan="2" class="separator"></td></tr>
+<tr><td>N=0</td><td class="verse">No bottles of beer on the wall<br>No bottles of beer<br><strong>There are no more to pass around</strong><br><strong>No bottles</strong> of beer on the wall</td></tr>
+</table>
+<p>La serializzazione delle differenti strofe avverrà per via polimorfica a partire dalla classe base <span class="code">Verse</span>. Questa contiene una referenza allo <span class="code">stream</span> ove verrà serializzato il testo:</p>
+<pre class="code">
+<ins>#include &lt;iostream&gt;
+
+class Verse {
+protected:
+  std::ostream&amp; stream_;
+public:
+  Verse(std::ostream&amp; stream) : stream_{stream} {}
+};</ins>
+</pre>
+<pre class="script">
+Each Verse will sing itself onto a Stream by singing its verse, then asking the next verse to sing itself.
+
+ Verse&gt;&gt;sing
+   self singVerse.
+   stream cr.
+   self nextVerse sing
+</pre>
+<p>In C++ il metodo diventa:</p>
+<pre class="code">
+class Verse {
+protected:
+  std::ostream&amp; stream_;
+public:
+  Verse(std::ostream&amp; stream) : stream_{stream} {}
+  <ins>virtual void sing() {
+    sing_verse();
+    stream_ &lt;&lt; &quot;\n&quot;;
+    next_verse()-&gt;sing();
+  }</ins>
+};
+</pre>
+<pre class="script">
+The recursion ends when you get to a Verse which represents a negative number of bottles of beer, the NegativeVerse. Many developers would have subclassed Verse to define NegativeVerse, but since it need only implement a single message, sing, and since there is no code sharing involved, I chose to subclass directly from object. This leaves me the option to factor Verse inheritance some other way, should that prove important in the future.
+
+ Object
+   subclass: #NegativeVerse
+   instanceVariableNames: ''
+   classVariableNames: ''
+   poolDictionaries: ''
+
+ NegativeVerse &gt;&gt;sing
+   "Do nothing"
+</pre>
+<p>Interessante questa osservazione di Beck: poiché l'oggetto <span class="code">NegativeVerse</span> non condivide alcun codice con la classe base <span class="code">Verse</span> non c'è ragione che derivi da essa... se non che in C++ è indispensabile, a meno di non ricorrere a qualche tecnica di <em>type erasure</em> &mdash; la cosa sarebbe invece possibile per esempio in Python. Procedo dunque con la specializzazione:</p>
+<pre class="code">
+<ins>class NegativeVerse : public Verse {
+public:
+  NegativeVerse(std::ostream&amp; stream) : Verse{stream} {}
+  void sing() override {};
+};</ins>
+</pre>
+<pre class="script">
+We will use other variations on Verse to capture the special cases in the song. PrecedingVerse will sing the Nth to second verse. PenultimateVerse will sing the verse in which there is one lonely bottle left, and UltimateVerse will sing that sad sad verse in which all the bottle are gone and their contents drained.
+</pre>
+<p>Per Beck le tipologie di strofe sono tre, non quattro come pensavo; accomuna infatti il caso N=2 al caso N>2. La ragione di ciò diventerà evidente più avanti.</p>
+<pre class="script">
+The Verse instance creation method is a Factory Method, returning a Verse of the correct subclass depending on the bottle count.
+
+ Verse class&gt;&gt;Count: aninteger stream: aStream
+   aninteger &lt; 0 ifTrue: ^NegativeVerse new
+   aninteger = 0 ifTrue: ^UltimateVerse stream: aStream.
+   aninteger = 1 ifTrue: ^PenultimateVerse stream: aStream.
+   ^(PrecedingVerse stream: aStream) setCount: aninteger
+</pre>
+<p>Segue la definizione del <em>factory method</em> in C++:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+<ins>#include &lt;memory&gt;</ins>
+
+class Verse {
+protected:
+  std::ostream&amp; stream_;
+public:
+  Verse(std::ostream&amp; stream) : stream_{stream} {}
+  virtual void sing() ...
+  <ins>static std::unique_ptr&lt;Verse&gt; verse(int i, std::ostream&amp; stream);</ins>
+};
+
+<ins>std::unique_ptr&lt;Verse&gt; Verse::verse(int i, std::ostream&amp; stream)
+{
+  if (i &lt;  0) return std::make_unique&lt;NegativeVerse&gt;(stream);
+  if (i == 0) return std::make_unique&lt;UltimateVerse&gt;(stream);
+  if (i == 1) return std::make_unique&lt;PenultimateVerse&gt;(stream);
+  return std::make_unique&lt;PrecedingVerse&gt;(i, stream);
+}</ins>
+</pre>
+<pre class="script">
+<strong>Singing a Verse</strong>
+
+The singing of a Verse is represented by a method, each line of which causes the singing of one line of the song. In the future, it may be wise to further objectify the solution by creating a family of Line objects which sing individual lines. At this time, however, the solution does not seem to require this flexibility.
+
+ Verse&gt; &gt;singVerse
+   self
+     bottlesOfBeerOnTheWall;
+     bottlesOfBeer;
+     takeOneDown;
+     nextVerseBottlesOfBeerOnTheWall
+</pre>
+<p>Cantare una strofa vuol dire cantarne i versi in sequenza:</p>
+<pre class="code">
+class Verse {
+  ...
+  static std::unique_ptr&lt;Verse&gt; verse(int i, std::ostream&amp; stream);
+  <ins>void sing_verse() {
+    bottles_of_beer_on_the_wall();
+    bottles_of_beer();
+    take_one_down();
+    next_verse_bottles_of_beer_on_the_wall();
+  }</ins>
+};
+</pre>
+<pre class="script">
+<strong>The First Line</strong>
+
+The first line is sung by singing the number of bottles, followed by "of bottles of beer on the wall".
+
+ Verse&gt;&gt;bottlesOfBeerOnTheWall
+   self countBottles.
+   stream
+   nextPutAll: ' of beer on the wall';
+   cr
+</pre>
+<p>Il primo verso canta il numero di bottiglie seguito da &ldquo;of beer on the wall&rdquo;:</p>
+<pre class="code">
+class Verse {
+  ...
+  void sing_verse() ...
+  <ins>void bottles_of_beer_on_the_wall() {
+   count_bottles();
+   stream_ &lt;&lt; &quot; of beer on the wall\n&quot;;
+  }</ins>
+};
+</pre>
+<pre class="script">
+The count of bottles of beer is sung by singing the number of bottles, followed by a space and the word "bottle", appropriately pluralized:
+
+ Verse&gt;&gt;countBottles
+   stream
+     nextPutAll: self bottleCountString;
+     space;
+     nextPutAll: self bottlesString
+</pre>
+<p>L'implementazione del metodo <span class="code">count_bottles</span> deve consentire di coprire le tre casistiche:</p>
+<ul>
+<li><strong>&laquo;N&raquo; bottles</strong>, per N&gt;1</li>
+<li><strong>1 bottle</strong>, per N=1</li>
+<li><strong>No bottle</strong>, per N=0</li>
+</ul>
+<p>Per questo si ricorre a due metodi virtuali:</p>
+<pre class="code">
+class Verse {
+  ...
+  void bottles_of_beer_on_the_wall() ...
+  <ins>void count_bottles() {
+    stream_ &lt;&lt; bottle_count_string(); // virtual call!
+    stream_ &lt;&lt; &quot; &quot;;
+    stream_ &lt;&lt; bottle_string(); // virtual call!
+  }</ins>
+};
+</pre>
+<pre class="script">
+The default implementation of bottleCountString prints the number of bottles in the receiver:
+
+ Verse&gt;&gt;bottleCountString
+   ^self count printString
+
+On the last verse, however, the word "No" is printed, rather than a number. This is represented by overriding bottleCountString in UltimateVerse:
+
+ UltimateVerse&gt;&gt;bottleCountString
+   ^'No'
+
+The pluralization of the word "bottle" is handled by implementing the default plural version in Verse, and overriding in PenultimateVerse:
+
+ Verse&gt;&gt;bottlesString
+   ^'bottles'
+
+ PenultimateVerse&gt;&gt;bottlesString
+   ^'bottle'
+</pre>
+<p>I metodi <span class="code">bottle_count_string</span> e <span class="code">bottle_string</span> vanno opportunamente definiti nella classe base. Il primo si appoggia ad un ulteriore metodo virtuale <span class="code">count</span> che ritorna il numero iniziale delle bottiglie della strofa; il secondo emette la parola &ldquo;bottles&rdquo; che può essere considerato a buon titolo il comportamento di default:</p>
+<pre class="code">
+class Verse {
+  ...
+  void count_bottles()...
+  <ins>virtual int count() = 0;
+  virtual std::string bottle_count_string() {
+    return std::to_string(count()); // virtual call!
+  }
+  virtual std::string bottle_string() { return &quot;bottles&quot;; }</ins>
+};
+</pre>
+<pre class="script">
+<strong>Counting and the Various Verses</strong>
+
+The count of bottles is explicitly represented by an instance variable in PrecedingVerse:
+
+ Verse
+ subclass: #PrecedingVerse
+ instanceVariableNames: 'count'
+ classVariableNames:
+ poolDictionaries: ''
+
+ PrecedingVerse&gt;&gt;setCount: aninteger
+   count := aninteger
+   PrecedingVerse&gt;&gt;count
+   ^count
+
+The other verses, subclasses of Verse with no additional instance variables, represent their counts implicitly in the accessing method for "count":
+
+ PenultimateVerse&gt;&gt;count
+   ^1
+
+ UltimateVerse&gt;&gt;count
+   ^0
+</pre>
+<p>Il numero delle bottiglie è memorizzato nel membro <span class="code">count_</span> in <span class="code">PrecedingVerse</span> (versi con N>1), mentre è cablato in <span class="code">PenultimateVerse</span> (N=1) e <span class="code">UltimateVerse</span> (N=0). Già che ci siamo conviene specializzare i metodi virtuali ove necessario:</p>
+<pre class="code">
+<ins>class PrecedingVerse : public Verse {
+  int count_;
+public:
+  PrecedingVerse(int count, std::ostream&amp; stream) : Verse{stream}, count_{count} {}
+  int count() override { return count_; }
+};
+
+class PenultimateVerse : public Verse {
+public:
+  PenultimateVerse(std::ostream&amp; stream) : Verse{stream} {}
+  int count() override { return 1; }
+  std::string bottle_string() override { return &quot;bottle&quot;; }
+};
+
+class UltimateVerse : public Verse {
+public:
+  UltimateVerse(std::ostream&amp; stream) : Verse{stream} {}
+  int count() override { return 0; }
+  std::string bottle_count_string() override { return &quot;No&quot;; }
+};</ins>
+</pre>
+<pre class="script">
+<strong>Succeeding Lines</strong>
+
+The second line is computed in much the same way as the first.
+
+ Verse&gt;&gt;bottlesOfBeer
+   self countBottles.
+   stream
+    nextPutAll: ' of beer';
+    cr
+
+The third line shows variation in both the last and second to last verses. All the other verses sing it with:
+
+ PrecedingVerse&gt;&gt;takeOneDown
+   stream
+     nextPutAll: 'Take one down and pass it around';
+     cr
+
+ PenultimateVerse&gt;&gt;takeOneDown
+   stream
+     nextPutAll: 'Take it down and pass it around';
+     cr
+
+ UltimateVerse&gt;&gt;takeOneDown
+   stream
+     nextPutAll: 'There are no more to pass
+     around';
+     cr
+</pre>
+<p>Il secondo verso si ottiene facilmente dal primo omettendo il finale:</p>
+<pre class="code">
+class Verse {
+  ...
+  virtual std::string bottle_string() ...
+  <ins>virtual void bottles_of_beer() {
+    count_bottles();
+    stream_ &lt;&lt; &quot; of beer\n&quot;;
+  }</ins>
+};
+</pre>
+<p>Il terzo verso va invece reso nelle varie declinazioni:</p>
+<pre class="code">
+class Verse {
+  ...
+  virtual void bottles_of_beer()...
+  <ins>virtual void take_one_down() = 0;</ins>
+};
+
+class PrecedingVerse : public Verse {
+  ...
+  int count() override { return count_; }
+  <ins>void take_one_down() override {
+    stream_ &lt;&lt; &quot;Take one down and pass it around\n&quot;;
+  }</ins>
+};
+
+class PenultimateVerse : public Verse {
+  ...
+  std::string bottle_string() override ...
+  <ins>void take_one_down() override {
+    stream_ &lt;&lt; &quot;Take it down and pass it around\n&quot;;
+  }</ins>
+};
+
+class UltimateVerse : public Verse {
+  ...
+  std::string bottle_count_string() override ...
+  <ins>void take_one_down() override {
+    stream_ &lt;&lt; &quot;There are no more to pass around\n&quot;;
+  }</ins>
+};
+</pre>
+<pre class="script">
+The final line is a bit strange. The last line of one verse is the same as the first line of the next, so the obvious implementation is to send "self nextVerse bottlesOfBeerOnTheWall".
+</pre>
+<p>Ecco l'osservazione chiave per cui la terz'ultima strofa, quella con N=2 può essere trattata come una di quelle che la precedono: non è lei a doversi preoccupare di emettere l'ultimo suo verso, se ne occuperà la strofa successiva!</p>
+<pre class="script">
+However, the result of sending nextVerse to an UltimateVerse is a NegativeVerse, which doesn't know how to bottlesOfBeerOnTheWall. We would either have to duplicate the code from UltimateVerse in NegativeVerse or somehow send a message back to the UltimateVerse. Instead, we explicitly encode the fact that the final two verses have the same last line by hiding it behind a concatenated message, nextVerseBottlesOfBeerOnTheWall. The default implementation is simple:
+
+ Verse&gt;&gt;nextVerseBottlesOfBeerOnTheWall
+   self nextVerse bottlesOfBeerOnTheWall
+
+ UltimateVerse overrides this to send itself the
+   message bottlesOfBeerOnTheWall:
+
+ UltimateVerse&gt;&gt;nextVerseBottlesOfBeerOnTheWall
+   self bottlesOfBeerOnTheWall
+</pre>
+<p>L'ultimo verso della una strofa viene ottenuto richiedendo il primo verso alla strofa che segue tranne che per l'ultima che lo emette autonomamente, identico al primo verso:</p>
+<pre class="code">
+class Verse {
+  ...
+  virtual void take_one_down() = 0;
+  <ins>virtual void next_verse_bottles_of_beer_on_the_wall() {
+    next_verse()-&gt;bottles_of_beer_on_the_wall();
+  }</ins>
+};
+
+class UltimateVerse : public Verse {
+  ...
+  void take_one_down() override ...
+  <ins>virtual void next_verse_bottles_of_beer_on_the_wall() {
+    bottles_of_beer_on_the_wall();
+  }</ins>
+};
+</pre>
+<pre class="script">
+<strong>Utilities</strong>
+
+Instances of the subclasses of Verse are created by passing along the Stream to be sung on. This is not public protocol, however, and is intended to be used only by the Verse class&gt;&gt;count:on: method.
+
+ Verse class&gt;&gt;Stream: aStream
+   ^self new setStream: aStream
+
+ Verse&gt;&gt;SetStream: aStream
+   stream:= aStream
+
+The next verse is computed by decrementing the count by one and sending it to the FactoryMethod in Verse:
+
+ Verse&gt;&gt;nextVerse
+   ^verse
+     count: self count - 1
+     stream: stream
+
+Finally, Verse provides a convenient Facade to sing any number of verses:
+
+ Verse class&gt;&gt;sing: aninteger
+   |writer|
+   writer := WriteStream on: String new.
+   (self
+     count: aninteger
+     stream: writer) sing.
+   ^writer contents
+</pre>
+<p>Mancano pochi dettagli: la generazione della strofa successiva, l'implementazione dei metodi virtuali puri in <span class="code">NegativeVerse</span> per renderla compilabile ed un metodo di utilità per ottenere il testo della canzone con un numero arbitrario di strofe:</p>
+<pre class="code">
+#include &lt;iostream&gt;
+#include &lt;memory&gt;
+<ins>#include &lt;sstream&gt;</ins>
+
+class Verse {
+  ...
+  virtual void next_verse_bottles_of_beer_on_the_wall() ...
+  <ins>std::unique_ptr&lt;Verse&gt; next_verse() {
+    return verse(count() - 1, stream_);
+  }
+  static std::string sing(int n) {
+    std::ostringstream oss;
+    verse(n, oss)->sing();
+    return oss.str();
+  }</ins>
+};
+
+class NegativeVerse : public Verse {
+public:
+  NegativeVerse(std::ostream&amp; stream) : Verse{stream} {}
+  void sing() override {};
+  <ins>int count() override { return -1; }
+  void take_one_down() override {}</ins>
+};
+
+...
+
+<ins>int main() {
+  std::cout &lt;&lt; Verse::sing(99);
+}</ins>
+</pre>
+<p>Il codice sorgente C++ è scaricabile da <a href="files/99-bottles/99-bottles.cpp">qui</a>.</p>
+<p>Beck prosegue con alcune considerazioni sulle prestazioni e una simpatica nota finale:</p>
+<pre class="script">
+<strong>Performance</strong>
+
+This program's use of a Stream for concatenation makes it generally efficient. Here is a performance profile run with Profile/V (you were just waiting for the commercial plug, weren't you) and gathered on the recursive call to Verse&gt;&gt;sing.
+
+100% (177) Verse&gt;&gt;sing ...
+88% (155) Verse&gt;&gt;SingVerse ...
+:31% (54) Verse&gt;&gt;nextVerseBottlesOfBeerOnTheWall ...
+: :25% (44) Verse&gt;&gt;bottlesOfBeerOnTheWall ...
+: : :20% (35) Verse&gt;&gt;CountBottles ...
+: : : :14% (25) Verse&gt;&gt;bottleCountString ...
+: :5% (8) Verse&gt;&gt;nextVerse
+:26% (46) Verse&gt;&gt;bottlesOfBeerOnTheWall ...
+: :20% (35) Verse&gt;&gt;countBottles ...
+: : :15% (26) Verse&gt;&gt;bottleCountString ...
+:22% (39) Verse&gt;&gt;bottlesOfBeer .. .
+: :18% (31) Verse&gt;&gt;countBottles .. .
+: : :10% (18) Verse&gt;&gt;bottleCountString ...
+:8% (15) Verse&gt;&gt;takeOneDown .. .
+10% (17) Verse&gt;&gt;nextVerse .. .
+
+NextVerse is redundantly computed twice, so its total of 15% could be cut in half. BottleCountString is computed three times, so its total could be cut from 39% to 13%. This could be further reduced by printing the bottle count directly on the stream, without creating an intermediate String.
+
+<strong>Final Comments</strong>
+
+With a bit of work, this program could be expanded to encompass a framework for singing repetitive songs of all kinds. At present, however, it stands as a monument to that sense of the ridiculous that is all that gets us through some times. Long may it wave.
+
+Kent Beck
+</pre>
+<h2>Conclusioni</h2>
+<p>L'introduzione oggetto-sentinella <span class="code">NegativeVerse</span> mi ha lasciato un po' perplesso, non facendo parte del dominio del problema. Potrebbe essere interessante verificare l'effetto che la sua eliminazione ha sul codice.</p>
+<p class="modification-notice">Pagina modificata il 30/08/2020</p>
+</body>
+</html>
