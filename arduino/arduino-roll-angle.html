@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Stima dell'angolo di rollio con Arduino</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-roll-angle.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#arduino-roll-angle">risorse</a> | stima dell'angolo di rollio con arduino</p>
+<h1>Stima dell'angolo di rollio con Arduino</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Un amico motociclista, venuto a conoscenza del progetto dell'<a href="arduino-mpu6050-oled.html">accelerometro grafico con Arduino</a> che sviluppai qualche anno fa, mi chiede se è possibile estenderlo per mostrare anche l'angolo di rollio, a quanto capisco un parametro chiave per giudicare lo stile di guida di un biker.</p>
+<h2>Primo approccio</h2>
+<p>Supponendo di montare l'accelerometro sulla motocicletta con l'asse x che punta verso la direzione di marcia, durante una piega a sinistra la ripartizione dell'accelerazione di gravità sui restanti due assi è indicata in figura:</p>
+<img src="img/arduino-roll-angle/forces.png">
+<p class="illustration">Relazione tra l'accelerazione di gravità e l'angolo di rollio (icona &ldquo;vespa&rdquo; di <a href="http://www.freepik.com/" title="Freepik">Freepik</a> scaricata da <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>).</p>
+<p>In arancio è evidenziato l'angolo di rollio &Phi; che si ricava facilmente con la formula:</p>
+<p class="formula">&Phi; = atan(g<sub>y</sub>/g<sub>z</sub>)</p>
+<p>Nella speranza che le cose si rivelino così semplici anche alla prova dei fatti, predispongo nuovamente il circuito dell'accelerometro, avendo cura questa volta di posizionare il sensore con l'asse x orientato verso il margine superiore del display; in questo modo l'angolo di rollio mostrato sul visore è consistente con la reale posizione assunta dal circuito:</p>
+<img src="img/arduino-roll-angle/wiring.png">
+<p class="illustration">La nuova disposizione dei componenti del circuito dell'accelerometro.</p>
+<img src="img/arduino-roll-angle/circuit.jpg">
+<p class="illustration">La realizzazione pratica del circuito.</p>
+<p>Lo sketch per questo primo esperimento è disponibile <a href="files/arduino-roll-angle/roll-angle-naive/roll-angle-naive.ino">qui</a>. Richiede l'installazione delle librerie <strong>MPU6050</strong> e <strong>SSD1306</strong> di Adafruit, rispettivamente per il supporto all'IMU e al display OLED. La logica è elementare: il programma interroga continuamente l'IMU e, dopo aver inoltrato sulla linea seriale i valori di accelerazione lineare e angolare acquisiti dal sensore, determina il valore dell'angolo di rollio e lo mostra sul display. Per comodità, nella parte inferiore del display sono riportati i valori minimo e massimo registrati fino a quel momento, ovvero la massima piega effettuata rispettivamente a sinistra e a destra. Per azzerare i due valori è sufficiente resettare la scheda col pulsante preposto. Due osservazioni:</p>
+<ul>
+<li>per qualche ragione che mi è ancora sconosciuta (potrebbe forse trattarsi dell'esaurimento della memoria RAM) l'uso della seriale impedisce alla libreria grafica di operare correttamente; per questo motivo ho inibito l'invio dei dati, che può tuttavia essere riattivata scommentando la riga:
+<pre class="code">// #define USE_SERIAL 1</pre>
+Tener presente che ciò può causare l'apparizione di strani artefatti sul display.</li>
+<li>la ricalibrazione del sensore mi ha permesso di valutare la deriva degli offset nel tempo:
+<table cellpadding="0" cellspacing="0">
+<tr><th></th><th>Dicembre 2017</th><th>Ottobre 2020</th></tr>
+<tr><td>Acc.x</td><td class="offset">-2574</td><td class="offset">-2609</td></tr>
+<tr><td>Acc.y</td><td class="offset">336</td><td class="offset">332</td></tr>
+<tr><td>Acc.z</td><td class="offset">1755</td><td class="offset">1822</td></tr>
+<tr><td>Gyr.x</td><td class="offset">N/A</td><td class="offset">51</td></tr>
+<tr><td>Gyr.y</td><td class="offset">N/A</td><td class="offset">-31</td></tr>
+<tr><td>Gyr.z</td><td class="offset">N/A</td><td class="offset">35</td></tr>
+</table>
+Si tratta di una variazione di qualche punto percentuale avvenuta nel corso di tre anni.</li>
+</ul>
+<h2>Prova su strada</h2>
+<p>Non disponendo di una motocicletta mi sono adattato e ho usato l'unica due ruote che possiedo: una bicicletta! La prova è suddivisa in due parti: dapprima, da fermo, inclino la bicicletta verso destra di circa 45°, la mantengo in posizione per un paio di secondi, poi ripeto la stessa operazione sul lato opposto; monto quindi in bici e percorro un tratto rettilineo di 50m (tratto <strong>1</strong>), quindi svolto rapidamente verso destra piegando il più possibile a coprire un arco di circa 60° (tratto <strong>2</strong>), quindi piego a sinistra per tornare sul rettilineo iniziale (tratto <strong>3</strong>) e giungere infine al punto di partenza (tratto <strong>4</strong>):</p>
+<img src="img/arduino-roll-angle/test-circuit.png">
+<p class="illustration">Il tracciato del percorso di prova.</p>
+<p>Ho caricato i dati raccolti dalla linea seriale in un foglio di calcolo e ho determinato l'andamento dell'angolo di rollio nel tempo, nella speranza di riuscire a distinguere le diverse fasi della prova su strada:</p>
+<img src="img/arduino-roll-angle/serial_20200916_roll.png">
+<p class="illustration">Andamento dell'angolo di rollio nel tempo.</p>
+<p>Si riconoscono chiaramente le inclinazioni iniziali, prima quella verso destra (angolo di rollio positivo), poi quella verso sinistra, entrambe vicine ai 40° e della durata approssimativa di 2 secondi. Il resto della traccia è caratterizzata da un livello di rumore tale da rendere impossibile l'individuazione delle quattro sezioni del test dinamico.</p>
+<p>Ecco il diagramma dell'andamento delle accelerazioni lineari, espresse in <em>g</em>:</p>
+<img src="img/arduino-roll-angle/serial_20200916_acc.png">
+<p class="illustration">Dati raccolti dall'accelerometro.</p>
+<p>I picchi che caratterizzano la parte centrale dell traccia dell'accelerazione lungo l'asse x (traccia <strong>acc.x</strong>, minuti 00:10&div;00:17) sono verosimilmente causati dalle pedalate effettuate sul rettilineo iniziale &mdash; tratto <strong>1</strong>; la parte seguente, ove questi si riducono di intensità (minuti 00:17&div;00:22), corrisponde alla sezione curvilinea del tracciato, durante la quale non ho pedalato &mdash; tratti <strong>2</strong> e <strong>3</strong>; i picchi ricompaiono in corrispondenza delle pedalate fatte sul rettilineo finale (minuti 00:23&div;00:30) &mdash; tratto <strong>4</strong>; infine, poco prima del termine della prova l'accelerazione scende sotto lo zero (minuti 00:30&div;00:32): è la frenata conclusiva.</p>
+<p>Sembra che l'idea di determinare l'angolo di rollio a partire dalle accelerazioni lineari funzioni solo a sensore fermo a causa del rumore che appare quando questo è in movimento. Ho provato ad applicare una forma primitiva di filtraggio delle alte frequenze (media mobile) senza tuttavia ottenere risultati qualitativamente migliori.</p>
+<p>Le accelerazioni angolari sono affette da altrettanto rumore?</p>
+<img src="img/arduino-roll-angle/serial_20200916_gyr.png">
+<p class="illustration">Dati raccolti dal giroscopio.</p>
+<p>Le tracce del grafico mostrano che i dati ottenuti dal giroscopio sono ben più stabili e di facilissima interpretazione. Analizzando ad esempio l'accelerazione angolare sull'asse x (traccia <strong>gyro.x</strong>), associata all'angolo di rollio, si riconoscono immediatamente le diverse fasi della prova su strada: i quattro evidenti picchi iniziali sono dovuti alle inclinazioni effettuate a bicicletta ferma &mdash; trattandosi di accelerazioni angolari ogni inclinazione genera due picchi, uno durante la discesa, uno durante la risalita. Al minuto 00:17 circa si può notare una nuova, breve inclinazione verso sinistra seguita immediatamente da una sensibilmente più ampia verso destra (minuti 00:18&div;00:21): è il tratto di percorso curvilineo.</p>
+<p>Queste considerazioni sono confermate dall'andamento dell'accelerazione angolare dell'asse z (traccia <strong>gyro.z</strong>), associata all'imbardata. Fin tanto che la bicicletta è ferma o procede in linea retta il valore rimane vicino allo zero; quando inizia la sterzata verso sinistra (tratto <strong>2</strong> del percorso) l'angolo di imbardata decresce &mdash; corretto: si sta effettuando una rotazione in senso antiorario rispetto all'asse z &mdash; per aumentare durante la percorrenza della curva verso destra (tratto <strong>3</strong>) e annullarsi sul rettilineo finale (tratto <strong>4</strong>).</p>
+<p>Individuate con un certo grado di precisione le quattro sezioni del percorso di prova sull'asse dei tempi, le riporto nel grafico dell'angolo di rollio iniziale nella speranza di evidenziare qualche particolare che mi è sfuggito:</p>
+<img src="img/arduino-roll-angle/serial_20200916_roll_sections.png">
+<p class="illustration">Stima dell'angolo di rollio rispetto alle sezioni del percorso di prova.</p>
+<p>Nemmeno la colorazione differenziata aiuta a caratterizzare i quattro tratti del percorso.</p>
+<p>Mi chiedo a questo punto se abbia più senso ricavare la stima dell'angolo di rollio dai dati del giroscopio. Decido di fare un ultimo tentativo prima di approfondire la questione in rete costruendo il grafico dell'integrale dell'accelerazione angolare <strong>gyro.x</strong>:</p>
+<img src="img/arduino-roll-angle/serial_20200916_integ_gyr_x.png">
+<p class="illustration">Stima dell'angolo di rollio come integrale del valore di accelerazione angolare.</p>
+<p>L'andamento è quello atteso: si riconoscono le inclinazioni iniziali e quelle effettuate sul tratto curvilineo del percorso, ma è presente anche una deriva inaccettabile, probabilmente dovuta alla presenza di un offset nel giroscopio o qualche altro effetto fisico di cui ignoro l'esistenza che l'integrazione nel tempo rende così evidente. È giunta l'ora di riporre Arduino e studiare un po'&hellip;</p>
+<h2>Il problema in letteratura</h2>
+<p>Una rapida ricerca nei forum di Arduino conferma che il problema è ben noto ed è stato affrontato più e più volte, ad esempio nel thread intitolato <a href="https://forum.arduino.cc/index.php?topic=626592.0">Calculate Angle with MPU6050</a> dove qualcuno suggerisce di approfondire il tema dei sistemi AHRS:</p>
+<blockquote>Sounds like you are looking for an AHRS (Attitude and Heading Reference System), which gives body orientation for flying models&hellip;</blockquote>
+<p>La stessa questione è affrontata anche su StackExchange; nella domanda <a href="https://arduino.stackexchange.com/questions/67470/a-proper-way-to-get-the-roll-pitch-and-yaw-values">A proper way to get the roll, pitch and yaw values</a>, un utente propone come possibile soluzione il <a href="https://en.wikipedia.org/wiki/Sensor_fusion">sensor fusion</a>:</p>
+<blockquote>Luckily, you can combine both imperfect measurements into a single, better orientation estimate using a sensor fusion algorithm.</blockquote>
+<p>Una soluzione alternativa molto gettonata è l'uso di un <a href="https://en.wikipedia.org/wiki/Kalman_filter">filtro di Kalman</a>; a titolo d'esempio cito l'articolo <a href="https://doi.org/10.1080/00423114.2018.1551554">Roll angle estimator based on angular rate measurements for bicycles</a>, a cura di Emilio Sanjurjo e altri.</p>
+<p>Su questo tema ritengo interessante la risposta dell'utente <a href="https://stackoverflow.com/users/87355/kersny">kersny</a> alla domanda <a href="https://stackoverflow.com/questions/1586658/combine-gyroscope-and-accelerometer-data">Combine Gyroscope and Accelerometer Data</a> su StackOverflow, che recita:</p>
+<blockquote>Kalman Filters are great and all, but I find the Complementary Filter much easier to implement with similar results.</blockquote>
+<p class="note"><strong>Nota:</strong> realizzo solo ora che nella scelta della soluzione finale sarà opportuno tener conto della ridotta potenza di calcolo di Arduino, considerata la complessità di alcuni degli algoritmi proposti.</p>
+<p>Con un po' di pazienza si trovano diverse soluzioni che si rifanno alla tecnica del sensor fusion:</p>
+<ul>
+<li>la pagina <a href="https://x-io.co.uk/open-source-imu-and-ahrs-algorithms/">Open source IMU and AHRS algorithms</a> contiene una ricchissima documentazione, oltre a diverse implementazioni, relative ad un algoritmo di sensor fusion che Sebastian Madgwick ha sviluppato per la sua tesi di dottorato all'università di Bristol;</li>
+<li>in <a href="https://sites.google.com/site/myimuestimationexperience/filters/complementary-filter">My IMU estimation experience</a> Harsh Vathsangam propone una soluzione che utilizza un <em>complementary filter</em>:
+<blockquote>Idea behind complementary filter is to take slow moving signals from accelerometer and fast moving signals from a gyroscope and combine them. [&hellip;] the idea is to pass the accelerometer signals through a low-pass filter and the gyroscope signals through a high-pass filter and combine them to give the final rate.</blockquote></li>
+<li>Joop Brokking descrive dettagliatamente una propria implementazione di sensor fusion, anch'essa basata su un complementary filter, in <a href="http://www.brokking.net/imu.html">MPU-6050 6dof IMU for auto-leveling multicopters</a>; l'articolo è corredato di due video esplicativi; vale la pena riportare l'opinione dell'autore circa l'utilizzo di un filtro di Kalman in questo contesto:
+<blockquote>Very often people ask me if they should use a Kalman fiter. My answer is always no. Never use something that you don't fully understand. In a nutshell, a Kalman filter is used to figure out the optimal combination between the gyro and the accelerometer to get the best result. And I can tell you from experience that the accelerometer is always unreliable due to the vibrations. So you only use the accelerometer to correct the drift of the gyro.</blockquote>
+L'implementazione di Brokking contiene un altro interessante spunto: l'autocalibrazione del sensore. Nell'ipotesi che all'accensione il sensore si trovi in una situazione stabile e immobile, il valor medio dei primi 2000 campionamenti viene utilizzato come stima degli offset che successivamente vengono sistematicamente sottratti dalle letture effettuate per la stima degli angoli durante il funzionamento normale del circuito;</li>
+<li>segnalo infine l'articolo <a href="https://pieter-jan.com/node/11">Reading a IMU Without Kalman: The Complementary Filter</a> di Jan Pieter che riassume efficacemente il problema e propone una soluzione in linea con quanto presentato nei riferimenti precedentemente citati.</li>
+</ul>
+<h2>Il Digital Motion Processor dell'MPU6050</h2>
+<p>Durante la ricerca sono incappato nella pagina <a href="https://mjwhite8119.github.io/Robots/mpu6050">The MPU6050 Explained</a> che spiega nel dettaglio il corretto utilizzo dell'IMU. Tra le altre cose viene citato il DMP interno al chip:</p>
+<blockquote>&hellip; The next step is to initialize the Digital Motion Processor (DMP). This is the MPU6050’s onboard processor that combines the data coming from the accelerometer and gyroscope.</blockquote>
+<p>Sembra dunque che all'interno dell'IMU si trovi un processore in grado di effettuare autonomamente qualche forma di sensor fusion ricombinando i dati prodotti dall'accelerometro con quelli provenienti dal giroscopio. Nel <a href="files/arduino-mpu6050/MPU-6000-Datasheet1.pdf">datasheet ufficiale</a> (copia locale) si legge:</p>
+<blockquote>The embedded Digital Motion Processor (DMP) is located within the MPU-60X0 and offloads computation of motion processing algorithms from the host processor. The DMP acquires data from accelerometers, gyroscopes, and additional 3rd party sensors such as magnetometers, and processes the data. The resulting data can be read from the DMP’s registers, or can be buffered in a FIFO.</blockquote>
+<p>Poter sfruttare questa caratteristica dell'MPU6050 permetterebbe di sgravare Arduino dal compito di elaborare i dati grezzi acquisiti dal sensore liberando risorse da utilizzare per altri scopi, ad esempio per offrire un'interfaccia utente più avanzata.</p>
+<p>Il documento tuttavia non spiega come comunicare con questa unità; nemmeno la <a href="files/arduino-mpu6050/MPU-6000-Register-Map1.pdf">mappa dei registri</a> (copia locale) contiene informazioni in merito. Fortunatamente la pagina che ho trovato è più che esaustiva: il DMP è un processore interno il cui firmware va caricato all'accensione; la comunicazione avviene attraverso l'uso di alcuni registri non documentati.</p>
+<p>La cosa sembra piuttosto complicata da ottenere ma Jeff Rowberg, l'autore della liberia <strong>I2Cdev</strong> ha predisposto tutto il necessario nel modulo <a href="https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050">MPU6050</a>. Attraverso l'uso di questo componente software inizializzare il processore e ricavare i dati da esso elaborati è un gioco da ragazzi.</p>
+<p class="note"><strong>NOTA:</strong> la carenza di informazioni sul corretto utilizzo del DMP è probabilmente dovuta al fatto che il produttore ha preferito concedersi la libertà di modificare le specifiche di funzionamento del processore senza dover sottostare al rispetto di un'API prestabilita.</p>
+<h2>Ricavare la misura dell'angolo di rollio dal DMP</h2>
+<p>Ho modificato lo sketch originale per ricavare l'angolo di rollio a partire dai dati generati dal DMP; ho dapprima copiato i file <strong>MPU6050.h</strong>, <strong>MPU6050.cpp</strong>, <strong>MPU6050_6Axis_MotionApps_V6_12.h</strong> e <strong>helper_3dmath.h</strong> del modulo MPU6050 nella cartella dello sketch. A questi ho aggiunto i due file <strong>I2Cdev.h</strong> e <strong>I2Cdev.cpp</strong> appartenenti al modulo <a href="https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/I2Cdev">I2Cdev</a>. Ho optato per una copia locale della libreria per evitare possibili conflitti con quella di Adafruit installata con il <em>Library Manager</em> dell'IDE di Arduino.</p>
+<p>Seguendo le istruzioni riportate nel ticket <a href="https://github.com/jrowberg/i2cdevlib/issues/424">Violation of one definition rule #424</a> ho successivamente modificato i file <strong>MPU6050.h</strong> e <strong>MPU6050_6Axis_MotionApps_V6_12.h</strong> per eliminare i warning emessi dal compilatore durante la compilazione dello sketch:</p>
+<pre class="code">
+[file MPU6050.h]
+
+private:
+    uint8_t devAddr;
+    uint8_t buffer[14];
+<del>#if defined(MPU6050_INCLUDE_DMP_MOTIONAPPS20) or defined(MPU6050_INCLUDE_DMP_MOTIONAPPS41)</del>
+    uint8_t *dmpPacketBuffer;
+    uint16_t dmpPacketSize;
+<del>#endif</del>
+</pre>
+<p class="illustration">Eliminazione delle direttive <span class="code">#if defined</span>/<span class="code">#endif</span>.</p>
+<pre class="code">
+[file MPU6050_6Axis_MotionApps_V6_12.h]
+
+uint8_t MPU6050::dmpGetGravity(int16_t *data, const uint8_t* packet) {
+    /* +1g corresponds to +8192, sensitivity is 2g. */
+    int16_t qI[4];
+    uint8_t status = dmpGetQuaternion(qI, packet);
+    data[0] = ((int32_t)qI[1] * qI[3] - (int32_t)qI[0] * qI[2]) / 16384;
+    data[1] = ((int32_t)qI[0] * qI[1] + (int32_t)qI[2] * qI[3]) / 16384;
+    data[2] = ((int32_t)qI[0] * qI[0] - (int32_t)qI[1] * qI[1]
+            - (int32_t)qI[2] * qI[2] + (int32_t)qI[3] * qI[3]) / (2 * 16384<ins>UL</ins>);
+    return status;
+}
+</pre>
+<p class="illustration">Aggiunta del suffisso <span class="code">UL</span> alla costante <span class="code">16384</span>.</p>
+<p>Lo sketch finale è di immediata comprensione. Vale tuttavia la pena soffermarsi sul frammento di codice che determina l'angolo di rollio a partire dai dati ricavati dal DMP: l'unità di calcolo interna all'MPU infatti non fornisce direttamente le misure degli angoli di rollio, beccheggio e imbardata ma un oggetto matematico equivalente, un <a href="https://en.wikipedia.org/wiki/Quaternion">quaternione</a>. I dati interesanti sono tuttavia facilmente ricavabili grazie ad una funzione ausiliaria presente sempre nella libreria sviluppata da Rowberg:</p>
+<pre class="code">
+    Quaternion q;
+    mpu.dmpGetQuaternion(&q, fifoBuffer);
+
+    VectorFloat gravity;
+    mpu.dmpGetGravity(&gravity, &q);
+
+    float ypr[3];
+    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+</pre>
+<p>L'archivio contenente l'intero sketch è disponibile <a href="files/arduino-roll-angle/roll-angle-dmp.7z">qui</a>.</p>
+<p>Dopo aver caricato la nuova versione del software sulla scheda ho ripercorso il circuito di prova. Il diagramma sottostante mostra l'andamento dei tre angoli caratteristici: l'imbardata (yaw), in blu, riferita alla scala di sinistra (&plusmn;180°), il beccheggio (pitch) e il rollio (roll), riferiti invece all'asse di destra (&plusmn;45°);</p>
+<img src="img/arduino-roll-angle/serial_20200921_ypr.png">
+<p class="illustration">Andamento delle angolazioni determinate dal modulo DMP del chip MPU6050.</p>
+<p>Lo sviluppo della traccia dell'angolo di rollio si decifra facilmente: si riconoscono le inclinazioni iniziali (la prima, quella verso destra, raggiunge quasi i 45° mentre quella verso sinistra supera di poco i 30°) quindi, a partire dal minuto 00:21 circa, si distingue una breve inclinazione verso destra seguita immediatamente da una più lunga e pronunciata verso sinistra: si tratta delle due sezioni curvilinee del percorso. Se si suddivide la traccia attribuendo ad ogni sezione il colore del tratto di percorso relativo come già fatto in precedenza per la stima ricavata dall'accelerometro si ottiene il seguente diagramma:</p>
+<img src="img/arduino-roll-angle/serial_20200921_roll_sections.png">
+<p class="illustration">Misura dell'angolo di rollio rispetto alle sezioni del percorso di prova.</p>
+<p>Applicando lo stesso principio alla traccia dell'angolo di imbardata si ottiene il grafico:</p>
+<img src="img/arduino-roll-angle/serial_20200921_yaw_sections.png">
+<p class="illustration">Misura dell'angolo di imbardata rispetto alle sezioni del percorso di prova.</p>
+<p>Fino al minuto 00:21, ovvero fin tanto che la bicicletta procede in linea retta, senza cambiare direzione, l'imbardata rimane pressoché costante; successivamente il grafico indica che durante il primo tratto curvilineo è stato percorso un arco di circa 60°; durante il tratto seguente, mentre si curva verso sinistra, l'orientamento della bicicletta è scende costantemente fino a -180°, valore che indica che si sta procedendo in senso inverso rispetto a quello di partenza. Lo strano picco che si nota al minuto 00:28 circa è dovuto al fatto che i valori di imbardata elaborati dalla libreria sono compresi nell'intervallo &plusmn;180°, quindi valori di poco inferiori a -180° vengono rappresentati come valori di poco inferiori a 180° (es. -181° &rarr; 179°). Il grafico va dunque &ldquo;visto&rdquo; in questo modo:</p>
+<img src="img/arduino-roll-angle/serial_20200921_yaw_adapted_sections.png">
+<p class="illustration">Misura dell'angolo di imbardata adattato sull'intervallo -240&div;120.</p>
+<h2>Conclusioni</h2>
+<p>Quanto è efficace ed affidabile il processore interno all'MPU6050? La pagina <a href="https://www.geekmomprojects.com/mpu-6050-redux-dmp-data-fusion-vs-complementary-filter/">MPU-6050 Redux: DMP Data Fusion vs. Complementary Filter</a> compara i risultati ottenuti dal DMP con quelli ricavati per mezzo di un complementary filter. Le conclusioni sono confortanti:</p>
+<blockquote> I don’t have any quantitative data showing which algorithm is better.  Qualitatively, however, I can say that for pitch (rotation about the X-axis) and roll (rotation about the Y-axis), the calculations are fairly close, but the complementary filter seems to consistently lag the DMP.  The DMP algorithm is able to calculate yaw, which the complementary filter cannot.  I suspect that when the algorithms differ, the DMP is more accurate, however it is possible that a better implementation of the complementary filter might be able to reduce some of the lag.</blockquote>
+<p class="modification-notice">Pagina modificata il 04/10/2020</p>
+</body>
+</html>
