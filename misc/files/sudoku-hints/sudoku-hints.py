@@ -121,6 +121,7 @@ def show_hint(board):
     hints = find_hints(board)
     if not hints:
         print('sorry, no help available')
+        return
     hint = random.sample(hints, 1)[0]
     print('{}{}{}'.format(hint.cell.row + 1, hint.cell.col + 1, hint.value))
 
