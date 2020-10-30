@@ -475,7 +475,7 @@ class Terminal:
 </pre>
 <p>Il programma in questo caso non emette alcun suggerimento. Non sono un esperto di Sudoku, ma immagino che lo schema contenga alcune ambiguità che vanno risolte scartando quelle che portano a situazioni inconsistenti.</p>
 <h2>Suggerimento a richiesta</h2>
-<p>Anziché mostrare i suggerimenti direttamente nello schema, è preferibile che sia l'utente a richiedere uno; il programma allora gliene propone uno a caso tra quelli disponibili.</p>
+<p>Anziché mostrare i suggerimenti direttamente nello schema, è preferibile che sia l'utente a richiederli; il programma allora gliene propone uno a caso tra quelli disponibili.</p>
 <p>Il primo intervento riguarda la visualizzazione del contenuto delle caselle:</p>
 <pre class="code">
 class Cell:
@@ -551,7 +551,7 @@ def find_lone_candidates(cells):
 <ins>def show_hint(board):
     hints = find_hints(board)
     if not hints:
-        print(&apos;sorry, no help available&apos;)
+        print(&apos;Sorry, no help available.&apos;)
         return
     hint = random.sample(hints, 1)[0]
     print(&apos;{}{}{}&apos;.format(hint.cell.row + 1, hint.cell.col + 1, hint.value))</ins>
