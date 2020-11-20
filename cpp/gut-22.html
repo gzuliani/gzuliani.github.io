@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Good Unit Tests /22</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gut">risorse</a> | good unit tests</p>
+<h1>Good Unit Tests /22</h1>
+<p>Questa parte (la ventiduesima; qui l'elenco delle <a href="gut.html#rif-1">precedenti</a>) affronta un problema che si presenta quando fallisce la comparazione tra due stringhe molto lunghe:</p>
+<pre class="code">
+Test on long strings: FAILED
+ example.cpp(79) : [error] s1 == s2 evaluates to "Lorem ipsum dolor sit amet, co
+nsectetur adipiscing elit. Aliquam suscipit dui a porttitor maximus." == "Lorem
+ipsum dolor sit amet, consectetur adipiscing elit. Aliquam suscipit dui a portit
+or maximus."
+</pre>
+<p>Non è semplice determinare il punto esatto in cui le due stringhe differiscono. Quando mi capita, copio la parte di messaggio che segue <span class="code">evaluates to</span> in un editor di testo, elimino i caratteri in eccesso e pongo le due stringhe su due righe separate; disattivo l'andata a capo automatica e scorrendo le due stringhe da sinistra a destra individuo finalmente la posizione in cui si trova il primo carattere discorde:</p>
+<pre class="code">
+... adipiscing elit. Aliquam suscipit dui a port<strong>t</strong>itor maximus.
+... adipiscing elit. Aliquam suscipit dui a port<strong>i</strong>tor maximus.
+</pre>
+<p>Perché non lasciare che sia Gut a farlo per me?</p>
+<h2>Implementazione</h2>
+<p>Il procedimento è banale: si cerca la posizione della prima mancata corrispondenza, dopodiché si stampa una sopra l'altra una sottostringa centrata su quella posizione per dare un po' di contesto; infine, nella riga sottostante si riporta un marcatore che evidenzi l'esatta posizione del carattere incriminato:</p>
+<pre class="code">
+first difference found at index 84:
+iscing elit. Aliquam suscipit dui a porttitor maximus.
+iscing elit. Aliquam suscipit dui a portitor maximus.
+----------------------------------------^
+
+</pre>
+<p>Poiché voglio poter abilitare la funzionalità alla bisogna, sfrutto un flag statico analogamente a quanto fatto per la <a href="gut-15.html">colorazione del testo nel terminale</a> e l'<a href="gut-19.html">attivazione del debugger</a> in caso d'errore:</p>
+<pre class="code">
+struct FirstDiffInStrings_ {};
+typedef StaticFlag&lt;FirstDiffInStrings_&gt; FirstDiffInStrings;
+    
+#define GUT_ENABLE_HIGHLIGHTFIRSTDIFFINSTRINGS \
+    gut::highlight::FirstDiffInStrings firstDiffInStrings_;
+</pre>
+<p>Al momento sono interessato ad applicare questa tecnica esclusivamente nel caso in cui fallisca un confronto diretto tra stringhe; la classe sui cui intervenire è perciò <span class="code">Equal</span>:</p>
+<pre class="code">
+template&lt;class T, class U&gt;
+struct Equal : public BinaryExpression&lt;T, U&gt; {
+    Equal(const T&amp; lhs, const U&amp; rhs) : BinaryExpression&lt;T, U&gt;(lhs, rhs) {}
+    virtual bool evaluate() const { return this-&gt;lhs_ == this-&gt;rhs_; }
+    virtual std::string getOpName() const { return "=="; }
+<ins>    virtual std::string toString() const {
+        using gut::toString;
+        return BinaryExpression&lt;T, U&gt;::toString()
+            + highlight::firstDiffInStrings(
+                toRawString(this-&gt;lhs_),
+                toRawString(this-&gt;rhs_));
+    }</ins>
+};
+</pre>
+<p>Ho sovrascritto il metodo virtuale <span class="code">toString</span> per accodare al testo standard quello che evidenzia il punto in cui le due stringhe oggetto del confronto differiscono. Notare che le stringhe confrontate non sono ottenute attraverso il metodo <span class="code">toString</span>, che spesso decora la rappresentazione testuale del valore passato (racchiudendo le stringhe tra virgolette, i <span class="code">char</span> tra apici, &hellip;). Per questa ragione ho introdotto il nuovo metodo <span class="code">toRawString</span> il cui scopo è quello di convertire un valore nella sua rappresentazione testuale più &ldquo;pura&rdquo;:</p>
+<pre class="code">
+template&lt;class T&gt;
+std::string toRawString(const T&amp;) {
+    return "";
+}
+        
+std::string toRawString(const std::string&amp; value) {
+    return value;
+}
+        
+std::string toRawString(const char* value) {
+    return value ? value : "";
+}
+</pre>
+<p>Fornendo specifiche implementazioni del metodo <span class="code">toRawString</span> la tecnica di evidenziazione delle differenze può essere applicata ai tipi definiti dall'utente più disparati per cui esista una rappresentazione testuale di qualche natura.</p>
+<p>Ecco infine l'implementazione della funzione <span class="code">firstDiffInStrings</span>. Le costanti <span class="code">prefixLength</span> e <span class="code">suffixLength</span> &mdash; che a ben guardare potrebbero diventare dei parametri &mdash; controllano il numero di caratteri mostrati rispettivamente prima e dopo la posizione della prima differenza:</p>
+<pre class="code">
+std::string firstDiffInStrings(
+    const std::string&amp; lhs, const std::string&amp; rhs)
+{
+    if (!highlight::FirstDiffInStrings::enabled())
+        return "";
+    
+    static const int prefixLength = 40;
+    static const int suffixLength = 32;
+
+    const auto diff = std::mismatch(
+        lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    if (diff.first == lhs.end() &amp;&amp; diff.second == rhs.end())
+        return "";
+    const int diffPos = static_cast&lt;nt&gt;(
+        (diff.first != lhs.end())
+            ? diff.first - lhs.begin()
+            : diff.second - rhs.begin());
+    const auto fragmentStartPos = std::max(0, diffPos - prefixLength);
+    const auto markerPos = std::min(diffPos, prefixLength);
+    const auto fragmentLength = markerPos + suffixLength;
+    
+    std::ostringstream os;
+    os
+        &lt;&lt; "\n"
+        &lt;&lt; "first difference found at index "
+        &lt;&lt; diffPos
+        &lt;&lt; ":\n"
+        &lt;&lt; lhs.substr(fragmentStartPos, fragmentLength)
+        &lt;&lt; "\n"
+        &lt;&lt; rhs.substr(fragmentStartPos, fragmentLength)
+        &lt;&lt; "\n"
+        &lt;&lt; std::string(markerPos, '-')
+        &lt;&lt; "^\n";
+    return os.str();
+}    
+</pre>
+<h2>Test</h2>
+<p>L'implementazione alla prova dei fatti:</p>
+<pre class="code">
+#include "gut.h"
+
+TEST("Test on long strings")
+{
+    GUT_ENABLE_HIGHLIGHTFIRSTDIFFINSTRINGS
+
+    std::string s1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit...";
+    std::string s2 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit...";
+
+	CHECK(s1 == s2);
+}
+
+/*
+ * output:
+ *
+ * Test on long strings: FAILED
+ * example.cpp(79) : [error] s1 == s2 evaluates to "Lorem ipsum dolor sit amet, co
+ * nsectetur adipiscing elit. Aliquam suscipit dui a porttitor maximus." == "Lorem
+ * ipsum dolor sit amet, consectetur adipiscing elit. Aliquam suscipit dui a portit
+ * or maximus."
+ * first difference found at index 84:
+ * iscing elit. Aliquam suscipit dui a porttitor maximus.
+ * iscing elit. Aliquam suscipit dui a portitor maximus.
+ * ----------------------------------------^
+ */
+</pre>
+<h2>Codice sorgente</h2>
+<p>Il codice è disponibile su GitHub. Il <em>commit</em> associato è <a href="https://github.com/gzuliani/gut/tree/0dbfc72cd44f10dbbeb09a5de07beefb7d2b1f39">0dbfc72</a>.</p>
+<p class="modification-notice">Pagina modificata il 20/11/2020</p>
+</body>
+</html>
