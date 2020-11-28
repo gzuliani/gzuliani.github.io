@@ -4,109 +4,48 @@
 <meta charset="utf-8"/>
 <title>Controllo di Arduino da Android via Bluetooth</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/arduino-android-bluetooth.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#arduino-android-bluetooth">risorse</a> | controllo di arduino da android via bluetooth</p>
 <h1>Controllo di Arduino da Android via Bluetooth</h1>
-<h2>Introduzione</h2>
-<!--
-
-HC-05
-
-va alimentato a 5V, ma le linee TX/RX funzionano a 3.3V.
-
-Pairing: chi dice che il pin è 0000, chi 1234 (su due datasheet diversi)
-
-Arduino riconosce il livello 3.3V sul suo RX, quindi non c'è bisogno di adattare quel segnale.
-La linea Arduino TX, che funziona a 5V, ha invece bisogno di essere abbassata ai 3.3V attesi dall'RX del modulo.
-
-------------------------------------------------------------------
-
-Secondo https://www.electronicwings.com/arduino/hc-05-bluetooth-module-interfacing-with-arduino-uno sembra basti un partitore:
-
- TX --------+
-            |
-           | |
-           | | 1K
-            |
-            +-------------- RX
-            |
-            |
-           | |
-           | | 2K
-            |
-           GND
-
-Non usano TX/RX di Arduino, ma i pin 2 come RX e 3 come TX:
-
-#include<SoftwareSerial.h>
-
-/* Create object named bt of the class SoftwareSerial */ 
-SoftwareSerial bt(2,3); /* (Rx,Tx) */	
-
-
-(SoftwareSerial è una dipendenza da scaricare!)
-------------------------------------------------------------------
-
-
-https://create.arduino.cc/projecthub/akshayjoseph666/interfacing-bluetooth-module-hc-05-with-arduino-uno-f5209b
-
-
-The HC-05 can operate in two modes. One is Data mode and other is AT command mode. When the enable pin is "LOW" the HC-05 is in Data Mode. If that pin set as "HIGH" the module is in AT command mode. Here we operate this module in Data Mode.
-
-
-[questi collegano direttamente RX/TX tra loro]
-
-
-------------------------------------------------------------------
-
-
-https://create.arduino.cc/projecthub/electropeak/getting-started-with-hc-05-bluetooth-module-arduino-e0ca81
-
-C05 module has an internal 3.3v regulator and that is why you can connect it to 5v voltage. But we strongly recommend 3.3V voltage, since the logic of HC05 serial communication pins is 3.3V. Supplying 5V to the module can cause damage to the module.
-
-In order to prevent the module from damages and make it work properly, you should use a resistance division circuit (5v to 3.3v ) between arduino TX pin and module RX pin.
-
-When master and slave are connected, blue and red LEDs on the board blink every 2seconds. If they aren’t connected, only blue one blinks every 2 seconds.
-
-[anche questi usano il partitore e le linee digitali 2 e 3 -> comodo perché lascia libera la seriale per debug]
-
-#include <SoftwareSerial.h> 
-SoftwareSerial MyBlue(2, 3); // RX | TX 
-
-il pin 2 direttamente sul TX, il 3 su RX con partitore 2200/1100
-
-
--------------------------------------------------
-
-questo sembra fatto bene:
-
-http://www.martyncurrey.com/arduino-with-hc-05-bluetooth-module-at-mode/
-
-
-1) sketch che fa da ponte tra PC e modulo. si lavora in modalità AT.
-
-2) sketch che riceve i comandi dal modulo bluetooth.
-
-
-=========================================================
-
-comincio col circuito.
-ho solo resistenze da 10K, faccio il partitore 10+10+10.
-5 * 2/3 = 3.33, ma se provo, e alimento il partitore coica 5.2V che Arduino eroga,
-arrivo a 3.4. Pericoloso? Sembra di no, in rete ci sono varie implementazioni che usano
-questi valori (1K/2K) o simili (10K/4.7K). Ricordarsi di impostare il pin in uscita il più
-presto possibile!
-Sarebbe meglio 1K/2K per diminuire l'impedenza e distorcere il meno possibile i fronti del segnale.
-(ma posso vedere con l'oscilloscopio il segnale con carico vs a vuoto)
-
-passo 2: configurare il modulo coi comandi AT.
-si aspetta 38400, con a-capo CR+LF.
-Posso usare il serial monitor di Arduino dopo aver programmato arduino per fare da ponte.
-
-sketch:
-
-#include <SoftwareSerial.h>
+<p>Un amico ha sviluppato un dispositivo elettronico basato su Arduino come ausilio per una particolare lavorazione in un'officina meccanica. Per comodità vorrebbe poterlo comandare da remoto via Bluetooth da un terminale Android. Mi ha gentilmente donato un modulo Bluetooth HC-05 per poter fare le prove del caso.</p>
+<p>Esistono diverse guide in rete che spiegano come impiegare questo componente con Arduino, ma non ne ho trovata nessuna comprensiva. Per questa ragione ho raccolto in questa pagina alcuni appunti in merito:</p>
+<ul>
+  <li><a href="#wiring">collegamenti elettrici</a>;</li>
+  <li><a href="#hc05-programming">programmazione del modulo HC-05</a>;</li>
+  <li><a href="#hc05-usage">connessione Arduino/HC-05</a>;</li>
+  <li><a href="#bt-remote">App Android per il controllo remoto</a> (prototipo).</li>
+</ul>
+<a name="wiring"></a>
+<h2>Collegamenti elettrici</h2>
+<p>Prima di collegare il modulo HC-05 ad Arduino bisogna tener presente che la tensione di lavoro delle linee <span class="code">TX</span> e <span class="code">RX</span> del primo è di 3.3V, mentre il secondo adotta lo standard 5V (livello, questo, adeguato per l'alimentazione del modulo HC-05 grazie al regolatore di tensione di cui è dotato).</p>
+<p>Secondo quanto riportato nella documentazione ufficiale il microcontrollore di Arduino &mdash; ATmega328 &mdash; riconosce come livello alto qualunque tensione al di sopra dei 3V, per esempio in <a href="https://www.arduino.cc/reference/en/language/variables/constants/constants/">Defining Pin Levels: HIGH and LOW</a> si legge:</p>
+<blockquote>&hellip; the Arduino (ATmega) will report <span class="code">HIGH</span> if a voltage greater than 3.0V is present at the pin (5V boards)&hellip;</blockquote>
+<p>Per questa ragione la linea <span class="code">TX</span> del modulo HC-05 può essere direttamente connessa ad un ingresso digitale di Arduino, per esempio la porta <span class="code">D3</span>. Per quanto riguarda invece la linea <span class="code">RX</span>, la documentazione parla chiaro (cfr. pag.2 in <a href="files/arduino-android-bluetooth/EGBT-045MS-046S Bluetooth Module Manual rev 1r0.pdf">EGBT-045MS-046S Bluetooth Module Manual rev 1r0.pdf</a> &mdash; copia locale):</p>
+<blockquote>EGBT RXD and inputs, however, are not 5V tolerant, and can be damaged by 5V level logic going in.</blockquote>
+<p>Lo stesso datasheet appena citato consiglia di interporre tra Arduino e l'HC-05 un circuito d'interfaccia che utilizza un diodo Zener come protezione del modulo Bluetooth. Per queste prime prove ho optato per un approccio più semplice, predisponendo un partitore di tensione utilizzando tre resitori da 10K&ohm; per ridurre i 5V emessi da Arduino di due terzi, portandoli a poco più di 3.3V:</p>
+<img src="img/arduino-android-bluetooth/schematic.png">
+<p class="illustration">Lo schema elettrico</p>
+<img src="img/arduino-android-bluetooth/wiring-diagram.png">
+<p class="illustration">Il cablaggio del circuito</p>
+<img src="img/arduino-android-bluetooth/circuit.jpg">
+<p class="illustration">Realizzazione pratica del circuito</p>
+<a name="hc05-programming"></a>
+<h2>Programmazione del modulo HC-05</h2>
+<p>La scelta di usare le porte <span class="code">D2</span> e <span class="code">D3</span> di Arduino per stabilire il collegamento seriale con il modulo HC-05 anzicé le più usuali <span class="code">D0/RX</span> e <span class="code">D1/TX</span>  non è casuale: così facendo la linea seriale standard di Arduino può essere sfruttata per collegare la scheda al PC. Diventa così possibile utilizzare Arduino come ponte per accedere al modulo HC-05 dall Serial Monitor dell'IDE di Arduino (o qualunque altro terminale seriale, in verità). Questo permette di configurare al meglio il modulo per l'uso che se ne farà in seguito, quando sarà Arduino ad utilizzarlo per i suoi scopi. Secondo quanto riportato in rete, la configurazione standard del modulo Bluetooth è la seguente:</p>
+<ul>
+  <li><strong>Baud rate</strong>: 9600</li>
+  <li><strong>Data bits</strong>: 8</li>
+  <li><strong>Stop bits</strong>: 1</li>
+  <li><strong>Parity</strong>: None</li>
+  <li><strong>Device name</strong>: HC-05</li>
+  <li><strong>Device mode</strong>: Slave</li>
+  <li><strong>Passkey</strong>: 0000 o 1234</li>
+</ul>
+<p>Conviene comunque accertarsi dello stato interno del modulo per evitare inutili perdite di tempo in caso di malfunzionamenti. Per farlo bisogna innanzitutto porre l'HC-05 in <em>Command Mode</em>, modalità nella quale è possibile alterare la configurazione del modulo mediante l'invio di comandi AT. Per attivare il Command Mode è sufficiente tener premuto il piccolo pulsante che si trova nei pressi del connettore durante l'accensione (il led rosso a bordo emette un lampeggio ogni due secondi per segnalare che il modulo è Command Mode). In questa modalità il modulo comunica esclusivamente a 38400 Baud. Ho preparato uno sketch che mette in comunicazione PC e modulo HC-05:</p>
+<pre class="code">
+#include &lt;SoftwareSerial.h&gt;
 
 const int tx_pin = 2; // pin connected to RXD
 const int rx_pin = 3; // pin connected to TXD
@@ -137,71 +76,69 @@ void loop() {
   while (Serial.available())
     hc05_serial.write(Serial.read());
 }
-
-
-(SoftwareSerial non serve scaricarla, è inclusa nell'IDE).
-
-Caricare lo sketch su Arduino.
-Spegnere, riaccendere tenendo premuto il tasto del l'HC-05. (il led rosso deve lampeggiare)
-aprire il serial monitor, impostarlo a 9600, "Both NL & CR"
-inviare i caratteri "AT", si ottiene
-
+</pre>
+<p class="illustration">Scarica lo sketch <a href="files/arduino-android-bluetooth/pc-hc05-bridge.ino">pc-hc05-bridge.ino</a></p>
+<p>Il diagramma sottostante riassume quanto realizzato finora:</p>
+<img src="img/arduino-android-bluetooth/serial-bridge.png">
+<p class="illustration">Programmazione del componente HC-05</p>
+<p>L'elenco dei comandi AT riconosciuti dal modulo HC-05 è riportato nel manuale sopra citato. Pochi comandi son bastati per confermare che lo stato interno del modulo a mia disposizione è più che soddisfacente e non necessita di interventi. Ho iniziato con un semplice comando AT per verificare l'avvenuta connessione:</p>
+<pre class="code">
+<strong>AT</strong>
 OK
-
-(consultare il manuale HC-05-ITead.pdf per i comandi supportati)
-
-
-AT+VERSION?
-
+</pre>
+<p>A seguire un'interrogazione circa la versione del firmware interno:</p>
+<pre class="code">
+<strong>AT+VERSION?</strong>
 +VERSION:4.0-20190815
 OK
-
-
-AT+NAME?
-
+</pre>
+<p>È il momento del nome assegnato al dispositivo:</p>
+<pre class="code">
+<strong>AT+NAME?</strong>
 +NAME:HC-05
 OK
-
-
-AT+ROLE?
-
+</pre>
+<p>Ora il ruolo assunto dal modulo:</p>
+<pre class="code">
+<strong>AT+ROLE?</strong>
 +ROLE:0
 OK
-
-0=SLAVE, 1=MASTER, 2=SLAVE-LOOP
-
-Qual'è il PIN?
-
-AT+PSWD?
-
+</pre>
+<p>La documentazione ufficiale riporta la corrispondenza 0=<em>Slave</em>, 1=<em>Master</em>, 2=<em>Slave-</em>Loop; il modulo è dunque programmato come Slave. Qual'è il PIN per il pairing?</p>
+<pre class="code">
+<strong>AT+PSWD?</strong>
 +PSWD:1234
 OK
-
-Setup seriale?
-AT+UART?
-
+</pre>
+<p>Infine, la velocità di comunicazione della linea seriale:</p>
+<pre class="code">
+<strong>AT+UART?</strong>
 +UART:9600,0,0
-OK
-
-
-Tutto in linea con quanto riportato nel manuale "EGBT-045MS-046S Bluetooth Module Manual rev 1r0.pdf"
-Il modulo è ok. si può procedere col terzo passo.
-
-
-
-Prima lo verifico sulla seriale normale, poi mi sposto su quella dell'HC-05.
-
-Ok col prototipo comandato da Serial Monitor:
-
-
-#include <SoftwareSerial.h>
+OK 
+</pre>
+<p>Questa non è la velocità con cui il modulo sta comunicando in questo preciso momento &mdash; essendo l'HC-05 in modalità Command la linea seriale con Arduino sta funzionando a 38400 Baud &mdash; ma quella che utilizzerà durante il funzionamento normale.</p>
+<p><strong>Attenzione!</strong> In modalità <em>Command</em> il modulo si attende, come marcatore di fine linea, la sequenza di caratteri CR+LF. Se si intende usare il Serial Monitor dell'IDE di Arduino accertarsi che nella casella combinata in basso a destra sia evidenziato &ldquo;Both NL & CR&rdquo; mentre in quella accanto, che mostra la la velocità di comunicazione, sia indicato &ldquo;9600&rdquo; (essendo questa la velocità cui è stato impostato l'oggetto <span class="code">Serial</span> dello sketch appena caricato su Arduino).</p>
+<a name="hc05-usage"></a>
+<h2>Connessione Arduino/HC-05</h2>
+<p>Noti i parametri di funzionamento del modulo HC-05 in modalità normale &mdash; detta anche <em>Data Mode</em> &mdash;, è giunta l'ora di inventare un semplice protocollo per mettere alla prova l'intera infrastruttura, secondo lo schema:</p>
+<img src="img/arduino-android-bluetooth/serial-bluetooth.png">
+<p class="illustration">Comunicazione tra Arduino e terminale Android</p>
+<p>In un eccesso di fantasia ho definito protocollo con tre semplici comandi:</p>
+<ul>
+  <li>quando Arduino riceve il carattere <strong><span class="code">1</span></strong> accende il LED di bordo;</li>
+  <li>quando Arduino riceve il carattere <strong><span class="code">2</span></strong> spegne il LED di bordo;</li>
+  <li>quando Arduino riceve il carattere <strong><span class="code">3</span></strong> fa lampeggiare il LED di bordo.</li>
+</ul>
+<p>Il vantaggio di vedere il canale Bluetooth come una seriale consente di sviluppare il software per Arduino emulando la parte remota con il Serial Monitor, sostituendo temporaneamente la seriale <span class="code">hc05_serial</span> con l'oggetto <span class="code">Serial</span>. Lo sketch finale si ottiene dal precedente con poche isolate modifiche:</p>
+<pre class="code">
+#include &lt;SoftwareSerial.h&gt;
 
 const int tx_pin = 2; // pin connected to RXD
 const int rx_pin = 3; // pin connected to TXD
 
 SoftwareSerial hc05_serial(rx_pin, tx_pin);
 
-bool blink = false;
+<ins>bool blink = false;</ins>
 
 void setup() {
   // open PC serial
@@ -213,24 +150,23 @@ void setup() {
   Serial.println(" ");
 
   // open HC-05 serial
-  hc05_serial.begin(38400);
+  hc05_serial.begin(<del>38400</del><ins>9600</ins>); // &lt;----- Data Mode Baud Rate
   Serial.println("Hc05Serial ready");
   Serial.println(" ");
 
-  pinMode(LED_BUILTIN, OUTPUT);
+  <ins>pinMode(LED_BUILTIN, OUTPUT);</ins>
 }
 
 void loop() {
-  /*
-  // forward incoming HC-05 data to PC
-  while (hc05_serial.available())
-    Serial.write(hc05_serial.read());
+  <del>// forward incoming HC-05 data to PC</del>
+  <del>while (hc05_serial.available())</del>
+    <del>Serial.write(hc05_serial.read());</del>
 
-  // forward incoming PC data to HC-05
-  while (Serial.available())
-    hc05_serial.write(Serial.read());
-  */
-  if (Serial.available()) {
+  <del>// forward incoming PC data to HC-05</del>
+  <del>while (Serial.available())</del>
+    <del>hc05_serial.write(Serial.read());</del>
+
+<ins>  if (Serial.available()) {
     switch (Serial.read()) {
       case '1':
         blink = false;
@@ -252,123 +188,31 @@ void loop() {
     delay(250);
     digitalWrite(LED_BUILTIN, LOW);
   }
-  delay(250);
+  delay(250);</ins>
 }
-
-
-'1': accende led
-'2': spegne led
-'3': lo fa lampeggiare
-
-cambiare la seriale di controllo, spegnere e riaccendere per mettere HC-05 in modalità dati.
-
-
-#include <SoftwareSerial.h>
-
-const int tx_pin = 2; // pin connected to RXD
-const int rx_pin = 3; // pin connected to TXD
-
-SoftwareSerial hc05_serial(rx_pin, tx_pin);
-
-bool blink = false;
-
-void setup() {
-  // open PC serial
-  Serial.begin(9600);
-  Serial.print("Sketch: ");
-  Serial.println(__FILE__);
-  Serial.print("Uploaded: ");
-  Serial.println(__DATE__);
-  Serial.println(" ");
-
-  // open HC-05 serial
-  hc05_serial.begin(38400);
-  Serial.println("Hc05Serial ready");
-  Serial.println(" ");
-
-  pinMode(LED_BUILTIN, OUTPUT);
-}
-
-void loop() {
-  /*
-  // forward incoming HC-05 data to PC
-  while (hc05_serial.available())
-    Serial.write(hc05_serial.read());
-
-  // forward incoming PC data to HC-05
-  while (Serial.available())
-    hc05_serial.write(Serial.read());
-  */
-  if (hc05_serial.available()) {
-    int c = hc05_serial.read();
-    Serial.write(c);
-    switch (c) {
-      case '1':
-        blink = false;
-        digitalWrite(LED_BUILTIN, HIGH);
-        break;
-      case '2':
-        blink = false;
-        digitalWrite(LED_BUILTIN, LOW);
-        break;
-      case '3':
-        blink = true;
-        break;
-      default:
-        break;
-    }
-  }
-  if (blink) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(250);
-    digitalWrite(LED_BUILTIN, LOW);
-  }
-  delay(250);
-}
-
-
-Accoppiare l'HC-05 col telefono, far partire l'app prototipo e provare...
-
-Il dispositivo si connette, lo vedo
-(led rosso lampeggia veloce quando disconnesso, spento quando connesso)
-i comandi però non hanno effetto. problemi di configurazione della seriale?
-
-Potrebbe essere, sul serial monitor appaiono i caratteri x⸮⸮
-
-No, è la seriale verso il modulo che deve passare da 38400 a 9600!!
-
-...
-  Serial.println(" ");
-
-  // open HC-05 serial
-  hc05_serial.begin(38400); <------------------ 9600
-  Serial.println("Hc05Serial ready");
-...
-
-
-
-FUNZIONA!!!
-
-
-repository App: https://github.com/gzuliani/bt-remote
--->
-<img src="img/arduino-android-bluetooth/wiring-diagram.png">
-<p class="illustration">Lo schema elettrico</p>
-<img src="img/arduino-android-bluetooth/schematic.png">
-<p class="illustration">Il cablaggio del circuito</p>
-<img src="img/arduino-android-bluetooth/circuit.jpg">
-<p class="illustration">Realizzazione pratica del circuito</p>
-
-
-<img src="img/arduino-android-bluetooth/serial-bridge.png">
-<p class="illustration">Programmazione del componente HC-05</p>
-<img src="img/arduino-android-bluetooth/serial-bluetooth.png">
-<p class="illustration">Comunicazione tra Arduino e terminale Android</p>
-
-
+</pre>  
+<p class="illustration">Scarica lo sketch <a href="files/arduino-android-bluetooth/bt-remote.ino">bt-remote.ino</a></p>
+<a name="bt-remote"></a>
+<h2>App Android per il controllo remoto di Arduino</h2>
+<p>Nel Play Store esistono moltissime App utilizzabili come telecomandi Bluetooth, alcune di esse caratterizzate da un altissimo grado di configurabilità. Avendo tuttavia già a portata di mano una classe Java che modella una connessione Bluetooth di tipo seriale, sviluppata anni or sono per un progetto poi naufragato, ho preferito imbastire una semplicissima App che permette dapprima di selezionare un dispositivo Bluetooth tra quelli già accoppiati con il terminale, quindi di aprire una connessione e inviare i tre comandi del protocollo al dispositivo prescelto per mezzo di tre pulsanti:</p>
+<table class="slideshow">
+<tr>
+<td><img src="img/arduino-android-bluetooth/select-device-small.png"></td>
+<td>&rarr;</td>
+<td><img src="img/arduino-android-bluetooth/control-device-connect-small.png"></td>
+<td>&rarr;</td>
+<td><img src="img/arduino-android-bluetooth/control-device-small.png"></td>
+</tr>
+</table>
+<p>Il codice sorgente dell'App <strong>Bt Remote</strong> è disponibile su <a href="https://github.com/gzuliani/bt-remote">GitHub</a>.</p>
+<h2>Test del sistema</h2>
+<p>Ho catturato in un filmato una delle prove andate a buon fine:</p>
 <video width="600" controls>
- <source src="img/arduino-android-bluetooth/20201125_212159.mp4" type="video/mp4">
+<source src="img/arduino-android-bluetooth/20201125_212159.mp4" type="video/mp4">
 </video>
-<p class="modification-notice">Pagina modificata il 25/11/2020</p>
+<p class="illustration">Verifica del buon funzionamento del controllo remoto</p>
+<h2>Conclusioni</h2>
+<p>La comunicazione tra il terminale Android e la scheda Arduino è al momento unidirezionale; nulla vieta tuttavia di estendere il protocollo rendendo la trasmissione bidirezionale. Si potrebbe ad esempio fare in modo che Arduino emetta un responso che indica l'esito dell'esecuzione dell'ultimo comando ricevuto (pattern <em>request</em>/<em>response</em>), ovvero introdurre un nuovo comando che interroga la scheda per ottenere alcune informazioni circa il suo stato interno.</p>
+<p class="modification-notice">Pagina modificata il 28/11/2020</p>
 </body>
 </html>
