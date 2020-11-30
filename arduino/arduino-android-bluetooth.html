@@ -9,7 +9,8 @@
 <body>
 <p class="page-path"><a href="../index.html#arduino-android-bluetooth">risorse</a> | controllo di arduino da android via bluetooth</p>
 <h1>Controllo di Arduino da Android via Bluetooth</h1>
-<p>Un amico ha sviluppato un dispositivo elettronico basato su Arduino come ausilio per una particolare lavorazione in un'officina meccanica. Per comodità vorrebbe poterlo comandare da remoto via Bluetooth da un terminale Android. Mi ha gentilmente donato un modulo Bluetooth HC-05 per poter fare le prove del caso.</p>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p>Un amico ha sviluppato un dispositivo elettronico basato su Arduino per semplificare una particolare lavorazione in un'officina meccanica. Per comodità vorrebbe comandarlo da remoto via Bluetooth da un terminale Android. Mi ha gentilmente donato un modulo Bluetooth HC-05 per fare le prove del caso.</p>
 <p>Esistono diverse guide in rete che spiegano come impiegare questo componente con Arduino, ma non ne ho trovata nessuna comprensiva. Per questa ragione ho raccolto in questa pagina alcuni appunti in merito:</p>
 <ul>
   <li><a href="#wiring">collegamenti elettrici</a>;</li>
@@ -27,6 +28,7 @@
 <p>Lo stesso datasheet appena citato consiglia di interporre tra Arduino e l'HC-05 un circuito d'interfaccia che utilizza un diodo Zener come protezione del modulo Bluetooth. Per queste prime prove ho optato per un approccio più semplice, predisponendo un partitore di tensione utilizzando tre resitori da 10K&ohm; per ridurre i 5V emessi da Arduino di due terzi, portandoli a poco più di 3.3V:</p>
 <img src="img/arduino-android-bluetooth/schematic.png">
 <p class="illustration">Lo schema elettrico</p>
+<p class="note">Sarebbe opportuno dimensionare il partitore in modo da ricondurre i 5V erogati da Arduino al di sotto della soglia dei 3.3V, utilizzando ad esempio una coppia di resistori da 1.2K&ohm; e 2.2K&ohm; rispettivamente che, in condizioni ideali, portano i 5V nominali al di sotto dei 3.24V. Nella scelta dei valori di resistenza andrebbe poi considerato pure l'effetto distorsivo introdotto dal filtro passa basso originato dai resistori del partitore unitamente alla capacità parassita del pin <span class="code">RX</span> del modulo Bluetooth. Ho deciso di trascurare quest'ultimo aspetto perché le frequenze in gioco in questo caso sono molto basse (la trasmissione seriale avverrà a 9600 Baud).</p>
 <img src="img/arduino-android-bluetooth/wiring-diagram.png">
 <p class="illustration">Il cablaggio del circuito</p>
 <img src="img/arduino-android-bluetooth/circuit.jpg">
