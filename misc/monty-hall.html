@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Paradosso delle tre porte</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#monty-hall">risorse</a> | paradosso delle tre porte</p>
+<h1>Paradosso delle tre porte</h1>
+<blockquote>Supponi di partecipare a un gioco a premi, in cui puoi scegliere fra tre porte: dietro una di esse c'è un'automobile, dietro le altre, capre. Scegli una porta, diciamo la numero 1, e il conduttore del gioco a premi, che sa cosa si nasconde dietro ciascuna porta, ne apre un'altra, diciamo la 3, rivelando una capra. Quindi ti domanda: "Vorresti scegliere la numero 2?" Ti conviene cambiare la tua scelta originale?</blockquote>
+<p class="illustration">Dalla pagina <a href="https://it.wikipedia.org/wiki/Problema_di_Monty_Hall">Problema di Monty Hall</a> di Wikipedia.</p>
+<p>Per quanto possa apparire controintuitivo la risposta è affermativa, cambiare la scelta originale raddoppia le probabilità di vincita. La pagina di Wikipedia ne spiega nel dettaglio le ragioni, qui l'idea è di simulare il gioco e verificare sperimentalmente i risultati teorici.</p>
+<h2>Il conduttore sa cosa c'è dietro le porte</h2>
+<p>Se il conduttore sa dove si nasconde l'auto lo svolgimento del gioco è il seguente:</p>
+<img src="img/monty-hall/sequence-diagram.png">
+<p>Il primo passo è modellare le porte:</p>
+<pre class="code">
+CAR = "the car"
+GOAT = "a goat"
+    
+    
+class Doors:
+    
+    def __init__(self, car):
+        self.car = car
+        self.num = range(3)
+    
+    def open(self, index):
+        return CAR if index == self.car else GOAT    
+</pre>
+<p><span class="code">car</span> indica la porta che nasconde l'auto, <span class="code">num</span> una variabile di comodo che contiene l'elenco del numero delle porte per evitare di inquinare il codice di &laquo;<span class="code">range(3)</span>&raquo;.</p>
+<p>L'oggetto <span class="code">Game</span> è in realtà una funzione:</p>
+<pre class="code">
+import random
+
+...
+
+def play():
+    doors = Doors(random.randint(0, 2))
+    contestant = NaiveContestant()
+    host = Host()
+    return host.start_game(doors, contestant)
+</pre>
+<p>Il programma principale invoca la funzione <span class="code">play</span> per un certo numero di volte per stimare le probabilità di vittoria per il <span class="code">contestant</span> prescelto &mdash; <span class="code">Naive</span>, per cominciare:</p>
+<pre class="code">
+if __name__ == "__main__":
+    GAMES = 1000
+    wins = sum(1 for x in range(GAMES) if play() == CAR)
+    print("{} wins on {} games ({:.1f}%)".format(
+        wins, GAMES, wins * 100. / GAMES))
+</pre>
+<p>Veniamo al conduttore &mdash; <span class="code">Host</span> &mdash; che segue un copione ben preciso:</p>
+<pre class="code">
+class Host:
+
+    def start_game(self, doors, contestant):
+        print("H: Pick a door...")
+        initial_choice = contestant.make_initial_choice()
+        my_door = self.choose_a_door(doors, initial_choice)
+        prize_behind_my_door = doors.open(my_door)
+        assert(prize_behind_my_door != CAR)
+        print("H: Behind door number {} there's... {}!".format(
+            my_door + 1, prize_behind_my_door))
+        option = [x for x in doors.num if x not in [initial_choice, my_door]][0]
+        print("H: Do you want to pick door number {}?".format(option + 1))
+        final_choice = contestant.make_final_choice(option)
+        if final_choice == initial_choice:
+            print("H: You keep door number {}...".format(final_choice + 1))
+        else:
+            print("H: You choose door number {}...".format(final_choice + 1))
+        prize = doors.open(final_choice)
+        print("H: You won... {}!".format(prize))
+        return prize
+
+    def choose_a_door(self, doors, initial_choice):
+        unfit_doors = [initial_choice, doors.car]
+        suitable_doors = [x for x in doors.num if x not in unfit_doors]
+        return random.choice(suitable_doors)
+</pre>
+<p>Il metodo <span class="code">start_game</span> ricalca fedelmente lo svolgersi del gioco. Il metodo <span class="code">choose_a_door</span> implementa la strategia adottata dal conduttore per determinare la porta da aprire: una a caso tra le disponibili una volta eliminata quella scelta dal concorrente e quella che nasconde l'auto.</p>
+<p>Resta da implementare il concorrente, che ha due responsabilità: scegliere una porta all'inizio del gioco &mdash; metodo <span class="code">make_initial_choice</span> &mdash;, quindi decidere se confermare la scelta o cambiare dopo che il conduttore ha aperto la sua porta. La prima azione è comune alle due incarnazioni del concorrente della simulazione, il &ldquo;naive&rdquo; che conferma la sua scelta iniziale e lo &ldquo;smart&rdquo; che invece accetta il cambio:</p>
+<pre class="code">
+class Contestant:
+
+    def make_initial_choice(self):
+        self.choice = random.randint(0, 2)
+        print("C: I choose door number {}.".format(self.choice + 1))
+        return self.choice
+
+
+class NaiveContestant(Contestant):
+
+    def make_final_choice(self, option):
+        print("C: I keep door number {}.".format(self.choice + 1))
+        return self.choice
+
+
+class SmartContestant(Contestant):
+
+    def make_final_choice(self, option):
+        print("C: I pick door {}.".format(option + 1))
+        return option
+</pre>
+<p class="illustration">Il codice completo è disponibile <a href="files/monty-hall/monty-hall.py">qui</a>.</p>
+<p>I risultati confermano la probabilità di vittoria di 1 a 3:</p>
+<pre class="code">
+...
+H: Pick a door...
+C: I choose door number 3.
+H: Behind door number 1 there's... a goat!
+H: Do you want to pick door number 2?
+C: I keep door number 3.
+H: You keep door number 3...
+H: You won... the car!
+H: Pick a door...
+C: I choose door number 1.
+H: Behind door number 3 there's... a goat!
+H: Do you want to pick door number 2?
+C: I keep door number 1.
+H: You keep door number 1...
+H: You won... a goat!
+351 wins on 1000 games (35.1%)
+</pre>
+<p>Come va al concorrente più avveduto?</p>
+<pre class="code">
+def play():
+    doors = Doors(random.randint(0, 2))
+    contestant = <del>Naive</del><ins>Smart</ins>Contestant()
+    host = Host()
+    return host.start_game(doors, contestant)
+</pre>
+<p>Anche in questo caso la simulazione conferma la teoria:</p>
+<pre class="code">
+...
+H: Pick a door...
+C: I choose door number 3.
+H: Behind door number 1 there's... a goat!
+H: Do you want to pick door number 2?
+C: I pick door 2.
+H: You choose door number 2...
+H: You won... the car!
+H: Pick a door...
+C: I choose door number 2.
+H: Behind door number 3 there's... a goat!
+H: Do you want to pick door number 1?
+C: I pick door 1.
+H: You choose door number 1...
+H: You won... a goat!
+656 wins on 1000 games (65.6%)
+</pre>
+<h2>Il conduttore non sa cosa c'è dietro le porte</h2>
+<p>Un'interessante variazione presuppone che il conduttore non sappia dove si nasconda l'auto, e apra perciò una porta a caso tra le due non scelte dal concorrente; se apre proprio la porta vincente, il gioco si interrompe e il concorrente perde.</p>
+<img src="img/monty-hall/sequence-diagram-unaware-host.png">
+<p>La teoria dimostra che le due strategie &ldquo;naive&rdquo; e &ldquo;smart&rdquo; in questo caso si equivalgono, realizzando entrambe il 33% delle vincite. Lo si può verificare nella pratica modificando di poco il codice dell'<span class="code">Host</span>:</p>
+<pre class="code">
+class Host:
+
+    def start_game(self, doors, contestant):
+        print("H: Pick a door...")
+        initial_choice = contestant.make_initial_choice()
+        my_door = self.choose_a_door(doors, initial_choice)
+        prize_behind_my_door = doors.open(my_door)
+        <del>assert(prize_behind_my_door != CAR)</del>
+        print("H: Behind door number {} there's... {}!".format(
+            my_door + 1, prize_behind_my_door))
+        <ins>if prize_behind_my_door == CAR:
+            print("H: Ops, you loose...")
+            return GOAT</ins>
+        option = [x for x in doors.num if x not in [initial_choice, my_door]][0]
+        print("H: Do you want to pick door number {}?".format(option + 1))
+        final_choice = contestant.make_final_choice(option)
+        if final_choice == initial_choice:
+            print("H: You keep door number {}...".format(final_choice + 1))
+        else:
+            print("H: You choose door number {}...".format(final_choice + 1))
+        prize = doors.open(final_choice)
+        print("H: You won... {}!".format(prize))
+        return prize
+
+
+<ins>class AwareHost(Host):</ins>
+
+    def choose_a_door(self, doors, initial_choice):
+    unfit_doors = [initial_choice, doors.car]
+    suitable_doors = [x for x in doors.num if x not in unfit_doors]
+    return random.choice(suitable_doors)
+
+<ins>class UnawareHost(Host):
+
+    def choose_a_door(self, doors, initial_choice):
+        suitable_doors = [x for x in doors.num if x != initial_choice]
+        return random.choice(suitable_doors)</ins>
+
+def play():
+    doors = Doors(random.randint(0, 2))
+    contestant = SmartContestant()
+    host = <ins>Unaware</ins>Host()
+    return host.start_game(doors, contestant)
+</pre>
+<p class="illustration">Il codice completo è disponibile <a href="files/monty-hall/monty-hall-unaware-host.py">qui</a>.</p>
+<p>La strategia &ldquo;naive&rdquo; conferma le sue prestazioni:</p>
+<pre class="code">
+...
+H: Pick a door...
+C: I choose door number 1.
+H: Behind door number 3 there's... the car!
+H: Ops, you loose...
+H: Pick a door...
+C: I choose door number 1.
+H: Behind door number 3 there's... a goat!
+H: Do you want to pick door number 2?
+C: I keep door number 1.
+H: You keep door number 1...
+H: You won... the car!
+H: Pick a door...
+C: I choose door number 2.
+H: Behind door number 3 there's... a goat!
+H: Do you want to pick door number 1?
+C: I keep door number 2.
+H: You keep door number 2...
+H: You won... a goat!
+325 wins on 1000 games (32.5%)
+</pre>
+<p>La versione &ldquo;smart&rdquo; in questo caso è equivalente alla &ldquo;naive&rdquo;:</p>
+<pre class="code">
+H: Pick a door...
+C: I choose door number 2.
+H: Behind door number 1 there's... a goat!
+H: Do you want to pick door number 3?
+C: I pick door 3.
+H: You choose door number 3...
+H: You won... the car!
+H: Pick a door...
+C: I choose door number 1.
+H: Behind door number 2 there's... the car!
+H: Ops, you loose...
+H: Pick a door...
+C: I choose door number 1.
+H: Behind door number 2 there's... the car!
+H: Ops, you loose...
+338 wins on 1000 games (33.8%)
+</pre>
+<p>La strategia di cambiare porta non avvantaggia più il concorrente &ldquo;smart&rdquo; perché non può sfruttare la conoscenza a priori del conduttore che in questo caso non è presente.</p>
+<p class="modification-notice">Pagina modificata il 06/12/2020</p>
+</body>
+</html>

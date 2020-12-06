@@ -1,0 +1,50 @@
+@startuml
+skinparam handwritten true
+skinparam monochrome true
+
+participant Game
+participant Host
+participant Contestant
+participant Doors
+
+Game -> Doors: hide_car
+activate Doors
+deactivate Doors
+
+Game -> Host: start_game
+activate Host
+
+Host -> Contestant: make_initial_choice
+activate Contestant
+Contestant --> Host
+deactivate Contestant
+
+Host -> Host: choose_a_door
+activate Host
+deactivate Host
+
+Host -> Doors: open_door
+activate Doors
+Doors --> Host
+deactivate Doors
+
+alt car behind door
+    Host --> Game: loss
+
+else goat behind door
+
+    Host -> Contestant: make_final_choice
+    activate Contestant
+    Contestant --> Host
+    deactivate Contestant
+
+    Host -> Doors: open_door
+    activate Doors
+    Doors --> Host
+    deactivate Doors
+
+end
+Host --> Game: response
+
+deactivate Host
+@enduml
