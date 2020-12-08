@@ -123,7 +123,7 @@ uint8_t MPU6050::dmpGetGravity(int16_t *data, const uint8_t* packet) {
 }
 </pre>
 <p class="illustration">Aggiunta del suffisso <span class="code">UL</span> alla costante <span class="code">16384</span>.</p>
-<p>Lo sketch finale è di immediata comprensione. Vale tuttavia la pena soffermarsi sul frammento di codice che determina l'angolo di rollio a partire dai dati ricavati dal DMP: l'unità di calcolo interna all'MPU infatti non fornisce direttamente le misure degli angoli di rollio, beccheggio e imbardata ma un oggetto matematico equivalente, un <a href="https://en.wikipedia.org/wiki/Quaternion">quaternione</a>. I dati interesanti sono tuttavia facilmente ricavabili grazie ad una funzione ausiliaria presente sempre nella libreria sviluppata da Rowberg:</p>
+<p>Lo sketch finale è di immediata comprensione. Vale tuttavia la pena soffermarsi sul frammento di codice che determina l'angolo di rollio a partire dai dati ricavati dal DMP: l'unità di calcolo interna all'MPU infatti non fornisce direttamente le misure degli angoli di rollio, beccheggio e imbardata ma un oggetto matematico equivalente, un <a href="https://en.wikipedia.org/wiki/Quaternion">quaternione</a>. I dati interessanti sono tuttavia facilmente ricavabili grazie ad una funzione ausiliaria presente sempre nella libreria sviluppata da Rowberg:</p>
 <pre class="code">
     Quaternion q;
     mpu.dmpGetQuaternion(&q, fifoBuffer);
