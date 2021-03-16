@@ -11,15 +11,15 @@ participant branch
 end box
 box "GitHub"
 participant origin
-participant remote #c0c0ff
+participant upstream #c0c0ff
 end box
 
 create origin
-remote -> origin: fork
+upstream -> origin: fork
 create master
 origin -> master: clone
 |||
-master -> remote: remote add upstream
+master -> upstream: remote add upstream <addr>
 |||
 create branch
 master -> branch : checkout -b
@@ -28,10 +28,10 @@ opt fold commits
     branch -> branch: rebase -i <after-this-commit>\n... (see "Rebase - Interactive Mode")
 end
 branch -> origin: push
-origin --> remote: <<open PR>>
+origin --> upstream: <<open PR>>
 |||
 opt PR is accepted
-    remote -> master: pull upstream master
+    upstream -> master: pull upstream master
     master -> origin: push
 |||
 end
