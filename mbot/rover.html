@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>mBot in modalità rovers</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/rover.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mbot-rover">risorse</a> | mbot in modalità rover</p>
+<h1>mBot in modalità rover</h1>
+<h2>Introduzione</h2>
+<p>In preparazione di un nuovo <a href="robodojo.html">RoboDojo</a> mi sono chiesto se sia conveniente dedicare del tempo per mostrare come si programma mBot in modalità rover &mdash; <strong>Live</strong> nella terminologia di mBlock. La risposta breve è no, i potenziali problemi sono diversi, uno su tutti il fatto che mBlock richiede espressamente la presenza di una radio Bluetooth 4.x, mentre i più moderni computer supportano la versione 5.0. Alla pagina <a href="https://www.mblock.cc/doc/en/hardware-basic/connect-devices.html">Connect Devices</a> della documentazione ufficiale di mBlock si legge:
+</p>
+<blockquote>mBlock 5 supports two ways of connecting devices: (1) Through USB; and (2) Through Bluetooth 4.0 [...] <strong>Supported Bluetooth versions</strong>: Bluetooth 4.0, 4.1, and 4.2; Bluetooth 2.0 and 5.0 not supported.</blockquote>
+<p>Il problema affligge sia la versione desktop che l'estensione mLink2 per quella on-line.</p>
+<p>Anche l'accoppiamento dei robot con l'editor richiede una certa perizia. Poiché tutti gli mBot condividono lo stesso identificativo Bluetooth &ldquo;Makeblock&rdquo; è di fatto impossibile per i partecipanti riconoscere il proprio mBot nell'elenco presente nella maschera di connessione. Nell'articolo <a href="https://forum.makeblock.com/t/changing-bluetooth-id/4909/2">Changing Bluetooth ID</a> del forum ufficiale si trova questo suggerimento:</p>
+<blockquote>[...] turn off all the robots at first, then power on one robot and connect its bluetooth to a group, once this robot is connected, the blue light on the bluetooth module will be solid on and the other group cannot connect to it anymore. Then power on the second robot and connect to second group. So on and so forth.</blockquote>
+<p>Peccato, perché sarebbe stato interessante per i ragazzi sperimentare per esempio quanto complicato sia mantenere mBot sulla linea pilotandolo alla cieca &mdash; e di conseguenza quanto efficace si riveli essere il programma dell'inseguitore di linea. Si sarebbe potuto introdurre un ritardo tra l'invio del comando e la sua esecuzione per simulare una distanza interplanetaria così da vestire i panni di un tecnico NASA alle prese con un rover marziano: se l'invio di un messaggio verso Marte impiega da 3 a 22 minuti per raggiungere la sua destinazione in funzione di dove si trova rispetto alla Terra, anche una latenza di pochi secondi è sufficiente per rendere l'esperienza piuttosto frustrante!</p>
+<p>Resta la possibilità di suggerire ai partecipanti di sviluppare questo progetto in autonomia. Per questa ragione ho deciso di presentare una possibile implementazione.</p>
+<h2>Progetto</h2>
+<p class="note">In modalità <strong>Live</strong> l'interazione tra mBot e gli altri sprite del progetto avviene per mezzo di messaggi e variabili globali, dato che i messaggi in mBlock così come in Scratch non possono trasportare dati. Questo progetto non fa eccezione.</p>
+<p>Mi sono liberamente ispirato al tutorial <a href="https://www.coderdojotrento.it/risorse/mbot-tutorial-4-rover/">mBot tutorial 4 – rover</a> di David Leoni del CoderDojo di Trento. Questo è come appare lo stage del progetto <a href="files/rover/Rover.mblock">Rover</a>:</p>
+<img src="img/rover/stage.png">
+<p class="illustration">Il pannello di controllo del rover.</p>
+<p>In alto si trovano gli indicatori dello stato dei sensori, in basso i controlli per gli attuatori.</p>
+<h3>Indicatori</h3>
+<p><strong>Light sensor</strong>, l'indicatore in alto a sinistra, rappresenta l'intensità luminosa che incide sul fotoresistore; restituisce il livello di luminosità nelle gradazioni buio, penombra, normale, piena luce:</p>
+<img src="img/rover/light-sensor.png">
+<p class="illustration">I livelli utilizzati dall'indicatore di luminosità.</p>
+<p>Il livello di luminosità, fornito da mBot attraverso la variabile globale <strong>light intensity</strong>, è un intero compreso nell'intervallo 0&div;1023. L'indice del costume corrispondente si ottiene dividendo la misura per 4 e aggiungendo 1:</p>
+<img src="img/rover/light-sensor-code.png">
+<p class="illustration">Il codice associato allo sprite dell'indicatore di luminosità.</p>
+<p><strong>Line follower</strong>, l'indicatore più grande al centro, fornisce un'indicazione di massima circa la posizione di mBot rispetto alla pista. Lo stato del sensore di linea è ricavato dalla variabile globale <strong>line follower value</strong>.</p>
+<img src="img/rover/line-follower.png">
+<p class="illustration">I costumi predisposti per l'indicatore del sensore di linea.</p>
+<p>La sequenza dei costumi corrisponde a quella dei valori emessi dal sensore di linea:</p>
+<ul>
+    <li>0 &ndash; entrambi i sensori sono sulla pista;</li>
+    <li>1 &ndash; solo il sensore di sinistra è sulla pista;</li>
+    <li>2 &ndash; solo il sensore di destra è sulla pista;</li>
+    <li>3 &ndash; entrambi i sensori sono al di fuori della pista.</li>
+</ul>
+<p>Grazie a questa accortezza il codice dell'indicatore diventa banale:</p>
+<img src="img/rover/line-follower-code.png">
+<p class="illustration">Il codice associato allo sprite dell'indicatore del sensore di linea.</p>
+<p><strong>Radar</strong>, l'indicatore in alto a destra, indica la presenza di eventuali ostacoli secondo tre livelli di attenzione: verde per &ldquo;strada libera&rdquo;, giallo per &ldquo;ostacolo in lontananza&rdquo;, rosso per &ldquo;ostacolo nelle vicinanze&rdquo;.</p>
+<img src="img/rover/radar.png">
+<p class="illustration">I tre livelli utilizzati dal radar.</p>
+<p>La distanza dall'oggetto più vicino determinata dal sensore ultrasonico è contenuta nella variabile locale <strong>distance</strong>. L'indicatore rimane verde fin tanto che non vengono individuati ostacoli nel raggio di 50 cm. Diventa giallo se questa soglia viene superata, e cambia in rosso nel momento in cui la distanza si riduce a 20 cm o meno.</p>
+<img src="img/rover/radar-code.png">
+<p class="illustration">Il codice associato allo sprite del radar.</p>
+<h3>Controlli</h3>
+<p><strong>Beep</strong> è il primo pulsante a sinistra; quando premuto causa l'emissione di un breve suono su mBot. La richiesta è inviata al dispositivo per mezzo di un messaggio dedicato:</p>
+<img src="img/rover/beep-button-code.png">
+<p class="illustration">Il codice associato al clacson.</p>
+<p><strong>Lights</strong> è un pulsante bistabile che controlla l'accensione dei LED. Ha due costumi:</p>
+<img src="img/rover/lights-button.png">
+<p class="illustration">I due costumi del pulsante di controllo delle luci.</p>
+<p class="note"><strong>Attenzione:</strong> per la vicinanza del fotoresistore ai LED, quando questi vengono accesi la luce emessa investe anche il sensore, e di conseguenza la lettura dell'intensità luminosa viene fortemente falsata!</p>
+<p>Anche in questo caso il comando è inviato a mezzo di un messaggio dedicato:</p>
+<img src="img/rover/lights-button-code.png">
+<p class="illustration">Il codice associato al pulsante del controllo luci.</p>
+<p><strong>Steering wheel</strong> è il volante al centro del pannello ed è controllato con i tasti cursore destra/sinistra. Determina la direzione in cui si muoverà mBot quando si comanderà l'avanzamento o la retromarcia con i pulsanti di destra. L'angolazione è vincolata nell'intervallo 0&div;180° ed è posta nella variabile globale <strong>direction</strong>:</p>
+<img src="img/rover/steering-wheel-code.png">
+<p class="illustration">Il codice associato al volante.</p>
+<p><strong>Forward</strong> fa muovere brevemente mBot in avanti. L'avanzamento può essere comandato anche da tastiera con il tasto cursore freccia su oppure con la barra spaziatrice:</p>
+<img src="img/rover/forward-button-code.png">
+<p class="illustration">Il codice associato al pulsante di avanzamento.</p>
+<p><strong>Back</strong> fa compiere a mBot una breve retromarcia. Si può usare anche tasto cursore freccia giù:</p>
+<img src="img/rover/back-button-code.png">
+<p class="illustration">Il codice associato al pulsante per la retromarcia.</p>
+<h3>mBot</h3>
+<p>Il dispositivo <strong>mBot</strong> ha tre scopi principali: assicurarsi che all'inizio il robot sia fermo e a luci spente, avviare il ciclo di acquisizione dei dati dei sensori, reagire ai comandi impartiti dall'operatore.</p>
+<p>Il ciclo di acquisizione del livello di luminosità, della distanza registrata dal sensore ultrasonico e dello stato del sensore di linea avviene 4 volte al secondo; come già accennato, i dati raccolti sono resi disponibili agli sprite del progetto attraverso l'uso di tre variabili globali: <strong>light intensity</strong>, <strong>distance</strong> e <strong>line follower value</strong>. La notifica della disponibilità di nuovi dati aggiornati avviene emettendo il messaggio <strong>data available</strong>.</p>
+<p>Il codice che si occupa della gestione dei comandi è di immediata comprensione. I comandi di marcia causano una breve accensione dei motori per consentire una certa precisione di manovra. Vale la pena citare l'uso della procedura <strong>calculate left/right speed</strong> che determina la giusta velocità da applicare ai due motori del robot in funzione della posizione del volante:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Volante</th><th>Angolazione</th><th>Movimento</th><th>Velocità SX</th><th>Velocità DX</th></tr>
+<tr><td>Tutto a sinistra</td><td class="centered">0°</td><td>Rotazione antioraria</td><td class="centered">-100%</td><td class="centered">100%</td></tr>
+<tr><td>A sinistra</td><td class="centered">45°</td><td>Curva a sinistra</td><td class="centered">50%</td><td class="centered">100%</td></tr>
+<tr><td>Centrato</td><td class="centered">90°</td><td>Rettilineo</td><td class="centered">100%</td><td class="centered">100%</td></tr>
+<tr><td>A destra</td><td class="centered">135°</td><td>Curva a destra</td><td class="centered">100%</td><td class="centered">50%</td></tr>
+<tr><td>Tutto a destra</td><td class="centered">180°</td><td>Rotazione oraria</td><td class="centered">-100%</td><td class="centered">-100%</td></tr>
+</table>
+<p>A partire dai dati riportati in tabella è relativamente facile determinare le espressioni per ricavare le velocità da applicare ai motori in funzione della posizione del volante:</p>
+<p class="formula">v<sub>SX</sub> = min{1, (direction - 45) / 45} * v<sub>MAX</sub></p>
+<p class="formula">v<sub>DX</sub> = min{1, (135 - direction) / 45} * v<sub>MAX</sub></p>
+<p>Il valore di v<sub>MAX</sub>, contenuto nella variabile globale <strong>max speed</strong>, rappresenta il valore della velocità massima applicabile ai motori espressa come percentuale rispetto alla velocità massima caratteristica dei motori. Il valore proposto per v<sub>MAX</sub> è pari a 50.</p>
+<p>Il tratteggio nei due grafici che seguono rappresenta l'effetto della funzione di minimo:</p>
+<img src="img/rover/left-motor-speed.png">
+<p class="illustration">Velocità del motore di sinistra rispetto alla direzione. La velocità è limitata a 50 se direction &ge; 90°.</p>
+<img src="img/rover/right-motor-speed.png">
+<p class="illustration">Velocità del motore di destra rispetto alla direzione. La velocità è limitata a 50 se direction &le; 90°.</p>
+<p>Infine, il codice completo di mBot:</p>
+<img src="img/rover/mbot-code.png">
+<p class="illustration">Il codice di mBot.</p>
+<h2>Download</h2>
+<p>Il progetto Rover per mBlock 5.3.0 è disponibile per il download <a href="files/rover/Rover.mblock">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 12/04/2021</p>
+</body>
+</html>
