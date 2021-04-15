@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"/>
-<title>mBot in modalità rovers</title>
+<title>mBot in modalità rover</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
 <link href="css/rover.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -28,7 +28,7 @@
 <p><strong>Light sensor</strong>, l'indicatore in alto a sinistra, rappresenta l'intensità luminosa che incide sul fotoresistore; restituisce il livello di luminosità nelle gradazioni buio, penombra, normale, piena luce:</p>
 <img src="img/rover/light-sensor.png">
 <p class="illustration">I livelli utilizzati dall'indicatore di luminosità.</p>
-<p>Il livello di luminosità, fornito da mBot attraverso la variabile globale <strong>light intensity</strong>, è un intero compreso nell'intervallo 0&div;1023. L'indice del costume corrispondente si ottiene dividendo la misura per 4 e aggiungendo 1:</p>
+<p>Il livello di luminosità, fornito da mBot attraverso la variabile globale <strong>light intensity</strong> e mostrato sotto l'indicatore, è un intero compreso nell'intervallo 0&div;1023. L'indice del costume corrispondente si ottiene dividendo la misura per 4 e aggiungendo 1:</p>
 <img src="img/rover/light-sensor-code.png">
 <p class="illustration">Il codice associato allo sprite dell'indicatore di luminosità.</p>
 <p><strong>Line follower</strong>, l'indicatore più grande al centro, fornisce un'indicazione di massima circa la posizione di mBot rispetto alla pista. Lo stato del sensore di linea è ricavato dalla variabile globale <strong>line follower value</strong>.</p>
@@ -47,7 +47,7 @@
 <p><strong>Radar</strong>, l'indicatore in alto a destra, indica la presenza di eventuali ostacoli secondo tre livelli di attenzione: verde per &ldquo;strada libera&rdquo;, giallo per &ldquo;ostacolo in lontananza&rdquo;, rosso per &ldquo;ostacolo nelle vicinanze&rdquo;.</p>
 <img src="img/rover/radar.png">
 <p class="illustration">I tre livelli utilizzati dal radar.</p>
-<p>La distanza dall'oggetto più vicino determinata dal sensore ultrasonico è contenuta nella variabile locale <strong>distance</strong>. L'indicatore rimane verde fin tanto che non vengono individuati ostacoli nel raggio di 50 cm. Diventa giallo se questa soglia viene superata, e cambia in rosso nel momento in cui la distanza si riduce a 20 cm o meno.</p>
+<p>La distanza dall'oggetto più vicino determinata dal sensore ultrasonico, espressa in centimetri, è contenuta nella variabile locale <strong>distance</strong> ed è visibile al di sotto dell'indicatore. Questo rimane verde fin tanto che non vengono individuati ostacoli nel raggio di 50 cm. Diventa giallo se questa soglia viene superata, e cambia in rosso nel momento in cui la distanza si riduce a 20 cm o meno.</p>
 <img src="img/rover/radar-code.png">
 <p class="illustration">Il codice associato allo sprite del radar.</p>
 <h3>Controlli</h3>
