@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>IA in Scratch - Tria</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scratch-tictactoe.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-ia">risorse</a> |
+ia in scratch - tria</p>
+<h1>IA in Scratch - Tria</h1>
+<p>I partecipanti più assidui agli incontri di CoderDojoFVG ci chiedono spesso di affrontare progetti un po' più complessi di quelli che presentiamo normalmente, quando la maggior parte dei presenti non conosce o non ha molta confidenza con Scratch. Considerato che ultimamente si sente molto spesso parlare (di solito a sproposito) di intelligenza artificiale, ho cercato di coniugare le due cose: preparare un progetto più ambizioso del solito che permetta di introdurre alcuni concetti dell'AI.</p>
+<p>L'obiettivo è costruire un programma che giochi a tria dimostrando un certo livello di intelligenza; è anche dotato di una minima capacità d'apprendimento, sufficiente tuttavia per fornire alcuni spunti di discussione sul tema.</p>
+<p>Il programma è sviluppato per passi:</p>
+<ol>
+    <li><a href="#partita-due-giocatori">partita tra due giocatori</a></li>
+    <li><a href="#fine-partita">determinazione del fine partita</a></li>
+    <li><a href="#strategia-casuale">Scratch gioca muovendo a caso</a></li>
+    <li><a href="#fare-tria">Scratch cerca di fare tria</a></li>
+    <li><a href="#bloccare-l-avversario">Scratch tenta di bloccare l'avversario</a></li>
+    <li><a href="#base-di-conoscenza">Scratch conosce le mosse migliori</a></li>
+    <li><a href="#apprendimento">Scratch impara dall'avversario</a></li>
+</ol>
+<p>Le ultime due fasi sono le più interessanti. Delle due, la prima introduce una lista che contiene le caselle in ordine di rilevanza strategica; quando muove Scratch sceglie la prima casella in elenco che non è ancora occupata. Nella seconda, al termine di una partita vittoriosa Scratch sposta le caselle giocate verso l'inizio dell'elenco per aumentare la probabilità di giocarle nelle partite successive; in caso di sconfitta le sposta verso il fondo per limitare il loro utilizzo.</p>
+<p>L'idea non è originale, è il progetto TICTAC pubblicato nel libro &ldquo;Il BASIC per l'intelligenza artificiale&rdquo; di Tim Hartnell edito da Edizioni Elettroniche Mondadori nel 1985. A suo tempo realizzai una versione per <a href="../sinclair/tictactoe.html">ZX Spectrum 48K</a>.</p>
+<a name="partita-tra-due-giocatori"></a>
+<h2>Partita tra due giocatori</h2>
+<h3>La cella</h3>
+<p>Partiamo da un progetto vuoto. Trasformiamo <strong>Sprite1</strong> nella prima cella in alto a sinistra rinominandolo in <strong>Cell1</strong>. Aggiungiamo i costumi <strong>Block-o</strong> e <strong>Block-x</strong>. Eliminiamo i due costumi originali e creiamo un terzo, che chiamiamo <strong>blank</strong> e che contiene un quadrato bianco di dimensioni paragonabili a quello degli altri due costumi. Poniamo il nuovo costume, che rappresenta la cella vuota, tra la O e la X:</p>
+<img src="img/scratch-tictactoe/cell_costumes_01.png">
+<p class="illustration">I costumi della cella. L'ordine dei costumi è significativo!</p>
+<p>Spostiamo lo sprite in posizione (-100, 100) col costume <strong>blank</strong> (la cella inizialmente è vuota!):</p>
+<img src="img/scratch-tictactoe/cell_at-startup_01.png">
+<p class="illustration">Il codice di inizializzazione della prima cella.</p>
+<h3>Il turno</h3>
+<p>Quando il giocatore fa click su una cella vuota questa deve assumere una delle due forme O/X, ma quale? Serve uno sprite che gestisca la logica del turno alternando i due simboli tra una mossa e l'altra. Possiamo sfruttare questo sprite per mostrare qual'è il simbolo corrente. Per questa ragione cloniamo lo sprite <strong>Cell1</strong> in <strong>Turn</strong>, riduciamo le sue dimensioni del 50% posizioniamolo in alto a destra in posizione (210, 150).</p>
+<p>Creiamo una nuova variabile <strong>turn</strong> che rappresenta il turno corrente secondo la codifica -1=O, +1=X (scelta arbitraria che ci consentirà di semplificare il codice riducendo il numero di <strong>if</strong> complessivi). Aggiungiamo nel codice l'inizializzazione casuale della variabile appena creata e carichiamo il costume associato al simbolo estratto:</p>
+<img src="img/scratch-tictactoe/turn_at-startup_01.png">
+<p class="illustration">Il codice iniziale dello sprite <strong>Turn</strong>. Notare l'istruzione per il caricamento del costume.</p>
+<p>Avviamo ripetutamente il gioco verifichiamo che di tanto in tanto il turno cambia.</p>
+<h3>Selezione della cella</h3>
+<p>Quando clicchiamo una cella vuota questa deve assumere il simbolo del turno. Per far ciò è sufficiente un blocco <span class="code">when this sprite clicked</span> e la stessa istruzione che abbiamo usato per aggiornare il costume di <strong>Turn</strong>.</p>
+<p>Quando proviamo a cliccare <strong>Cell1</strong> per verificare il buon funzionamento del codice ci accorgiamo che è difficile individuare l'area occupata dallo sprite, perché è di fatto invisibile. Disegnamo allora la classica griglia sul <strong>backdrop1</strong>, e già che ci siamo lo rinominamo in <strong>frame</strong>:</p>
+<img src="img/scratch-tictactoe/backdrop_frame_01.png">
+<p class="illustration">Il campo di gioco.</p>
+<p>Ora è molto più facile inquadrare <strong>Cell1</strong>! Dopo che un giocatore ha effettuato la sua mossa il turno deve cambiare, e per questa ragione la cella emette il messaggio <strong>move done</strong> per indicare che la mossa si è conclusa:</p>
+<img src="img/scratch-tictactoe/cell_when-this-sprite-clicked_01.png">
+<p class="illustration">Invio della notifica di mossa avvenuta.</p>
+<h3>Cambio turno</h3>
+<p><strong>Turn</strong> sfrutta questo messaggio per cambiare il turno:</p>
+<img src="img/scratch-tictactoe/turn_when-i-receive-move-done_01.png">
+<p class="illustration">Cambio turno in seguito ad una mossa.</p>
+<p>Piccolo inconveniente: il codice permette di rigiocare una cella già occupata: provate a cliccare il simbolo che appare nell'unica cella del gioco: il nuovo simbolo sostituisce quello vecchio. La mossa allora va accettata solo se la cella è vuota:</p>
+<img src="img/scratch-tictactoe/cell_when-this-sprite-clicked_01.png">
+<p class="illustration">Il frammento di codice di <strong>Cell1</strong> per impedire che una cella possa essere rigiocata.</p>
+<h3>La scacchiera</h3>
+<p>Siamo pronti per creare le rimanenti 8 celle: si cloni <strong>Cell1</strong> e si posizionino i nuovi sprite rispettivamente in (0, 100), (100, 100), (-100, 0), (0, 0), (100, 0), (-100, -100), (0, -100) e (100, -100). Lo schema finale deve risultare:</p>
+<pre class="code">
+     1 | 2 | 3
+    ---+---+--- 
+     4 | 5 | 6
+    ---+---+--- 
+     7 | 8 | 9
+</pre>
+<p>A questo punto il programma è già utilizzabile da due giocatori umani. Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_01.sb3">qui</a>.</p>
+<a name="fine-partita"></a>
+<h2>Determinazione del fine partita</h2>
+<p>Quandoi un giocatore fa tria il programma dovrebbe evidenziarla e impedire ulteriori mosse. Il primo aspetto può essere gestito modificando opportunamente lo sfondo; per questa ragione attribuiamo a questo oggetto la responsabilità di determinare la fine della partita, anche in caso di parità.</p>
+<h3>Sfondi</h3>
+<p>Come può lo sfondo analizzare lo stato della griglia? Una soluzione è introdurre una variabile lista di 9 elementi, in cui ogni elemento rappresenta lo stato di una cella: -1=O, 0=cella vuota, +1=X. Individuate le celle che possono dare origine a una tria è sufficiente sommare i relativi elementi della lista: se la somma risultante è +3 o -3 allora c'è una tria, se no, no. Quando lo sfondo individua una tria cambia il proprio costume con quello predisposto per evidenziare le caselle che hanno originato la tria. Le possibili trie sono otto: tre orizzontali (caselle 123, 456, 789), tre verticali (147, 258, 369), due diagonali (159 e 357). Prepariamo allora otto sfondi il cui nome corrisponda alla terna di celle che mettono in evidenza:</p>
+<img src="img/scratch-tictactoe/backdrop_123_01.png">
+<p class="illustration">Lo sfondo che evidenzia la tria realizzata sulla prima riga.</p>
+<h3>L'elenco delle celle</h3>
+<p>Creiamo la variabile lista globale <strong>cells</strong> che inizializziamo con 9 zeri. Per comodità lo facciamo nel codice di <strong>Turn</strong> che già si occupa di inizializzare la variabile <strong>turn</strong>:</p>
+<img src="img/scratch-tictactoe/turn_at-startup_02.png">
+<p class="illustration">All'avvio del programma ogni elemento della lista viene azzerato.</p>
+<p>Quando una cella viene selezionata, questa deve aggiornare l'elemento della lista ad essa associato:</p>
+<img src="img/scratch-tictactoe/cell_when-this-sprite-clicked_03.png">
+<p class="illustration">Il frammento di codice di <strong>Cell1</strong>.</p>
+<p>Per <strong>Cell2</strong> l'elemento della lista da rimpiazzare è il secondo, per <strong>Cell3</strong> il terzo, ... e così via. Cliccare in sequenza le celle e verificare che gli elementi della lista <strong>cells</strong> vengono aggiornati di conseguenza, dopodiché si può nascondere la variabile.</p>
+<h3>Individuazione delle trie</h3>
+<p>Torniamo allo sfondo. Poiché il controllo di fine partita va fatto dopo ogni mossa, agganciamoci al messaggio <strong>move done</strong> e prepariamoci a controllare lo stato delle 8 terne di celle sulle quali si può produrre una tria. Il controllo da eseguire è sempre lo stesso, quindi predisponiamo un nuovo blocco che riceve una terna di celle e verifica se contengono tutte lo stesso simbolo; se così è carica lo sfondo associato alla terna:</p>
+<img src="img/scratch-tictactoe/stage_when-i-receive-move-done_01.png">
+<p class="illustration">La selezione dello sfondo giusto dipende dalla tria.</p>
+<p>Soffermiamoci un attimo sulla procedura <strong>check row</strong>: essa riceve una sequenza di tre caratteri; gli indici delle singole celle vengono estratti mediante il blocco <span class="code">letter () of ()</span>; questi indici vengono utilizzati per ricavare il valore dell'elemento che ricopre quella esatta posizione nella lista <strong>cells</strong>. I valori associati alle tre celle della riga vengono sommati tra loro; se il risultato è &plusmn;3 allora la riga passata contiene tre simboli uguali, quindi le tre celle costituiscono una tria: viene caricato lo sfondo che la evidenzia e il programma viene arrestato.</p>
+<h3>Osservazioni</h3>
+<p>Quando si completa una tria e lo sfondo carica un nuovo costume, questo rimane in uso anche nella partita successiva. Il problema si risolve caricando la griglia iniziale all'avvio della partita. In secondo luogo la sequenza di chiamate <span class="code">check row</span> può essere sostituita da un ciclo se si ha l'accortezza di memorizzare le otto terne in una variabile globale dedicata denominata <strong>rows</strong>:</p>
+<img src="img/scratch-tictactoe/stage_when-i-receive-move-done_02.png">
+<p class="illustration">Il caricamento dello sfondo iniziale, il ciclo sulle terne della lista <strong>rows</strong>.</p>
+<p>Sempre per coerenza, dell'inizializzazione della lista <strong>rows</strong> se ne occupa lo sprite <strong>Turn</strong>:</p>
+<img src="img/scratch-tictactoe/turn_at-startup_03.png">
+<p class="illustration">Inizializzazione della lista <strong>rows</strong>.</p>
+<p>Infine, a partita ultimata i giocatori possono continuare a selezionare le celle rimaste vuote. Questo problema si risolve introducendo una nuova variabile globale, <strong>is game running</strong>, inizializzata a 1 da <strong>Turn</strong> e portato a 0 dallo sfondo al termine della partita. Ogni cella verifica lo stato di questa variabile prima di accettare la mossa:</p>
+<img src="img/scratch-tictactoe/cell_when-this-sprite-clicked_04.png">
+<p class="illustration">Le mosse sono accettate solo se la variabile <strong>is game running</strong> vale 1.</p>
+<h3>Finezze</h3>
+<p>Apportiamo ancora un paio di modifiche. La prima riguarda il messaggio <strong>move done</strong> che lo sfondo usa per avviare la procedura di controllo di fine partita e <strong>Turn</strong> per cambiare il turno. A rigor di logica, quando la partita termina non è necessario il cambio turno. Conviene mettere in sequenza le due operazioni introducendo un nuovo messaggio, <strong>next turn</strong> che lo sfondo emette solo se è effettivamente il caso di proseguire nella partita, ed è su questo messaggio che <strong>Turn</strong> si pone in ascolto. Per far ciò lo sfondo deve anche controllare che non si sia giunti ad una patta. Questa condizione è facile da verificare: se non ci sono più caselle libere e non c'è stata alcuna tria allora la partita è terminata in parità. Per distinguere i due casi sono stati introdotti due nuovi blocchi nel codice dello sfondo, <strong>stop on three-in-a-row</strong> e <strong>stop on draw</strong>:</p>
+<img src="img/scratch-tictactoe/turn_at-startup_04.png">
+<p class="illustration">Inizializzazione del flag &ldquo;partita in corso&rdquo; a cura dello sprite <strong>Turn</strong>.</p>
+<img src="img/scratch-tictactoe/stage_when-i-receive-move-done_03.png">
+<p class="illustration">Il codice aggiuntivo per la gestione completa del fine partita nello sfondo.</p>
+<p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_02.sb3">qui</a>.</p>
+<a name="strategia-casuale"></a>
+<h2>Scratch gioca muovendo a caso</h2>
+<p>Arbitrariamente attribuiamo il segno O (-1) al computer, X (+1) all'utente. <strong>Turn</strong>, dopo aver impostato il turno, invia il messaggio <strong>computer moves</strong> al nuovo sprite <strong>Laptop</strong> a indicare che tocca al computer muovere:</p>
+<img src="img/scratch-tictactoe/turn_at-startup_05.png">
+<p class="illustration">Il codice di <strong>Turn</strong> che determina quando la mossa tocca al computer.</p>
+<h3>Lo sprite <strong>Laptop</strong></h3>
+<p>La variabile globale <strong>candidate cell</strong> contiene l'indice della casella che Scratch ha deciso di giocare. <strong>Laptop</strong> la valorizza con un numero a caso tra 1 e 9, ripetendo l'estrazione fino a quando la scelta non ricade su una cella libera. A quel punto emette il messaggio <strong>pick candidate cell</strong> per occupare la casella prescelta:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_01.png">
+<p class="illustration">Il codice dello sprite <strong>Laptop</strong>.</p>
+<p>Ora è necessario intervenire nel codice di ogni singola cella per cambiarne il costume alla ricezione del messaggio <strong>pick candidate cell</strong> se l'indice della cella corrisponde al valore contenuto nella variabile:</p>
+<img src="img/scratch-tictactoe/cell_when-i-receive-pick-candidate_cell_01.png">
+<p class="illustration">La risposta di <strong>Cell1</strong> al messaggio <strong>pick candidate cell</strong>. Notare la somiglianza dei due blocchi.</p>
+<p>Il codice che si occupa della mossa del computer è identico a quello della selezione della cella da parte del giocatore. Poiché la duplicazione del codice può essere fonte di problemi, impariamo ad eliminarla:</p>
+<img src="img/scratch-tictactoe/cell_when-i-receive-pick-candidate_cell_02.png">
+<p class="illustration">Codice equivalente, privo però di ripetizioni.</p>
+<p>Le stesse identiche modifiche vanno apportate a tutte le altre celle, badando a modificare coerentemente con l'indice della cella i tre riferimenti alla posizione occupata dalla cella stessa.</p>
+<p>Fin dalle prime partite ci si rende conto che la strategia casuale non è vincente. Anche se a volte Scratch ci sorprenderà, sappiamo perfettamente che anche le mosse più indovinate sono frutto del caso. È lecito parlare di intelligenza in questi casi?</p>
+<p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_03.sb3">qui</a>.</p>
+<h3>Curiosità</h3>
+<p>Con un piccolo intervento al codice di <strong>Turn</strong> è possibile far giocare Scratch contro sè stesso:</p>
+<img src="img/scratch-tictactoe/turn_let_computer_move_01.png">
+<p class="illustration">Scratch sfida sè stesso!</p>
+<a name="fare-tria"></a>
+<h2>Scratch cerca di fare tria</h2>
+<p>Rendiamo la strategia del computer più competitiva (intelligente?!) controllando, prima di effettuare la mossa casuale, se c'è una tria da completare. Bisogna dunque verificare, per ogni possibile tria, se una delle tre posizioni è libera e le rimanenti due sono occupate dal simbolo O. La condizione è equivalente a chiedersi se la somma delle celle è uguale a -2, avendo attribuito al simbolo O il valore -1:</p>
+<p class="formula">0 + (-1) +  (-1) = -2.</p>
+<p>Il codice dello sprite <strong>Laptop</strong> necessita di vari interventi. Spostiamo innanzitutto i blocchi che realizzano la strategia casuale in una procedura dedicata:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_random.png">
+<p class="illustration">Il frammento di codice della mossa casuale.</p>
+<p>Creiamo il nuovo blocco <strong>try to fill a row</strong> e il codice che esegue la mossa del computer diventa:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_when.png">
+<p class="illustration">La strategia completa adottata dal computer.</p>
+<p>Sfruttiamo la variabile <strong>candidate cell</strong> per determinare se il nuovo blocco ha trovato una posizione che permetta di completare una tria. Inizialmente la poniamo a zero a significare &ldquo;Scratch non ha ancora deciso dove muovere&rdquo;. Se dopo l'esecuzione del blocco <strong>try to fill a row</strong> la variabile è ancora nulla allora possiamo concludere che non c'è una tria da chiudere e proseguiamo con la giocata casuale.</p>
+<p>Compito di <strong>try to fill a row</strong> è trovare una tria da completare. Il processo si suddivide in tre fasi:</p>
+<ul>
+    <li>per ogni possibile tria:</li>
+    <li>se la somma delle tre celle è -2&hellip;</li>
+    <li>&hellip; la casella vuota diventa la mossa da eseguire.</li>
+</ul>
+<p>La scansione delle terne è identica a quella costruita per la determinazione del fine partita, con l'accortezza di usare una variabile indice privata <strong>j</strong> diversa da quella usata nello sfondo:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_loop.png">
+<p class="illustration">Il ciclo che analizza tutte le possibili trie.</p>
+<p>Il blocco <strong>try to fill row</strong> verifica che si tratti a tutti gli effetti di una candidata tria; se così è inoltra gli indici delle celle che costituiscono la potenziale tria al blocco <strong>pick empty cell</strong> che individua quella vuota e la seleziona come cella da giocare:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_fill-row.png">
+<p class="illustration">Il blocco che verifica la presenza di una potenziale tria.</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_empty-cell.png">
+<p class="illustration">Selezione della (prima) cella vuota.</p>
+<h3>Osservazioni</h3>
+<p>Il codice ottenuto non è ottimale: la scansione delle terne potrebbe interrompersi nel momento in cui viene individuata la prima tria. Dato il ridotto numero di terne da controllare, si è preferito puntare sulla leggibilità del codice piuttosto che sulla sua efficienza.</p>
+<p>Il programma ora dimostra di conoscere le regole del gioco: quando può, non perde occasione per fare tria.</p>
+<p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_04.sb3">qui</a>.</p>
+<a name="bloccare-l-avversario"></a>
+<h2>Scratch tenta di bloccare l'avversario</h2>
+<p>Lo stesso codice che viene usato per cercare una potenziale tria da chiudere può essere riutilizzato per scovare una possibile tria dell'avversario, così da bloccarla: è infatti sufficiente confrontare la somma delle tre celle con +2 anziché -2. La strategia del computer diventa in questo modo più raffinata:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_03_when.png">
+<p class="illustration">La versione aggiornata della strategia del computer.</p>
+<p>Il blocco <strong>try to fill row</strong> ora riceve un nuovo parametro in ingresso, <strong>turn</strong>, che rappresenta il simbolo per il quale si vuole effettuare la ricerca: se vale -1 il blocco cercherà le candidate trie di tipo O, se vale -1 si concentrerà su quelle di tipo X.</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_03_fill-row.png">
+<p class="illustration">La ricerca della tria da completare generalizzata.</p>
+<p>Grazie a questa lieve modifica i blocchi per la ricerca del completamento della propria tria e quello del blocco della tria dell'avversario diventano praticamente identici, essendo il simbolo che viene passato al blocco <strong>try to fill row</strong> l'unico dettaglio diverso: il blocco <strong>try to fill a row</strong> passerà il valore assunto della variabile <strong>turn</strong> che, nell'istante in cui viene eseguito il blocco, contiene il valore associato al simbolo con cui gioca Scratch; il blocco <strong>try to block a row</strong> passerà invece il valore associato al simbolo dell'avversario, che è l'opposto di quello del computer, cioé <span class="code">-1 * turn</span>:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_03_fill-block-row.png">
+<p class="illustration">I blocchi per il completamento e il blocco della tria sono simili.</p>
+<p>Il programma diventa sempre più raffinato, e batterlo non è così scontato.</p>
+<p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_05.sb3">qui</a>.</p>
+<a name="base-di-conoscenza"></a>
+<h2>Scratch conosce le mosse migliori</h2>
+<p>È giunta l'ora di abbandonare la strategia casuale. Dotiamo Scratch di una <em>base di conoscenza</em> dalla quale possa attingere quando deve scegliere la prossima casella da giocare e non ci sono trie da completare o da bloccare. Nonostante i termini altisonanti l'implementazione è banale: definiamo un elenco di mosse ordinate per importanza, e facciamo in modo che Scratch giochi la prima che risulta libera. Abbiamo quindi bisogno di una nuova variabile lista privata dello sprite <strong>Laptop</strong>, che denominiamo <strong>best moves</strong>, e che inizializziamo con la sequenza 5, 1, 3, 7, 9, 2, 4, 6, 8 che privilegia la casella centrale e quelle d'angolo:</p>
+<img src="img/scratch-tictactoe/laptop_global_01.png">
+<p class="illustration">L'elenco delle possibili mosse, ordinate per rilevanza strategica.</p>
+<!-- differenza tra conoscenza esplicita (catalogo delle mosse migliori) e implicita (codice di completamento delle proprie trie, blocco delle trie dell'avversario) -->
+<p>Il codice di inizializzazione dell'elenco delle mosse migliori non fa capo a nessun blocco pre-esistente perché è relativo a un oggetto immutabile che per tale ragione non ha bisogno di essere ricreato ad ogni nuova partita.</p>
+<p>Va ora definito un nuovo blocco, che chiameremo <strong>pick best cell</strong>, alternativo a <strong>pick a random cell</strong> (che comunque conserviamo perché potrebbe tornare utile più tardi). Cominciamo col sostituirlo al secondo nel frammento di codice che risponde al messaggio <strong>computer moves</strong>:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_04.png">
+<p class="illustration">Sostituzione della strategia di selezione della mossa successiva.</p>
+<p>La definizione del nuovo blocco è la seguente:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_04_best-move.png">
+<p class="illustration">Selezione della prima mossa migliore giocabile.</p>
+<p>Il blocco usa la variabile privata <strong>j</strong> per effettuare una scansione dell'elenco <strong>best moves</strong>. L'indice viene incrementato ciclicamente fino a quando non si trova una casella che risulta libera, ovvero quando il valore associato alla cella nell'elenco <strong>cells</strong> è pari a zero. Questa viene immediatamente eletta come mossa migliore e viene posta nella variabile <strong>candidate cell</strong> per concludere il turno.</p>
+<p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_06.sb3">qui</a>.</p>
+<a name="apprendimento"></a>
+<h2>Scratch impara dall'avversario</h2>
+<p>La configurazione delle <strong>best moves</strong> rende Scratch praticamente imbattibile, specie se è lui a iniziare il gioco. Scompigliamo allora l'ordine delle mosse migliori in modo da ottenere la sequenza intuitivamente non ottimale 2, 4, 6, 8, 1, 3, 7, 9, 5. Bastano poche partite per rendersi conto che questa serie è molto meno efficace di quella originale. Esiste un modo perché Scratch passi progressivamente da una all'altra autonomamente mentre gioca? È quello che stiamo per scoprire&hellip;</p>
+<!--
+con la sequenza 2, 4, 6, 8, 1, 3, 7, 9, 5 se inizia il giocatore questo vince per esempio con la sequenza 5, 4, 1 (oppure 7); se è il computer a iniziare il giocatore vince comunque giocando 4, 5, 1 (oppure 7)
+
+con la sequenza 5, 1, 3, 7, 9, 2, 4, 6, 8 se inizia il giocatore questo vince con la sequenza 1, 9, 7 e 8 (è l'unica?!), mentre se inizia il computer il giocatore può al massimo ambire a una patta (perde se gioca 4, 6 oppure 8).
+-->
+<p>Ricordiamo quanto anticipato all'inizio: al termine della partita, se Scratch ha vinto sposta le caselle che ha giocato di una posizione verso l'inizio dell'elenco <strong>best moves</strong>, in caso di sconfitta di un posto verso il fondo. Se la partita è finita in parità, lascia inalterato l'elenco delle mosse migliori.</p>
+<h3>Determinazione del vincitore</h3>
+<p>Introduciamo una nuova variabile, <strong>winner</strong>, che fornisce l'identità del vincitore: -1 per O, +1 per X, 0 in caso di parità. Attribuiamo questa responsabilità allo sfondo, visto che già si occupa di determinare quando la partita è giunta al termine:</p>
+<img src="img/scratch-tictactoe/stage_at-startup_01.png">
+<p class="illustration">Inizializzazione della variabile <strong>winner</strong>.</p>
+<p>Per dare la possibilità a <strong>Laptop</strong> di aggiornare la sua base di conoscenza, al termine della partita lo sfondo, dopo aver impostato la variabile <strong>winner</strong>, emette una notifica di fine partita:</p>
+<img src="img/scratch-tictactoe/stage_check-row_01.png">
+<p class="illustration">Determinazione del vincitore: l'ultimo che ha mosso.</p>
+<p>Per coerenza conviene emettere la notifica di fine partita anche in caso di parità:</p>
+<img src="img/scratch-tictactoe/stage_stop-on-draw_01.png">
+<p class="illustration">Emissione della notifica di fine partita in caso di patta.</p>
+<h3>Aggiornamento della base di conoscenza</h3>
+<p>Tocca a <strong>Laptop</strong> aggiornare l'elenco delle mosse migliori in caso di vittoria o sconfitta. Poiché abbiamo stabilito nel codice dello sprite <strong>Turn</strong> che il computer gioca con le X, la vittoria del computer si ha quando <strong>winner</strong> vale 1, la sconfitta quando <strong>winner</strong> vale -1. Il codice da eseguire nei due casi è simile: considerare </p>
+<!-- suggerire di estendere il gioco aggiungendo una schermata iniziale che consenta al giocatore di scegliere il simbolo con il quale vuole giocare -->
+
+<!--
+computer cells è l'array dove memorizziamo le celle; azzerato all'inizio, si fa un add ad ogni mossa
+
+dobbiamo risolvere il problema della patta
+nuova variabile "winner", all'inizio vuota
+
+player/player 1/player 2 -> player/players (array)
+
+un po' di casino nell'algoritmo (quello che tira su parte da 2 e sale, quello che tira giù parte da 8 e scende (se no una cella viene portata fino in fondo, un passo alla volta)).
+per testarlo impostare 2 4 6 8 1 9 3 7 5
+giocare per primi e giocare al centro  (5) poi 9 poi 3 e 6 -> il computer perde e le celle 2 1 7 vanno in giù di uno
+
+con la nuova sequenza, lasciare il computer che giochi 4, poi si gioca in sequenza 5, 7, 9
+il computer giocherà 4, 2, 3 e farà tria in 1
+-->
+<p class="modification-notice">Pagina modificata il 22/04/2021</p>
+</body>
+</html>
