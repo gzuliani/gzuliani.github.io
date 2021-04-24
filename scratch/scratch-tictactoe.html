@@ -10,8 +10,8 @@
 <p class="page-path"><a href="../index.html#scratch-ia">risorse</a> |
 ia in scratch - tria</p>
 <h1>IA in Scratch - Tria</h1>
-<p>I partecipanti più assidui agli incontri di CoderDojoFVG ci chiedono spesso di affrontare progetti un po' più complessi di quelli che presentiamo normalmente, quando la maggior parte dei presenti non conosce o non ha molta confidenza con Scratch. Considerato che ultimamente si sente molto spesso parlare (di solito a sproposito) di intelligenza artificiale, ho cercato di coniugare le due cose: preparare un progetto più ambizioso del solito che permetta di introdurre alcuni concetti dell'AI.</p>
-<p>L'obiettivo è costruire un programma che giochi a tria dimostrando un certo livello di intelligenza; è anche dotato di una minima capacità d'apprendimento, sufficiente tuttavia per fornire alcuni spunti di discussione sul tema.</p>
+<p>Spesso i partecipanti più assidui agli incontri di CoderDojoFVG chiedono di affrontare progetti un po' più ambiziosi di quelli che presentiamo quando la maggior parte dei presenti ha poca o nessuna esperienza di Scratch. Considerato inoltre che ultimamente si sente molto spesso parlare di intelligenza artificiale, ho cercato di coniugare le due cose: preparare un progetto più complesso del solito che permetta di introdurre alcuni concetti dell'AI.</p>
+<p>L'obiettivo è costruire un programma che giochi a tria dimostrando un certo livello di intelligenza. Sarà anche dotato di una minima capacità d'apprendimento, sufficiente per fornire alcuni spunti di discussione sul tema.</p>
 <p>Il programma è sviluppato per passi:</p>
 <ol>
     <li><a href="#partita-due-giocatori">partita tra due giocatori</a></li>
@@ -19,7 +19,7 @@ ia in scratch - tria</p>
     <li><a href="#strategia-casuale">Scratch gioca muovendo a caso</a></li>
     <li><a href="#fare-tria">Scratch cerca di fare tria</a></li>
     <li><a href="#bloccare-l-avversario">Scratch tenta di bloccare l'avversario</a></li>
-    <li><a href="#base-di-conoscenza">Scratch conosce le mosse migliori</a></li>
+    <li><a href="#base-di-conoscenza">Scratch usa un catalogo di mosse</a></li>
     <li><a href="#apprendimento">Scratch impara dall'avversario</a></li>
 </ol>
 <p>Le ultime due fasi sono le più interessanti. Delle due, la prima introduce una lista che contiene le caselle in ordine di rilevanza strategica; quando muove Scratch sceglie la prima casella in elenco che non è ancora occupata. Nella seconda, al termine di una partita vittoriosa Scratch sposta le caselle giocate verso l'inizio dell'elenco per aumentare la probabilità di giocarle nelle partite successive; in caso di sconfitta le sposta verso il fondo per limitare il loro utilizzo.</p>
@@ -103,7 +103,7 @@ ia in scratch - tria</p>
 <p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_02.sb3">qui</a>.</p>
 <a name="strategia-casuale"></a>
 <h2>Scratch gioca muovendo a caso</h2>
-<p>Arbitrariamente attribuiamo il segno O (-1) al computer, X (+1) all'utente. <strong>Turn</strong>, dopo aver impostato il turno, invia il messaggio <strong>computer moves</strong> al nuovo sprite <strong>Laptop</strong> a indicare che tocca al computer muovere:</p>
+<p>Arbitrariamente attribuiamo il segno O (-1) al computer, X (+1) all'utente. Lo facciamo attraverso una variabile globale, <strong>computer turn</strong> cosicché se in futuro dovessimo cambiare idea basterà intervenire in un unico punto. <strong>Turn</strong>, dopo aver impostato il turno, invia il messaggio <strong>computer moves</strong> al nuovo sprite <strong>Laptop</strong> a indicare che tocca al computer muovere:</p>
 <img src="img/scratch-tictactoe/turn_at-startup_05.png">
 <p class="illustration">Il codice di <strong>Turn</strong> che determina quando la mossa tocca al computer.</p>
 <h3>Lo sprite <strong>Laptop</strong></h3>
@@ -121,12 +121,12 @@ ia in scratch - tria</p>
 <p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_03.sb3">qui</a>.</p>
 <h3>Curiosità</h3>
 <p>Con un piccolo intervento al codice di <strong>Turn</strong> è possibile far giocare Scratch contro sè stesso:</p>
-<img src="img/scratch-tictactoe/turn_let_computer_move_01.png">
+<img src="img/scratch-tictactoe/turn_let-computer-move_01.png">
 <p class="illustration">Scratch sfida sè stesso!</p>
 <a name="fare-tria"></a>
 <h2>Scratch cerca di fare tria</h2>
 <p>Rendiamo la strategia del computer più competitiva (intelligente?!) controllando, prima di effettuare la mossa casuale, se c'è una tria da completare. Bisogna dunque verificare, per ogni possibile tria, se una delle tre posizioni è libera e le rimanenti due sono occupate dal simbolo O. La condizione è equivalente a chiedersi se la somma delle celle è uguale a -2, avendo attribuito al simbolo O il valore -1:</p>
-<p class="formula">0 + (-1) +  (-1) = -2.</p>
+<p class="formula">0 + (-1) + (-1) = -2.</p>
 <p>Il codice dello sprite <strong>Laptop</strong> necessita di vari interventi. Spostiamo innanzitutto i blocchi che realizzano la strategia casuale in una procedura dedicata:</p>
 <img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_02_random.png">
 <p class="illustration">Il frammento di codice della mossa casuale.</p>
@@ -166,12 +166,12 @@ ia in scratch - tria</p>
 <p>Il programma diventa sempre più raffinato, e batterlo non è così scontato.</p>
 <p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_05.sb3">qui</a>.</p>
 <a name="base-di-conoscenza"></a>
-<h2>Scratch conosce le mosse migliori</h2>
+<h2>Scratch usa un catalogo di mosse</h2>
 <p>È giunta l'ora di abbandonare la strategia casuale. Dotiamo Scratch di una <em>base di conoscenza</em> dalla quale possa attingere quando deve scegliere la prossima casella da giocare e non ci sono trie da completare o da bloccare. Nonostante i termini altisonanti l'implementazione è banale: definiamo un elenco di mosse ordinate per importanza, e facciamo in modo che Scratch giochi la prima che risulta libera. Abbiamo quindi bisogno di una nuova variabile lista privata dello sprite <strong>Laptop</strong>, che denominiamo <strong>best moves</strong>, e che inizializziamo con la sequenza 5, 1, 3, 7, 9, 2, 4, 6, 8 che privilegia la casella centrale e quelle d'angolo:</p>
 <img src="img/scratch-tictactoe/laptop_global_01.png">
 <p class="illustration">L'elenco delle possibili mosse, ordinate per rilevanza strategica.</p>
 <!-- differenza tra conoscenza esplicita (catalogo delle mosse migliori) e implicita (codice di completamento delle proprie trie, blocco delle trie dell'avversario) -->
-<p>Il codice di inizializzazione dell'elenco delle mosse migliori non fa capo a nessun blocco pre-esistente perché è relativo a un oggetto immutabile che per tale ragione non ha bisogno di essere ricreato ad ogni nuova partita.</p>
+<p>Il codice di inizializzazione dell'elenco delle mosse migliori non fa capo a nessun blocco pre-esistente perché è relativo a un oggetto immutabile che per tale ragione non ha bisogno di essere ricreato ad ogni nuova partita. Cliccare sul primo blocco per inizializzare l'elenco una volta per tutte.</p>
 <p>Va ora definito un nuovo blocco, che chiameremo <strong>pick best cell</strong>, alternativo a <strong>pick a random cell</strong> (che comunque conserviamo perché potrebbe tornare utile più tardi). Cominciamo col sostituirlo al secondo nel frammento di codice che risponde al messaggio <strong>computer moves</strong>:</p>
 <img src="img/scratch-tictactoe/laptop_when-i-receive-computer-moves_04.png">
 <p class="illustration">Sostituzione della strategia di selezione della mossa successiva.</p>
@@ -182,7 +182,7 @@ ia in scratch - tria</p>
 <p>Il progetto è scaricabile <a href="files/scratch-tictactoe/tictactoe_06.sb3">qui</a>.</p>
 <a name="apprendimento"></a>
 <h2>Scratch impara dall'avversario</h2>
-<p>La configurazione delle <strong>best moves</strong> rende Scratch praticamente imbattibile, specie se è lui a iniziare il gioco. Scompigliamo allora l'ordine delle mosse migliori in modo da ottenere la sequenza intuitivamente non ottimale 2, 4, 6, 8, 1, 3, 7, 9, 5. Bastano poche partite per rendersi conto che questa serie è molto meno efficace di quella originale. Esiste un modo perché Scratch passi progressivamente da una all'altra autonomamente mentre gioca? È quello che stiamo per scoprire&hellip;</p>
+<p>La configurazione delle <strong>best moves</strong> rende Scratch praticamente imbattibile, specie se è lui a iniziare il gioco. Scompigliamo allora l'ordine delle mosse migliori in modo da ottenere la sequenza intuitivamente non ottimale 2, 4, 6, 8, 1, 3, 7, 9, 5 (click sul primo blocco per aggiornare l'elenco). Bastano poche partite per rendersi conto che questa serie è molto meno efficace di quella originale. Esiste un modo perché Scratch passi progressivamente da una all'altra autonomamente mentre gioca? È quello che stiamo per scoprire&hellip;</p>
 <!--
 con la sequenza 2, 4, 6, 8, 1, 3, 7, 9, 5 se inizia il giocatore questo vince per esempio con la sequenza 5, 4, 1 (oppure 7); se è il computer a iniziare il giocatore vince comunque giocando 4, 5, 1 (oppure 7)
 
@@ -200,24 +200,47 @@ con la sequenza 5, 1, 3, 7, 9, 2, 4, 6, 8 se inizia il giocatore questo vince co
 <img src="img/scratch-tictactoe/stage_stop-on-draw_01.png">
 <p class="illustration">Emissione della notifica di fine partita in caso di patta.</p>
 <h3>Aggiornamento della base di conoscenza</h3>
-<p>Tocca a <strong>Laptop</strong> aggiornare l'elenco delle mosse migliori in caso di vittoria o sconfitta. Poiché abbiamo stabilito nel codice dello sprite <strong>Turn</strong> che il computer gioca con le X, la vittoria del computer si ha quando <strong>winner</strong> vale 1, la sconfitta quando <strong>winner</strong> vale -1. Il codice da eseguire nei due casi è simile: considerare </p>
-<!-- suggerire di estendere il gioco aggiungendo una schermata iniziale che consenta al giocatore di scegliere il simbolo con il quale vuole giocare -->
-
-<!--
-computer cells è l'array dove memorizziamo le celle; azzerato all'inizio, si fa un add ad ogni mossa
-
-dobbiamo risolvere il problema della patta
-nuova variabile "winner", all'inizio vuota
-
-player/player 1/player 2 -> player/players (array)
-
-un po' di casino nell'algoritmo (quello che tira su parte da 2 e sale, quello che tira giù parte da 8 e scende (se no una cella viene portata fino in fondo, un passo alla volta)).
-per testarlo impostare 2 4 6 8 1 9 3 7 5
-giocare per primi e giocare al centro  (5) poi 9 poi 3 e 6 -> il computer perde e le celle 2 1 7 vanno in giù di uno
-
-con la nuova sequenza, lasciare il computer che giochi 4, poi si gioca in sequenza 5, 7, 9
-il computer giocherà 4, 2, 3 e farà tria in 1
--->
-<p class="modification-notice">Pagina modificata il 22/04/2021</p>
+<p>Tocca a <strong>Laptop</strong> aggiornare l'elenco delle mosse migliori in caso di vittoria o sconfitta. Poiché abbiamo stabilito nel codice dello sprite <strong>Turn</strong> che il computer gioca con le X, la vittoria del computer si ha quando <strong>winner</strong> è uguale a <strong>computer turn</strong> (il simbolo assegnato al computer), la sconfitta quando <strong>winner</strong> è il simbolo opposto. Se <strong>winner</strong> è zero la partita è finita in parità e si è deciso di non modificare l'elenco delle mosse migliori.</p>
+<h3>Algoritmo da applicare in caso di vittoria</h3>
+<p>Per far risalire le posizioni giocate si effettua una scansione a partire dalla seconda posizione (la mossa in prima posizione non può avanzare ulteriormente!) e, se la casella contiene il simbolo assegnato al computer allora questa viene scambiata con quella che la precede con la nota tecnica della variabile ausiliaria:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-game-ended_01_win.png">
+<p class="illustration">Aggiornamento della base di conoscenza in caso di vittoria.</p>
+<p>Per verificare il corretto funzionamento dell'algoritmo, lasciare che sia Scratch ad iniziare la partita &mdash; giocherà la casella 2 &mdash;, quindi rispondiamo con 6. Scratch giocherà 4 e noi rispondiamo con 8. Scratch giocherà 1, noi rispondiamo 5 per consentirgli di chiudere la tria in 7. In seguito a questa vittoria l'elenco delle mosse migliori diventa:</p>
+<img src="img/scratch-tictactoe/learning-algorithm_win.png">
+<p class="illustration">In caso di vittoria le caselle giocate si spostano verso l'inizio.</p>
+<h3>Algoritmo da applicare in caso di sconfitta</h3>
+<p>In caso di sconfitta Scratch deve spostare le celle giocate verso la fine dell'elenco. L'algoritmo da applicare è simile al precedente, ma serve un'accortezza: la scansione dev'essere effettuata all'indietro, a partire dal fondo dell'elenco, altrimenti la prima cella giocata viene trascinata, passo dopo passo, in fondo all'elenco, e questo non va bene. Ecco quindi il codice corretto:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-game-ended_01_win.png">
+<p class="illustration">Aggiornamento della base di conoscenza in caso di vittoria.</p>
+<p>Anche in questo caso una verifica è d'obbligo: ristabiliamo l'ordine originale dell'elenco delle mosse migliori, dopodiché lasciamo la prima mossa a Scratch, che giocherà in 2, e rispondiamo in 1. A questo punto Scratch giocherà in 4, al che noi rispondiamo in 3. Scratch giocherà 6, e noi rispondiamo in 5. Scratch bloccherà la nostra tria giocando 7, ma noi vinciamo rispondendo 9. L'elenco delle mosse migliori viene così trasformato:</p>
+<img src="img/scratch-tictactoe/laptop_when-i-receive-game-ended_01_loose.png">
+<p class="illustration">Aggiornamento della base di conoscenza in caso di sconfitta.</p>
+<p>Il progetto finale è scaricabile <a href="files/scratch-tictactoe/tictactoe_06.sb3">qui</a>.</p>
+<h2>Considerazioni finali</h2>
+<p>Giocando contro un buon giocatore Scratch impara presto che la casella centrale è strategica. Cambiate spesso il modo di fare tria e vedrete la cella numero 5 risalire verso le prime posizioni dell'elenco. Giocando contro un giocatore scarso l'apprendimento si dimostrerà più lento e lievemente meno efficace.</p>
+<p>Riutilizzando il blocco <strong>pick random move</strong> che ora giace inutilizzato in <strong>Laptop</strong> possiamo modificare il codice di <strong>Turn</strong> in modo da far giocare la versione intelligente di Scrach contro quella casuale. La cosa è interessante perché permette di vedere comodamente come evolve la base di conoscenza (basta un click per assistere ad un'intera partita):</p>
+<img src="img/scratch-tictactoe/turn_let-computer-move_02.png">
+<p class="illustration">Scratch sfida sè stesso &ndash; parte II.</p>
+<p>Alcuni spunti per possibili sviluppi del programma:</p>
+<ul>
+    <li>lo sprite <strong>Laptop</strong> spiega con un fumetto la mossa che sta per eseguire:
+        <ul>
+            <li>sto per chiudere la mia tria!</li>
+            <li>sto per bloccara la tua tria!</li>
+            <li>gioco una posizione a caso&hellip;</li>
+            <li>gioco la posizione N perché penso sia la migliore.</li>
+        </ul></li>
+    <li>all'inizio il giocatore sceglie il simbolo con cui vuol giocare;</li>
+    <li>all'inizio il giocatore sceglie il livello del computer:
+        <ul>
+            <li>1: gioco casuale;</li>
+            <li>2: il computer chiude le sue trie;</li>
+            <li>3: il computer chiude le sue trie e blocca quelle dell'avversario;</li>
+            <li>4: strategica completa con l'uso del catalogo delle mosse.</li>
+        </ul></li>
+    <li>&hellip;</li>
+</ul>
+<p>Una versione del progetto contenente solo i costumi della cella e gli sfondi è scaricabile <a href="files/scratch-tictactoe/tictactoe_00.sb3">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 24/04/2021</p>
 </body>
 </html>
