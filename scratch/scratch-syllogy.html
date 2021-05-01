@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Scratch&hellip; ragiona!</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scratch-syllogy.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-syllogy">risorse</a> |
+scratch&hellip; ragiona!</p>
+<h1>Scratch&hellip; ragiona!</h1>
+<img src="img/scratch-syllogy/syllogy.png">
+<p class="illustration">Scratch pronto a dimostrare la sua sagacia!</p>
+<br>
+<p>Syllogy è un programma che risolve sillogismi; a partire da due premesse nella forma:</p>
+<ul>
+<li>un A è un B</li>
+<li>un B è un C</li>
+</ul>
+<p>conclude autonomamente &ldquo;un A è un C&rdquo; (sillogismo categorico affermativo).</p>
+<p>Ricordiamo tutti il classico esempio di sillogismo:</p>
+<ul>
+<li>Socrate è un uomo</li>
+<li>Tutti gli uomini sono mortali</li>
+<li>Dunque Socrate è mortale</li>
+</ul>
+<p>Syllogy riconosce premesse nella forma:</p>
+<table>
+<tr>
+<td>il<br>lo<br>la<br>l'<br>un<br>uno<br>una<br>un'</td>
+<td>[minore]</td>
+<td>è</td>
+<td>un<br>uno<br>una<br>un'</td>
+<td>[maggiore]</td>
+</tr>
+</table>
+<p>Gli articoli sono opzionali, i nomi delle categorie <strong>minore</strong> e <strong>maggiore</strong> devono essere composti da una sola parola. La premessa &ldquo;un uccello è una creatura alata&rdquo; non è accettata da Syllogy perché &ldquo;creatura alata&rdquo; è composta da due termini.</p>
+<h2>Funzionamento del programma</h2>
+<p>All'avvio Syllogy non sa nulla. Si inizia perciò con l'immettere alcune premesse:</p>
+<ul>
+<li class="request">un cane è un mammifero</li>
+<li class="request">un mammifero è un animale</li>
+</ul>
+<p>A questo punto si può già interrogare il programma. Se il testo immesso termina con un punto interrogativo Syllogy verifica se è derivabile dalle premesse che conosce:</p>
+<ul>
+<li class="request">un cane è un animale?</li>
+<li class="response">Secondo me sì!</li>
+<li class="request">un cane è un mammifero?</li>
+<li class="response">Secondo me sì!</li>
+<li class="request">un cane è un cane?</li>
+<li class="response">Secondo me sì!</li>
+<li class="request">un mammifero è un cane?</li>
+<li class="response">Secondo me no.</li>
+</ul>
+<h2>Implementazione</h2>
+<p>Il programma attende l'input dell'utente, quindi analizza la frase verificando se contiene un punto interrogativo, condizione che discrimina tra una premessa da memorizzare e una da verificare. In entrambi i casi Syllogy estrae dalla frase le singole parole di cui è composta inserendole nella lista <span class="code">words</span> a meno che non facciano parte dell'elenco di parole non significative <span class="code">stop words</span>. Se tutto va come previsto nella lista <span class="code">words</span> finiscono esattamente due parole, quelle che corrispondono alle categorie <strong>minore</strong> e <strong>maggiore</strong>. Se così non è il programma conclude che qualcosa dev'essere andato storto e risponde &ldquo;Mi dispiace, non capisco&hellip;&rdquo;.</p>
+<p>Nel caso l'utente abbia immesso una premessa, le due parole chiave estratte dal testo sono inserite nelle due liste parallele <span class="code">minor</span> e <span class="code">major</span>. Dopo le prime due premesse il contenuto delle due liste è:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>minor</th><th>major</th></tr>
+<tr><td>cane</td><td>mammifero</td></tr>
+<tr><td>mammifero</td><td>animale</td></tr>
+</table>
+<p>Nel caso di un'interrogazione il programma deve verificare se dalla prima parola estratta dalla domanda si può giungere alla seconda. Per far ciò inserisce la prima parola nella lista <span class="code">words to examine</span> e comincia a sostituire ogni parola della lista con le corrispondenti in <strong>major</strong>, fino a quando la seconda parola entra nella lista oppure la lista si svuota. Nel primo caso la risposta sarà affermativa, nel secondo negativa.</p>
+<p>Ad esempio, per rispondere alla domanda &ldquo;un cane è un animale?&rdquo; Syllogy carica la prima parola chiave della domanda nella lista delle parole da considerare:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td>cane</td></tr>
+</table>
+<p>Syllogy controlla poi se la seconda parola chiave, &ldquo;animale&rdquo;, è in lista. Poiché tale parola non c'è, prende la prima parola il lista, la toglie dalla lista e la sostituisce con le parole ad essa collegate nella lista <span class="code">major</span>. Alla parola &ldquo;cane&rdquo; c'è n'è associata una sola, &ldquo;mammifero&rdquo;, ed è questa che viene aggiunta in coda alla lista:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td><del>cane</del></td></tr>
+<tr><td>mammifero</td></tr>
+</table>
+<p>&ldquo;animale&rdquo; non appare ancora, ma siccome la lista non è vuota il programma prosegue sostituendo la prima parola in elenco con quelle ad essa collegate, come già fatto per &ldquo;cane&rdquo;. C\'è una parola associata a &ldquo;mammifero&rdquo;, guardacaso proprio &ldquo;animale&rdquo;:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td><del>cane</del></td></tr>
+<tr><td><del>mammifero</del></td></tr>
+<tr><td>animale</td></tr>
+</table>
+<p>La presenza della parola &ldquo;animale&rdquo; nella lista <span class="code">words to examine</span> permette finalmente al programma di concludere che la risposta alla domanda iniziale è affermativa:</p>
+<ul>
+<li class="request">un cane è un animale?</li>
+<li class="response">Secondo me sì!</li>
+</ul>
+<p>Ora è chiaro perché anche le due domande successive ricevono la stessa risposta:</p>
+<ul>
+<li class="request">un cane è un mammifero?</li>
+<li class="response">Secondo me sì!</li>
+<li class="request">un cane è un cane?</li>
+<li class="response">Secondo me sì!</li>
+</ul>
+<p>Sia &ldquo;mammifero&rdquo; che &ldquo;cane&rdquo; hanno fatto parte della lista ad un certo punto e hanno dunque permesso al programma di uscire con successo dal ciclo di sostituzione delle parole.</p>
+<p>Come mai invece l'ultima interrogazione riceve una risposta negativa?</p>
+<ul>
+<li class="request">un mammifero è un cane?</li>
+<li class="response">Secondo me no.</li>
+</ul>
+<p>Riapplichiamo l'algoritmo: si parte da &ldquo;mammifero&rdquo;, si vuole arrivare a &ldquo;cane&rdquo;.</p>
+<p>Il primo passo è:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td>mammifero</td></tr>
+</table>
+<p>&ldquo;cane&rdquo; non è in lista, si passa alla sostituzione di &ldquo;mammifero&rdquo;:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td><del>mammifero</del></td></tr>
+<tr><td>animale</td></tr>
+</table>
+<p>La parola cercata non è ancora apparsa, si prosegue con la sostituzione di &ldquo;animale&rdquo;:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>words to examine</th></tr>
+<tr><td><del>mammifero</del></td></tr>
+<tr><td><del>animale</del></td></tr>
+</table>
+<p>Non essendoci alcuna parola associata a &ldquo;animale&rdquo; in <span class="code">major</span>, la lista <span class="code">words to examine</span> alla fine rimane vuota e quindi il programma conclude che non c'è relazione tra le due categorie.</p>
+<h2>Considerazioni finali</h2>
+<p>Il programma può contenere informazioni relative a diversi argomenti. Lo si può per esempio mettere alla prova con una forma più complessa del sillogismo più famoso citato all'inizio:</p>
+<ul>
+<li class="request">Socrate è greco</li>
+<li class="request">un greco è un uomo</li>
+<li class="request">un uomo è un mortale</li>
+</ul>
+<p>Come risponderà Syllogy alla domanda:</p>
+<ul>
+<li class="request">Socrate è un mortale?</li>
+</ul>
+<p>Incrociamo tra loro le due catene deduttive che abbiamo costruito:</p>
+<ul>
+<li class="request">un uomo è un mammifero</li>
+</ul>
+<p>Quali saranno le risposte di Syllogy ai quesiti:</p>
+<ul>
+<li class="request">Socrate è un animale?</li>
+<li class="request">Socrate è un cane?</li>
+</ul>
+<h2>Note implementative</h2>
+<img src="img/scratch-syllogy/syllogy-source-code.png">
+<p class="illustration">Il listato completo del programma.</p>
+<p>Vale la pena citare la procedura <span class="code">split words</span> che scandisce il testo immesso dall'utente e che determina la fine di una parola quando trova uno spazio o un'apostrofo &ndash; cfr. lista <span class="code">delimiters</span>. Una tecnica simile (scansione lineare del testo) è adottata nel blocco principale per eliminare il punto di domanda presente nelle interrogazioni.</p>
+<p>Il programma è scaricabile <a href="files/scratch-syllogy/syllogy.sb3">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 01/05/2021</p>
+</body>
+</html>
