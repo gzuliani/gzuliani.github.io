@@ -1,0 +1,17 @@
+li.question {
+ color: #268bd2;
+ font-weight: bold;
+}
+
+li.answer {
+ color: #b58900;
+ font-weight: bold;
+}
+
+span.code {
+ background-color: #eee8d5;
+ border-width: 1px;
+ border-style: solid;
+ color: #586e75;
+ padding: .1em;
+}

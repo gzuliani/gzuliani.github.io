@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Scratch e&hellip; pangolini</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scratch-pangolins.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-pangolins">risorse</a> |
+scratch e&hellip; pangolini</p>
+<h1>Scratch e&hellip; pangolini</h1>
+<p>Pangolini è un gioco in cui il computer tenta di indovinare l'animale pensato dall'utente. Il listato BASIC si trova nell'appendice del manuale dello ZX Spectrum. Probabilmente si tratta di una rivisitazione del gioco &ldquo;<a href="http://www.vintage-basic.net/bcg/animal.bas">Animals</a>&rdquo; pubblicato nel libro <a href="https://en.wikipedia.org/wiki/BASIC_Computer_Games">BASIC Computer Games</a>.</p>
+<h2>Funzionamento</h2>
+<p>Il programma all'inizio è in grado di distinguere quattro animali: balena, formica, pangolino, serpente. Il computer pone una serie di domande all'utente e usa le risposte ottenute per attraversare un albero decisionale binario. I nodi terminali dell'albero, in verde nello schema sottostante, rappresentano le possibili risposte:</p>
+<img src="img/scratch-pangolins/pangolins-numbered.png">
+<p class="illustration">L'albero decisionale iniziale.</p>
+<p>L'albero, i cui nodi sono numerati progressivamente, è rappresentato internamente per mezzo di tre liste. La prima, <span class="code">questions</span>, contiene il testo associato al nodo. Le altre due liste, <span class="code">yes</span> e <span class="code">no</span>, contengono rispettivamente il nodo da raggiungere se la risposta alla domanda associata al nodo è stata affermativa oppure negativa. Il programma si aspetta un <strong>sì</strong> con l'accento per le risposte affermative. Per i nodi terminali, che non rappresentano una domanda ma una possibile risposta, il valore delle due liste non è significativo: il programma inserisce degli zeri in questo caso. Il contenuto inziale delle tre liste è il seguente:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>questions</th><th>yes</th><th>no</th></tr>
+<tr><td>1</td><td>vive nel mare</td><td>2</td><td>3</td></tr>
+<tr><td>2</td><td>una balena</td><td>-</td><td>-</td></tr>
+<tr><td>3</td><td>è squamoso</td><td>4</td><td>5</td></tr>
+<tr><td>4</td><td>mangia le formiche</td><td>6</td><td>7</td></tr>
+<tr><td>5</td><td>una formica</td><td>-</td><td>-</td></tr>
+<tr><td>6</td><td>un pangolino</td><td>-</td><td>-</td></tr>
+<tr><td>7</td><td>un serpente</td><td>-</td><td>-</td></tr>
+</table>
+<p>Il programma può essere considerato una forma estremamente semplificata di sistema esperto. Le ramificazioni in questo caso sono binarie, mentre nel caso più generale ogni nodo presenta un numero arbitrario di uscite. Per raggiungere un nodo terminale è necessario rispondere in sequenza a tutti i quesiti proposti da Scratch quando normalmente tutte le informazioni a disposizione vengono fornite in blocco all'inizio; la discesa sull'albero decisionale può arrestarsi su uno o più nodi intermedi se i dati a disposizione non sono sufficienti a raggiungerne uno terminale. In questo caso il sistema fornisce un insieme di possibili risposte ognuna corredata da un certo grado di plausibilità.</p>
+<h2>Apprendimento</h2>
+<p>Il programma è in grado di imparare a distinguere nuovi animali. Supponiamo ad esempio di scegliere un polipo come animale segreto. Ecco come si svolgerebbe il colloquio:</p>
+<ul>
+<li class="question">Pensa a un animale...</li>
+<li class="question">Dimmi un po'... vive nel mare?</li>
+<li class="answer">sì</li>
+<li class="question">Si tratta di... una balena!</li>
+<li class="question">Ho indovinato?</li>
+<li class="answer">no</li>
+</ul>
+<p>A questo punto il programma si prepara a estendere l'albero decisionale per far posto al nuovo animale. Il programma chiede innanzitutto di che animale si tratta:</p>
+<ul>
+<li class="question">A quale animale stavi pensando?</li>
+<li class="answer">un polipo</li>
+</ul>
+<p>Poiché ora ci sono due animali che condividono la caratteristica <strong>vive nel mare</strong> è necessario introdurre un criterio per distinguerli. Per questo il programma chiede:</p>
+<ul>
+<li class="question">Cosa distingue un polipo da una balena?</li>
+<li class="answer">ha i tentacoli</li>
+</ul>
+<p>A questo punto si può procedere la modifica dell'albero deicisionale:</p>
+<img src="img/scratch-pangolins/pangolins-extended.png">
+<p class="illustration">L'albero esteso con il polipo e il criterio per distinguerlo dalla balena.</p>
+<p>Il programma aggiorna conseguentemente la sua base di conoscenza:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>questions</th><th>yes</th><th>no</th></tr>
+<tr><td>1</td><td>vive nel mare</td><td>2</td><td>3</td></tr>
+<tr><td>2</td><td><del>una balena</del> ha i tentacoli</td><td>8</td><td>9</td></tr>
+<tr><td>3</td><td>è squamoso</td><td>4</td><td>5</td></tr>
+<tr><td>4</td><td>mangia le formiche</td><td>6</td><td>7</td></tr>
+<tr><td>5</td><td>una formica</td><td>-</td><td>-</td></tr>
+<tr><td>6</td><td>un pangolino</td><td>-</td><td>-</td></tr>
+<tr><td>7</td><td>un serpente</td><td>-</td><td>-</td></tr>
+<tr><td>8</td><td>un polipo</td><td>-</td><td>-</td></tr>
+<tr><td>9</td><td>una balena</td><td>-</td><td>-</td></tr>
+</table>
+<p>Il nodo 2 è diventato un nodo intermedio associato alla discriminante <strong>ha i tentacoli</strong>. Il nodo associato al polipo è il numero 8, quello associato alla balena il numero 9.</p>
+<p>Provate ad inserire altri animali, ad esempio:</p>
+<ul>
+<li>un leone (<strong>ha la criniera</strong>)</li>
+<li>un cane (<strong>abbaia</strong>)</li>
+<li>un granchio (<strong>ha le chele</strong>)</li>
+</ul>
+<p>Cercate di anticipare la posizione in cui verranno inseriti nell'albero.</p>
+<h2>Download</h2>
+<p>Il programma è scaricabile <a href="files/scratch-pangolins/pangolini.sb3">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 16/05/2021</p>
+</body>
+</html>
