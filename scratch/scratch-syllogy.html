@@ -143,11 +143,14 @@ scratch&hellip; ragiona!</p>
 <p>Vale la pena citare la procedura <span class="code">split words</span> che scandisce il testo immesso dall'utente e che determina la fine di una parola quando trova uno spazio o un'apostrofo &ndash; cfr. lista <span class="code">delimiters</span>. Una tecnica simile (scansione lineare del testo) è adottata nel blocco principale per eliminare il punto di domanda presente nelle interrogazioni.</p>
 <p>Il programma è scaricabile <a href="files/scratch-syllogy/syllogy.sb3">qui</a>.</p>
 <h2>Possibili sviluppi</h2>
-<p>Fare in modo che il programma funzioni in lingua inglese.</p>
-<p>Estendere il programma in modo che tratti correttamente anche il caso di categorie formate da più parole, come nell'esempio &ldquo;un uccello è una creatura alata&rdquo;.</p>
-<p>Illustrare il percorso deduttivo che ha portato a dichiarare vera un'interrogazione. Ecco una possibile risposta alla domanda &ldquo;Socrate è un animale?&rdquo;:</p>
+<ul>
+<li>fare in modo che il programma funzioni in lingua inglese;</li>
+<li>estendere il programma in modo che tratti correttamente anche il caso di categorie formate da più parole, come nell'esempio &ldquo;un uccello è una creatura alata&rdquo;;</li>
+<li><p>illustrare il percorso deduttivo che ha portato a dichiarare vera un'interrogazione: dopo aver risposto affermativamente alla domanda &ldquo;Socrate è un animale?&rdquo;, Scratch potrebbe giustificare così la propria risposta:</p>
 <img src="img/scratch-syllogy/syllogy-explains.png">
-<p>Potrete poi confrontare la vostra soluzione con la <a href="files/scratch-syllogy/syllogy-explains.sb3">mia</a>, nella quale ho implementato una visita in profondità dell'albero deduttivo (cfr. variabili <span class="code">depth</span> e <span class="code">word depth</span>) che mi permette di mantenere aggiornata la catena di parole attualmente considerata (cfr. variabile <span class="code">word chain</span> e blocco <span class="code">evaluating word () at depth ()</span>).</p>
+<p>Potete confrontare la vostra soluzione con la <a href="files/scratch-syllogy/syllogy-explains.sb3">mia</a>, nella quale ho implementato una visita in profondità dell'albero deduttivo che mi permette di mantenere aggiornata la catena di parole in fase di valutazione. Ho dovuto modificare la procedura di sostituzione e introdurre alcune variabili ausiliarie come <span class="code">depth</span>, <span class="code">word depth</span> e <span class="code">word chain</span>, oltre al blocco <span class="code">evaluating word () at depth ()</span>.</p>
+</li>
+</ul>
 <p class="modification-notice">Pagina modificata il 01/05/2021</p>
 </body>
 </html>
