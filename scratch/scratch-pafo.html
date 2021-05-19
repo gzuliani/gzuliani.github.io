@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Scratch lo psicologo</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/scratch-pafo.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-pafo">risorse</a> |
+scratch lo psicologo</p>
+<h1>Scratch lo psicologo</h1>
+<p>Il progetto è una versione semplificata di <a href="https://en.wikipedia.org/wiki/ELIZA">ELIZA</a>, un programma scritto da Joseph Weizenbaum a metà degli anni 60 per studiare la possibilità di utilizzare il linguaggio naturale nella comunicazione con i computer. ELIZA nasce come parodia di uno psicologo di scuola rogeriana rifiutando di condurre un dialogo col paziente, preferendo invece di rilanciare ad esso le sue stesse considerazioni. L'esperimento fu un successo: la maggior parte di coloro che ebbero accesso al sistema si convinsero di avere a che fare con un'entità intelligente. Weizenbaum, spaventato e preoccupato dall'inattesa reazione degli utenti, decise di descrivere nel dettaglio il funzionamento del suo programma nel celebre articolo <a href="files/scratch-pafo/p36-weizenabaum.pdf">A Computer Program For the Study of Natural Language Communication Between Man And Machine</a> per dimostrare che si trattava di semplici (ma pur sempre brillanti) tecniche di manipolazione del testo.</p>
+<p>In seguito alla pubblicazione dell'articolo diverse versioni del programma vennero sviluppate. Tra tutte la più famosa, quella che ha originato probabilmente il maggior numero di implementazioni, è quella in <a href="files/scratch-pafo/2018ELIZABASIC.pdf">BASIC</a> di Jeff Shrager; una suo <a href="files/scratch-pafo/Creative Computing Jul-Aug 1977 Eliza BASIC listing.pdf">adattamento</a> è stato per esempio pubblicato nel numero di luglio/agosto 1977 della famosa rivista Creative Computing. Questo progetto nasce da un adattamento per la lingua italiana presentato nel libro &ldquo;Il BASIC per l'intelligenza artificiale&rdquo; di Tim Hartnell edito da Edizioni Elettroniche Mondadori nel 1985 sotto il nome di Pafo.</p>
+<h2>Funzionamento del programma</h2>
+<p class="note">Il programma accetta solo frasi scritte in minuscolo, iniziale compresa.<br>Non usare l'apostrofo per gli accenti: adoperare direttamente le lettere accentate.</p>
+<p>Il programma ricerca nella frase immessa dall'utente un frammento a partire dal quale poter costruire una domanda o una considerazione correlata. Il fatto che la risposta del computer contenga dei rimandi ad uno o più concetti espressi nella frase originaria dovrebbe indurre l'utente a pensare di avere a che fare con un'intelligenza di qualche natura.</p>
+<h3>Risposte evasive</h3>
+<p>Poiché non è ragionevole pensare di coprire tutti i possibili argomenti di conversazione, è necessario prevedere l'emissione di risposte generiche nel caso non sia stata trovata nessuna parola chiave; alcuni esempi:</p>
+<ul>
+    <li class="question">Continua...</li>
+    <li class="question">Va avanti</li>
+    <li class="question">Sii più chiaro</li>
+    <li class="question">Prosegui...</li>
+</ul>
+<p>Tutte le risposte sono precaricate nella lista <span class="code">questions</span>. Per evitare spiacevoli ripetizioni ELIZA utilizza di volta in volta una risposta diversa, ricominciando dall'inizio quando le ha esaurite tutte. Per semplicità questa versione ne sceglie una a caso, anche a rischio di ripetersi:</p>
+<img src="img/scratch-pafo/pafo_step_01_dull_questions.png">
+<p class="illustration">La versione minimale dello psicologo, scaricabile <a href="files/scratch-pafo/pafo_step_01_dull_questions.sb3">qui</a>.</p>
+<h3>Ricerca della parola chiave</h3>
+<p>Ad ogni parola chiave viene associato un insieme di possibili risposte; ad esempio al frammento <strong>mi sento</strong> Scratch potrebbe replicare con <strong>Credi sia normale essere così?</strong>. La ricerca della chiave avviene scandendo il testo immesso lettera per lettera, controllando di volta in volta se la porzione di testo a partire dal carattere in esame corrisponde a quello della chiave:</p>
+<img src="img/scratch-pafo/pafo_step_02_find_keyword_in_text.png">
+<p class="illustration">Ricerca della chiave nel testo immesso dall'utente. Il progetto è scaricabile <a href="files/scratch-pafo/pafo_step_02_find_keyword_in_text.sb3">qui</a>.</p>
+<h3>Elenco delle parole chiave</h3>
+<p>Introduciamo l'elenco <span class="code">keywords</span> che conterrà tutte le chiavi riconosciute dal programma. Per il momento lo inizializziamo con l'unica chiave che il programma riconosce, <strong>mi sento</strong>. Approfittiamo per inserire anche la replica <strong>Credi sia normale essere così?</strong> in <span class="code">questions</span>. Come fa il programma, una volta individuata la chiave <strong>mi sento</strong> a determinare la risposta corretta? Aggiungiamo altre due liste, <span class="code">first</span> e <span class="code">last</span> che contengono rispettivamente l'indice della prima e dell'ultima delle possibili risposte alla chiave:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>question</th></tr>
+<tr><td>1</td><td>Continua...</td></tr>
+<tr><td>2</td><td>Va avanti</td></tr>
+<tr><td>3</td><td>Sii più chiaro</td></tr>
+<tr><td>4</td><td>Prosegui</td></tr>
+<tr><td>5</td><td>Credi sia normale essere così?</td></tr>
+</table>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>keywords</th><th>first</th><th>last</th></tr>
+<tr><td>1</td><td>mi sento</td><td>5</td><td>5</td></tr>
+</table>
+<p>Durante la scansione del testo immesso dall'utente il programma controlla una dopo l'altra tutte le chiavi contenute in <span class="code">keywords</span>, fermandosi alla prima che trova. La risposta sarà scelta a caso tra quelle il cui indice è compreso il valore in <span class="code">first</span> e quello in <span class="code">last</span>. Allo stato attuale, per esempio, la risposta alla chiave <strong>mi sento</strong> sarà scelta tra quelle il cui indice è compreso tra 5 e 5, quindi necessariamente <strong>Credi sia normale essere così?</strong>.</p>
+<p>Segue la nuova versione del programma, in cui la variabile <span class="code">keyword</span> non contiene più la chiave bensì il suo indice all'interno dell'elenco <span class="code">keywords</span>:</p>
+<img src="img/scratch-pafo/pafo_step_03_keyword_list.png">
+<p class="illustration">Scansione dell'elenco delle chiavi. Il progetto è scaricabile <a href="files/scratch-pafo/pafo_step_03_keyword_list.sb3">qui</a>.</p>
+<h3>Chiavi a risposte multiple fisse</h3>
+<p>Esattamente come fatto per le risposte generiche, anche per le chiavi conviene predisporre più risposte in modo da rendere il colloquio meno prevedibile. Considerando la possibile reazione del paziente alla domanda <strong>Credi sia normale essere così?</strong> cominciamo ad estendere il copione aggiungendo nuove chiavi e le relative risposte:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>keywords</th><th>first</th><th>last</th></tr>
+<tr><td>1</td><td>mi sento</td><td>5</td><td>5</td></tr>
+<tr><td>2</td><td>sì</td><td>6</td><td>8</td></tr>
+<tr><td>3</td><td>no</td><td>8</td><td>10</td></tr>
+</table>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>question</th></tr>
+<tr><td>1</td><td>Continua...</td></tr>
+<tr><td>2</td><td>Va avanti</td></tr>
+<tr><td>3</td><td>Sii più chiaro</td></tr>
+<tr><td>4</td><td>Prosegui</td></tr>
+<tr><td>5</td><td>Credi sia normale essere così?</td></tr>
+<tr><td>6</td><td>Vedo...</td></tr>
+<tr><td>7</td><td>Capisco...</td></tr>
+<tr><td>8</td><td>Sei sicuro?</td></tr>
+<tr><td>9</td><td>Come mai?</td></tr>
+<tr><td>10</td><td>Perché no?</td></tr>
+</table>
+<p>Notare che le due nuove chiavi <strong>sì</strong> e <strong>no</strong> condividono la risposta in posizione 8, <strong>Sei sicuro?</strong>. È semplicissimo inoltre aggiungere sinonimi, per esempio potremmo decidere di trattare la chiave <strong>certamente</strong> alla stessa stregua di <strong>sì</strong>: basta aggiungere la nuova chiave in elenco e copiare i valori per <span class="code">first</span> e <span class="code">last</span>:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>keywords</th><th>first</th><th>last</th></tr>
+<tr><td>1</td><td>mi sento</td><td>5</td><td>5</td></tr>
+<tr><td>2</td><td>sì</td><td>6</td><td>8</td></tr>
+<tr><td>3</td><td>no</td><td>8</td><td>10</td></tr>
+<tr><td>4</td><td>certamente</td><td>6</td><td>8</td></tr>
+</table>
+<p>Ci si può ora divertire a estendere il vocabolario aggiungendo ad esempio degli avverbi generici cui rispondere altrettanto genericamente: <strong>forse</strong>, <strong>probabilmente</strong> → <strong>Non sembri molto sicuro</strong>. In una seduta psicologica è frequente l'analisi dei sogni, questo dovrebbe suggerire altre chiavi: <strong>sogno</strong>, <strong>sogni</strong> → <strong>Sogni spesso?</strong>, <strong>Cosa ti suggeriscono sogni di questo tipo?</strong>, <strong>Ti hanno mai turbato i tuoi sogni?</strong>, &hellip; tutto questo senza alterare il codice del programma!</p>
+<p>Una versione del programma che include queste e altre chiavi è scaricabile <a href="files/scratch-pafo/pafo_step_04_more_keywords_and_questions.sb3">qui</a>.</p>
+<h3>Risposte parametriche</h3>
+<p>In alcune situazioni si può estrarre parte del testo immesso dall'utente e inserirlo nella replica per rendere il colloquio più verosimile:</p>
+<ul>
+<li class="answer">credo di poter &hellip;</li>
+<li class="question">Da quanto tempo credi di poter &hellip;?</li>
+</ul>
+<p>A tal scopo aggiungiamo la chiave <strong>credo</strong> cui associamo tre repliche, due parametriche ed una generica. È importante predisporre sempre una risposta generica nel caso in cui non si riesca ad individuare il frammento di testo da riutilizzare:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>keywords</th><th>first</th><th>last</th></tr>
+<tr><td>1</td><td>mi sento</td><td>5</td><td>5</td></tr>
+<tr><td>2</td><td>sì</td><td>6</td><td>8</td></tr>
+<tr><td>3</td><td>no</td><td>8</td><td>10</td></tr>
+<tr><td>4</td><td>certamente</td><td>6</td><td>8</td></tr>
+<tr><td colspan="4">&hellip;</td></tr>
+<tr><td>14</td><td>credo</td><td>17</td><td>19</td></tr>
+</table>
+<table cellpadding="0" cellspacing="0">
+<tr><th>#</th><th>question</th></tr>
+<tr><td>1</td><td>Continua...</td></tr>
+<tr><td>2</td><td>Va avanti</td></tr>
+<tr><td>3</td><td>Sii più chiaro</td></tr>
+<tr><td>4</td><td>Prosegui</td></tr>
+<tr><td>5</td><td>Credi sia normale essere così?</td></tr>
+<tr><td>6</td><td>Vedo...</td></tr>
+<tr><td>7</td><td>Capisco...</td></tr>
+<tr><td>8</td><td>Sei sicuro?</td></tr>
+<tr><td>9</td><td>Come mai?</td></tr>
+<tr><td>10</td><td>Perché no?</td></tr>
+<tr><td colspan="2">&hellip;</td></tr>
+<tr><td>17</td><td>Da quanto tempo credi *?</td></tr>
+<tr><td>18</td><td>Perché credi *?</td></tr>
+<tr><td>19</td><td>Cosa ti ha portato a credere tutto ciò?</td></tr>
+</table>
+<p>L'asterisco che caratterizza le risposte parametriche indica il punto in cui va inserito il frammento estratto dal testo immesso dall'utente.</p>
+<p>Nel caso venga trovata una parola chiave, il programma copia nella variabile <span class="code">phrase</span> il tutto il testo che la segue. Ricordando che <span class="code">pos</span> è la posizione della chiave all'interno del testo e <span class="code">keyword</span> è l'indice della chiave nell'elenco <span class="code">keywords</span> il codice dovrebbe essere di facile interpretazione:</p>
+<img src="img/scratch-pafo/pafo_step_05_extract_phrase.png">
+<p class="illustration">La copia carattere per carattere del testo che segue la chiave.</p>
+<p>La selezione della risposta ora si fa più complicata perché una risposta parametrica è ammissibile solo se siamo in possesso di un frammento da inserire al suo interno, in caso contrario dobbiamo accontentarci di una generica:</p>
+<img src="img/scratch-pafo/pafo_step_05_select_question.png">
+<p class="illustration">Selezione della replica più adatta.</p>
+<p>Non resta che sostituire l'asterisco nella risposta parametrica con il contenuto della variabile <span class="code">phrase</span>. A tale scopo è stato definito un blocco apposito, <span class="code">replace (old) with (new) in (text)</span> che salva nella variabile <span class="code">new text</span> il risultato della sostituzione della sotto-stringa &ldquo;old&rdquo; con la sequenza &ldquo;new&rdquo; nel testo &ldquo;text&rdquo;:</p>
+<img src="img/scratch-pafo/pafo_step_05_replace_star.png">
+<p class="illustration">La copia carattere per carattere del testo che segue la chiave.</p>
+<p>La versione del progamma che usa le repliche parametriche è scaricabile <a href="files/scratch-pafo/pafo_step_05_parametric_question.sb3">qui</a>.</p>
+<h3>Coniugazione del testo estratto</h3>
+<p>Se da un lato il riuso di parte del testo immesso dall'utente contribuisce a rendere il dialogo più convincente, dall'altro introduce una debolezza: il frammento, prima di essere riutilizzato, potrebbe necessitare di un intervento:</p>
+<ul>
+<li class="answer">credo che tu mi stia prendendo in giro</li>
+<li class="question">Perché credi che tu mi stia prendendo in giro?</li>
+</ul>
+<p>La risposta corretta che ci si attende dal computer è:</p>
+<ul>
+<li class="question">Perché credi che io ti stia prendendo in giro?</li>
+</ul>
+<p>Prima di copiare il frammento di testo recuperato dalla risposta dell'utente nella risposta parametrica è necessario trasformarlo applicando alcune sostituzioni:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>word in</th><th>word out</th></tr>
+<tr><td>␣sono␣</td><td>␣sei␣</td></tr>
+<tr><td>␣io␣</td><td>␣tu␣</td></tr>
+<tr><td>␣mi␣</td><td>␣ti␣</td></tr>
+<tr><td>␣me␣</td><td>␣te␣</td></tr>
+<tr><td>␣ho␣</td><td>␣hai␣</td></tr>
+<tr><td>␣mio␣</td><td>␣tuo␣</td></tr>
+<tr><td>␣mia␣</td><td>␣tua␣</td></tr>
+<tr><td>␣miei␣</td><td>␣tuoi␣</td></tr>
+<tr><td>␣mie␣</td><td>␣tue␣</td></tr>
+<tr><td colspan="2">&hellip;</td></tr>
+</table>
+<p>I termini candidati per la sostituzione sono preceduti e seguiti da uno spazio per assicurarsi di rimpiazzare solo parole intere e non modificare parzialmente parole che al loro interno contengono uno o più termini.</p>
+<p>La sostituzione avviene scandendo il frammento estratto carattere per carattere e sostituendo ogni termine che si incontra con il suo omologo, in entrambe le direzioni (<strong>sono</strong> con <strong>sei</strong> e <strong>sei</strong> con <strong>sono</strong>):</p>
+<img src="img/scratch-pafo/pafo_step_06_conjugated.png">
+<p class="illustration">La trasformazione del testo mediante sostituzioni successive.</p>
+<p>La versione del progamma con l'adattamento del testo estratto è scaricabile <a href="files/scratch-pafo/pafo_step_06_conjugated.sb3">qui</a>.</p>
+<h3>Altre idee</h3>
+<ul>
+<li>estendere il vocabolario dello psicologo;</li>
+<li>se l'utente immette due volte lo stesso testo chiedergli gentilmente di non ripetersi;</li>
+<li>se l'utente immette una parola di saluto, uscire dal programma;</li>
+<li>modificare il programma in un esperto di matematica, o di musica pop;</li>
+<li>integrare nel programma il riconoscimento e la sintesi vocale;</li>
+<li>&hellip;</li>
+</ul>
+<h2>Download</h2>
+<p>Il programma completo dello psicologo è scaricabile <a href="files/scratch-pafo/pafo.sb3">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 19/05/2021</p>
+</body>
+</html>
