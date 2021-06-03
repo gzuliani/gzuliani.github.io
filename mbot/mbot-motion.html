@@ -11,16 +11,6 @@
 <h1>Analisi del moto di mBot</h1>
 <p>È possibile controllare con precisione il moto di un mBot? In particolare, è possibile fargli percorrere delle traiettorie predefinite?</p>
 <h2>Introduzione</h2>
-<!--
-set motor (M1) at speed (100)
-[run forward] at speed (100) -- altre opzioni: run backward, turn left, turn right
-
-wait until <on board button [pressed]>
-reset timer
-[run forward] at speed (100)
-wait until <(timer) > [10]>
-[run forward] at speed (0)
--->
 <p>Il movimento del robot è determinato dalle velocità di rotazione dei due motori di cui è dotato. Trattandosi di due motori indipendenti, già si può supporre che il controllo applicabile sarà limitato, non potendo prescindere dalle lievi differenze che di certo li caretterizzano. Su percorsi brevi tuttavia qualcosa si dovrebbe riuscire ad ottenere.</p>
 <p>mBlock non ha un comando che consente di far coprire al robot una data distanza, qualcosa tipo &ldquo;<em>run forward for 10 cm</em>&rdquo;. Manca anche un comando per effettuare una sterzata con un'angolazione precisa, per esempio &ldquo;<em>turn left 90&deg; degrees</em>&rdquo;. Il solo comando relativo al moto è &ldquo;<em>set motor &hellip; at speed &hellip;</em>&rdquo; &mdash; trascurando la sua versione semplificata &ldquo;<em>run forward at speed &hellip;</em>&rdquo; &mdash;, che consente solamente il controllo dell'attivazione (indipendente) dei due motori. Gli unici parametri sui cui si può agire sono dunque la velocità di rotazione e il tempo di attivazione di ciascun motore. Di più, il valore di velocità è relativo, essendo <span class="code">0</span> il valore di arresto e <span class="code">&plusmn;255</span> quello associato alla velocità massima nei due sensi di rotazione avanti/indietro</p>
 <p>Ciò posto, è possibile realizzare delle procedure che consentano un controllo più preciso dei movimenti del robot, sia in termini di tratti rettilinei che di archi di circonferenza percorsi?</p>
