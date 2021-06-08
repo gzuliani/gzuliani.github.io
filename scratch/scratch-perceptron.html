@@ -15,7 +15,7 @@
 <h2>Funzionamento del neurone artificiale</h2>
 <p>Il neurone artificiale, il cui nucleo è detto <strong>soma</strong>, riceve gli stimoli dall'ambiente circostante attraverso delle sottili ramificazioni dette <strong>dendriti</strong>. Se il livello degli stimoli supera una certa soglia il neurone si attiva e propaga a sua volta un impulso elettrico che raggiunge i neuroni adiacenti attraverso un particolare suo prolungamento, l'<strong>assone</strong>. Le connessioni tra assone e dendriti sono modulate dalle <strong>sinapsi</strong> che possono avere un effetto eccitatorio o inibitorio, vale a dire possono amplificare o attenuare il segnale che le attraversa.</p>
 <h2>Il neurone artificiale in Scratch</h2>
-<p>Per ridurre al minimo la complessità del codice il neurone riceverà due soli stimoli, <span class="variable">x<sub>1</sub></span> e <span class="variable">x<sub>2</sub></span>. L'effetto di modulazione delle sinapsi (rappresentate dalle aree verdi nello schema sottostante) è ottenuto per mezzo di due fattori moltiplicativi detti <strong>pesi</strong>, <span class="variable">w<sub>1</sub></span> e <span class="variable">w<sub>2</sub></span>. Il valore combinato del segnale d'ingresso del neurone è quindi:</p>
+<p>Per ridurre al minimo la complessità del codice il neurone riceve due soli stimoli, <span class="variable">x<sub>1</sub></span> e <span class="variable">x<sub>2</sub></span>. L'effetto di modulazione delle sinapsi (rappresentate dalle aree verdi nello schema sottostante) è ottenuto per mezzo di due fattori moltiplicativi detti <strong>pesi</strong>, <span class="variable">w<sub>1</sub></span> e <span class="variable">w<sub>2</sub></span>. Il valore combinato del segnale d'ingresso del neurone è quindi:</p>
 <p class="formula">input = x<sub>1</sub>·w<sub>1</sub> + x<sub>2</sub>·w<sub>2</sub></p>
 <p>Se il segnale in ingresso supera la soglia <span class="variable">θ</span> (theta) il neurone si attiva portando l'uscita a 1; se invece gli stimoli ricevuti non sono tali da eccitarlo il neurone risponde con uno 0:</p>
 <table class="formula" cellpadding="0" cellspacing="0">
@@ -28,22 +28,22 @@
 <ul>
 <li>due variabili binarie <span class="code">x1</span> e <span class="code">x2</span> che corrispondono agli stimoli <span class="variable">x<sub>1</sub></span> e <span class="variable">x<sub>2</sub></span>;</li>
 <li>due variabili <span class="code">w1</span> e <span class="code">w2</span> che modellano i pesi <span class="variable">w<sub>1</sub></span> e <span class="variable">w<sub>2</sub></span></li>
-<li>la variabile <span class="code">theta</span> che simboleggia la soglia di attivazione del neurone;</li>
-<li>uno sprite il cui costume rappresenta il livello d'uscita.</li>
+<li>la variabile <span class="code">theta</span> che rappresenta la soglia di attivazione del neurone;</li>
+<li>uno sprite che cambia costume in funzione del livello d'uscita del neurone.</li>
 </ul>
 <p>I valori dei pesi sono visibili nelle vicinanze delle rispettive sinapsi mentre il valore della soglia interna è mostrato al centro del neurone. In basso a destra si trova lo sprite che indica il livello di attivazione del neurone.</p>
-<p>Per ragioni matematiche che non è opportuno approfondire in questa sede è bene che i valori iniziali delle variabili <span class="code">w1</span>, <span class="code">w2</span> e <span class="code">theta</span> siano prossimi allo zero. Di norma il loro valore è scelto a caso, in questo caso verranno loro attribuiti dei valori arbitrari:</p>
+<p>Per ragioni matematiche che non è opportuno approfondire in questa sede è bene che i valori iniziali delle variabili <span class="code">w1</span>, <span class="code">w2</span> e <span class="code">theta</span> siano prossimi allo zero. Di norma il loro valore è scelto a caso, in questo caso sono stati loro attribuiti dei valori arbitrari:</p>
 <img src="img/scratch-perceptron/blocks_activation.png">
 <p class="illustration">Il codice che riproduce il funzionamento del neurone artificiale.</p>
 <p>Trascurando per il momento la variabile <span class="code">eta</span>, il cui scopo diverrà chiaro più avanti, il frammento di codice che riproduce il funzionamento del neurone artificiale rispecchia fedelmente quanto fin qui anticipato. È facile verificare sperimentalmente che la risposta del neurone cambia in funzione del valore assunto dalle variabili di ingresso. Quali siano le configurazioni di <span class="code">x<sub>1</sub></span> e <span class="code">x<sub>2</sub></span> che fanno eccitare il neurone dipende dal valore dei pesi e della soglia.</p>
 <h2>Apprendimento</h2>
 <p>Il percettrone è dotato di una certa capacità di adattamento: se la risposta fornita non è quella desiderata si interviene sui pesi <span class="code">w1</span> e <span class="code">w2</span> e sul valore della soglia <span class="code">theta</span> in modo da indurre il neurone a modificare il suo comportamento.</p>
-<p>L'algoritmo di apprendimento del percettrone è piuttosto semplice nella sua formulazione, non altrettanto la sua giustificazione matematica che per questa ragione traslascio. Indicato con <strong>target</strong> la risposta desiderata, pesi e soglia vanno così modificati:</p>
+<p>L'algoritmo di apprendimento del percettrone è piuttosto semplice nella sua formulazione, non altrettanto la sua giustificazione matematica, che per tale ragione viene omessa. Indicato con <strong>target</strong> la risposta desiderata, pesi e soglia vanno così modificati:</p>
 <p class="formula">w<sub>1</sub> ← w<sub>1</sub> + η·(target - output)·x<sub>1</sub></p>
 <p class="formula">w<sub>2</sub> ← w<sub>2</sub> + η·(target - output)·x<sub>2</sub></p>
 <p class="formula">θ ← θ - η·(target - output)</p>
 <p>Il parametro <span class="variable">η</span> (eta), detto anche <strong>tasso di apprendimento</strong>, è un fattore moltiplicativo positivo prossimo allo zero il cui scopo è quello di ottimizzare l'apprendimento cercando il giusto compromesso tra efficienza e accuratezza.</p>
-<p>Se <span class="variable">target</span>=<span class="variable">output</span>, cioé se il percettrone si comporta come atteso, pesi e soglia rimangono invariati. Se il neurone non si è attivato quando previsto (<span class="variable">output</span>=0, <span class="variable">target</span>=1) allora i pesi subiscono un incremento proporzionale allo stimolo e la soglia abbassata:</p>
+<p>Se <span class="variable">target</span>=<span class="variable">output</span>, cioé se il percettrone si comporta come atteso, pesi e soglia restano invariati. Se il neurone non si è attivato quando previsto (<span class="variable">output</span>=0, <span class="variable">target</span>=1) allora i pesi subiscono un incremento proporzionale allo stimolo e la soglia abbassata:</p>
 <p class="formula">w<sub>1</sub> ← w<sub>1</sub> + η·x<sub>1</sub></p>
 <p class="formula">w<sub>2</sub> ← w<sub>2</sub> + η·x<sub>2</sub></p>
 <p class="formula">θ ← θ - η</p>
@@ -55,64 +55,103 @@
 <img src="img/scratch-perceptron/blocks_learning.png">
 <p class="illustration">Il codice dell'apprendimento del neurone artificiale.</p>
 <h3>Giustificazione informale</h3>
-<p>Intuitivamente l'algoritmo di apprendimento del percettrone si spiega considerando il caso in cui il neurone non si è attivato quando previsto. Per aumentare le probabilità di far eccitare il neurone quando si ripresenteranno gli stessi stimoli si può agire su due fronti: aumentare il livello del segnale in ingresso oppure diminuire la soglia di attivazione. L'algoritmo di apprendimento interviene su entrambi. Consideriamo il segnale di ingresso originale:</p>
+<p>Intuitivamente l'algoritmo di apprendimento del percettrone si spiega considerando il caso in cui il neurone non si è attivato quando previsto. Per aumentare le probabilità di far eccitare il neurone si può agire su due fronti: aumentare il livello del segnale in ingresso oppure diminuire la soglia di attivazione. L'algoritmo di apprendimento interviene su entrambi. Il segnale di ingresso in origine vale:</p>
 <p class="formula">input = x<sub>1</sub>·w<sub>1</sub> + x<sub>2</sub>·w<sub>2</sub></p>
-<p>con i pesi aggiornati il valore diventa:</p>
+<p>mentre con i pesi aggiornati il suo valore diventa:</p>
 <p class="formula">input' = x<sub>1</sub>·(w<sub>1</sub> + η·x<sub>1</sub>) + x<sub>2</sub>·(w<sub>2</sub> + η·x<sub>2</sub>)</p>
 <p class="formula">input' = x<sub>1</sub>·w<sub>1</sub> + η·x<sub>1</sub><sup>2</sup> + x<sub>2</sub>·w<sub>2</sub> + η·x<sub>2</sub><sup>2</sup></p>
 <p class="formula">input' = x<sub>1</sub>·w<sub>1</sub> + x<sub>2</sub>·w<sub>2</sub> + η·x<sub>1</sub><sup>2</sup> + η·x<sub>2</sub><sup>2</sup></p>
 <p class="formula">input' = input + η·x<sub>1</sub><sup>2</sup> + η·x<sub>2</sub><sup>2</sup></p>
-<p>Essendo η positivo i termini η·x<sub>1</sub><sup>2</sup> e η·x<sub>2</sub><sup>2</sup> sono entrambi positivi e dunque complessivamente il segnale in ingresso è aumentato, a parità di stimoli. Inoltre, poiché l'algoritmo abbassa il valore di θ, seppure di una minima quantità:</p>
+<p>Essendo η positivo anche i termini η·x<sub>1</sub><sup>2</sup> e η·x<sub>2</sub><sup>2</sup> sono positivi e dunque complessivamente il segnale in ingresso è aumentato, a parità di stimoli. Inoltre, poiché l'algoritmo abbassa il valore di θ, seppure di una minima quantità:</p>
 <p class="formula">θ ← θ - η</p>
-<p>complessivamente la probabilità che il neurone si ecciti quando in futuro riceverà gli stessi stimoli è aumentata. Considerazioni analoghe si possono fare per il caso in cui il neurone si è attivato quando non previsto: si vedrà che l'apprendimento causa la diminuzione del segnale d'ingresso e l'aumento del valore soglia, riducendo così che la probabilità che il neurone si ecciti quando riceve gli stessi stimoli.</p>
+<p>complessivamente la probabilità che il neurone si ecciti quando in futuro riceverà gli stessi stimoli aumenta. Considerazioni analoghe si possono fare per il caso in cui il neurone si è attivato quando non previsto: l'apprendimento causa la diminuzione del segnale d'ingresso e l'aumento del valore soglia, riducendo così la probabilità che il neurone si ecciti quando riceve gli stessi stimoli.</p>
 <h3>Esempio &mdash; Or</h3>
-<p>Supponiamo di voler utilizzare il percettrone per realizzare la funzione <strong>or</strong>, che prevede che il neurone si attivi quando almeno uno dei due stimoli vale 1:</p>
+<p>La funzione <strong>or</strong> prevede che il neurone si attivi quando almeno uno dei due stimoli vale 1:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>or</th></tr>
-<tr><td class="centered">0</td><td class="centered">0</td><td class="centered">0</td></tr>
-<tr><td class="centered">1</td><td class="centered">0</td><td class="centered">1</td></tr>
-<tr><td class="centered">1</td><td class="centered">1</td><td class="centered">1</td></tr>
-<tr><td class="centered">0</td><td class="centered">1</td><td class="centered">1</td></tr>
+<tr><td class="label">0</td><td class="label">0</td><td class="label">0</td></tr>
+<tr><td class="label">1</td><td class="label">0</td><td class="label">1</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td></tr>
+<tr><td class="label">0</td><td class="label">1</td><td class="label">1</td></tr>
 </table>
-<p>Per addestrare il percettrone occorre presentargli ciclicamente le combinazioni d'ingresso 00, 10, 11, 01 e innescare l'apprendimento nel caso la risposta del neurone non corrisponda al risultato atteso (l'applicazione dell'algoritmo si ottiene con un click sullo sprite principale).</p>
-<p>L'addestramento non è istantaneo: in genere sono necessari diversi cicli di apprendimento &mdash; <strong>epoche</strong>, nel gergo delle reti neurali &mdash; affinché il sistema impari a rispondere correttamente a tutti gli stimoli. Con i valori iniziali proposti per i pesi <span class="variable">w<sub>1</sub></span> e <span class="variable">w<sub>2</sub></span>, la soglia <span class="variable">θ</span> e il tasso di apprendimento <span class="variable">η</span>, 5 cicli sono sufficienti per completare l'addestramento. Ricordarsi di attivare l'apprendimento solo se la risposta del neurone non è quella corretta.</p>
+<p>Per addestrare il percettrone occorre presentargli ciclicamente le combinazioni d'ingresso 00, 10, 11, 01 e innescare l'apprendimento nel caso la risposta ottenuta non corrisponda al risultato atteso. L'addestramento non è istantaneo: in genere sono necessari diversi cicli di apprendimento &mdash; <strong>epoche</strong>, nel gergo delle reti neurali &mdash; affinché il sistema impari a rispondere correttamente a tutti gli stimoli. Con i valori iniziali proposti per i pesi <span class="variable">w<sub>1</sub></span> e <span class="variable">w<sub>2</sub></span>, la soglia <span class="variable">θ</span> e il tasso di apprendimento <span class="variable">η</span> sono sufficienti 5 cicli per raggiungere l'infallibilità:</p>
+<p class="note">L'apprendimento si attiva con un click sullo sprite che rappresenta la risposta del percettrone; ricordarsi che va attuato solo se la risposta del sistema non è quella corretta.</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>epoca</th><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>output</th><th>target</th><th>w<sub>1</sub></th><th>w<sub>2</sub></th><th>θ</th></tr>
+<tr><td></td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="number">0.20</td><td class="number">-0.20</td><td class="number">0.10</td></tr>
+<tr><td rowspan="2" class="label">1</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.20</td><td class="number">-0.20</td><td class="number">0.10</td></tr>
+<tr class="error"><td class="label">1</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.15</td><td class="number">0.05</td></tr>
+<tr class="error"><td></td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.10</td><td class="number">0.00</td></tr>
+<tr class="epoch"><td></td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="number">0.25</td><td class="number">-0.10</td><td class="number">0.00</td></tr>
+<tr><td rowspan="2" class="label">2</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.10</td><td class="number">0.00</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.10</td><td class="number">0.00</td></tr>
+<tr class="error"><td></td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.05</td><td class="number">-0.05</td></tr>
+<tr class="error epoch"><td></td><td class="label">0</td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="number">0.25</td><td class="number">-0.05</td><td class="number">0.00</td></tr>
+<tr><td rowspan="2" class="label">3</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.05</td><td class="number">-0.05</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">-0.05</td><td class="number">-0.05</td></tr>
+<tr class="error"><td></td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.00</td><td class="number">-0.05</td></tr>
+<tr class="error epoch"><td></td><td class="label">0</td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="number">0.25</td><td class="number">0.00</td><td class="number">0.00</td></tr>
+<tr><td rowspan="2" class="label">4</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.00</td><td class="number">0.00</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.00</td><td class="number">0.00</td></tr>
+<tr class="error"><td></td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">-0.05</td></tr>
+<tr class="epoch error"><td></td><td class="label">0</td><td class="label">0</td><td class="label">1</td><td class="label">0</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td rowspan="2" class="label">5</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td></td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr class="epoch"><td></td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="label">0</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td rowspan="2" class="label">6</td><td class="label">1</td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+<tr><td></td><td class="label">0</td><td class="label">1</td><td class="label">1</td><td class="label">1</td><td class="number">0.25</td><td class="number">0.05</td><td class="number">0.00</td></tr>
+</table>
+<p class="illustration">L'apprendimento della funzione or.</p>
+<p>La tabella riporta le fasi dell'addestramento del percettrone: in rosso sono evidenziati gli errori compiuti dal sistema e l'effetto correttivo dell'apprendimento sui pesi w<sub>1</sub>, w<sub>2</sub> e sulla soglia θ. I valori ottimali cui l'algoritmo è pervenuto sono:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><td>w<sub>1</sub></td><td>=</td><td>0.25</td></tr>
+<tr><td>w<sub>2</sub></td><td>=</td><td>0.05</td></tr>
+<tr><td>θ</td><td>=</td><td>0.00</td></tr>
+</table>
 <h3>Riconfigurabilità del percettrone &mdash; And</h3>
-<p>Il percettrone è un sistema versatile. Una volta acquisita la capacità di replicare la funzione <strong>or</strong> è possibile riconfigurarlo per replicare una funzione diversa, per esempio l'<strong>and</strong>, con le stesse modalità appena viste. In questo caso saranno sufficienti 4 cicli di apprendimento:</p>
+<p>Il percettrone è un sistema versatile. Una volta acquisita la capacità di replicare la funzione <strong>or</strong> può essere rapidamente riconfigurato per replicare una funzione diversa, per esempio l'<strong>and</strong>:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>and</th></tr>
-<tr><td class="centered">0</td><td class="centered">0</td><td class="centered">0</td></tr>
-<tr><td class="centered">1</td><td class="centered">0</td><td class="centered">0</td></tr>
-<tr><td class="centered">1</td><td class="centered">1</td><td class="centered">1</td></tr>
-<tr><td class="centered">0</td><td class="centered">1</td><td class="centered">0</td></tr>
+<tr><td class="label">0</td><td class="label">0</td><td class="label">0</td></tr>
+<tr><td class="label">1</td><td class="label">0</td><td class="label">0</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">1</td></tr>
+<tr><td class="label">0</td><td class="label">1</td><td class="label">0</td></tr>
 </table>
-<p>Un'altra funzione da considerare è per esempio <strong>not x<sub>1</sub></strong>:</p>
+<p>In questo caso sono sufficienti 4 cicli per completare con successo l'apprendimento.</p>
+<p>Un'altra funzione da sperimentare è <strong>not x<sub>1</sub></strong>:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>not x<sub>1</sub></th></tr>
-<tr><td class="centered">0</td><td class="centered">0</td><td class="centered">1</td></tr>
-<tr><td class="centered">1</td><td class="centered">0</td><td class="centered">0</td></tr>
-<tr><td class="centered">1</td><td class="centered">1</td><td class="centered">0</td></tr>
-<tr><td class="centered">0</td><td class="centered">1</td><td class="centered">1</td></tr>
+<tr><td class="label">0</td><td class="label">0</td><td class="label">1</td></tr>
+<tr><td class="label">1</td><td class="label">0</td><td class="label">0</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">0</td></tr>
+<tr><td class="label">0</td><td class="label">1</td><td class="label">1</td></tr>
 </table>
+<p>La transizione <strong>and</strong>/<strong>not x<sub>1</sub></strong> si compie in 5 cicli.</p>
 <h3>Criterio di convergenza dell'algoritmo di apprendimento &mdash; Xor</h3>
-<p>Il percettrone non è in grado di imparare qualunque configurazione: per esempio non è in grado di replicare la funzione <strong>xor</strong>, quella che prevede che il neurone si attivi nel caso in cui uno solo degli stimoli sia presente. Marvin Minsky e Samuel Papert (lo stesso Papert che nel 1985 fondò il MIT Media Lab dal quale nel 2003 uscì la prima versione di Scratch!) utilizzarono proprio questa funzione per dimostrare nel loro celebre libro <a href="https://en.wikipedia.org/wiki/Perceptrons_(book)">Perceptrons: an introduction to computational geometry</a> i limiti teorici del percettrone:</p>
+<p>Il percettrone non è in grado di imparare qualunque funzione, ad esempio non è in grado di replicare la funzione <strong>xor</strong>, quella che prevede che il neurone si attivi nel caso in cui uno solo degli stimoli sia presente. Nel 1969 Marvin Minsky e Samuel Papert (lo stesso Papert che nel 1985 fondò il MIT Media Lab dove nel 2003 nacque Scratch!) utilizzarono proprio questa funzione per dimostrare nel loro celebre libro <a href="https://en.wikipedia.org/wiki/Perceptrons_(book)">Perceptrons: an introduction to computational geometry</a> i limiti teorici del percettrone.</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>xor</th></tr>
-<tr><td class="centered">0</td><td class="centered">0</td><td class="centered">0</td></tr>
-<tr><td class="centered">1</td><td class="centered">0</td><td class="centered">1</td></tr>
-<tr><td class="centered">1</td><td class="centered">1</td><td class="centered">0</td></tr>
-<tr><td class="centered">0</td><td class="centered">1</td><td class="centered">1</td></tr>
+<tr><td class="label">0</td><td class="label">0</td><td class="label">0</td></tr>
+<tr><td class="label">1</td><td class="label">0</td><td class="label">1</td></tr>
+<tr><td class="label">1</td><td class="label">1</td><td class="label">0</td></tr>
+<tr><td class="label">0</td><td class="label">1</td><td class="label">1</td></tr>
 </table>
-<p>Se intendete cimentarvi nel tentativo di insegnare al percettrone la funzione <strong>xor</strong>, armatevi di pazienza, perché&hellip; non ci riuscirà mai!</p>
+<p>Chi intende cimentarsi nel tentativo di insegnare al percettrone la funzione <strong>xor</strong> è bene che si armi di gran pazienza, perché&hellip; non ci riuscirà mai!</p>
 <h3>Interpretazione geometrica dell'apprendimento</h3>
-<p>Il percettrone è un classificatore lineare, vale a dire che taglia in due lo spazio delle configurazioni degli stimoli in ingresso e risponde 0 o 1 a seconda che la configurazione si trovi da una parte o dall'altra del taglio. Per chiarire meglio il concetto riconsideriamo la funzione <strong>or</strong>, disegnando sul piano cartesiano x<sub>1</sub>/x<sub>2</sub> le quattro configurazioni in ingresso evidenziando in rosso quella per la quale la risposta attesa è 0, in verde quelle per le quali ci si aspetta un 1:</p>
+<p>Il percettrone è un classificatore lineare, vale a dire che taglia in due lo spazio delle configurazioni degli stimoli in ingresso e risponde 0 o 1 a seconda che la configurazione corrente si trovi da una parte o dall'altra del taglio. Per chiarire meglio il concetto si consideri la rappresentazione grafica della funzione <strong>or</strong> sul piano cartesiano. La configurazione per la quale la risposta attesa è 0 è indicata in rosso, le altre in verde:</p>
 <img src="img/scratch-perceptron/or_00.png" width="400">
 <p class="illustration">Rappresentazione geometrica della funzione or.</p>
 <p>Se sullo stesso grafico si evidenzia il semipiano:</p>
 <p class="formula">p: x<sub>1</sub>·w<sub>1</sub> + x<sub>2</sub>·w<sub>2</sub> &gt; θ</p>
+<p>dopo aver sostituito i parametri con i rispettivi valori iniziali:</p>
+<p class="formula">p: x<sub>1</sub>·0.20 - x<sub>2</sub>·0.20 &gt; 0.10</p>
 <p>si ottiene:</p>
 <img src="img/scratch-perceptron/or_01.png" width="400">
-<p class="illustration">Il taglio prodotto dal percettrone.</p>
-<p>Se stimolato con le configurazioni che ricadono nell'area azzurra il neurone del percettrone si accende, in caso contrario si spegne. L'effetto dell'apprendimento è quello di ricollocare questo taglio cercando di separare le configurazioni verdi da quelle rosse. L'animazione sottostante mostra l'effetto dell'apprendimento sul taglio nel caso della funzione <strong>or</strong>:</p>
+<p class="illustration">Il taglio iniziale prodotto dal percettrone.</p>
+<p>Ciò conferma quanto sperimentato nel primo ciclo di apprendimento, durante il quale il percettrone si è attivato solo per la configurazione x<sub>1</sub>=1, x<sub>2</sub>=0 (punto B sul grafico).</p>
+<p>L'effetto dell'apprendimento è quello di ricollocare il taglio nel tentativo di separare le configurazioni verdi da quelle rosse. L'animazione sottostante mostra l'evoluzione del taglio all'avanzare dell'addestramento:</p>
 <img src="img/scratch-perceptron/or_animation.gif">
 <p class="illustration">Rappresentazione geometrica dell'apprendimento della funzione or.</p>
 <p>Si può notare che nella configurazione finale solamente i punti evidenziati in verde ricadono nell'area azzurra; quello rosso cade esattamente sul confine che però non fa parte della superficie colorata.</p>
@@ -125,8 +164,8 @@
 <p>L'interpretazione geometrica dell'effetto dell'apprendimento aiuta a comprendere i limiti del percettrone, in particolare in relazione all'impossibilità di replicare la funzione <strong>xor</strong> per il fatto che i punti B e D non sono separabili dai punti A e C mediante una linea. Il percettrone questo non lo sa e continua imperterrito a modificare i pesi e la soglia nella vana speranza di trovare un taglio con tali caratteristiche.</p>
 <p>Il programma del percettrone binario è scaricabile <a href="files/scratch-perceptron/perceptron_bool.sb3">qui</a>.</p>
 <h2>Classificazione</h2>
-<p>L'apprendimento del percettrone binario è avvenuto presentando una dopo l'altra tutte le possibili configurazioni degli stimoli in ingresso. Il percettrone è però anche in grado di classificare stimoli che non ha mai visto prima. Per dimostrare questa capacità lo metteremo alla prova con l'<a href="https://it.wikipedia.org/wiki/Dataset_Iris">iris dataset</a>, un catalogo di 150 misure relative a tre diverse specie di iris prodotto dal botanico Edgar Anderson nel 1936 (una copia locale è disponibile <a href="files/scratch-perceptron/iris.data">qui</a>). Addestreremo il sistema utilizzando una parte dei dati disponibili e utilizzeremo i rimanenti per validarlo.</p>
-<p>L'iris dataset contiene, per ognuna delle tre specie <em>setosa</em>, <em>versicolor</em> e <em>virginica</em>, lunghezza e larghezza del petalo e del sepalo del fiore di 50 piante diverse. In questo esperimento utilizzeremo i dati relativi al petalo, associando allo stimolo x<sub>1</sub> la lunghezza, allo stimolo x<sub>2</sub> la larghezza. Gli stimoli non sono più binari ma numeri in virgola mobile nell'intervallo 0÷8 e 0÷3 rispettivamente.</p>
+<p>L'apprendimento del percettrone binario è avvenuto presentando una dopo l'altra tutte le possibili configurazioni degli stimoli in ingresso. Il percettrone è però anche in grado di classificare stimoli che non ha mai visto prima. Per dimostrare questa capacità lo si mette alla prova con l'<a href="https://it.wikipedia.org/wiki/Dataset_Iris">iris dataset</a>, un catalogo di 150 misure relative a tre diverse specie di iris compilato dal botanico Edgar Anderson nel 1936 (una copia locale è disponibile <a href="files/scratch-perceptron/iris.data">qui</a>). L'addestramento avverrà utilizzando solo una parte dei dati disponibili; quelli rimanenti verranno utilizzati per la sua validazione.</p>
+<p>L'iris dataset contiene, per ognuna delle tre specie <em>setosa</em>, <em>versicolor</em> e <em>virginica</em>, lunghezza e larghezza del petalo e del sepalo del fiore di 50 piante diverse. Questo esperimento si concentra sulle dimensioni del petalo, associando allo stimolo x<sub>1</sub> la sua lunghezza, allo stimolo x<sub>2</sub> la sua larghezza. Gli stimoli non sono più binari ma numeri in virgola mobile nell'intervallo 0÷8 e 0÷3 rispettivamente.</p>
 <h3>Addestramento automatico</h3>
 <p>Avendo a che fare con un discreto numero di possibili configurazioni d'ingresso conviene predisporre una procedura automatica che si occupi dell'apprendimento. A tale scopo vengono introdotte tre nuove variabili: <span class="code">lengths</span>, che contiene l'elenco delle lunghezze dei petali utilizzati durante l'addestramento, <span class="code">widths</span> che contiene la loro larghezza, <span class="code">responses</span> che contiene la risposta attesa dal sistema. Il codice effettua un numero arbitrario di cicli di addestramento presentando i valori di lunghezza e larghezza di un petalo al percettrone e attivando la procedura di apprendimento qualora la specie proposta dal sistema non corrisponda a quella attesa. Il codice tiene anche il conto degli errori commessi:</p>
 <img src="img/scratch-perceptron/blocks_training.png">
@@ -135,69 +174,72 @@
 <p>Per addestrare il percettrone a distinguere i fiori setosa da quelli versicolor è necessario individuare il cosiddetto <em>training set</em>, in questo caso una decina di fiori di ognuna delle due specie con la relativa classificazione:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>#</th><th>lunghezza</th><th>larghezza</th><th>setosa?</th></tr>
-<tr><td>1</td><td class="centered">1.4</td><td class="centered">0.2</td><td class="centered">1</td></tr>
-<tr><td>6</td><td class="centered">1.7</td><td class="centered">0.4</td><td class="centered">1</td></tr>
-<tr><td>14</td><td class="centered">1.1</td><td class="centered">0.1</td><td class="centered">1</td></tr>
-<tr><td>25</td><td class="centered">1.9</td><td class="centered">0.2</td><td class="centered">1</td></tr>
-<tr><td>27</td><td class="centered">1.6</td><td class="centered">0.4</td><td class="centered">1</td></tr>
-<tr><td>36</td><td class="centered">1.2</td><td class="centered">0.2</td><td class="centered">1</td></tr>
-<tr><td>37</td><td class="centered">1.3</td><td class="centered">0.2</td><td class="centered">1</td></tr>
-<tr><td>44</td><td class="centered">1.6</td><td class="centered">0.6</td><td class="centered">1</td></tr>
-<tr><td>45</td><td class="centered">1.9</td><td class="centered">0.4</td><td class="centered">1</td></tr>
-<tr><td>46</td><td class="centered">1.4</td><td class="centered">0.3</td><td class="centered">1</td></tr>
-<tr><td>53</td><td class="centered">4.9</td><td class="centered">1.5</td><td class="centered">0</td></tr>
-<tr><td>54</td><td class="centered">4.0</td><td class="centered">1.3</td><td class="centered">0</td></tr>
-<tr><td>61</td><td class="centered">3.5</td><td class="centered">1.0</td><td class="centered">0</td></tr>
-<tr><td>64</td><td class="centered">4.7</td><td class="centered">1.4</td><td class="centered">0</td></tr>
-<tr><td>68</td><td class="centered">4.1</td><td class="centered">1.0</td><td class="centered">0</td></tr>
-<tr><td>74</td><td class="centered">4.7</td><td class="centered">1.2</td><td class="centered">0</td></tr>
-<tr><td>78</td><td class="centered">5.0</td><td class="centered">1.7</td><td class="centered">0</td></tr>
-<tr><td>83</td><td class="centered">3.9</td><td class="centered">1.2</td><td class="centered">0</td></tr>
-<tr><td>87</td><td class="centered">4.7</td><td class="centered">1.5</td><td class="centered">0</td></tr>
-<tr><td>99</td><td class="centered">3.0</td><td class="centered">1.1</td><td class="centered">0</td></tr>
+<tr><td>1</td><td class="label">1.4</td><td class="label">0.2</td><td class="label">1</td></tr>
+<tr><td>6</td><td class="label">1.7</td><td class="label">0.4</td><td class="label">1</td></tr>
+<tr><td>14</td><td class="label">1.1</td><td class="label">0.1</td><td class="label">1</td></tr>
+<tr><td>25</td><td class="label">1.9</td><td class="label">0.2</td><td class="label">1</td></tr>
+<tr><td>27</td><td class="label">1.6</td><td class="label">0.4</td><td class="label">1</td></tr>
+<tr><td>36</td><td class="label">1.2</td><td class="label">0.2</td><td class="label">1</td></tr>
+<tr><td>37</td><td class="label">1.3</td><td class="label">0.2</td><td class="label">1</td></tr>
+<tr><td>44</td><td class="label">1.6</td><td class="label">0.6</td><td class="label">1</td></tr>
+<tr><td>45</td><td class="label">1.9</td><td class="label">0.4</td><td class="label">1</td></tr>
+<tr><td>46</td><td class="label">1.4</td><td class="label">0.3</td><td class="label">1</td></tr>
+<tr><td>53</td><td class="label">4.9</td><td class="label">1.5</td><td class="label">0</td></tr>
+<tr><td>54</td><td class="label">4.0</td><td class="label">1.3</td><td class="label">0</td></tr>
+<tr><td>61</td><td class="label">3.5</td><td class="label">1.0</td><td class="label">0</td></tr>
+<tr><td>64</td><td class="label">4.7</td><td class="label">1.4</td><td class="label">0</td></tr>
+<tr><td>68</td><td class="label">4.1</td><td class="label">1.0</td><td class="label">0</td></tr>
+<tr><td>74</td><td class="label">4.7</td><td class="label">1.2</td><td class="label">0</td></tr>
+<tr><td>78</td><td class="label">5.0</td><td class="label">1.7</td><td class="label">0</td></tr>
+<tr><td>83</td><td class="label">3.9</td><td class="label">1.2</td><td class="label">0</td></tr>
+<tr><td>87</td><td class="label">4.7</td><td class="label">1.5</td><td class="label">0</td></tr>
+<tr><td>99</td><td class="label">3.0</td><td class="label">1.1</td><td class="label">0</td></tr>
 </table>
 <p class="illustration">Training set per il classificatore setosa/versicolor.</p>
 <p>Nota: la prima colonna riporta l'indice del dato all'interno del dataset originale.</p>
-<p>Una volta copiato il contenuto della tabella nelle tre variabili lista prima citate si fa partire l'addestramento (<a href="files/scratch-perceptron/perceptron_iris_setosa_versicolor.sb3">qui</a> una versione del progetto con i dati precaricati). Già dopo i primi due cicli di apprendimento il percettrone non commetterà più alcun errore. L'efficacia del classificatore si conferma sottoponendo i dati di altri petali non facenti parte di quelli utilizzati nell'apprendimento. Il diagramma sottostante, ove la lunghezza dei petali è riportata in ascissa e la loro larghezza in ordinata, mostra la distribuzione dei petali setosa (in blu) e quelli versicolor (in rosso). I punti con diametro maggiore sono quelli utilizzati durante l'apprendimento:</p>
+<p>Una volta copiato il contenuto della tabella nelle tre variabili lista prima citate si fa partire l'addestramento (<a href="files/scratch-perceptron/perceptron_iris_setosa_versicolor.sb3">qui</a> una versione del progetto con i dati di addestramento precaricati). Già dopo i primi due cicli di apprendimento il percettrone non commette più alcun errore. L'efficacia del classificatore si conferma sottoponendo i dati di altri petali non facenti parte del training set. Il diagramma sottostante, ove la lunghezza dei petali è riportata in ascissa e la loro larghezza in ordinata, mostra la distribuzione dei petali setosa in blu e quelli versicolor in rosso. I punti con diametro maggiore sono quelli utilizzati durante l'apprendimento:</p>
 <img src="img/scratch-perceptron/setosa_vs_versicolor.png">
 <p class="illustration">La classificazione dei fiori setosa e versicolor.</p>
 <p>La distribuzione spaziale dei due insiemi li rende linearmente separabili e ciò consente al percettrone di individuare in breve tempo una retta che li pone in due regioni del piano separate.</p>
 <h3>Versicolor vs virginica</h3>
-<p>Utilizziamo lo stesso dataset per predisporre un classificatore che distingua i fiori versicolor da quelli virginica. I dati scelti per l'addestramento sono i seguenti:</p>
+<p>Si vuole ottenere un classificatore che distingua i fiori versicolor da quelli virginica. I dati scelti per l'addestramento sono i seguenti:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>#</th><th>lunghezza</th><th>larghezza</th><th>versicolor?</th></tr>
-<tr><td>53</td><td class="centered">4.9</td><td class="centered">1.5</td><td class="centered">1</td></tr>
-<tr><td>54</td><td class="centered">4.0</td><td class="centered">1.3</td><td class="centered">1</td></tr>
-<tr><td>61</td><td class="centered">3.5</td><td class="centered">1.0</td><td class="centered">1</td></tr>
-<tr><td>64</td><td class="centered">4.7</td><td class="centered">1.4</td><td class="centered">1</td></tr>
-<tr><td>68</td><td class="centered">4.1</td><td class="centered">1.0</td><td class="centered">1</td></tr>
-<tr><td>74</td><td class="centered">4.7</td><td class="centered">1.2</td><td class="centered">1</td></tr>
-<tr><td>78</td><td class="centered">5.0</td><td class="centered">1.7</td><td class="centered">1</td></tr>
-<tr><td>83</td><td class="centered">3.9</td><td class="centered">1.2</td><td class="centered">1</td></tr>
-<tr><td>87</td><td class="centered">4.7</td><td class="centered">1.5</td><td class="centered">1</td></tr>
-<tr><td>99</td><td class="centered">3.0</td><td class="centered">1.1</td><td class="centered">1</td></tr>
-<tr><td>101</td><td class="centered">6.0</td><td class="centered">2.5</td><td class="centered">0</td></tr>
-<tr><td>107</td><td class="centered">4.5</td><td class="centered">1.7</td><td class="centered">0</td></tr>
-<tr><td>108</td><td class="centered">6.3</td><td class="centered">1.8</td><td class="centered">0</td></tr>
-<tr><td>114</td><td class="centered">5.0</td><td class="centered">2.0</td><td class="centered">0</td></tr>
-<tr><td>118</td><td class="centered">6.7</td><td class="centered">2.2</td><td class="centered">0</td></tr>
-<tr><td>122</td><td class="centered">4.9</td><td class="centered">2.0</td><td class="centered">0</td></tr>
-<tr><td>125</td><td class="centered">5.7</td><td class="centered">2.1</td><td class="centered">0</td></tr>
-<tr><td>127</td><td class="centered">4.8</td><td class="centered">1.8</td><td class="centered">0</td></tr>
-<tr><td>135</td><td class="centered">5.6</td><td class="centered">1.4</td><td class="centered">0</td></tr>
-<tr><td>145</td><td class="centered">5.7</td><td class="centered">2.5</td><td class="centered">0</td></tr>
+<tr><td>53</td><td class="label">4.9</td><td class="label">1.5</td><td class="label">1</td></tr>
+<tr><td>54</td><td class="label">4.0</td><td class="label">1.3</td><td class="label">1</td></tr>
+<tr><td>61</td><td class="label">3.5</td><td class="label">1.0</td><td class="label">1</td></tr>
+<tr><td>64</td><td class="label">4.7</td><td class="label">1.4</td><td class="label">1</td></tr>
+<tr><td>68</td><td class="label">4.1</td><td class="label">1.0</td><td class="label">1</td></tr>
+<tr><td>74</td><td class="label">4.7</td><td class="label">1.2</td><td class="label">1</td></tr>
+<tr><td>78</td><td class="label">5.0</td><td class="label">1.7</td><td class="label">1</td></tr>
+<tr><td>83</td><td class="label">3.9</td><td class="label">1.2</td><td class="label">1</td></tr>
+<tr><td>87</td><td class="label">4.7</td><td class="label">1.5</td><td class="label">1</td></tr>
+<tr><td>99</td><td class="label">3.0</td><td class="label">1.1</td><td class="label">1</td></tr>
+<tr><td>101</td><td class="label">6.0</td><td class="label">2.5</td><td class="label">0</td></tr>
+<tr><td>107</td><td class="label">4.5</td><td class="label">1.7</td><td class="label">0</td></tr>
+<tr><td>108</td><td class="label">6.3</td><td class="label">1.8</td><td class="label">0</td></tr>
+<tr><td>114</td><td class="label">5.0</td><td class="label">2.0</td><td class="label">0</td></tr>
+<tr><td>118</td><td class="label">6.7</td><td class="label">2.2</td><td class="label">0</td></tr>
+<tr><td>122</td><td class="label">4.9</td><td class="label">2.0</td><td class="label">0</td></tr>
+<tr><td>125</td><td class="label">5.7</td><td class="label">2.1</td><td class="label">0</td></tr>
+<tr><td>127</td><td class="label">4.8</td><td class="label">1.8</td><td class="label">0</td></tr>
+<tr><td>135</td><td class="label">5.6</td><td class="label">1.4</td><td class="label">0</td></tr>
+<tr><td>145</td><td class="label">5.7</td><td class="label">2.5</td><td class="label">0</td></tr>
 </table>
 <p class="illustration">Training set per il classificatore versicolor/virginica.</p>
 <p>Una versione del progetto con i dati del classificatore precaricati è disponibile <a href="files/scratch-perceptron/perceptron_iris_versicolor_setosa.sb3">qui</a>.</p>
-<p>In questo caso l'algoritmo di apprendimento non converge. prolungare l'addestramento a 100, 200, o 500 epoche non serve, il percettrone non smette comunque di commettere qualche errore di classificazione. La ragione è subito chiara se si considera la distribuzione spaziale dei dati, qui sotto riportati assieme alla posizione assunta dal taglio dopo 100 epoche:</p>
+<p>In questo caso l'algoritmo di apprendimento non converge. Prolungare l'addestramento a 100, 200, o 500 epoche non serve, il percettrone commette sempre almeno un errore di classificazione. La ragione è subito chiara se si considera la distribuzione spaziale dei dati, qui sotto riportati assieme alla posizione assunta dal taglio dopo 100 epoche:</p>
 <img src="img/scratch-perceptron/versicolor_vs_virginica.png">
 <p class="illustration">La classificazione dei fiori versicolor e virginica dopo 100 epoche.</p>
 <p>Non c'è speranza di convergenza perché i due insiemi non sono linearmente separabili.</p>
 <h2>Conclusioni</h2>
-<p>Il percettrone è in grado di discriminare gli stimoli che riceve se questi sono linearmente separabili. Per semplicità abbiamo visto due esempi bi-dimensionali, ma la stessa considerazione vale anche nel caso generale in cui il percettrone è dotato di più di due ingressi.</p>
-<p>La rapidità con cui il percettrone determina il criterio discriminante (il cosiddetto &ldquo;taglio&rdquo;) dipende dal numero e dalla tipologia di esempi usati nell'addestramento e dal valore assegnato al tasso di apprendimento η. Non esistono indicazioni di validità generale, le scelte ottimali sono spesso dettate dall'esperienza.</p>
+<p>Il percettrone è in grado di discriminare gli stimoli che riceve se questi sono linearmente separabili. Per semplicità sono stati presentati due esempi bi-dimensionali, ma la stessa considerazione vale anche nel caso generale in cui il percettrone è dotato di più di due ingressi.</p>
+<p>La rapidità con cui il percettrone determina il criterio discriminante, il cosiddetto &ldquo;taglio&rdquo;, dipende dal numero e dalla tipologia di esempi usati nell'addestramento e dal valore assegnato al tasso di apprendimento η. Non esistono indicazioni di validità generale, le scelte ottimali sono spesso dettate dall'esperienza.</p>
 <p>Un possibile problema che è stato del tutto trascurato riguarda la stabilità numerica dell'algoritmo di apprendimento, ovvero l'assicurarsi che i pesi e la soglia non assumano valori estremamente piccoli o estremamante grandi.</p>
-<p>Le classificazioni che il percettrone non è stato in grado di individuare (lo <strong>xor</strong> e la distinzione versicolor/virginica) viene correttamente trattato da una struttura di neuroni stratificati nota come <a href="https://it.wikipedia.org/wiki/Percettrone_multistrato">percettore multi-strato</a>. La presenza di più neuroni permette di tracciare dei tagli curvilinei, ma al contempo richiede la definizione di algoritmi di apprendimento più complicati.</p>
-<p class="modification-notice">Pagina modificata il 06/06/2021</p>
+<p>Le classificazioni che il percettrone non è stato in grado di individuare, lo <strong>xor</strong> e la distinzione versicolor/virginica, viene correttamente trattato da una struttura di neuroni stratificati nota come <a href="https://it.wikipedia.org/wiki/Percettrone_multistrato">percettore multi-strato</a>. La presenza di più neuroni permette di tracciare dei tagli curvilinei, ma richiede la definizione di algoritmi di apprendimento più complicati.</p>
+<p>Il percettrone multi-strato infine è solo una delle possibili forme di rete neurale artificiale, negli anni ne sono state definite di svariate:</p>
+<a href="img/scratch-perceptron/deep_learning_timeline.png"><img src="img/scratch-perceptron/deep_learning_timeline.png" width="800"></a>
+<p class="illustration">Click sull'immagine per ingrandirla.</p>
+<p class="modification-notice">Pagina modificata il 08/06/2021</p>
 </body>
 </html>

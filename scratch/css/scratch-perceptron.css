@@ -24,3 +24,24 @@ table.formula {
  margin-top: .5em;
  padding: 0em;
 }
+
+th {
+ text-align: center;
+}
+
+td.label {
+ text-align: center;
+}
+   
+td.number {
+ text-align: right;
+}
+
+tr.epoch td {
+ border-top: 1px solid #93a1a1;
+}
+
+tr.error td {
+ color: #dc322f;
+ font-weight: bold;
+}
