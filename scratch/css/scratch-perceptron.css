@@ -1,3 +1,8 @@
+p.embedded {
+ padding: 1em;
+ text-align: center;
+}
+
 p.formula {
  font-style: italic;
  margin-left: 5em;

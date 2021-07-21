@@ -8,6 +8,11 @@ li.answer {
  font-weight: bold;
 }
 
+p.embedded {
+ padding: 1em;
+ text-align: center;
+}
+
 span.code {
  background-color: #eee8d5;
  border-width: 1px;
