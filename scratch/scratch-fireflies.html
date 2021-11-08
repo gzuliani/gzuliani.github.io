@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Lucciole in Scratch</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#scratch-fireflies">risorse</a> | lucciole in scratch</p>
+<h1>Lucciole in Scratch</h1>
+<p>Questo progetto vuole esemplificare un <em>comportamento emergente</em>. Un sistema complesso, composto da più componenti identici, esibisce un comportamento emergente quando presenta delle proprietà non derivabili dalle leggi che governano il singolo componente. Di modelli di tali sistema ne esistono diversi, tra tutti vale la pena di citare <a href="https://en.wikipedia.org/wiki/Boids">Boids</a> e <a href="https://en.wikipedia.org/wiki/Ant_colony_optimization_algorithms">Ant colony</a>. Qui prendo in esame la sincronizzazione dei lampeggi in uno sciame di lucciole: alcune (poche) specie di lucciole hanno infatti la capacità di sincronizzare l'emissione dei propri impulsi luminosi con quelli degli insetti vicini. La sincronizzazione si ottiene con l'applicazione di due semplici regole:</p>
+<ul>
+<li>tutte le lucciole condividono la stessa frequenza naturale di lampeggio;</li>
+<li>se una lucciola viene stimolata dal lampeggio di una lucciola vicina:</li>
+<ul>
+    <li>se sta per lampeggiare, allora anticiperà il lampeggio;</li>
+    <li>se ha lampeggiato da poco, allora ritarderà il lampeggio successivo.</li>
+</ul>
+</ul>
+<h2>La lucciola</h2>
+<p>Per trasformare Scratch in una lucciola bisogna innazitutto ridurne le dimensioni; lo sprite dovrà poi muoversi lentamente in giro per lo schermo:</p>
+<img src="img/scratch-fireflies/step-1.png">
+<p class="illustration">Il codice che regola il movimento della lucciola.</p>
+<p>Il lampeggio è controllato da un orologio interno realizzato con un contatore che viene incrementato dopo ogni movimento; quando raggiunge un certo valore, da stabilire sperimentalmente, la lucciola emette il lampeggio e il contatore viene azzerato. Poiché inizialmente ogni lucciola avrà il suo orologio interno regolato in modo diverso, la variabile <span class="code">counter</span> dev'essere definita come variabile di Sprite:</p>
+<img src="img/scratch-fireflies/step-2.png">
+<p class="illustration">Il contatore è una variabile locale.</p>
+<p>Il contatore va azzerato all'inizio del programma e incrementato all'interno del ciclo. Sperimentalmente si ricava il valore che raggiunge dopo 3-5 secondi, dato che questa è approssimativamente la frequenza di lampeggio delle lucciole:</p>
+<img src="img/scratch-fireflies/step-3.png">
+<p class="illustration">Il programma per la determinazione della frequenza di lampeggio.</p>
+<p>Le prove suggeriscono il valore massimo per il contatore attorno al 90. Per comodità conviene memorizzare questo parametro in una variabile globale apposita, denominata <span class="code">period</span>. Il lampeggio si ottiene agendo sulla luminosità dello sprite:</p>
+<img src="img/scratch-fireflies/step-4.png">
+<p class="illustration">Il codice della lucciola.</p>
+<p>Questa è l'occasione per aggiungere uno sfondo notturno, per esempio <bold>Stars</bold> o <bold>Wetland</bold>, quest'ultimo con luminosità ridotta a -75 all'avvio del programma.</p>
+<h2>Lo sciame</h2>
+<p>È giunto il momento di moltiplicare il numero di lucciole: lo sprite principale si occupa di creare 25 cloni, ognuno dei quali in una posizione diversa, che punta in direzione diversa, e con il contatore impostato in modo diverso:</p>
+<img src="img/scratch-fireflies/step-5.png">
+<p class="illustration">Il codice dei cloni.</p>
+<p>Le lucciole ora lampeggiano con la stessa frequenza ma sono tutte fuori fase. È necessario che ogni lucciola notifichi le altre sue compagne che ha appena emesso un lampeggio; ciò si può ottenere per esempio con l'invio di un messaggio. Per avere il massimo controllo della simulazione conviene introdurre una variabile globale <span class="code">synchronize</span> a valori [0, 1] che dà il consenso all'invio del messaggio:</p>
+<img src="img/scratch-fireflies/step-6.png">
+<p class="illustration">La variabile di controllo della simulazione.</p>
+<img src="img/scratch-fireflies/step-7.png">
+<p class="illustration">L'invio del messaggio è vincolato al valore della variabile <span class="code">synchronize</span>.</p>
+<h2>La sincronizzazione</h2>
+<p>Quando un clone riceve la notifica che una lucciola ha appena emesso il lampeggio deve innanzitutto escludere che si tratti del proprio lampeggio; per questa ragione le notifiche ricevute quando il contatore interno è a zero vengono ignorate. La distinzione "sta per lampeggiare"/"ha appena lampeggiato" avviene sulla base del valore del contatore interno: se il suo valore è inferiore alla metà del valore massimo, allora si è nella condizione "ha appena lampeggiato", se invece lo supera allora si assume di essere nella condizione "sta per lampeggiare". Alla luce di queste considerazioni, il codice che regola l'emissione del lampeggio di ogni singola lucciola diventa:</p>
+<img src="img/scratch-fireflies/step-8.png">
+<p class="illustration">Il codice che realizza la sincronizzazione.</p>
+<h2>Uso del programma</h2>
+<p>Per comodità conviene porre la variabile <span class="code">synchronize</span> a zero all'inizio del programma:</p>
+<img src="img/scratch-fireflies/step-9.png">
+<p class="illustration">Inibizione della sincronizzazione.</p>
+<p>In questo modo le lucciole ignorano gli stimoli provenienti dalle loro compagne e ognuna lampeggia nel rispetto del proprio orologio interno. Nel momento in cui si attiva la sincronizzazione si assisterà ad un progressivo rifasamento dei lampeggi e in breve tempo tutte le lucciole emetteranno il lampeggio contemporaneamente.</p>
+<p>L'aspetto cruciale che questa simulazione mette in evidenza è che la sincronizzazione generalizzata che si raggiunge in breve tempo non è guidata da una lucciola "capo" o da un orologio condiviso esterno, ma è effetto del meccanismo locale messo in atto da ognuna delle lucciole.</p>
+<p>Il progetto Scratch 3 completo è scaricabile <a href="files/scratch-fireflies/fireflies.sb3">qui</a>.</p>
+<p class="modification-notice">Pagina modificata il 07/11/2021</p>
+</body>
+</html>
