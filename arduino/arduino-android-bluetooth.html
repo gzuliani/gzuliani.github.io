@@ -116,9 +116,15 @@ OK
 <pre class="code">
 <strong>AT+UART?</strong>
 +UART:9600,0,0
-OK 
+OK
 </pre>
-<p>Questa non è la velocità con cui il modulo sta comunicando in questo preciso momento &mdash; essendo l'HC-05 in modalità Command la linea seriale con Arduino sta funzionando a 38400 Baud &mdash; ma quella che utilizzerà durante il funzionamento normale.</p>
+<p>Oltre al baud rate il modulo fornisce anche l'indicazione del numero di bit di stop e del tipo di parità correntemente in uso secondo la codifica:</p>
+<ul>
+<li><strong>bit di stop</strong>: 0=1 bit di stop, 1=2 bit di stop</li>
+<li><strong>parità</strong>: 0=nessuna parità, 1=parità dispari, 2=parità pari</li>
+</ul>
+<p>Le specifiche riportano che le velocità supportate dal modulo sono 4800, 9600, 19200, 38400, 115200, 921600 e 1382400 Baud.</p>
+<p><strong>Attenzione!</strong> La velocità indicata non è quella con cui il modulo sta comunicando in questo preciso momento &mdash; essendo l'HC-05 in modalità Command la linea seriale con Arduino sta funzionando a 38400 Baud &mdash; ma quella che utilizzerà durante il funzionamento normale.</p>
 <p><strong>Attenzione!</strong> In modalità <em>Command</em> il modulo si attende, come marcatore di fine linea, la sequenza di caratteri CR+LF. Se si intende usare il Serial Monitor dell'IDE di Arduino accertarsi che nella casella combinata in basso a destra sia evidenziato &ldquo;Both NL & CR&rdquo; mentre in quella accanto, che mostra la la velocità di comunicazione, sia indicato &ldquo;9600&rdquo; (essendo questa la velocità cui è stato impostato l'oggetto <span class="code">Serial</span> dello sketch appena caricato su Arduino).</p>
 <a name="hc05-usage"></a>
 <h2>Connessione Arduino/HC-05</h2>
@@ -192,7 +198,7 @@ void loop() {
   }
   delay(250);</ins>
 }
-</pre>  
+</pre>
 <p class="illustration">Scarica lo sketch <a href="files/arduino-android-bluetooth/bt-remote.ino">bt-remote.ino</a></p>
 <a name="bt-remote"></a>
 <h2>App Android per il controllo remoto di Arduino</h2>
