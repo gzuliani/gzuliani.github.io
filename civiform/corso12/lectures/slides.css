@@ -1,0 +1,208 @@
+/*
+@import url('https://fonts.googleapis.com/css?family=Oswald');
+@import url('https://fonts.googleapis.com/css?family=PT+Serif');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono');
+*/
+@font-face {
+  font-family: 'Oswald';
+  src: url('fonts/Oswald-Regular.ttf');
+}
+@font-face {
+  font-family: 'PT Serif';
+  src: url('fonts/PT_Serif-Web-Regular.ttf');
+}
+@font-face {
+  font-family: 'Fira Mono';
+  src: url('fonts/FiraMono-Regular.ttf');
+}
+
+
+/*
+ * Solarized palette
+ *
+ * base03=#002b36
+ * base02=#073642
+ * base01=#586e75
+ * base00=#657b83
+ * base0=#839496
+ * base1=#93a1a1
+ * base2=#eee8d5
+ * base3=#fdf6e3
+ * yellow=#b58900
+ * orange=#cb4b16
+ * red=#dc322f
+ * magenta=#d33682
+ * violet=#6c71c4
+ * blue=#268bd2
+ * cyan=#2aa198
+ * green=#859900
+*/
+
+.remark-notes-area {
+  font-size: 24px;
+}
+
+.remark-slide-content {
+  background-color: #eee8d5;
+  background-size: contain;
+  color: #002b36;
+  font-size: 32px;
+}
+
+.remark-slide-content h1 {
+  font-size: 1.5em;
+}
+
+.remark-slide-number {
+  font-size: 16px;
+}
+
+.remark-code {
+  font-family: 'Fira Mono';
+  font-size: .7em;
+}
+
+.remark-inline-code {
+  color: #268bd2;
+  font-family: 'Fira Mono';
+  font-weight: bold;
+}
+
+body {
+  font-family: 'PT Serif', serif;
+  font-size: 64px;
+}
+
+h1, h2, h3 {
+  font-family: 'Oswald';
+  font-size: 1.5em;
+  font-weight: normal;
+}
+
+h1 {
+  text-transform: uppercase;
+  padding-bottom: 1em;
+}
+
+.title-header {
+  font-family: 'Oswald';
+  font-size: .8em;
+  padding-top: 3em;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+}
+
+.title {
+  font-family: 'Oswald';
+  font-size: 2.4em;
+  height: 4em;
+  padding-bottom: 1em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-family: 'Oswald';
+  font-size: 1.6em;
+  padding-bottom: 1em;
+  text-transform: uppercase;
+}
+
+.title-footer {
+  bottom: 0px;
+  font-size: .6em;
+  padding-bottom: 3em;
+  left: 0px;
+  position: absolute;
+  width: 100%;
+}
+
+blockquote {
+  font-style: italic;
+  padding-top: 1em;
+  text-align: center;
+}
+
+img {
+  max-height: 80%;
+  max-width: 90%;
+}
+
+li {
+  padding: .3em;
+}
+
+.illustration {
+  font-size: .6em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.seealso {
+  font-size: .6em;
+  padding: 1em;
+  text-align: right;
+}
+
+a {
+  color: #6c71c4;
+}
+
+.keyword {
+  font-weight: bold;
+  color: #268bd2;
+}
+
+.process {
+  font-size: 1.2em;
+  font-weight: bold;
+  line-height: 0.3em;
+}
+
+.stages {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.highlight {
+  color: #dc322f;
+  font-weight: bold;
+}
+
+.analysis {
+  color: #859900;
+}
+
+.design {
+  color: #2aa198;
+}
+
+.coding {
+  color: #268bd2;
+}
+
+.test {
+  color: #6c71c4;
+}
+
+.author {
+  font-size: .8em;
+  font-style: italic;
+  padding-top: 1em;
+  text-align: right;
+}
+
+.important {
+  color: #d33682;
+  font-weight: bold;
+  padding-top: .4em;
+  text-align: center;
+}
+
+.example {
+  color: #657b83;
+  font-style: italic;
+  font-weight: bold;
+}
