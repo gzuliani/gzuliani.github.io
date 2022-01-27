@@ -277,8 +277,85 @@ prima facciamo il blocco del quadrato, del triangolo e del pentagono
 poi generalizziamo
 poi li mettiamo in sequenza con n=3, 4, 5,  ...
 a questo punto il ciclo esterno dovrebbe venire più naturale
-gioco: ispirarsi a mondo sommerso
-partire con lo sfondo griglia e parlare di movimento x/y e direzione/stile di rotazione
+
+* eliminare lo sprite di Scratch
+* aggiungere sprite "Diver2" (rinominare lo sprite in "Sub")
+* ridimensionare lo sprite se necessario;
+* tre tecniche di movimento:
+  * punta verso il mouse + fai 3/5 passi (10 sono troppi) -> instabilità
+  * rotazione + avanzamento (stile di rotazione "può ruotare" se no non capisco dove vado)
+  * movimento x/y (caricare lo sfondo "cartesiano" così si capisce meglio) -> direzione +/-90 per indicare la direzione sx/dx, su/giù non serve
+* sfondo "underwater3"
+* inizializzazione dello sprite: vai a 0, 0, dimensione, stile di rotazione
+
+## il comprimario
+
+* "Starfish" (rinominare lo sprite in "Stella"), rimpicciolito, in basso a destra (-200, -140);
+* bandierina verde, ci vado sopra col sub, non succede nulla
+* cosa dovrebbe accadere? per esempio, la stella ringrazia di essere stata salvata, e sparisce (perché finisce nella sacca del subacqueo)
+* dice "Mi hai salvata!" per 1 secondo, nascondi -> serve un mostra all'inizio
+* sfruttiamo i costumi della stella
+* dopo essere stata raccolta per la prima volta, la stella sorride sempre; inizializzarla col costume "starfish-b";
+* il gioco finisce subito! "moltiplichiamo" le stelle col nascondi/aspetta/mostra (scegliendo il costume giusto e cambiando posizione ogni volta, se no...)
+* può apparire su tutto lo schermo (vai posizione a caso) o solo sul fondale (vai a x/y coi range causali giusti)
+
+## contare i punti
+
+* variabile "Stelle salvate" --- chi si occupa di contare i punti?
+* incremento, inizializzazione (ancora!)
+
+## l'antagonista
+
+* sprite "Shark" ("Squalo"); adattare la dimensione; deve nuotare lentamente per conto suo:
+
+        quando si clicca su F
+        vai a x: (-170) y: (120)
+        per sempre
+         fai (3) passi
+
+* blocco `rimbalza quando tocchi il bordo`; cambiare stile di rotazione, puntare in una direzione iniziale a caso tra 30 e 60 (altri range buoni?) se capita 0 o peggio 90 non va bene;
+* sfruttiamo i costumi dello squalo per fargli aprire la bocca, di tanto in tanto in un altro `per sempre` (gli sprite possono eseguire più programmi contemporaneamente);
+
+        quando si clicca su F
+        per sempre
+         passa al costume [shark-a]
+         attendi (numero a caso tra (1) e (3)) secondi
+         passa al costume [shark-b]
+         attendi (.2) secondi
+
+* quando lo squalo tocca il subacqueo? di certo diminuire il numero di stelle salvate
+* chi lo fa? lo facciamo fare al sub, così possiamo poi farlo lampeggiare:
+
+        quando si clicca su F
+        vai a x: (0) y: (0)
+        porta stile di rotazione a [sinistra-destra]
+        per sempre
+         ...
+         se <sta toccando [Squalo]> allora
+          porta effetto [luminosità] a (60)
+          attendi (.1) secondi
+          porta effetto [luminosità] a (0)
+          dire [Ahia!] per (2) secondi
+          cambia [Stelle salvate] di (-1)
+
+* il punteggio può diventare negativo, non va bene!
+* per facilitare il gioco, lo squalo appare dopo 10 secondi
+* far apparire la stella dopo un intervallo variabile
+
+## gioco a tempo
+
+* variabile "Tempo rimanente", da impostare e decrementare ogni secondo
+* quando arriva a zero diventa negativo e il gioco non si ferma
+* fermare tutto quanto il tempo si esaurisce
+* invece del ferma tutto inviare il messaggio [Partita finita] per nascondere stella e squalo
+* lo sfondo può agganciarsi all'evento e far apparire un "Game Over"
+
+## possibili sviluppi
+
+* aggiungere degli effetti sonori;
+* lo squalo dopo un po' nuota verso il sub
+* introdurre un quarto sprite (???) che rende il sub invulnerabile per TOT secondi (si deve capire che il sub in quel momento è invulnerabile);
+
 
 ---
 
