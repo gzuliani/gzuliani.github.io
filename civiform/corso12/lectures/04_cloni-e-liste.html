@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Coding e Robotica per l’innovazione sociale</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="slides.css"></link>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+.title-header[Civiform]
+
+.title[Coding e Robotica]
+
+.subtitle[per l’innovazione sociale]
+
+.title-footer[Cividale, gennaio-febbraio 2022]
+
+---
+
+class: center, middle
+
+.title[Estensione “penna”]
+
+---
+
+# Blocchi personalizzati
+
+---
+
+class: center, middle
+
+.center[<img src="img/block-with-no-arguments.png">]
+
+.illustration[
+Blocco personalizzato]
+
+---
+
+class: center, middle
+
+.center[<img src="img/block-with-one-argument.png">]
+
+.illustration[
+Blocco personalizzato parametrico]
+
+---
+
+class: center, middle
+
+.center[<img src="img/block-with-two-arguments.png">]
+
+.illustration[
+Blocco personalizzato multi-parametrico]
+
+---
+
+# Blocchi personalizzati
+--
+
+* permettono di nascondere i dettagli implementativi
+--
+
+* aumentano la leggibilità del codice
+--
+
+* riducono il tasso di ripetitività del programma
+--
+
+* consentono di suddividerlo in unità logicamente separate
+
+---
+
+class: center, middle
+
+.title[Mondo Sommerso]
+
+---
+
+# Movimento degli sprite
+--
+
+* guidare lo sprite con il mouse
+--
+
+
+```cpp
+/*
+per sempre
+  punta verso (puntatore del mouse)
+  fai (5) passi
+```
+
+---
+
+# Movimento degli sprite
+
+* guidare lo sprite con il mouse
+* rotazione e avanzamento, da tastiera
+--
+
+
+```cpp
+/*
+per sempre
+  se &lt;tasto [freccia sinistra] premuto&gt; allora
+    ruota ↺ di (10) gradi
+  se &lt;tasto [freccia destra] premuto&gt; allora
+    ruota ↻ di (10) gradi
+  se &lt;tasto [spazio] premuto&gt; allora
+    fai (5) passi
+```
+
+---
+
+# Movimento degli sprite
+
+* guidare lo sprite con il mouse
+* rotazione e avanzamento, da tastiera
+* movimento lungo le coordinate cartesiane (da tastiera)
+
+---
+
+# Movimento degli sprite
+
+* movimento lungo le coordinate cartesiane (da tastiera)
+
+```cpp
+/*
+per sempre
+  se &lt;tasto [freccia sinistra] premuto&gt; allora
+    cambia x di (-5)
+  se &lt;tasto [freccia destra] premuto&gt; allora
+    cambia x di (5)
+  se &lt;tasto [freccia su] premuto&gt; allora
+    cambia y di (5)
+  se &lt;tasto [freccia giù] premuto&gt; allora
+    cambia y di (-5)
+```
+
+---
+
+# Movimento degli sprite
+
+* guidare lo sprite con il mouse
+* rotazione e avanzamento, da tastiera
+* movimento lungo le coordinate cartesiane (da tastiera)
+--
+
+
+.important[
+impostare lo stile di rotazione più adatto<br>in fase di inizializzazione!]
+
+---
+
+# Coding con Scrach
+--
+
+* animazione degli sprite con .keyword[passa al costume]
+--
+
+* gestione delle collisioni tra sprite con .keyword[sta toccando]
+--
+
+* conto alla rovescia con .keyword[attendi (1) secondi]
+--
+
+* comunicazione tra sprite con .keyword[invia a tutti (…) e attendi]
+
+---
+
+class: center, middle
+
+.title[Cloni e liste]
+
+</textarea>
+    <script src="remark-latest.min.js"></script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: "",
+            highlightLines: "yes",
+            highlightStyle: "monokai-sublime",
+        });
+    </script>
+  </body>
+</html>

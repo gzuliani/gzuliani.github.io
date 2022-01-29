@@ -350,12 +350,36 @@ a questo punto il ciclo esterno dovrebbe venire più naturale
 * invece del ferma tutto inviare il messaggio [Partita finita] per nascondere stella e squalo
 * lo sfondo può agganciarsi all'evento e far apparire un "Game Over"
 
-## possibili sviluppi
+=========
+non c'è stato tempo per il broadcast e la schermata di game over
+=========
 
-* aggiungere degli effetti sonori;
-* lo squalo dopo un po' nuota verso il sub
-* introdurre un quarto sprite (???) che rende il sub invulnerabile per TOT secondi (si deve capire che il sub in quel momento è invulnerabile);
 
+# LEZIONE n.5 20220201
+
+>>> www.guidanft.it
+
+>>> poligoni in sequenza: del perché il "ripeti fino a quando tocchi il bordo" non funziona come previsto
+intanto all'inizio non parte perché Scratch tocca il bordo; portare y iniziale a -120
+comunque esce dal bordo superiore senza fermarsi, perché!?
+il controllo viene fatto solo alla partenza, non durante tutto il disegno!
+in alternativa, inserire un if con un ferma tutto dopo ogni poligono => sono caduto anch'io in errore!
+
+concludere il gioco col broadcast e la schermata di game over
+
+cloni, liste, stringhe
+
+## lucciole sincronizzanti
+
+mostrare video https://youtu.be/RUhsJn8ac-o
+implementazione della lucciola con l'orologio interno (prima parte delle slide)
+(muovi 2 passi, ruota a caso +/-3 gradi, lampo quando arriviamo a 100)
+clonazione per costruire uno sciame di 25 lucciole
+meccanismo di sincronizzazione (seconda parte delle slide)
+  se conteggio = 0 non fare nulla (sono sincronizzato)
+  se conteggio < 50 decrementa
+  se conteggio > 50 incrementa
+uso del broadcast per la sincronizzazione
 
 ---
 
