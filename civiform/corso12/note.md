@@ -381,6 +381,32 @@ meccanismo di sincronizzazione (seconda parte delle slide)
   se conteggio > 50 incrementa
 uso del broadcast per la sincronizzazione
 
+## liste
+
+definire la lista "spesa"
+click su scratch ci dice se la lista è vuota oppure no (lunghezza di [spesa])
+dice "vuota"
+aggiungere qualche elemento alla lista col + in basso a destra
+dice "non vuota"
+vogliamo l'elenco
+elemento (1) di spesa
+variabile posizione (pos, i)
+ripeti (4) volte
+se aggiungo un nuovo elemento non viene elencato
+blocco lunghezza di spesa
+aggiungo, tolgo, ora li elenca tutti
+evitare di aggiungere doppioni
+serve uno sprite "+" per aggiungere, così controlla
+duplicare lo sprite, farlo diventare "-"
+inutile cancellare se non c'è
+togliere -> si toglie solo per posizione, non per nome
+... bisogna cercarlo! blocco "posizione di cosa in [spesa]" (vale zero se l'elemento non c'è)
+pulsante svuota lista -> pericoloso, chiediamo conferma
+
+trasformare questo programma in un'agenda telefonica: due liste che crescono/si riducono in parallelo
+(aggiungere la funzione cerca)
+occhio, cercando per nome cancellare prima da numeri, se no poi il nome non si trova più quando si vuole cancellare il numero!
+
 ---
 
 L02 - approccio informale incrementale: un semplice videogioco completo (varibili -- scegliere bene i nomi! --, cloni, messaggi)
