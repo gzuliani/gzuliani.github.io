@@ -404,10 +404,20 @@ togliere -> si toglie solo per posizione, non per nome
 pulsante svuota lista -> pericoloso, chiediamo conferma
 
 trasformare questo programma in un'agenda telefonica: due liste che crescono/si riducono in parallelo
-(aggiungere la funzione cerca)
+aggiungere la funzione cerca:
+ `item # of (answer) in [nomi]` per ricavare l'indice
+ `item  () of [numeri]` per ricavare il numero nella posizione data sopra
+ (ri-usare la variabile `posizione` -- o introdurne una nuova -- per chiarire, se serve)
+
 occhio, cercando per nome cancellare prima da numeri, se no poi il nome non si trova più quando si vuole cancellare il numero!
 
+## stringhe
+
+cifrario di Cesare con lo stesso algoritmo dell'agenda
+check palindromi (servono due indici)
+
 ---
+
 
 L02 - approccio informale incrementale: un semplice videogioco completo (varibili -- scegliere bene i nomi! --, cloni, messaggi)
 L03.1 - un approccio più formale: implementazione dell'algoritmo di Euclide (occhio allo zero!)
