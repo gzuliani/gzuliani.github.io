@@ -393,13 +393,80 @@ POSIZIONE: │ 18 ├───┐
                     └───────────► 18 │ insalata  │
                                      └───────────┘
 
-                                     
+
 
 .
 ```
 
 .illustration[
 Lo scorrimento termina quando si raggiunge il termine della lista.]
+
+---
+
+# Scansione di una lista — Algoritmo
+
+```cpp
+/*
+    porta POSIZIONE a 1
+    ripeti (lunghezza di [LISTA])
+      “usa” (elemento (POSIZIONE) di [LISTA])
+      cambia POSIZIONE di 1
+.
+```
+--
+
+.important[
+Al termine dell’algoritmo POSIZIONE indica la posizione successiva all’ultimo elemento in lista, ma non è un problema purché non si tenti di accedere a quell’elemento.]
+
+---
+
+```cpp
+/*
+
+
+           ┌────┐                  LISTA DELLA SPESA
+POSIZIONE: │ 18 ├───┐
+           └────┘   │             15 ┊ pasta     ┊
+                    │                ├───────────┤
+                    │             16 │ banane    │
+                    │                ├───────────┤
+                    │             17 │ detersivo │
+                    │                ├───────────┤
+                    └───────────► 18 │ insalata  │
+                                     └───────────┘
+
+
+
+.
+```
+
+.illustration[
+Lo stato finale dell’algoritmo non è questo…]
+
+---
+
+```cpp
+/*
+
+
+           ┌────┐                  LISTA DELLA SPESA
+POSIZIONE: │ 19 ├───┐
+           └────┘   │             15 ┊ pasta     ┊
+                    │                ├───────────┤
+                    │             16 │ banane    │
+                    │                ├───────────┤
+                    │             17 │ detersivo │
+                    │                ├───────────┤
+                    │             18 │ insalata  │
+                    │                └───────────┘
+                    └───────────► 19 ┊           ┊
+
+
+.
+```
+
+.illustration[
+… bensì questo. L’effetto però è lo stesso.]
 
 ---
 
@@ -901,7 +968,7 @@ Si applica lo stesso procedimento al carattere successivo.]
     ┌───┬───┬───┬───╔═══╗───┬───┬───┬───┬┄  ┄┬───┬───┬───┐
     │ d │ e │ f │ g ║ h ║ i │ j │ k │ l │    │ a │ b │ c │
     └───┴───┴───┴───╚═══╝───┴───┴───┴───┴┄  ┄┴───┴───┴───┘
-                      5                   
+                      5
 
     TESTO DA CIFRARE...: bacche
                               ^
