@@ -395,9 +395,14 @@ ripeti (4) volte
 se aggiungo un nuovo elemento non viene elencato
 blocco lunghezza di spesa
 aggiungo, tolgo, ora li elenca tutti
+ENUNCIARE LA LISTA A ROVESCIO!
 evitare di aggiungere doppioni
 serve uno sprite "+" per aggiungere, così controlla
 duplicare lo sprite, farlo diventare "-"
+
+
+# LEZIONE n.6 20220201
+
 inutile cancellare se non c'è
 togliere -> si toglie solo per posizione, non per nome
 ... bisogna cercarlo! blocco "posizione di cosa in [spesa]" (vale zero se l'elemento non c'è)
@@ -411,10 +416,30 @@ aggiungere la funzione cerca:
 
 occhio, cercando per nome cancellare prima da numeri, se no poi il nome non si trova più quando si vuole cancellare il numero!
 
+quiz: mostro un nome a caso, l'utente deve indovinare il numero; se non lo indovina, glielo mostro io
+
+porta posizione a numero a caso tra 1 e lunghezza [nomi]
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SALTARE
+
+
 ## stringhe
 
-cifrario di Cesare con lo stesso algoritmo dell'agenda
+esercizi di base:
+* cercare un carattere (scansione oppure blocco contiene)
+* contare le occorrenze di un carattere
+* contare le occorrenze di un set di caratteri (es. vocali) → ciclo esplicito oppure sfruttare una variabile che contiene i caratteri cercati il blocco “contiene”
+* rovesciare una stringa
 check palindromi (servono due indici)
+cifrario di Cesare con lo stesso algoritmo dell'agenda (servono due cicli annidati, suggerire l'uso di un blocco per transcodificare un singolo carattere)
+
+
+~~~~~~~~~~
+
+ANDARE DIRETTAMENTE ALLE SLIDE SUI ROBOT
+
 
 ---
 

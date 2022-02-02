@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Coding e Robotica per l’innovazione sociale</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="slides.css"></link>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+.title-header[Civiform]
+
+.title[Coding e Robotica]
+
+.subtitle[per l’innovazione sociale]
+
+.title-footer[Cividale, gennaio-febbraio 2022]
+
+---
+
+class: center, middle
+
+.title[Tecniche avanzate]
+
+---
+
+# Messaggi
+--
+
+* ogni sprite può inviare un messaggio
+
+---
+
+# Messaggi
+
+* ogni sprite può inviare un messaggio (anche lo sfondo)
+--
+
+* l’invio di un messaggio può essere temporizzato
+--
+
+  * non temporizzato: .keyword[invia a tutti (messaggio)]
+  * temporizzato: .keyword[invia a tutti (messaggio) e aspetta]
+
+---
+
+# Messaggi
+
+* ogni sprite può inviare un messaggio (anche lo sfondo)
+* l’invio di un messaggio può essere temporizzato
+* i messaggi sono pubblici, ovvero rivolti a tutti
+--
+
+* uno sprite può ignorare uno, più o tutti i messaggi ricevuti
+
+---
+
+# Cloni
+--
+
+* diverse copie di uno .keyword[sprite] condividono gli stessi .keyword[script]
+--
+
+* più pratici rispetto alla duplicazione manuale dello sprite
+--
+
+* le variabili .keyword[per tutti gli sprite] sono condivise tra sprite e cloni
+--
+
+* le variabili .keyword[solo per questo sprite] sono private, cioé:
+--
+
+.important[
+ogni sprite o clone ha una propria copia delle variabili private, che perciò non sono accessibili a nessun altro.]
+
+---
+
+# Coding con Scratch
+--
+
+**Cloni**
+--
+
+* sviluppare il programma usando lo sprite principale
+--
+
+* durante l’esecuzione:
+--
+
+  * lo sprite principale crea i cloni
+--
+
+  * i cloni eseguono il programma vero e proprio
+--
+
+  * usare una variabile per caratterizzare i singoli cloni
+
+---
+
+# Cloni
+
+**Altri esempi**
+--
+
+* <a href="https://scratch.mit.edu/projects/549318497">Prati stabili</a>, un caso di cloni che si autodistruggono
+--
+
+* <a href="https://scratch.mit.edu/projects/579119713">Il dono</a>, per una creazione di cloni “a raffica”<br>(ridurre o eliminare la pausa per enfatizzare l’effetto)
+
+</textarea>
+    <script src="remark-latest.min.js"></script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: "",
+            highlightLines: "yes",
+            highlightStyle: "monokai-sublime",
+        });
+    </script>
+  </body>
+</html>
