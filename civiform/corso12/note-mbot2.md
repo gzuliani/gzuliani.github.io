@@ -61,27 +61,89 @@ possiamo simulare il tramonto con lo sprite del sole (usare la torcia del cellul
 
 
 
-LED rossi
-LED intensità
+LED rossi -> non è un vero rosso: click sul comando, verificare che non era rosso
+il led resta acceso fino al termine del programma
+c'è anche il blocco temporizzato
+LED acceso solo quando il tasto A è premuto -> risponde con un certo ritardo
+
+modalità UPLOAD
+
+il programma però è in mBlock: se scollego la schedina il programma non funziona più.
+i blocchi a cappello tipici di Scratch sono disabilitati
+
+upload
+chiudo mBlock
+funziona ancora
+stacco/riattacco Cyberpi: c'è ancora!
+
+se c'è un per sempre o il programma sembra bloccato -> premere il tasto Home per tornare al menu
+dove va a finire?!?! sostituisce l'ultimo degli otto programmi eseguito
+
+
+la differenza è ancora più sostanziale quando il numero di operazioni coinvolte è maggiore; proviamo con un ciclo
+
+
+
+LED intensità: cambiarla a dente di sega o triangolare con set brightness to/increase LED brightess by
+
+
+
+la pulsazione avviene così velocemente che diventa un lampeggio.
+fare passi da 1% e aggiungere una pausa di 0.01 secondi
+
+
+
 LED lampeggianti
 LED lampeggianti alternativamente (indirizzamento singolo LED)
-LED strip: animazione supercar
-LED strip: lampeggiante polizia -> il lampeggio strobo è lentissimo in modalità LIVE
+LED lampeggianti alternativamente (definizione della configurazione della striscia)
+
+
+LED strip: animazione supercar (provare in modalità LIVE e UPLOAD)
+LED strip: RGB -> semaforo (2 led rossi (4s), due led verdi (5s), led centrale giallo (2s))
+il giallo non è convincente -> scegliamo noi i colori
+in modalità LIVE si percepiscono le accensioni singole
+LED strip: indicatore di direzione animato ("moderno")
+LED strip: lampeggiante polizia 4x(20ms+80ms)-> il lampeggio strobo è lentissimo in modalità LIVE
+
+d'ora in poi solo upload
+
+
+
+
+
+
+
+
+
 
 Speaker
 
-musica, melodia
-anche armonia (quante voci?)
+suoni predefiniti
+musica, melodia: conviene lavorare in upload, le pause del LIVE tra una nota e l'altra rovinano l'esecuzione
 
 Sirena polizia: Cyberpi supporta il multithreading, si può far suonare la sirena col lampeggiante
+quando attivare la sirena? tasto b
+valutare "quando tasto B premuto": se voglio far continuare il suono non va bene, serve un persempre + if
+
+
+
+
+
+Accelerometro
 
 
 
 giroscopio -> necessita dell'azzeramento degli angoli perché è un integrale dell'accelerazione angolare
 (x: rotazione in avanti/dietro, y: rotazione sinistra/destra, z: rotazione sul piano)
 
-accelerometro -> tilt, non necessita di azzeramento perché basato sulla gravità
-wave -> accelerazione direzionale
+alcuni blocchi mostrano i dati grezzi
+altri integrano i dati e riconoscono le "gesture"
+
+accelerometro -> non necessita di azzeramento perché basato sulla gravità (STATICO!)
+rotated angle around -> frutto di integrazione, richiede calibrazione (azzeramento)
+
+mostrare il blocco control e di come sia necessario calibrarlo inizialmente
+
 
 es. se wave up: far saltare il panda, se shaken farlo tremare
 salto con gravità
@@ -94,7 +156,8 @@ ci vuole il persempre!
 
 
 
-anche con la musica si nota il ritardo in modalità Live.
+
+Display
 
 display: origine in altro a sx
 display: la dimensione del testo è globale, non si possono visualizzare due scritte a dimensioni diverse
@@ -112,22 +175,21 @@ modulare la velocità di aggiornamento col tempo (line chart anche con la risolu
 anche in questo caso la reattività in modalità upload è molto più alta della live (ma meno comoda)
 
 
+semplici applicazioni CyberPi "only"
 
-modalità UPLOAD
+when shaken detected -> mostra il valore del dado
+accoda gli eventi, conviene persempre + if
 
-il programma però è in mBlock: se scollego la schedina il programma non funziona più.
-i blocchi a cappello tipici di Scratch sono disabilitati
+  set volume to 5 %
+  forever
+   if shaken detected
+     clear screen
+     play buzzing until done
+     show label pick random 1 6 at center of screen by super big pixel
+     wait 1 seconds
 
-when joystick middle pressed
-  led display rosso per 1 secondo
 
-upload
-dove va a finire?!?! sostituisce l'ultimo degli otto programmi eseguito
-chiudo mBlock
-funziona ancora
-stacco/riattacco Cyberpi: c'è ancora!
 
-se c'è un per sempre o il programma sembra bloccato -> premere il tasto Home per tornare al menu
 
 --------------------------
 
