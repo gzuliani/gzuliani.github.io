@@ -52,14 +52,59 @@ microfono e fotoricettore: range 0-100
 per far dire al panda il livello di luminosità/rumorosità: il device deve aggiornare regolarmente una variabile col valore del sensore, il panda lo dice
 
 
-
-possiamo simulare il tramonto con lo sprite del sole (usare la torcia del cellulare per cambiare il livello di luminosità)
-
+====== fino qui ==========
 
 
+# Lezione n. 7 20220208
+
+recap fotoricettore/microfono; possibili utilizzi
+
+fotoricettore
+* regolare il contrasto
+* accendere le luci (interruttore crepuscolare)
+* ottimizzare l'irraggiamento
+
+audio:
+* registrare/riprodurre
+* comandi vocali
+* attivare comandi col rumore (es. battimani)
+
+possiamo simulare il tramonto con lo sprite del sole (usare la torcia del cellulare per cambiare il livello di luminosità) ANCHE NO: LO FACCIO SOLO VEDERE
+
+-------------------------------------------------------------------
+da EN mBot2 Getting Started Activities V1.1.pdf
+
+Accelerometro (modalità LIVE)
+
+accelerometro -> non necessita di azzeramento perché basato sulla gravità (STATICO!)
+giroscopio -> necessita dell'azzeramento degli angoli perché è un integrale dell'accelerazione angolare
+(x: rotazione in avanti/dietro, y: rotazione sinistra/destra, z: rotazione sul piano)
+
+mostrare il blocco control e di come sia necessario calibrarlo inizialmente
+motion sensing: control (Sprite) to follow Cyperpi with sensitivity
+permette di muovere uno sprite usando Cyberpi come fosse un puntatore (stile controller Wii)
+ci vuole il persempre!
 
 
+alcuni blocchi mostrano i dati grezzi -> guardarli con le variabili
+altri integrano i dati e riconoscono le "gesture" -> "sensor fusion"
+gesture -> gesto/atto
+shacking/waving 0-100 (adimensionali)
+tilt -> in gradi
 
+es. se wave up: far saltare il panda, se shaken farlo tremare
+salto con gravità
+gioco salta l'ostacolo
+
+simulare un contapassi (il panda conta gli shake)
+
+idee per dopo:
+* accendo i led per simulare lo scoppio dell'airbag
+* rallentare se il tilt è oltre i 5/10° (dito sotto la ruota)
+
+---------------------------------------------------------------
+
+STRISCIA LED
 
 LED rossi -> non è un vero rosso: click sul comando, verificare che non era rosso
 il led resta acceso fino al termine del programma
@@ -79,24 +124,16 @@ stacco/riattacco Cyberpi: c'è ancora!
 se c'è un per sempre o il programma sembra bloccato -> premere il tasto Home per tornare al menu
 dove va a finire?!?! sostituisce l'ultimo degli otto programmi eseguito
 
-
 la differenza è ancora più sostanziale quando il numero di operazioni coinvolte è maggiore; proviamo con un ciclo
 
-
-
 LED intensità: cambiarla a dente di sega o triangolare con set brightness to/increase LED brightess by
-
-
 
 la pulsazione avviene così velocemente che diventa un lampeggio.
 fare passi da 1% e aggiungere una pausa di 0.01 secondi
 
-
-
 LED lampeggianti
 LED lampeggianti alternativamente (indirizzamento singolo LED)
 LED lampeggianti alternativamente (definizione della configurazione della striscia)
-
 
 LED strip: animazione supercar (provare in modalità LIVE e UPLOAD)
 LED strip: RGB -> semaforo (2 led rossi (4s), due led verdi (5s), led centrale giallo (2s))
@@ -105,16 +142,10 @@ in modalità LIVE si percepiscono le accensioni singole
 LED strip: indicatore di direzione animato ("moderno")
 LED strip: lampeggiante polizia 4x(20ms+80ms)-> il lampeggio strobo è lentissimo in modalità LIVE
 
+led: vu-meter
+led: luci crepuscolari/inversamente proporzionali alla luminosità
+
 d'ora in poi solo upload
-
-
-
-
-
-
-
-
-
 
 Speaker
 
@@ -126,38 +157,14 @@ quando attivare la sirena? tasto b
 valutare "quando tasto B premuto": se voglio far continuare il suono non va bene, serve un persempre + if
 
 
-
-
-
-Accelerometro
-
-
-
-giroscopio -> necessita dell'azzeramento degli angoli perché è un integrale dell'accelerazione angolare
-(x: rotazione in avanti/dietro, y: rotazione sinistra/destra, z: rotazione sul piano)
-
-alcuni blocchi mostrano i dati grezzi
-altri integrano i dati e riconoscono le "gesture"
-
-accelerometro -> non necessita di azzeramento perché basato sulla gravità (STATICO!)
-rotated angle around -> frutto di integrazione, richiede calibrazione (azzeramento)
-
-mostrare il blocco control e di come sia necessario calibrarlo inizialmente
-
-
-es. se wave up: far saltare il panda, se shaken farlo tremare
-salto con gravità
-gioco salta l'ostacolo
-
-motion sensing: control (Sprite) to follow Cyperpi with sensitivity
-permette di muovere uno sprite usando Cyberpi come fosse un puntatore (stile controller Wii)
-ci vuole il persempre!
-
-
-
+---------- finito qui -----------------
 
 
 Display
+
+test/tabella/grafico sono mutuamente esclusive
+le 8 etichette sono sovraimposte e funzionano su tutte le modalità
+orientando opportunamente il display (right) col testo big si possono fare le emoticon vecchia maniera... insomma, non sono bellissime...
 
 display: origine in altro a sx
 display: la dimensione del testo è globale, non si possono visualizzare due scritte a dimensioni diverse
@@ -174,7 +181,55 @@ luminosità come chart e bar
 modulare la velocità di aggiornamento col tempo (line chart anche con la risoluzione)
 anche in questo caso la reattività in modalità upload è molto più alta della live (ma meno comoda)
 
+----------------------------------------------------------------
+da EN mBot2 Getting Started Activities V1.1.pdf
 
+LAN dovrebbe funzionare anche senza Router WiFi, la rete la creano le CyberPi tra loro
+
+stop motori quando si preme A
+per fare andare avanti, un motore positivo, l'altro negativo
+turn left 90° vs turn left at 50 RPM for 1 sec
+traiettoria quadrato/pentagono(!)
+passeggiata casuale (con indicatore di movimento)
+gimcana
+uso degli encoder come sensori
+calibrazione degli encoder, anche qui (tolleranze meccaniche, giochi, diametro ruote, ...)!
+
+
+sensore ultrasonico: visto da davanti TX a sx, RX a dx
+range 5-300, +/-5%
+
+
+sensore di linea
+calibrazione con un doppio click del pulsantino
+per b/n di norma non serve, se no spostare i sensori dentro/fuori la linea fino a quando non smette il lampeggio
+calibrare il sensore sul colore più chiaro da considerare linea
+
+codifica:
+
+lr
+WW 0
+WB 1
+BW 2
+BB 3
+
+idem per i 4 (1 sulla linea, 0 fuori dalla linea, nell'ordine l2l1r1r2)
+i laterali si usano per determinare diramazioni
+
+deviation: quanto sono/mi sto allontanando dalla linea
+si può usare per modulare la curva (50 + 0.6 * deviation)
+
+blu -> rallenta
+rosso -> torna indietro (gira 180° + vai avanti di un tot (per uscire dal rosso))
+verde -> emetti un suono/accendi i led
+-----------------------------------------------------------------------------------
+
+
+
+
+
+
+===============================================================================
 semplici applicazioni CyberPi "only"
 
 when shaken detected -> mostra il valore del dado
@@ -187,7 +242,7 @@ accoda gli eventi, conviene persempre + if
      play buzzing until done
      show label pick random 1 6 at center of screen by super big pixel
      wait 1 seconds
-
+==================================================================================
 
 
 
