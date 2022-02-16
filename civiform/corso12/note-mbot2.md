@@ -159,6 +159,11 @@ valutare "quando tasto B premuto": se voglio far continuare il suono non va bene
 
 ---------- finito qui -----------------
 
+# Lezione n.8 20220210
+
+Altoparlante
+
+Emettere suoni di frequenza specifica
 
 Display
 
@@ -167,100 +172,146 @@ le 8 etichette sono sovraimposte e funzionano su tutte le modalità
 orientando opportunamente il display (right) col testo big si possono fare le emoticon vecchia maniera... insomma, non sono bellissime...
 
 display: origine in altro a sx
-display: la dimensione del testo è globale, non si possono visualizzare due scritte a dimensioni diverse
-differenza show (bitmap!) e print
+display: la dimensione del testo è globale, non si possono visualizzare due segmenti a dimensioni/colori diverse
 display: autoscrolling (provare a stampare i numeri da 1 a 20 uno per riga)
 display: dedurre quante righe di testo per ognuna delle 4 dimensioni (small:8, middle:6, big:4, super-big: poco meno di 3)
-print vs show label: ?
+
 line chart: disegna un grafico tra 0 e 100 (rimappati su 0-128), scroll automatico, distanza tra punti configurabile, colore pure, spessore linea no
+
 bar chart: unica barra al centro, mappata tra 0 e 100
 per avere più barre, cambiare colore; se si torna a un colore già usato, viene aggiornata la barra vecchia
-table: disegna una tabella, la più piccola che contiene tutti i dati (comunque non oltre 4x3)
+
+table: disegna una tabella, la più piccola che contiene tutti i dati (comunque non oltre 4x3); dimensione del testo fissa a middle
+
+etichette: 8 sovraimpresse, su testo, grafico o tabella
+ognuna con dimensione e colore del testo propri
+utili per posizionare del testo al di fuori del flusso normale
 
 luminosità come chart e bar
 modulare la velocità di aggiornamento col tempo (line chart anche con la risoluzione)
 anche in questo caso la reattività in modalità upload è molto più alta della live (ma meno comoda)
 
-----------------------------------------------------------------
-da EN mBot2 Getting Started Activities V1.1.pdf
+MOTORI
 
-LAN dovrebbe funzionare anche senza Router WiFi, la rete la creano le CyberPi tra loro
+mBot2 Shield se non è già presente lo si carica come estensione di CyberPi
+-> si ottengono i comandi di controllo dei motori con encoder
+-> più un'altra estensione per servi, motori DC e tutto ciò che si può collegare allo shield
 
-stop motori quando si preme A
-per fare andare avanti, un motore positivo, l'altro negativo
+gli encoder hanno una accuratezza di 1°, la rotazione < 5°
+si può vedere l'effetto in LIVE con il trucco della variabile nel persempre
+
+occhio, parte subito dopo l'UPLOAD!!
+muoversi solo dopo che si è premuto il tasto B ("attendi fino a quando" come prima istruzione)
+
+movimenti base: avanti, indietro, rotazione (sul posto)
+movimento a RPM/percentuale di potenza, ev. per un tempo prefissato
+avanti/indietro con distanza
+rotazione con gradi
 turn left 90° vs turn left at 50 RPM for 1 sec
+
+tartaruga! proviamo il quadrato, poi il pentagono (lato 50cm)
+passeggiata casuale con LED
+gimcana
+
+se i movimenti non tornano, calibrare (precisione encoder, giochi meccanici, attriti, pneumatici consumati...)
+
+-------------- fino qui -------------------
+
+# Lezione n. 9
+
+disegnare una circonferenza? o semplicemente una curva?
+per fare andare avanti, un motore positivo, l'altro negativo
 traiettoria quadrato/pentagono(!)
 passeggiata casuale (con indicatore di movimento)
 gimcana
 uso degli encoder come sensori
 calibrazione degli encoder, anche qui (tolleranze meccaniche, giochi, diametro ruote, ...)!
 
+SENSORE ULTRASONICO
 
-sensore ultrasonico: visto da davanti TX a sx, RX a dx
+caricare l'estensione di CyberPi dedicata
+il primo indice dei blocchi si riferisce al primo sensore in catena (mBuild è una daisy-chain, ce ne potrebbero essere di più)
+
+visto da davanti TX a sx, RX a dx
 range 5-300, +/-5%
 
+* principio di funzionamento - ecolocalizzazione;
+* caratteristiche del sensore;
+* uso dei LED per indicare la distanza dell'ostacolo -- verde per il remoto, giallo per il distante, rosso per il vicino;
+* uso del sensore per realizzare un theremin/sensore di parcheggio;
+* uso del sensore per arrestare mBot di fronte ad un ostacolo (strategia #1);
+* presentazione della strategia di base del programma "scansa-ostacoli": se l'ostacolo è lontano si procede diritti, se è vicino si sterza; uso dei diagrammi di flusso (strategia #2); 50/0 | 0/-50 RPM
+* estensione della strategia "scansa-ostacoli": se l'ostacolo è troppo vicino, allora si effettua una sterzata in retromarcia (in questo modo replichiamo la strategia implementata dal firmware di base di mBot -- strategia #3) -70/20 | -20/70 RPM;
 
-sensore di linea
+SENSORE DI LINEA
+
+principio di funzionamento
+ruolo dei 4 led vicino ai sensori -> luce artificiale per diminuire le interferenze di quella ambientale -> richiede calibrazione (ancora!)
+
+> * Double-press: When the button is double-pressed, Quad RGB Sensor starts to learn the background and line for line following.
+>   Place the light sensors on the background of the line-following track map and double-press the button. When you see the LEDs indicating the line-following state blink quickly, sway the sensors from side to side above the background and line until the LEDs stop blinking. It takes about 2.5 seconds. The parameter values obtained are automatically stored. If the learning fails, the LEDs blink slowly, and you need to start the learning again.
+> * Long-press: When the button is long-pressed, Quad RGB Sensor switches the color of the fill lights. Generally, you don’t need to change the color. The color is set automatically after the learning is complete.
+
 calibrazione con un doppio click del pulsantino
-per b/n di norma non serve, se no spostare i sensori dentro/fuori la linea fino a quando non smette il lampeggio
+per b/n di norma non serve, se no far passare i sensori sulla linea (fuori-dentro-fuori) fino a quando non smette il lampeggio
 calibrare il sensore sul colore più chiaro da considerare linea
+se tutto ok: led sulla linea spenti, fuori linea accesi
 
-codifica:
+calibrazione alternativa: calibro sul nero, poi cambio a mano il colore dei led verificando sperimentalmente se il robot riconosce anche i tratti colorati; di solito la luce blu è quella più efficace.
+
+caricare l'estensione di CyberPi dedicata (a febbraio 2022 è ancora in beta!)
+
+in modalità line/background non considera il colore
+
+codifica (B=background, L=line):
 
 lr
-WW 0
-WB 1
-BW 2
-BB 3
+BB 00 0
+BL 01 1
+LB 10 2
+LL 11 3
+
+logica contraria all'accensione dei led: sono sulla riga, valore 1, led spento; sono fuori dalla riga, valore 0, led acceso!
 
 idem per i 4 (1 sulla linea, 0 fuori dalla linea, nell'ordine l2l1r1r2)
 i laterali si usano per determinare diramazioni
 
-deviation: quanto sono/mi sto allontanando dalla linea
-si può usare per modulare la curva (50 + 0.6 * deviation)
+inseguimento di linea naive (cerco di tenere i due sensori sulla riga, quando esco torno indietro)
+ con rotazioni: oscilla a destra e sinistra
+ con curva a rapporto 1:5: oscilla avanti e indietro, anche a 20 RPM
+inseguimento di linea "furbo" (quando esco continuo il movimento che facevo prima di uscire): mi posso spingere ben oltre i 50RPM; questo per come è fatto il circuito!
 
+>>> l'algoritmo di inseguimento diventa un blocco a sé stante, parametrico sulla velocità (o usa una variabile globale) <<<
+
+inseguimento di linea + stop (con led rossi) se distanza < 20
+rallento (dimezzo la velocità) se 40 < distanza < 20 [conviene definire il blocco "segui linea a velocità (speed)]
+
+[QUESTO ANCHE NO]
+deviation: quanto sono/mi sto allontanando dalla linea (-100 la linea è alla mia destra, 100 la linea è alla mia sinisra)
+si può usare per modulare la curva: se deviation > 0 v.sinistra va diminuita, v.destra aumentata, così giro a sinitra;
+se deviation < 0 v.sinistra va aumentata, v.destra diminuita, così giro a destra; es:
+v.sinistra = 50 - k * deviation
+v.destra = -(50 + k * deviation)
+k modula l'effetto
+
+riconoscimento dei colori sulla linea (sensore L1/R1 a scelta oppure metterli in or):
+
+verde -> emetti un suono
+giallo -> accendi i led (da spegnere su black)
 blu -> rallenta
 rosso -> torna indietro (gira 180° + vai avanti di un tot (per uscire dal rosso))
-verde -> emetti un suono/accendi i led
------------------------------------------------------------------------------------
 
+controllo del tilt: se rollio supera i 3° si accendono i led di arancione e si rallenta
 
+LAN
 
+dovrebbe funzionare anche senza Router WiFi, la rete la creano le CyberPi tra loro
 
-
-
-===============================================================================
-semplici applicazioni CyberPi "only"
-
-when shaken detected -> mostra il valore del dado
-accoda gli eventi, conviene persempre + if
-
-  set volume to 5 %
-  forever
-   if shaken detected
-     clear screen
-     play buzzing until done
-     show label pick random 1 6 at center of screen by super big pixel
-     wait 1 seconds
-==================================================================================
-
-
-
---------------------------
-
-mBot2 Shield se non è già presente lo si carica come estensione
-si ottengono i comandi di controllo dei motori
-per il sensore ultrasonico e il sensore di linea ci vogliono le estensioni dedicate (line sensor è in beta!)
-il primo indice si riferisce al primo sensore in catena (mBuild è una daisy-chain, ce ne potrebbero essere di più)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 https://education.makeblock.com/help/ultrasonic-sensor-2/
 https://education.makeblock.com/help/mblock-block-based-device-cyberpi-extension-quad-rgb-sensor/
 https://education.makeblock.com/help/mbuild-quad-rgb-sensor/#articleTOC_6
-
-
-
-
-
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -295,5 +346,3 @@ Porte di espansione:
 Programmabile con mBlock coi blocchi o in Python
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-

@@ -14,6 +14,7 @@
 <p>Il movimento del robot è determinato dalle velocità di rotazione dei due motori di cui è dotato. Trattandosi di due motori indipendenti, già si può supporre che il controllo applicabile sarà limitato, non potendo prescindere dalle lievi differenze che di certo li caretterizzano. Su percorsi brevi tuttavia qualcosa si dovrebbe riuscire ad ottenere.</p>
 <p>mBlock non ha un comando che consente di far coprire al robot una data distanza, qualcosa tipo &ldquo;<em>run forward for 10 cm</em>&rdquo;. Manca anche un comando per effettuare una sterzata con un'angolazione precisa, per esempio &ldquo;<em>turn left 90&deg; degrees</em>&rdquo;. Il solo comando relativo al moto è &ldquo;<em>set motor &hellip; at speed &hellip;</em>&rdquo; &mdash; trascurando la sua versione semplificata &ldquo;<em>run forward at speed &hellip;</em>&rdquo; &mdash;, che consente solamente il controllo dell'attivazione (indipendente) dei due motori. Gli unici parametri sui cui si può agire sono dunque la velocità di rotazione e il tempo di attivazione di ciascun motore. Di più, il valore di velocità è relativo, essendo <span class="code">0</span> il valore di arresto e <span class="code">&plusmn;255</span> quello associato alla velocità massima nei due sensi di rotazione avanti/indietro</p>
 <p>Ciò posto, è possibile realizzare delle procedure che consentano un controllo più preciso dei movimenti del robot, sia in termini di tratti rettilinei che di archi di circonferenza percorsi?</p>
+<a name="rettilinei"></a>
 <h2>Traiettorie lineari</h2>
 <p>Il primo passo per la costruzione del blocco &ldquo;<em>run forward for &hellip; cm</em>&rdquo; è determinare la velocità lineare del robot espressa in cm/s in funzione del valore numerico relativo applicato ai motori con il comando &ldquo;<em>set motor &hellip; at speed &hellip;</em>&rdquo;.</p>
 <p>mBot monta dei motori in corrente continua da 9V non calibrati con velocità massima a vuoto di 185giri/min, come chiarisce il supporto tecnico nella discussione <a href="http://forum.makeblock.com/t/mbot-motors-not-in-sync/6741/6">mBot motors not in sync</a> sul forum ufficiale:</p>
@@ -65,6 +66,7 @@ giri/min = 100 / (&pi; &times; d<sub>ruota</sub>) / t<sub>medio</sub> &times; 60
 <tr><td>150</td><td>3.61</td><td>3.64</td><td>3.61</td><td>3.61</td><td>3.58</td><td>3.61</td><td>81.39</td></tr>
 <tr><td>100</td><td>5.59</td><td>5.61</td><td>5.61</td><td>5.68</td><td>5.57</td><td>5.61</td><td>52.36</td></tr>
 </table>
+<a name="curve"></a>
 <h2>Archi di circonferenza</h2>
 <p>Venendo a mancare la relazione tra la velocità lineare con cui si muove robot e quella applicata ai suoi motori non si può sperare di riuscire a far percorrere a mBot degli archi di cerchio di lunghezza predefinita. Si può però forse controllarne almeno il raggio di curvatura.</p>
 <h2>Raggi di curvatura</h2>
