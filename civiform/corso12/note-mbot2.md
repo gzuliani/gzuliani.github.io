@@ -243,6 +243,14 @@ range 5-300, +/-5%
 * presentazione della strategia di base del programma "scansa-ostacoli": se l'ostacolo è lontano si procede diritti, se è vicino si sterza; uso dei diagrammi di flusso (strategia #2); 50/0 | 0/-50 RPM
 * estensione della strategia "scansa-ostacoli": se l'ostacolo è troppo vicino, allora si effettua una sterzata in retromarcia (in questo modo replichiamo la strategia implementata dal firmware di base di mBot -- strategia #3) -70/20 | -20/70 RPM;
 
+
+# Lezione n. 10
+
+[competenze trasversali, imprenditorialità]
+
+# Lezione n. 11 (20220222)
+
+
 SENSORE DI LINEA
 
 principio di funzionamento
@@ -279,12 +287,12 @@ i laterali si usano per determinare diramazioni
 inseguimento di linea naive (cerco di tenere i due sensori sulla riga, quando esco torno indietro)
  con rotazioni: oscilla a destra e sinistra
  con curva a rapporto 1:5: oscilla avanti e indietro, anche a 20 RPM
-inseguimento di linea "furbo" (quando esco continuo il movimento che facevo prima di uscire): mi posso spingere ben oltre i 50RPM; questo per come è fatto il circuito!
+inseguimento di linea "furbo" (quando esco continuo il movimento che facevo prima di uscire): mi posso spingere ben oltre i 50RPM; questo per come è fatto il circuito! [NON AFFRONTATO PER MANCANZA DI TEMPO]
 
 >>> l'algoritmo di inseguimento diventa un blocco a sé stante, parametrico sulla velocità (o usa una variabile globale) <<<
 
 inseguimento di linea + stop (con led rossi) se distanza < 20
-rallento (dimezzo la velocità) se 40 < distanza < 20 [conviene definire il blocco "segui linea a velocità (speed)]
+rallento (dimezzo la velocità) se 40 < distanza < 20 [conviene definire il blocco "segui linea a velocità (speed)] [NON AFFRONTATO PER MANCANZA DI TEMPO]
 
 [QUESTO ANCHE NO]
 deviation: quanto sono/mi sto allontanando dalla linea (-100 la linea è alla mia destra, 100 la linea è alla mia sinisra)
@@ -300,6 +308,12 @@ verde -> emetti un suono
 giallo -> accendi i led (da spegnere su black)
 blu -> rallenta
 rosso -> torna indietro (gira 180° + vai avanti di un tot (per uscire dal rosso))
+
+------------ fino qui ---------------
+
+L'ultima lezione sarà dedicata al ripasso del sensore di linea e alla prova finale, non si vedrà nient'altro
+
+=====================================
 
 controllo del tilt: se rollio supera i 3° si accendono i led di arancione e si rallenta
 
