@@ -42,7 +42,7 @@ void TurnRight()
 }
 void BackwardAndTurnLeft()
 {
-  MotorL.run(moveSpeed/8 );
+  MotorL.run(moveSpeed/8);
   MotorR.run(-moveSpeed);
 }
 void BackwardAndTurnRight()
@@ -97,7 +97,7 @@ void Stop()
             spegni led (entrambi)
             ...
 </pre>
-<p>Il codice prosegue con 9 blocchi <span class="code">se/allora</span> associati ai tasti 1&div;9 del telecomando per il controllo della velocità. Ricordando che la massima velocità consentita è 255 e tenendo conto che se le batterie non sono perfettamente cariche un valore inferiore a 50~60 potrebbe non essere sufficiente per far muovere il robot, assegnamo il valore 50 alla prima velocità e proseguiamo per incrementi di 25 fino ad arrivare a 250 per la velocità 9 (il firmware originale parte da 71 e procede a passi 23 per giungere a 255). Un breve suono conferma l'avvenuto cambio di velocità:</p>
+<p>Il codice prosegue con 9 blocchi <span class="block">se &lt;...&gt; allora</span> associati ai tasti 1&div;9 del telecomando per il controllo della velocità. Ricordando che la massima velocità consentita è 255 e tenendo conto che se le batterie non sono perfettamente cariche un valore inferiore a 50~60 potrebbe non essere sufficiente per far muovere il robot, assegnamo il valore 50 alla prima velocità e proseguiamo per incrementi di 25 fino ad arrivare a 250 per la velocità 9 (il firmware originale parte da 71 e procede a passi 23 per giungere a 255). Un breve suono conferma l'avvenuto cambio di velocità:</p>
 <pre class="code">
             ...
             se &lt;tasto 1 premuto&gt; allora
@@ -147,7 +147,7 @@ per sempre
 <p>Il progetto scansa-ostacoli è scaricabile <a href="files/mbot-firmware/wall-avoidance.sb2">qui</a>.</p>
 <a name="line-follower"></a>
 <h2>Segui la linea</h2>
-<p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="code">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span> quello di destra):</p>
+<p>La terza modalità di funzionamento prevede che il robot proceda seguendo il tracciato di una linea nera su fondo bianco. Ciò è possibile grazie alla presenza di due sensori a raggi infrarossi posti sul lato inferiore della parte frontale di mBot. In mBlock la lettura dello stato dei sensori avviene per mezzo del blocco <span class="block">line follower</span>, che ritorna un valore intero compreso tra 0 e 3 in funzione del colore presente al di sotto di essi (<span class="code">S1</span> è il sensore di sinistra, <span class="code">S2</span> quello di destra):</p>
 <table cellspacing="0">
 <tr><td class="header">S1</td><td class="header">S2</td><td class="header">Valore</td></tr>
 <tr><td>Nero</td><td>Nero</td><td>0</td></tr>

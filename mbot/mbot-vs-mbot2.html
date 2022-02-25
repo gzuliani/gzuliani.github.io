@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>mBot vs. mBot2</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/mbot-vs-maqueen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#mbot-vs-mbot2">risorse</a> | mbot vs. mbot2</p>
+<h1>mBot vs. mBot2</h1>
+<p class="disclaimer"><strong>ATTENZIONE!</strong> Ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<p class="note">Le considerazioni qui sotto rispecchiano lo stato delle cose a gennaio 2022. Considerando l’evoluzione degli strumenti software analizzati è assai probabile che diverranno obsolete entro poche settimane, al più mesi.</p>
+<p>Ho avuto modo di utilizzare il robot mBot2 nel contesto di un corso di introduzione alla programmazione e alla robotica nei mesi di gennaio/febbraio 2022. Riporto qui alcune brevi e personali considerazioni circa le differenze tra questa versione del robot e la precedente.</p>
+<p>I due robot condividono la scocca che, a parte qualche piccolo dettaglio, risultano di fatto identiche. Anche le dimensioni e il peso sono comparabili. La differenza sostanziale la fa l’elettronica di controllo: se in mBot è costituita dalla sola scheda <strong>mCore</strong>, in mBot2 si suddivide tra il cervello vero e proprio, costituito dal SBC (Single-board computer) <strong>CyberPi</strong> e dalla scheda ausiliaria <strong>mBot2 shield</strong> che contiene la batteria ricaricabile e i circuiti di controllo dei motori.</p>
+<img src="img/mbot-vs-mbot2/mbot.png">
+<p class="illustration">L’esploso di mBot</p>
+<img src="img/mbot-vs-mbot2/mbot2.png">
+<p class="illustration">L’esploso di mBot2</p>
+<h2>Tabella comparativa</h2>
+<table cellspacing="0">
+  <tr>
+    <th></th>
+    <th></th>
+    <th>mBot</th>
+    <th>mBot2</th>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Principale</td></tr>
+  <tr>
+    <td class="indentation"></td>
+    <td class="feature">Scheda di controllo</td>
+    <td><a href="https://www.makeblock.com/project/mcore">mCore</a> (Arduino)</td>
+    <td><a href="https://www.mblock.cc/doc/en/hardware-guide/cyberpi/cyberpi.html">CyberPi</a></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Programmazione</td>
+    <td>Blocchi, C</td>
+    <td>Blocchi, Python</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Alimentazione</td>
+    <td>LiPo/4 stilo AA</td>
+    <td>Li-ion integrata</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Prezzo indicativo</td>
+    <td>90€</td>
+    <td>180€</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Processore</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">CPU</td>
+    <td>ATmega328P</td>
+    <td>Xtensa 32-bit LX6 dual-core</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Frequenza</td>
+    <td>16MHz</td>
+    <td>240MHz</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Memoria</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">ROM</td>
+    <td>-</td>
+    <td>448KB</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Memoria Flash</td>
+    <td>32KB</td>
+    <td>8MB SPI + 8MB PSRAM</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">RAM Statica</td>
+    <td>2KB</td>
+    <td>520KB</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">EEPROM</td>
+    <td>1KB</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Multithreading</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Programmi memorizzabili</td>
+    <td>1</td>
+    <td>8</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">I/O</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia USB</td>
+    <td>Sì (tipo B)</td>
+    <td>Sì (tipo C)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia Seriale</td>
+    <td>Sì</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia SPI</td>
+    <td>Sì</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Interfaccia I2C</td>
+    <td>Sì</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Tecnologia Wireless</td>
+    <td>Bluetooth o WiFi, I/R</td>
+    <td>Bluetooth, WiFi, WiFi LAN</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Porte di espansione</td>
+    <td>4 RJ25</td>
+    <td>1 mBuild<sup>(1)</sup>, 2 generiche, 2 servo</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Pulsanti</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Joystick</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Generici</td>
+    <td>1</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Reset</td>
+    <td>Sì</td>
+    <td>Sì<sup>2</sup></td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">LED</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">LED</td>
+    <td>2 RGB</td>
+    <td>5 RGB (striscia LED)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Display</td>
+    <td>-</td>
+    <td>1.44" 128×128 a colori</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Attuatori</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Audio</td>
+    <td>Cicalino</td>
+    <td>Altoparlante</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Driver motori CC</td>
+    <td>2</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Driver motori con encoder</td>
+    <td>-</td>
+    <td>2</td>
+  </tr>
+  <tr><td class="sub-header" colspan="4">Sensori</td></tr>
+  <tr>
+    <td></td>
+    <td class="feature">Audio</td>
+    <td>-</td>
+    <td>Microfono</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore di luminosità</td>
+    <td>Sì</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Accelerometero</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Giroscopio</td>
+    <td>No</td>
+    <td>Sì</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore ultrasonico</td>
+    <td>Sì</td>
+    <td>Si (con LED)</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="feature">Sensore di linea</td>
+    <td>B/N doppio (infrarossi)</td>
+    <td>RGB quadruplo (luce visibile)</td>
+  </tr>
+</table>
+<p class="annotation"><sup>(1)</sup> consente il collegamento fino a 10 dispositivi in cascata.</p>
+<p class="annotation-last"><sup>(2)</sup> il tasto <strong>Home</strong> sospende l’esecuzione del programma corrente.</p>
+<h2>Uso e programmazione</h2>
+
+<!--
+display: mancano tutte le primitive grafiche
+doppia estensione per il controllo dei motori CC e quelli con encoder
+sensore linea richiede sovente la ricalibrazione (aula con luci al neon)
+sensore di linea: cambiata la logica dei sensori: 1 sulla linea, 0 fuori
+estensione blocchi sensore RGB ancora in beta
+blocchi motori poco intuitivi (sx +, dx - per andare avanti), logica cambiata rispetto a mbot
+-->
+
+<p class="modification-notice">Pagina modificata il 23/02/2022</p>
+</body>
+</html>

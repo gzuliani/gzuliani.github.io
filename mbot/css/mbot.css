@@ -6,3 +6,9 @@ td.header {
 td {
  text-align: center;
 }
+
+span.block {
+  border: 1px solid #586e75;
+  background-color: #eee8d5;
+  padding: .2em;
+}
