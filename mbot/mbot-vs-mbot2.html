@@ -4,15 +4,15 @@
 <meta charset="utf-8"/>
 <title>mBot vs. mBot2</title>
 <link href="../css/main.css" rel="stylesheet" type="text/css"/>
-<link href="css/mbot-vs-maqueen.css" rel="stylesheet" type="text/css"/>
+<link href="css/mbot-vs-mbot2.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <p class="page-path"><a href="../index.html#mbot-vs-mbot2">risorse</a> | mbot vs. mbot2</p>
 <h1>mBot vs. mBot2</h1>
 <p class="disclaimer"><strong>ATTENZIONE!</strong> Ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
 <p class="note">Le considerazioni qui sotto rispecchiano lo stato delle cose a gennaio 2022. Considerando l’evoluzione degli strumenti software analizzati è assai probabile che diverranno obsolete entro poche settimane, al più mesi.</p>
-<p>Ho avuto modo di utilizzare il robot mBot2 nel contesto di un corso di introduzione alla programmazione e alla robotica nei mesi di gennaio/febbraio 2022. Riporto qui alcune brevi e personali considerazioni circa le differenze tra questa versione del robot e la precedente.</p>
-<p>I due robot condividono la scocca che, a parte qualche piccolo dettaglio, risultano di fatto identiche. Anche le dimensioni e il peso sono comparabili. La differenza sostanziale la fa l’elettronica di controllo: se in mBot è costituita dalla sola scheda <strong>mCore</strong>, in mBot2 si suddivide tra il cervello vero e proprio, costituito dal SBC (Single-board computer) <strong>CyberPi</strong> e dalla scheda ausiliaria <strong>mBot2 shield</strong> che contiene la batteria ricaricabile e i circuiti di controllo dei motori.</p>
+<p>Ho avuto modo di utilizzare il robot mBot2 nel contesto di un corso di introduzione alla programmazione e alla robotica nei mesi di gennaio/febbraio 2022. Riporto qui alcune brevi e personali considerazioni circa le differenze tra questa versione del robot e la precedente che possiedo e ho utilizzato con profitto in alcuni RoboDojo.</p>
+<p>Le scocche in allluminio dei due robot, a parte qualche piccolo dettaglio, risultano di fatto identiche seppure non intercambiabili. Anche le dimensioni e il peso sono comparabili. La differenza sostanziale la fa l’elettronica di controllo: se in mBot è costituita dalla sola scheda <strong>mCore</strong>, basata su Arduino, in mBot2 si suddivide tra il cervello vero e proprio costituito dal SBC (Single-board computer) <strong>CyberPi</strong> e dalla scheda ausiliaria <strong>mBot2 shield</strong> che contiene la batteria ricaricabile, i circuiti di controllo dei motori e qualche porta di espansione proprietaria.</p>
 <img src="img/mbot-vs-mbot2/mbot.png">
 <p class="illustration">L’esploso di mBot</p>
 <img src="img/mbot-vs-mbot2/mbot2.png">
@@ -229,16 +229,21 @@
 <p class="annotation"><sup>(1)</sup> consente il collegamento fino a 10 dispositivi in cascata.</p>
 <p class="annotation-last"><sup>(2)</sup> il tasto <strong>Home</strong> sospende l’esecuzione del programma corrente.</p>
 <h2>Uso e programmazione</h2>
-
-<!--
-display: mancano tutte le primitive grafiche
-doppia estensione per il controllo dei motori CC e quelli con encoder
-sensore linea richiede sovente la ricalibrazione (aula con luci al neon)
-sensore di linea: cambiata la logica dei sensori: 1 sulla linea, 0 fuori
-estensione blocchi sensore RGB ancora in beta
-blocchi motori poco intuitivi (sx +, dx - per andare avanti), logica cambiata rispetto a mbot
--->
-
-<p class="modification-notice">Pagina modificata il 23/02/2022</p>
+<p>All’avvio mBlock carica automaticamente la scheda <strong>CyberPi</strong> tra i dispositivi. mBot2 tuttavia richiede il caricamento di tre ulteriori estensioni: <strong>mBot2 Shield</strong> che contiene i blocchi di controllo dei motori, <strong>Ultrasonic Sensor 2</strong> e <strong>Quad RGB Sensor</strong> per i due sensori montati sullo chassis del robot. In alternativa si può sostituire il dispositivo <strong>CyberPi</strong> con <strong>mBot2</strong>.</p>
+<p class="note">I comandi per i motori con encoder di mBot2 si trovano all’interno dell’area <strong>mBot2 Chassis</strong> e non vanno confusi con quelli presenti in <strong>mBot2 Extension Port</strong> che comandando invece i due motori in CC opzionalmente collegabili alla scheda di controllo di mBot2.</p>
+<h3>Display</h3>
+<p>Il dispay di CyberPi merita une menzione speciale perché a mio modo di vedere è il componente che offre l’interfaccia meno intuitiva tra tutti i componenti di mBot2. Supporta tre modalità distinte e mutuamente esclusive: testo, grafica e tabella. Le modalità vengono attivate automaticamente dai comandi, ad esempio l’esecuzione del comando <span class="block">print</span> attiva la modalità di testo se non era già attivata.</p>
+<p>La modalità di testo visualizza un flusso di testo definito da una sequenza di comandi <span class="block">print</span>. Il font è predefinito e non modificabile, mentre la dimensione del testo è selezionabile tra <strong>small</strong>, <strong>middle</strong>, <strong>big</strong> e <strong>super big</strong>. La dimensione del testo è applicata a tutto il testo visualizzato, non è possibile visualizzare frammenti di testo con dimensioni diverse. La stessa considerazione vale per il colore del testo. Una volta raggiunto il margine inferiore del display il testo scorre automaticamente verso l’alto per fare spazio al nuovo.</p>
+<p>La modalità grafica permette di visualizzare un diagramma a linee o barre, il primo con scorrimento orizzontale automatico. Il campo di variazione dei dati è prefissato a [0, 100]. È possibile realizzare grafici multi-traccia raggruppando i dati per colore, usando cioé il blocco <span class="block">set brush color</span> prima di aggiungere un nuovo dato con <span class="block">line/bar chart, add data</span>. Non esistono primitive per disegnare entità geometriche come punti, linee, poligoni o cerchi.</p>
+<p>La modalità tabella mostra del testo in forma tabulare a grandezza fissa (<strong>middle</strong>) su una griglia grande al più 4×3 celle. Indipendentemente dalla modalità corrente è possibile visualizzare fino a 8 etichette di testo, ognuna caratterizzata da un colore e una dimensione del testo propria, che appaiono in sovraimpressione.</p>
+<h2>Differenze rispetto a mBot</h2>
+<p>Due sono le maggiori differenze tra i due robot:</p>
+<ul>
+  <li><strong>motori</strong>: un valore di velocità positivo applicato ad un motore di mBot lo fa girare in modo da far avanzare il robot (in senso antiorario quello sinistro, in senso orario quello destro); un valore di velocità positivo applicato ad un motore di mBot2 lo fa girare in senso antiorario. Per far avanzare in linea retta mBot è dunque necessario applicare lo stesso valore di velocità ai due motori, mentre per mBot2 va applicato un valore positivo al motore di sinistra e il valore opposto a quello di destra;</li>
+  <li><strong>sensore di linea</strong>: mBot associa il valore binario <span class="code">0</span> ai ricettori posti sulla linea e <span class="code">1</span> a quelli fuori, mentre mBot2 fa l’inverso.</li>
+</ul>
+<h2>Osservazioni</h2>
+<p>Durante le esercitazioni è stato necessario ricalibrare con una certa frequenza il sensore RGB del robot pena il mancato riconoscimento della linea (non solo i tratti colorati, ma anche le sezioni nere); forse la causa è da attribuire alle luci al neon dell’aula, forse al fatto che l’estensione del sensore di linea ad oggi è ancora in beta.</p>
+<p class="modification-notice">Pagina modificata il 26/02/2022</p>
 </body>
 </html>
