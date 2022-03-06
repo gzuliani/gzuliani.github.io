@@ -17,7 +17,7 @@ _Argomenti delle lezioni_
 
 ## Lezione n.2 - Narrativa, 20/01/2022
 
-Per introdurre gradualmente l'ambiente di sviluppo di Scratch mi sono ispirato ad un progetto proposto da un collega in un corso precedente: realizzare una presentazione (slideshow) che descriva una gita a Cividale. È un progetto che gli insegnanti potrebbero proporre ai propri studenti.
+Per introdurre gradualmente l'ambiente di sviluppo di Scratch mi sono ispirato ad un progetto proposto da un collega in un corso precedente: realizzare una presentazione (slideshow) che ripercorre una gita a Cividale. È un progetto che gli insegnanti potrebbero proporre ai propri studenti.
 
 * breve panoramica dell'ambiente di programmazione di Scratch
 * ruolo dello sfondo in Scratch
@@ -25,17 +25,17 @@ Per introdurre gradualmente l'ambiente di sviluppo di Scratch mi sono ispirato a
 * aggiunta di una didascalia con lo strumento **Testo**
 * didascalie modificabili: differenza tra immagini bitmap (raster) e vettoriale
 * come rimuovere o rendere invisibile **Sprite1**
-* avanzamento temporizzato delle immagini: anche lo sfondo può ospitare script
-* definizione della sequenza per nome: uso dei blocchi `switch backdrop to ()` e `wait () seconds`
-* il tempo di permanenza di una diapositiva è ripetuto n volte
-* definizione della sequenza per posizione in "Backdrops": uso del blocco `repeat ()` con `next backdrop` e `wait () seconds`
-* il numero di ripetizioni è pari al numero di sfondi diminuito di 1, se no alla fine ricompare il primo sfondo in lista
+* avanzamento temporizzato delle immagini -- script nello/dello sfondo
+* definizione della sequenza per nome -- uso dei blocchi `switch backdrop to ()` e `wait () seconds`
+* il tempo di permanenza di una diapositiva è ripetuto più volte
+* definizione della sequenza per posizione in "Backdrops" -- uso del blocco `repeat ()` con `next backdrop` e `wait () seconds`
+* il numero di ripetizioni del ciclo è pari al numero di sfondi diminuito di 1, se no alla fine ricompare il primo sfondo in lista
 * navigazione da tastiera: rimuovere il blocco `repeat ()` e aggiungere un `when [space] key pressed` seguito da un `next backdrop`
 * [evitare di passare allo sfondo precedente al primo e/o successivo all'ultimo]
 * didascalie dinamiche (es. in dissolvenza): i testi diventano degli sprite che si registrano all'evento `when backdrop switches to []` per mostrarsi/nascondersi in funzione dello sfondo che sta per apparire -- gli elementi grafici delle immagini sono statici
 * differenza tra la posizione del testo nello sprite e la posizione dello sprite nello stage
 * realizzazione della dissolvenza per mezzo dell'effetto **Ghost**
-* utilizzo degli sprite (es. **Nano**) come guida che fornisce informazioni relative all'immagine mostrata
+* utilizzo di sprite ausiliari (es. **Nano**) che funge da guida e fornisce informazioni relative all'immagine mostrata col blocco `say () for () seconds`
 * programmazione di un breve dialogo tra sprite (es. **Nano** e **Giga**) sincronizzato con le pause
 
 ## Lezione n.3 - Grafica della tartaruga, 25/01/2022
@@ -45,7 +45,7 @@ Per introdurre gradualmente l'ambiente di sviluppo di Scratch mi sono ispirato a
 * cenni sulla storia dei calcolatori elettronici
 * mostrare le valvole, i transistor, gli integrati, alcune CPU moderne
 * alcuni dei sistemi più celebri:
-    * ENIAC (1947) 20.000 valvole, un guasto ogni due giorni
+    * ENIAC (1947): 20.000 valvole, un guasto ogni due giorni
     * ELEA 9003 (1959): realizzato da Olivetti, 300.000 transistor
     * PDP11 (1970): circuiti integrati, sistema in time-sharing
     * APPLE II (1977): il primo home computer 
@@ -404,7 +404,7 @@ chiede ma non usa il valore
 * riproduzione della sirena della polizia:
 * sfruttare il multi-threading di CyberPi per riprodurre il lampeggio stroboscopico della polizia e la sirena quando si preme il pulsante B
 
-# Lezione n.8 - CyberPi e mBot, 10/02/2022
+## Lezione n.8 - CyberPi e mBot, 10/02/2022
 
 ### Attuatori: altoparlante
 
@@ -462,7 +462,7 @@ chiede ma non usa il valore
 * programmazione di una passeggiata casuale
 * uso dei LED per indicare il tipo di movimento
 
-# Lezione n.9 - mBot2: motori, sensore ultrasonico, 15/02/2022 
+## Lezione n.9 - mBot2: motori, sensore ultrasonico, 15/02/2022 
 
 * tracciamento di traiettorie curvilinee
 * controllo dei singoli motori
@@ -483,11 +483,11 @@ chiede ma non usa il valore
 * programma "scansa-ostacoli": procedere diritti se l'ostacolo si trova a più di 40cm altrimenti sterzare in una direzione a caso
 * programma "scansa-ostacoli" avanzato: effettuare una sterzata in retromarcia se l'ostacolo si trova a meno di 15cm
 
-# Lezione n.10 - Competenze trasversali e imprenditorialità, 17/02/2022 
+## Lezione n.10 - Competenze trasversali e imprenditorialità, 17/02/2022 
 
 [Lezione svolta da altri insegnanti]
 
-# Lezione n.11 - Inseguitore di linea, 15/02/2022 
+## Lezione n.11 - Inseguitore di linea, 22/02/2022 
 
 ### Sensori: sensore di linea
 
@@ -522,6 +522,11 @@ chiede ma non usa il valore
     * accendere il LED di giallo quando si incontra il tratto giallo
     * rallentare quando si percorre il tratto di pista blu
     * invertire il senso di marcia (rotazione di 180°) quando si incontra il tratto rosso
+
+## Lezione n.12 - Prova finale, 24/02/2022 
+
+* breve ripasso della lezione precedente
+* prova finale
 
 ## Appendice
 
