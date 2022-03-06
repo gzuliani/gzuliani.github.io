@@ -314,7 +314,7 @@ chiede ma non usa il valore
 * breve panoramica di mBlock e differenze rispetto a Scratch
 * sezione "Devices"
 * connessione a CyberPi
-* programmazione di CyberPi in modalità **Live**
+* programmazione di CyberPi in modalità **Live** (dettagli più avanti)
 * esempi di interazione CyberPi/Sprite attraverso messaggi e variabili
     * spostamento di uno sprite con il joystick di CyberPi
     * click su uno sprite per far emettere un suono a CyberPi
@@ -356,211 +356,172 @@ chiede ma non usa il valore
     * cliccare il joystick
     * in corrispondenza del click del pulsante centrale del joystick spostare **Panda** al centro dello stage ed azzerare gli angoli giroscopici
 
-### Attuatori: striscia LED
+### Attuatori: striscia LED /1
 
-STRISCIA LED
+* striscia formata da 5 LED indipendenti
+* prove di accensione dei LED di rosso con i vari comandi
+* accendere i LED solo quando il tasto A è premuto -- notare il ritardo
 
-LED rossi -> non è un vero rosso: click sul comando, verificare che non era rosso
-il led resta acceso fino al termine del programma
-c'è anche il blocco temporizzato
-LED acceso solo quando il tasto A è premuto -> risponde con un certo ritardo
+### Modalità Upload
 
-modalità UPLOAD
+* programmazione di CyberPi in modalità **Live**:
+    * il programma viene creato in mBlock
+    * il programma viene eseguito in mBlock
+    * quando incontra un blocco relativo a CyberPi mBlock lo invia alla scheda e attende che venga eseguito, dopodiché prosegue con l'istruzione successiva -- il processo non è efficiente:
+        * la trasmissione del comando richiede del tempo
+        * l'esecuzione del comando richiede del tempo (poco)
+        * l'invio della risposta richiede del tempo
+    * il programma richiede mBlock per essere eseguito
+    * se si scollega CyberPi il programma non funziona più
+* programmazione di CyberPi in modalità **Upload**:
+    * il programma viene creato in mBlock
+    * il programma viene trasferito e memorizzato in CyberPi
+    * il programma non richiede mBlock né il PC per essere eseguito
+    * il programma viene eseguito alla massima velocità
+    * il programma caricato in CyberPi non è leggibile né tanto meno modificabile
+    * in caso di blocco il tasto Home riporta al menu iniziale
+    * CyberPi consente la memorizzazione di al più 8 programmi -- il programma viene salvato nell'ultima posizione utilizzata
 
-il programma però è in mBlock: se scollego la schedina il programma non funziona più.
-i blocchi a cappello tipici di Scratch sono disabilitati
+### Attuatori: striscia LED /2
 
-upload
-chiudo mBlock
-funziona ancora
-stacco/riattacco Cyberpi: c'è ancora!
+* caricare il programma precedente e verificare la maggiore reattività
+* modificare l'intensità dei LED portandola da 0 a 100 e poi di nuovo a zero a passi di 10; confrontare i tempi di esecuzione nelle modalità **Live** e **Upload** -- nel secondo caso le pulsazioni avvengono così velocemente che per renderle distinguibili da un lampeggio è necessario aumentare il numero di passi da 10 a 100 (abbassando l'incremento a 1) e aggiungendo una pausa di 0.01 secondi tra un incremento e il successivo
+* far lampeggiare l'intera striscia
+* far lampeggiare alternativamente i LED della striscia
+* riprodurre l'animazione dell'auto Kit di "Supercar"
+* uso dei colori: selezioni dalla palette
+* sintesi additiva e definizione RGB della tinta
+* simulare il funzionamento di un semaforo
+* simulare il lampeggiante della polizia: 4 lampeggi stroboscopici blu del LED di sinistra (20ms acceso, 80ms spento, 4 lampeggi blu del LED di destra -- in modalità **Live** non è possibile rispettare le tempistiche date
+* realizzare un vu-meter che rappresenta il livello di rumore captato dal microfono
+* accendere i LED della striscia con un'intensita inversamente proporzionale alla luminosità registrata dal fotoricettore (luce crepuscolare)
 
-se c'è un per sempre o il programma sembra bloccato -> premere il tasto Home per tornare al menu
-dove va a finire?!?! sostituisce l'ultimo degli otto programmi eseguito
+### Attuatori: altoparlante
 
-la differenza è ancora più sostanziale quando il numero di operazioni coinvolte è maggiore; proviamo con un ciclo
-
-LED intensità: cambiarla a dente di sega o triangolare con set brightness to/increase LED brightess by
-
-la pulsazione avviene così velocemente che diventa un lampeggio.
-fare passi da 1% e aggiungere una pausa di 0.01 secondi
-
-LED lampeggianti
-LED lampeggianti alternativamente (indirizzamento singolo LED)
-LED lampeggianti alternativamente (definizione della configurazione della striscia)
-
-LED strip: animazione supercar (provare in modalità LIVE e UPLOAD)
-LED strip: RGB -> semaforo (2 led rossi (4s), due led verdi (5s), led centrale giallo (2s))
-il giallo non è convincente -> scegliamo noi i colori
-in modalità LIVE si percepiscono le accensioni singole
-LED strip: indicatore di direzione animato ("moderno")
-LED strip: lampeggiante polizia 4x(20ms+80ms)-> il lampeggio strobo è lentissimo in modalità LIVE
-
-led: vu-meter
-led: luci crepuscolari/inversamente proporzionali alla luminosità
-
-d'ora in poi solo upload
-
-Speaker
-
-suoni predefiniti
-musica, melodia: conviene lavorare in upload, le pause del LIVE tra una nota e l'altra rovinano l'esecuzione
-
-Sirena polizia: Cyberpi supporta il multithreading, si può far suonare la sirena col lampeggiante
-quando attivare la sirena? tasto b
-valutare "quando tasto B premuto": se voglio far continuare il suono non va bene, serve un persempre + if
-
-
----------- finito qui -----------------
+* riproduzione dei suoni predefiniti
+* creazione di melodie -- caricare i programmi in CyberPi perché le pause che la modalità **Live** introduce tra l'emissione di due note pregiudicano l'esecuzione
+* esempio di conversione di "Tanti Auguri"
+* riproduzione della sirena della polizia:
+* sfruttare il multi-threading di CyberPi per riprodurre il lampeggio stroboscopico della polizia e la sirena quando si preme il pulsante B
 
 # Lezione n.8 - CyberPi e mBot, 10/02/2022
 
-Altoparlante
+### Attuatori: altoparlante
 
-Emettere suoni di frequenza specifica
+* emissione di suoni di frequenza e durata specifica
+* emissione di suoni casuali 
 
-Display
+### Attuatori: display
 
-test/tabella/grafico sono mutuamente esclusive
-le 8 etichette sono sovraimposte e funzionano su tutte le modalità
-orientando opportunamente il display (right) col testo big si possono fare le emoticon vecchia maniera… insomma, non sono bellissime…
+* display grafico di 1.44" con risoluzione di 128×128 pixel
+* gestisce tre modalità distinte mutuamente esclusive: testo, tabella e grafico
+* consente fino a 8 etichette in sovrimpressione
+* display orientabile via software
+* modalità testo:
+    * 4 dimesioni di carattere: `small`, `middle`, `big`, `super big`
+    * dimensione e colore uguale per tutto il flusso di testo
+    * flusso organizzato a linee
+    * il flusso ha origine in alto a sinistra
+    * a-capo automatico e su richiesta
+    * scorrimento automatico verso l'alto al raggiungimento dell'ultima riga
+* modalità tabella:
+    * massimo 4 righe, 3 colonne
+    * dimensione del testo prefissata (`middle`)
+    * scorrimento orizzontale automatico dei testi
+* modalità grafica:
+    * grafico a linea o a barre verticali
+    * origine in basso a sinistra
+    * valori compresi nell'intervallo [0÷100]
+    * raggruppamento implicito per colore
+    * scorrimento automatico delle tracce
+    * aggiornamento automatico delle barre
+* etichette:
+    * 8, disponibili in tutte le modalità
+    * appaiono in sovrimpressione al resto
+    * liberamente posizionabili sul display
+    * dimensione e colore del testo proprie
+* diagrammare l'intensità luminosa e il livello di rumore acquisiti da CyberPi
+* simulare il lancio di un dado allo scuotimento di CyberPi
+* realizzare una livella digitale
+* usare la modalità testo per presentare brevemente i programmi
 
-display: origine in altro a sx
-display: la dimensione del testo è globale, non si possono visualizzare due segmenti a dimensioni/colori diverse
-display: autoscrolling (provare a stampare i numeri da 1 a 20 uno per riga)
-display: dedurre quante righe di testo per ognuna delle 4 dimensioni (small:8, middle:6, big:4, super-big: poco meno di 3)
+### Attuatori: motori con encoder
 
-line chart: disegna un grafico tra 0 e 100 (rimappati su 0-128), scroll automatico, distanza tra punti configurabile, colore pure, spessore linea no
+* caricamento dell'estensione **mBot2 Shield**
+* distinzione tra l'area **mBot2 Chassis** e **mBot2 Extension Port**: i blocchi per il controllo dei motori con encoder si trovano nella prima
+* encoder: sensibilità 1°, accuratezza in rotazione 5°
+* ruote di mBot2 come pomelli di controllo
+* uso del blocco `wait until <button [B] pressed>?` come sicurezza
+* movimenti base di mBot: avanti, indietro, rotazione (sul posto)
+* controllo della velocità: RPM/percentuale di potenza
+* controllo della distanza percorsa su tratti rettilinei
+* controllo dell'angolo di rotazione su sé stesso
+* movimento lungo i lati di un quadrato, poi un pentagono di lato 50cm
+* considerazioni sulla precisione della traiettoria seguita
+* effetto benefico della calibrazione nel compensare i giochi meccanici
+* programmazione di una passeggiata casuale
+* uso dei LED per indicare il tipo di movimento
 
-bar chart: unica barra al centro, mappata tra 0 e 100
-per avere più barre, cambiare colore; se si torna a un colore già usato, viene aggiornata la barra vecchia
+# Lezione n.9 - mBot2: motori, sensore ultrasonico, 15/02/2022 
 
-table: disegna una tabella, la più piccola che contiene tutti i dati (comunque non oltre 4x3); dimensione del testo fissa a middle
+* tracciamento di traiettorie curvilinee
+* controllo dei singoli motori
+* relazione tra segno della velocità e senso di rotazione dei motori -- valori positivi fanno ruotare il motore di sinistra (M1) nel senso di marcia, quello di destra (M2) in direzione opposta
+* relazione tra rapporto delle velocità di rotazione e raggio di curvatura
+* movimento lungo traiettorie curvilinee arbitrarie: a S, a U, a 8
 
-etichette: 8 sovraimpresse, su testo, grafico o tabella
-ognuna con dimensione e colore del testo propri
-utili per posizionare del testo al di fuori del flusso normale
+### Sensori: sensore ultrasonico
 
-luminosità come chart e bar
-modulare la velocità di aggiornamento col tempo (line chart anche con la risoluzione)
-anche in questo caso la reattività in modalità upload è molto più alta della live (ma meno comoda)
+* principio di funzionamento: ecolocalizzazione
+* visto frontalmente la capsula TX è quella di sinistra, RX quella di destra
+* caratteristiche del sensore: campo di misura 5-300cm, accuratezza 5%
+* caricamento dell'estensione **Ultrasonic Sensor 2**
+* uso del blocco `ultrasonic 2 (1) distance to an object (cm)`: il primo indice identifica il sensore -- mBuild consente di collegare in sequenza fino a 10 sensori, l'indice discrimina quale dei sensori ultrasonici presenti in catena dev'essere interrogato
+* uso dei LED per indicare la distanza dell'ostacolo -- verde per "via libera", giallo per "ostacolo in distanza", rosso per "ostacolo in prossimità"
+* realizzazione di un sensore di parcheggio
+* uso del sensore per arrestare il robot di fronte ad un ostacolo
+* programma "scansa-ostacoli": procedere diritti se l'ostacolo si trova a più di 40cm altrimenti sterzare in una direzione a caso
+* programma "scansa-ostacoli" avanzato: effettuare una sterzata in retromarcia se l'ostacolo si trova a meno di 15cm
 
-MOTORI
+# Lezione n.10 - Competenze trasversali e imprenditorialità, 17/02/2022 
 
-mBot2 Shield se non è già presente lo si carica come estensione di CyberPi
--> si ottengono i comandi di controllo dei motori con encoder
--> più un'altra estensione per servi, motori DC e tutto ciò che si può collegare allo shield
+[Lezione svolta da altri insegnanti]
 
-gli encoder hanno una accuratezza di 1°, la rotazione < 5°
-si può vedere l'effetto in LIVE con il trucco della variabile nel persempre
+# Lezione n.11 - Inseguitore di linea, 15/02/2022 
 
-occhio, parte subito dopo l'UPLOAD!!
-muoversi solo dopo che si è premuto il tasto B ("attendi fino a quando" come prima istruzione)
+### Sensori: sensore di linea
 
-movimenti base: avanti, indietro, rotazione (sul posto)
-movimento a RPM/percentuale di potenza, ev. per un tempo prefissato
-avanti/indietro con distanza
-rotazione con gradi
-turn left 90° vs turn left at 50 RPM for 1 sec
+* principio di funzionamento
+* ruolo dei LED RGB accoppiati ai sensori -- diminuire le interferenze della luce ambientale
+* procedura di calibrazione del sensore:
 
-tartaruga! proviamo il quadrato, poi il pentagono (lato 50cm)
-passeggiata casuale con LED
-gimcana
+    > * Double-press: When the button is double-pressed, Quad RGB Sensor starts to learn the background and line for line following.
+    >   Place the light sensors on the background of the line-following track map and double-press the button. When you see the LEDs indicating the line-following state blink quickly, sway the sensors from side to side above the background and line until the LEDs stop blinking. It takes about 2.5 seconds. The parameter values obtained are automatically stored. If the learning fails, the LEDs blink slowly, and you need to start the learning again.
+    > * Long-press: When the button is long-pressed, Quad RGB Sensor switches the color of the fill lights. Generally, you don’t need to change the color. The color is set automatically after the learning is complete.
 
-se i movimenti non tornano, calibrare (precisione encoder, giochi meccanici, attriti, pneumatici consumati…)
+* caricamento dell'estensione **Quad RGB Sensor(beta)**
+* uso del blocco `quad rgb sensor (1) L1, R1's [line] status (0~3)`
+* codifica: 1 se il sensore è sulla linea (**L**ine), 0 se sullo sfondo ((**B**ackground)):
 
--------------- fino qui -------------------
+        L1 R1 value status
+        B  B   00     0
+        B  L   01     1
+        L  B   10     2
+        L  L   11     3
 
-# Lezione n. 9
-
-disegnare una circonferenza? o semplicemente una curva?
-per fare andare avanti, un motore positivo, l'altro negativo
-traiettoria quadrato/pentagono(!)
-passeggiata casuale (con indicatore di movimento)
-gimcana
-uso degli encoder come sensori
-calibrazione degli encoder, anche qui (tolleranze meccaniche, giochi, diametro ruote, …)!
-
-SENSORE ULTRASONICO
-
-caricare l'estensione di CyberPi dedicata
-il primo indice dei blocchi si riferisce al primo sensore in catena (mBuild è una daisy-chain, ce ne potrebbero essere di più)
-
-visto da davanti TX a sx, RX a dx
-range 5-300, +/-5%
-
-* principio di funzionamento - ecolocalizzazione;
-* caratteristiche del sensore;
-* uso dei LED per indicare la distanza dell'ostacolo -- verde per il remoto, giallo per il distante, rosso per il vicino;
-* uso del sensore per realizzare un theremin/sensore di parcheggio;
-* uso del sensore per arrestare mBot di fronte ad un ostacolo (strategia #1);
-* presentazione della strategia di base del programma "scansa-ostacoli": se l'ostacolo è lontano si procede diritti, se è vicino si sterza; uso dei diagrammi di flusso (strategia #2); 50/0 | 0/-50 RPM
-* estensione della strategia "scansa-ostacoli": se l'ostacolo è troppo vicino, allora si effettua una sterzata in retromarcia (in questo modo replichiamo la strategia implementata dal firmware di base di mBot -- strategia #3) -70/20 | -20/70 RPM;
-
-SENSORE DI LINEA
-
-principio di funzionamento
-ruolo dei 4 led vicino ai sensori -> luce artificiale per diminuire le interferenze di quella ambientale -> richiede calibrazione (ancora!)
-
-> * Double-press: When the button is double-pressed, Quad RGB Sensor starts to learn the background and line for line following.
->   Place the light sensors on the background of the line-following track map and double-press the button. When you see the LEDs indicating the line-following state blink quickly, sway the sensors from side to side above the background and line until the LEDs stop blinking. It takes about 2.5 seconds. The parameter values obtained are automatically stored. If the learning fails, the LEDs blink slowly, and you need to start the learning again.
-> * Long-press: When the button is long-pressed, Quad RGB Sensor switches the color of the fill lights. Generally, you don’t need to change the color. The color is set automatically after the learning is complete.
-
-calibrazione con un doppio click del pulsantino
-per b/n di norma non serve, se no far passare i sensori sulla linea (fuori-dentro-fuori) fino a quando non smette il lampeggio
-calibrare il sensore sul colore più chiaro da considerare linea
-se tutto ok: led sulla linea spenti, fuori linea accesi
-
-calibrazione alternativa: calibro sul nero, poi cambio a mano il colore dei led verificando sperimentalmente se il robot riconosce anche i tratti colorati; di solito la luce blu è quella più efficace.
-
-caricare l'estensione di CyberPi dedicata (a febbraio 2022 è ancora in beta!)
-
-in modalità line/background non considera il colore
-
-codifica (B=background, L=line):
-
-lr
-BB 00 0
-BL 01 1
-LB 10 2
-LL 11 3
-
-logica contraria all'accensione dei led: sono sulla riga, valore 1, led spento; sono fuori dalla riga, valore 0, led acceso!
-
-idem per i 4 (1 sulla linea, 0 fuori dalla linea, nell'ordine l2l1r1r2)
-i laterali si usano per determinare diramazioni
-
-inseguimento di linea naive (cerco di tenere i due sensori sulla riga, quando esco torno indietro)
- con rotazioni: oscilla a destra e sinistra
- con curva a rapporto 1:5: oscilla avanti e indietro, anche a 20 RPM
- (provare a ridurre la velocità in retromarcia e/o durante le curve? fare una retromarcia curvando dalla parte opposta?)
-inseguimento di linea "furbo" (quando esco continuo il movimento che facevo prima di uscire): mi posso spingere ben oltre i 50RPM; questo per come è fatto il circuito!
-
->>> l'algoritmo di inseguimento diventa un blocco a sé stante, parametrico sulla velocità (o usa una variabile globale) <<<
-
-inseguimento di linea + stop (con led rossi) se distanza < 20
-rallento (dimezzo la velocità) se 40 < distanza < 20 [conviene definire il blocco "segui linea a velocità (speed)]
-
-[QUESTO ANCHE NO]
-deviation: quanto sono/mi sto allontanando dalla linea (-100 la linea è alla mia destra, 100 la linea è alla mia sinisra)
-si può usare per modulare la curva: se deviation > 0 v.sinistra va diminuita, v.destra aumentata, così giro a sinitra;
-se deviation < 0 v.sinistra va aumentata, v.destra diminuita, così giro a destra; es:
-v.sinistra = 50 - k * deviation
-v.destra = -(50 + k * deviation)
-k modula l'effetto
-
-riconoscimento dei colori sulla linea (sensore L1/R1 a scelta oppure metterli in or):
-
-verde -> emetti un suono
-giallo -> accendi i led (da spegnere su black)
-blu -> rallenta
-rosso -> torna indietro (gira 180° + vai avanti di un tot (per uscire dal rosso))
-
-controllo del tilt: se rollio supera i 3° si accendono i led di arancione e si rallenta
-
-LAN
-
-dovrebbe funzionare anche senza Router WiFi, la rete la creano le CyberPi tra loro
+* logica analoga per i sensori esterni -- di norma usati per individuare diramazioni della pista principale
+* programma "inseguitore di linea":
+    * procedere diritti quando entrambi i sensori sono sulla linea
+    * curvare quando uno dei due sensori esce dalla linea -- rotazione vs. sterzata
+    * retromarcia quando entrambi i sensori sono fuori dalla linea 
+* spostare l'algoritmo in un blocco personalizzato `insegui la linea`
+* integrare un arresto in caso di oggetto a meno di 20cm
+* integrare un rallentamento in caso di oggetto a distanza a meno di 40cm
+* riconoscimento dei colori:
+    * emettere un breve suono quando si percorre il tratto verde
+    * accendere il LED di giallo quando si incontra il tratto giallo
+    * rallentare quando si percorre il tratto di pista blu
+    * invertire il senso di marcia (rotazione di 180°) quando si incontra il tratto rosso
 
 ## Appendice
 
