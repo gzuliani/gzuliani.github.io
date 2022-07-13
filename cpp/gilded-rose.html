@@ -9,15 +9,16 @@
 <body>
 <p class="page-path"><a href="../index.html#gilded-rose">risorse</a> | gilded rose</p>
 <h2>Introduzione</h2>
-<p>Gilded Rose è un celebre kata ideato da Terry Hughes ed è disponibile su GitHub <a href="https://github.com/NotMyself/GildedRose">nella sua versione originale</a>. Emily Bache ha raccolto un discreto numero di varianti nei diversi linguaggi di programmazione <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">qui</a>. Su <a href="https://www.youtube.com/watch?v=8bZh5LMaSmE">YouTube</a> c'è un'interessante soluzione proposta da Sandi Metz in Ruby.</p>
+<p>Gilded Rose è un celebre kata ideato da Terry Hughes ed è disponibile su GitHub <a href="https://github.com/NotMyself/GildedRose">nella sua versione originale</a>. Emily Bache ha raccolto un discreto numero di varianti per diversi linguaggi di programmazione <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">qui</a>. Su <a href="https://www.youtube.com/watch?v=8bZh5LMaSmE">YouTube</a> c'è un'interessante soluzione proposta da Sandi Metz in Ruby.</p>
 <p>Qualche mese fa incappai in questo <a href="https://twitter.com/KevlinHenney/status/1441108406622830597">Twitter thread</a> di Kevlin Henney dove, tra l'altro, si legge:</p>
 <blockquote>Unfortunately, most blogs I've seen on it either give unnecessarily complex solutions or they provide a good starting point for further refactoring, i.e., they're en route to a solution, but not quite there yet.</blockquote>
 <p>Questo commento ha acceso la mia curiosità ed ho così deciso di affrontarlo anch'io.</p>
 <h2>Esecuzione del Kata</h2>
+<p class="note">Il repository <a href="https://github.com/gzuliani/gilded-rose-cpp">gilded-rose-cpp</a> contiene tutti i passaggi descritti qui di seguito.</p>
 <h3>Passo #0 - Build del codice originale</h3>
-<p>Ho clonato l'intero repository <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">GildedRose-Refactoring-Kata</a> di Emily Bache per estrarne l'implementazione C++ chs si trova all'interno della cartella <strong>cpp</strong>. Ho cancellato la cartella <strong>.git</strong> e copiato tutto il resto in un repository locale creato apposta. Ho infine verificato di essere in grado di compilare il codice e lanciare i test case, in particolare gli unit-test di <a href="https://github.com/approvals/ApprovalTests.cpp">Catch2</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/44fe195a6c0162d611cfb2b667038c983caf80d0">44fe195a</a>). Mi sono quindi disfatto di alcune dipendenze non indispensabili, in particolare <a href="https://github.com/google/googletest">GoogleTest</a> e <a href="https://github.com/approvals/ApprovalTests.cpp">Approval tests</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/3d7f283737d030d6eca5765a9341336e4d7bb15e">3d7f2837</a>).</p>
+<p>Ho clonato l'intero repository <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">GildedRose-Refactoring-Kata</a> di Emily Bache per estrarne l'implementazione C++ che si trova all'interno della cartella <strong>cpp</strong>. Ho cancellato la cartella <strong>.git</strong> e copiato tutto il resto in un repository locale creato apposta. Ho infine verificato di essere in grado di compilare il codice e lanciare i test case, in particolare gli unit-test di <a href="https://github.com/approvals/ApprovalTests.cpp">Catch2</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/44fe195a6c0162d611cfb2b667038c983caf80d0">44fe195a</a>). Mi sono quindi disfatto di alcune dipendenze non indispensabili, in particolare <a href="https://github.com/google/googletest">GoogleTest</a> e <a href="https://github.com/approvals/ApprovalTests.cpp">Approval tests</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/3d7f283737d030d6eca5765a9341336e4d7bb15e">3d7f2837</a>).</p>
 <h3>Passo #1 - Test case</h3>
-<p>Prima di mettere mano al codice è necessario definire i test case. Ne ho scritto uno per ognuno dei requisiti espressi nella descrizione del Kata, utilizzando quello presente come template:</p>
+<p>Prima di mettere mano al codice conviene definire i test case per verificare la conformità dell'implementazione con le specifiche del problema. Ne ho scritto uno per ognuno dei requisiti espressi nella descrizione del Kata, utilizzando quello presente come template:</p>
 <pre class="code">
 TEST_CASE("GildedRoseUnitTest", "Foo")
 {
@@ -63,7 +64,7 @@ TEST_CASE("At the end of each day SellIn and Quality decrease for every item")
 <li><em>“Backstage passes” Quality drops to 0 after the concert</em></li>
 <li><em>“Sulfuras” Quality is 80 and it never alters.</em></li>
 </ul>
-<p>Al momento il codice non fornisce alcuna garanzia circa la qualità del prodotto “Sulfuras”; per tale motivo l'ultimo test case l'ho momentaneamente commentato (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/46bd4f889a732925ed18f104b0a9907e770eee25">46bd4f88</a>):</p>
+<p>Al momento il codice non fornisce alcuna garanzia circa la qualità del prodotto “Sulfuras”; per tale motivo ho momentaneamente commentato l'ultimo test case, ripromettendomi di renderlo effetivo non appena se ne presenta l'occasione (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/46bd4f889a732925ed18f104b0a9907e770eee25">46bd4f88</a>):</p>
 <pre class="code">
 /*
 TEST_CASE("'Sulfuras' Quality is 80 and it never alters.")
@@ -79,18 +80,18 @@ TEST_CASE("'Sulfuras' Quality is 80 and it never alters.")
 */
 </pre>
 <p class="illustration">Il test case destinato a fallire.</p>
-<p>Al momento non c'è una soluzione a questo problema, per questo ho disabilitato il test; se anche si introducesse un factory method come ad esempio:</p>
+<p>Inizialmente avevo pensato di introdurre un factory method per la creazione di questo prodotto che garantisse che la qualità venisse impostata a 80:</p>
 <pre class="code">
 Item make_sulfuras(int sellIn) {
     return Item{"Sulfuras, Hand of Ragnaros", sellIn, 80};
 }
 </pre>
 <p class="illustration">Factory method per il prodotto “Sulfuras”.</p>
-<p>nulla impedirebbe al codice cliente di istanziare un <span class="code">Item</span> con lo stesso nome e <span class="code">quality</span> arbitraria, esattamente come accade nel test case.</p>
+<p>Nulla tuttavia impedirebbe al codice cliente di istanziare un <span class="code">Item</span> con lo stesso nome e <span class="code">quality</span> arbitraria, esattamente come accade nel test case; per questa ragione ho deciso di disabilitare temporaneamente il test.</p>
 <h3>Passo #2 - <span class="code">Item</span> polimorfico</h3>
-<p>Il fatto che ogni prodotto presenta una differente politica di aggiornamento della propria qualità e che già si sa che se ne dovrà aggiungere almeno una nuova tipologia &mdash; i cosiddetti prodotti “Conjured” &mdash; mi fa propendere verso una soluzione polimorfica in cui la responsabilità dell'aggiornamento dell'attributo <span class="code">quality</span> si sposta da <span class="code">GildedRose</span> al singolo prodotto; <span class="code">GildedRose</span> si limiterà a scorrere l'elenco dei prodotti da aggiornare chiedendo ad ognuno di loro di applicare la propria politica di aggiornamento. Questo dovrebbe consentirmi, in un secondo momento, di poter aggiungere nuove tipologie di prodotto senza intervenire sul codice della classe <span class="code">GildedRose</span>.</p>
-<p>Il primo intervento che ho fatto è stato quello di trasformare l'elenco dei prodotti da un vettore di <span class="code">Item</span> in un vettore di <em>smart-pointer</em> di <span class="code">Item</span> in modo tale da abilitare il polimorfismo sui prodotti (nel prosieguo questa fase si dimostrerà inutile, ma tant'è &mdash; cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/842b9deeeaa0983ff09fa881837852af20df8dee">842b9dee</a>).</p>
-<p>Inizialmente pensavo di procedere per passi di <em>extract method</em> successivi, ma la complessità del metodo <span class="code">GildedRose::updateQuality</span> è tale che mi sembra una perdita di tempo; avendo i test case già pronti, punto subito a definire l'interfaccia polimorfica del prodotto con l'obiettivo di soddisfare i test case relativi al prodotto generico:</p>
+<p>Il fatto che ogni prodotto presenta una differente politica di aggiornamento della propria qualità e che già si sa che se ne dovrà aggiungere almeno una nuova tipologia &mdash; i cosiddetti prodotti “Conjured” &mdash; mi fa propendere verso una soluzione polimorfica in cui la responsabilità dell'aggiornamento dell'attributo <span class="code">quality</span> si sposta dall'oggetto <span class="code">GildedRose</span> al singolo prodotto; <span class="code">GildedRose</span> si limiterà a scorrere l'elenco dei prodotti da aggiornare chiedendo ad ognuno di loro di applicare la propria politica di aggiornamento. Questo dovrebbe consentirmi, in un secondo momento, di poter aggiungere nuove tipologie di prodotto senza intervenire sul codice della classe <span class="code">GildedRose</span>.</p>
+<p>Ho cominciato col trasformare l'elenco dei prodotti da un vettore di <span class="code">Item</span> in un vettore di <em>smart-pointer</em> di <span class="code">Item</span> in modo tale da abilitare il polimorfismo sui prodotti (nel prosieguo questa fase si dimostrerà inutile, ma tant'è &mdash; cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/842b9deeeaa0983ff09fa881837852af20df8dee">842b9dee</a>).</p>
+<p>Inizialmente pensavo di procedere per applicazioni di <em>extract method</em> successive, ma la complessità del metodo <span class="code">GildedRose::updateQuality</span> è tale che mi è sembrata un'inutile speculazione; avendo i test case già pronti, ho preferito puntare a definire subito l'interfaccia polimorfica del prodotto con l'obiettivo di soddisfare i test case relativi al prodotto generico:</p>
 <pre class="code">
 class RegularItem : public Item
 {
@@ -116,7 +117,7 @@ void GildedRose::updateQuality()
         item-&gt;update();
 }</pre>
 <p class="illustration">La nuova versione del metodo <span class="code">GildedRose::updateQuality</span>.</p>
-<p>A questo stadio di riscrittura passano solamente i test case del prodotto generico, ovvero i primi tre (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/249094cf4d0c32d186d97c2e633767018e25bf4d">249094cf</a>).</p>
+<p>A questo stadio di riscrittura passano solamente i test case del prodotto generico, ovvero i primi tre (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/249094cf4d0c32d186d97c2e633767018e25bf4d">249094cf</a>). L'obiettivo ora è di soddisfare incrementalmente tutti gli altri.</p>
 <h3>Passo 3 - “Sulfuras”</h3>
 <p>Mi preme risolvere subito la questione della qualità fissa e costante del prodotto “Sulfuras”; scommento perciò il test case relativo e definisco il nuovo prodotto:</p>
 <pre class="code">
@@ -131,8 +132,8 @@ public:
 };
 </pre>
 <p class="illustration">La definizione dell'oggetto <span class="code">Sulfuras</span>.</p>
-<p>Ho approfittato per spostare le definizioni degli oggetti <span class="code">Item</span> e <span class="code">RegularItem</span> negli omonimi file (cfr. commmit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/e243093d273faac58375aa142a328e610f733c42">e243093d</a>).</p>
-<p><strong>Nota:</strong> un <span class="code">RegularItem</span> denominato “Sulfuras, Hand of Ragnaros” segue le logiche di aggiornamento della qualità tipiche di un prodotto convenzionale; per ottenerne uno con le peculiarità richieste dalle specifiche è necessario istanziare un oggetto di tipo <span class="code">Sulfuras</span>.</p>
+<p>Ho approfittato per spostare le definizioni degli oggetti <span class="code">Item</span> e <span class="code">RegularItem</span> dal file <strong>GildedRose.h</strong> negli omonimi file (cfr. commmit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/e243093d273faac58375aa142a328e610f733c42">e243093d</a>).</p>
+<p class="note"><strong>Nota:</strong> un <span class="code">RegularItem</span> denominato “Sulfuras, Hand of Ragnaros” segue le logiche di aggiornamento della qualità tipiche di un prodotto convenzionale; per ottenerne uno con le peculiarità richieste dalle specifiche è necessario istanziare un oggetto di tipo <span class="code">Sulfuras</span>.</p>
 <h3>Passo 4 - “Aged Brie”</h3>
 <p>L'obiettivo ora è soddisfare i test case rimanenti. Comincio da quelli di “Aged Brie”:</p>
 <pre class="code">
@@ -151,7 +152,7 @@ public:
 };
 </pre>
 <p class="illustration">La definizione dell'oggetto <span class="code">AgedBrie</span>.</p>
-<p>Esistono a questo punto tre implementazioni diverse del metodo <span class="code">RegularItem::update</span>, attendo tuttavia di completare la copertura dei test prima di decidere se procedere al refactoring (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/362922dfba5525a4f7cc399b5b17b9544de7b63a">362922df</a>).</p>
+<p>Esistono a questo punto tre implementazioni diverse del metodo <span class="code">RegularItem::update</span>, attendo tuttavia di completare la copertura dei test case prima di decidere se procedere al refactoring (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/362922dfba5525a4f7cc399b5b17b9544de7b63a">362922df</a>).</p>
 <h3>Passo 5 - “Backstage Pass”</h3>
 <p>Restano da sistemare gli ultimi test case, quelli relativi al prodotto “Backstage Pass”:</p>
 <pre class="code">
@@ -212,7 +213,7 @@ public:
 <li>aggiustamento del livello di qualità nell'intervallo 0÷50;</li>
 <li>decremento del numero di giorni disponibili per la vendita.</li>
 </ul>
-<p>Ogni tipologia di prodotto presenta delle peculiarità:</p>
+<p>Ogni tipologia di prodotto presenta tuttavia delle peculiarità:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th></th><th>RegularItem</th><th>Sulfuras</th><th>Aged Brie</th><th>Backstage Pass</th></tr>
 <tr><td class="heading">quality(t)</td><td>decresce</td><td>costante</td><td>aumenta</td><td>complicato(!)</td></tr>
@@ -220,7 +221,7 @@ public:
 <tr><td class="heading">sellIn</td><td>decresce</td><td>costante</td><td>descresce</td><td>descresce</td></tr>
 </table>
 <p class="illustration">Le diverse implementazioni del metodo <span class="code">RegularItem::update</span>.</p>
-<p>Ho pensato quindi di modificare l'interfaccia di <span class="code">RegularItem</span> trasformando il metodo <span class="code">update</span> in un metodo convenzionale che richiama tre metodi virtuali che costituiscono una nuova interfaccia virtuale protetta:</p>
+<p>Ho pensato quindi di modificare l'interfaccia di <span class="code">RegularItem</span> trasformando il metodo <span class="code">update</span> in un metodo convenzionale che richiama tre metodi virtuali che costituiscono una nuova interfaccia virtuale protetta dell'oggetto:</p>
 <pre class="code">
 class RegularItem : public Item
 {
@@ -250,7 +251,7 @@ protected:
 };
 </pre>
 <p class="illustration">La nuova implementazione di <span class="code">RegularItem</span>.</p>
-<p>La nuova versione del codice soddisfa ancora tutti i requisiti richiesti (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/668b40db3610a21a4281d72ec591b3faf88b17bc">668b40db</a>); ma è davvero migliore rispetto alla precedente? A livello di complessità ciclomatica non c'è nessun miglioramento, il livello rimane a 13:</p>
+<p>La nuova versione del codice soddisfa ancora tutti i requisiti richiesti (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/668b40db3610a21a4281d72ec591b3faf88b17bc">668b40db</a>); ma rappresenta davvero una miglioria? A livello di complessità ciclomatica non c'è nessun progresso, dato che il valore della metrica rimane a 13:</p>
 <table cellpadding="0" cellspacing="0">
 <tr><th>Step</th><th>GildedRose</th><th>Item</th><th>RegularItem</th><th>Sulfuras</th><th>AgedBrie</th><th>BackstagePass</th><th>Sum</th></tr>
 <tr><td>1</td><td>23</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>23</td></tr>
@@ -266,7 +267,7 @@ quality = std::min(std::max(quality, 0), 50);
 </pre>
 <p>Della seconda invece non mi convince il frazionamento del metodo <span class="code">RegularItem::update</span>. Probabilmente esiste un'alternativa migliore.</p>
 <h3>Passo 7 - Rifattorizzazione dei test case</h3>
-<p>Mi rendo conto che i test case istanziano inutilmente un oggetto di tipo <span class="code">GildedRose</span> per verificare la politica di aggiornamento dei diversi prodotti. Ho perciò riscritto i test case eliminando l'istanziazione superflua ed aggiunto uno che verifica il corretto funzionamento del metodo <span class="code">GildedRose::updateQuality (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/530ee6f1e16bc5b2d0bcd5957ba1f385e411e0d0">530ee6f1</a>):</span></p>
+<p>I test case istanziano inutilmente un oggetto di tipo <span class="code">GildedRose</span> per verificare la politica di aggiornamento dei diversi prodotti. Ho riscritto i test case eliminando l'istanziazione superflua e ne ho aggiunto uno nuovo che verifica il corretto funzionamento del metodo <span class="code">GildedRose::updateQuality (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/530ee6f1e16bc5b2d0bcd5957ba1f385e411e0d0">530ee6f1</a>):</span></p>
 <pre class="code">
 TEST_CASE("At the end of each day SellIn and Quality decrease for every item")
 {
@@ -284,7 +285,7 @@ TEST_CASE("At the end of each day SellIn and Quality decrease for every item")
     REQUIRE(item.quality == 3);
 }
 </pre>
-<p class="illustration">Esempio di test case che non fa uso dell'oggetto <span class="code">GiledRose</span>.</p>
+<p class="illustration">Esempio di test case che non fa più uso dell'oggetto <span class="code">GiledRose</span>.</p>
 <pre class="code">
 TEST_CASE("All items are updated at once")
 {
@@ -353,9 +354,9 @@ TEST_CASE("'Conjured' items degrade in Quality twice as fast as normal items")
 <h2>Conclusioni</h2>
 <p>Col senno di poi:</p>
 <ul>
-<li><em>sarebbe stato interessante dedicare più tempo alla ricerca di una trasformazione incrementale del codice invece di puntare subito al <strong>big rewrite</strong>;</em></li>
-<li><em>nella stessa ottica avrei forse potuto introdurre più tardi la soluzione a oggetti puntando prima allo &ldquo;spolpamento&rdquo; del metodo <span class="code">GildedRose::updateQuality</span> &mdash; in ottica didattica sarebbe di certo più apprezzabile, cfr. video di Sandi Metz;</em></li>
-<li><em>Kevlin Henney esprime più di qualche dubbio nei riguardi della soluzione a oggetti, cosa che non mi è del tutto chiara: lui propone di definire una mappa nome-prodotto/metodo-di-aggiornamento, che mi pare meno resiliente rispetto al polimorfismo quando si tratta di aggiungere un nuovo tipo di prodotto &mdash; nel primo caso va aggiornata la mappa, nel secondo caso definita una nuova classe.</em></li>
+<li>sarebbe stato interessante dedicare più tempo alla ricerca di una trasformazione incrementale del codice invece di puntare subito al <strong>big rewrite</strong>;</li>
+<li>nella stessa ottica avrei forse potuto introdurre più tardi la soluzione a oggetti puntando prima allo &ldquo;spolpamento&rdquo; del metodo <span class="code">GildedRose::updateQuality</span> &mdash; in ottica didattica sarebbe di certo più apprezzabile, cfr. video di Sandi Metz;</li>
+<li>Kevlin Henney esprime più di qualche dubbio nei riguardi della soluzione a oggetti, cosa che non mi è del tutto chiara: lui propone di definire una mappa nome-prodotto/metodo-di-aggiornamento, che mi pare meno resiliente rispetto al polimorfismo quando si tratta di aggiungere un nuovo tipo di prodotto &mdash; nel primo caso va aggiornata la mappa, nel secondo caso definita una nuova classe.</li>
 </ul>
 <p class="modification-notice">Pagina modificata il 13/07/2022</p>
 </body>
