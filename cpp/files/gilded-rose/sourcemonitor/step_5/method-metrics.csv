@@ -1,0 +1,12 @@
+Project Name,Checkpoint Name,Created On,File Name,Method,Complexity,Statements,Maximum Depth,Calls
+toxicity,toxicity,12 lug 2022,src\AgedBrie.h,AgedBrie.AgedBrie(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\AgedBrie.h,AgedBrie.update(),2*,4,2,1
+toxicity,toxicity,12 lug 2022,src\BackstagePass.h,BackstagePass.BackstagePass(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\BackstagePass.h,BackstagePass.update(),5*,10,3,1
+toxicity,toxicity,12 lug 2022,src\Item.h,Item.Item(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\RegularItem.h,RegularItem.RegularItem(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\RegularItem.h,RegularItem.update(),2*,4,2,1
+toxicity,toxicity,12 lug 2022,src\Sulfuras.h,Sulfuras.Sulfuras(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\Sulfuras.h,Sulfuras.update(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\GildedRose.cc,GildedRose.GildedRose(),1*,0,0,0
+toxicity,toxicity,12 lug 2022,src\GildedRose.cc,GildedRose.updateQuality(),2*,2,2,1

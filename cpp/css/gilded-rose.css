@@ -1,0 +1,12 @@
+td {
+ text-align: center;
+}
+
+td.heading {
+ font-weight: bold;
+ text-align: left;
+}
+
+th {
+ text-align: center;
+}

@@ -1,0 +1,8 @@
+Project Name,Checkpoint Name,Created On,File Name,Lines*,Statements,Percent Branch Statements,Percent Lines with Comments,Classes Defined,Methods Implemented per Class,Average Statements per Method,Line Number of Most Complex Method*,Name of Most Complex Method*,Maximum Complexity*,Line Number of Deepest Block,Maximum Block Depth,Average Block Depth,Average Complexity*,Functions,Statements at block level 0,Statements at block level 1,Statements at block level 2,Statements at block level 3,Statements at block level 4,Statements at block level 5,Statements at block level 6,Statements at block level 7,Statements at block level 8,Statements at block level 9
+toxicity,toxicity,12 lug 2022,src\AgedBrie.h,16,7,"14,3","0,0",1,"2,00","1,0",13,AgedBrie::update_quality(),2,15,2,"0,86","1,50",0,3,2,2,0,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\BackstagePass.h,23,13,"30,8","0,0",1,"2,00","4,0",13,BackstagePass::update_quality(),5,16,3,"1,69","3,00",0,3,2,4,4,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\GildedRose.h,9,6,"0,0","0,0",1,"0,00","0,0",,,0,8,1,"0,50","0,00",0,3,3,0,0,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\Item.h,11,6,"0,0","0,0",1,"1,00","0,0",9,Item::Item(),1,6,1,"0,67","1,00",0,2,4,0,0,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\RegularItem.h,32,17,"5,9","0,0",1,"5,00","1,4",20,RegularItem::update_quality(),2,15,2,"1,12","1,20",0,5,5,7,0,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\Sulfuras.h,15,7,"0,0","0,0",1,"4,00","0,0",9,Sulfuras::update_sellIn(),1,11,1,"0,57","1,00",0,3,4,0,0,0,0,0,0,0,0
+toxicity,toxicity,12 lug 2022,src\GildedRose.cc,8,5,"20,0","0,0",0,"2,00","1,0",6,GildedRose::updateQuality(),2,9,2,"0,60","1,50",0,3,1,1,0,0,0,0,0,0,0

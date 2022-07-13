@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Gilded Rose</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/gilded-rose.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#gilded-rose">risorse</a> | gilded rose</p>
+<h2>Introduzione</h2>
+<p>Gilded Rose è un celebre kata ideato da Terry Hughes ed è disponibile su GitHub <a href="https://github.com/NotMyself/GildedRose">nella sua versione originale</a>. Emily Bache ha raccolto un discreto numero di varianti nei diversi linguaggi di programmazione <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">qui</a>. Su <a href="https://www.youtube.com/watch?v=8bZh5LMaSmE">YouTube</a> c'è un'interessante soluzione proposta da Sandi Metz in Ruby.</p>
+<p>Qualche mese fa incappai in questo <a href="https://twitter.com/KevlinHenney/status/1441108406622830597">Twitter thread</a> di Kevlin Henney dove, tra l'altro, si legge:</p>
+<blockquote>Unfortunately, most blogs I've seen on it either give unnecessarily complex solutions or they provide a good starting point for further refactoring, i.e., they're en route to a solution, but not quite there yet.</blockquote>
+<p>Questo commento ha acceso la mia curiosità ed ho così deciso di affrontarlo anch'io.</p>
+<h2>Esecuzione del Kata</h2>
+<h3>Passo #0 - Build del codice originale</h3>
+<p>Ho clonato l'intero repository <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">GildedRose-Refactoring-Kata</a> di Emily Bache per estrarne l'implementazione C++ chs si trova all'interno della cartella <strong>cpp</strong>. Ho cancellato la cartella <strong>.git</strong> e copiato tutto il resto in un repository locale creato apposta. Ho infine verificato di essere in grado di compilare il codice e lanciare i test case, in particolare gli unit-test di <a href="https://github.com/approvals/ApprovalTests.cpp">Catch2</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/44fe195a6c0162d611cfb2b667038c983caf80d0">44fe195a</a>). Mi sono quindi disfatto di alcune dipendenze non indispensabili, in particolare <a href="https://github.com/google/googletest">GoogleTest</a> e <a href="https://github.com/approvals/ApprovalTests.cpp">Approval tests</a> (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/3d7f283737d030d6eca5765a9341336e4d7bb15e">3d7f2837</a>).</p>
+<h3>Passo #1 - Test case</h3>
+<p>Prima di mettere mano al codice è necessario definire i test case. Ne ho scritto uno per ognuno dei requisiti espressi nella descrizione del Kata, utilizzando quello presente come template:</p>
+<pre class="code">
+TEST_CASE("GildedRoseUnitTest", "Foo")
+{
+    vector&lt;Item&gt; items;
+    items.push_back(Item("Foo", 0, 0));
+    GildedRose app(items);
+    app.updateQuality();
+    REQUIRE("fixme" == app.items[0].name);
+}
+</pre>
+<p class="illustration">Il test case originale.</p>
+<pre class="code">
+TEST_CASE("At the end of each day SellIn and Quality decrease for every item")
+{
+    std::vector&lt;Item&gt; items{{"A Generic Item", 2, 5}};
+    GildedRose gilded_rose{items};
+
+    REQUIRE(items[0].sellIn == 2);
+    REQUIRE(items[0].quality == 5);
+
+    gilded_rose.updateQuality();
+    REQUIRE(items[0].sellIn == 1);
+    REQUIRE(items[0].quality == 4);
+
+    gilded_rose.updateQuality();
+    REQUIRE(items[0].sellIn == 0);
+    REQUIRE(items[0].quality == 3);
+}
+</pre>
+<p class="illustration">Il primo dei test case definiti.</p>
+<p>Ho coperto i seguenti casi:</p>
+<ul>
+<li><em>At the end of each day SellIn and Quality decrease for every item</em></li>
+<li><em>Quality decreases twice as fast once the sell by date has passed</em></li>
+<li><em>The Quality of an item is never negative</em></li>
+<li><em>&ldquo;Aged Brie&rdquo; actually increases in Quality the older it gets</em></li>
+<li><em>The Quality of an item is never more than 50 - “Aged Brie”</em></li>
+<li><em>“Sulfuras” never has to be sold or decreases in Quality</em></li>
+<li><em>“Backstage passes” increases in Quality as SellIn value approaches</em></li>
+<li><em>“Backstage passes” Quality increases by 2 if SellIn is 10 or less</em></li>
+<li><em>“Backstage passes” Quality increases by 3 if SellIn is 5 or less</em></li>
+<li><em>The Quality of an item is never more than 50 - “Backstage passes”</em></li>
+<li><em>“Backstage passes” Quality drops to 0 after the concert</em></li>
+<li><em>“Sulfuras” Quality is 80 and it never alters.</em></li>
+</ul>
+<p>Al momento il codice non fornisce alcuna garanzia circa la qualità del prodotto “Sulfuras”; per tale motivo l'ultimo test case l'ho momentaneamente commentato (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/46bd4f889a732925ed18f104b0a9907e770eee25">46bd4f88</a>):</p>
+<pre class="code">
+/*
+TEST_CASE("'Sulfuras' Quality is 80 and it never alters.")
+{
+    std::vector&lt;Item&gt; items{{"Sulfuras, Hand of Ragnaros", 1, 5}};
+    GildedRose gilded_rose{items};
+
+    REQUIRE(items[0].quality == 80);
+
+    gilded_rose.updateQuality();
+    REQUIRE(items[0].quality == 80);
+}
+*/
+</pre>
+<p class="illustration">Il test case destinato a fallire.</p>
+<p>Al momento non c'è una soluzione a questo problema, per questo ho disabilitato il test; se anche si introducesse un factory method come ad esempio:</p>
+<pre class="code">
+Item make_sulfuras(int sellIn) {
+    return Item{"Sulfuras, Hand of Ragnaros", sellIn, 80};
+}
+</pre>
+<p class="illustration">Factory method per il prodotto “Sulfuras”.</p>
+<p>nulla impedirebbe al codice cliente di istanziare un <span class="code">Item</span> con lo stesso nome e <span class="code">quality</span> arbitraria, esattamente come accade nel test case.</p>
+<h3>Passo #2 - <span class="code">Item</span> polimorfico</h3>
+<p>Il fatto che ogni prodotto presenta una differente politica di aggiornamento della propria qualità e che già si sa che se ne dovrà aggiungere almeno una nuova tipologia &mdash; i cosiddetti prodotti “Conjured” &mdash; mi fa propendere verso una soluzione polimorfica in cui la responsabilità dell'aggiornamento dell'attributo <span class="code">quality</span> si sposta da <span class="code">GildedRose</span> al singolo prodotto; <span class="code">GildedRose</span> si limiterà a scorrere l'elenco dei prodotti da aggiornare chiedendo ad ognuno di loro di applicare la propria politica di aggiornamento. Questo dovrebbe consentirmi, in un secondo momento, di poter aggiungere nuove tipologie di prodotto senza intervenire sul codice della classe <span class="code">GildedRose</span>.</p>
+<p>Il primo intervento che ho fatto è stato quello di trasformare l'elenco dei prodotti da un vettore di <span class="code">Item</span> in un vettore di <em>smart-pointer</em> di <span class="code">Item</span> in modo tale da abilitare il polimorfismo sui prodotti (nel prosieguo questa fase si dimostrerà inutile, ma tant'è &mdash; cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/842b9deeeaa0983ff09fa881837852af20df8dee">842b9dee</a>).</p>
+<p>Inizialmente pensavo di procedere per passi di <em>extract method</em> successivi, ma la complessità del metodo <span class="code">GildedRose::updateQuality</span> è tale che mi sembra una perdita di tempo; avendo i test case già pronti, punto subito a definire l'interfaccia polimorfica del prodotto con l'obiettivo di soddisfare i test case relativi al prodotto generico:</p>
+<pre class="code">
+class RegularItem : public Item
+{
+public:
+    RegularItem(std::string name, int sellIn, int quality)
+        : Item(name, sellIn, quality)
+    {}
+    virtual void update()
+    {
+        quality -= (sellIn &gt; 0) ? 1 : 2;
+        quality = std::min(std::max(quality, 0), 50); // std::clamp in C++17
+        sellIn -= 1;
+    }
+};
+
+using ItemPtr = std::shared_ptr&lt;RegularItem&gt;;
+</pre>
+<p class="illustration">La definizione del prodotto generico.</p>
+<pre class="code">
+void GildedRose::updateQuality()
+{
+    for (auto&amp; item : items)
+        item-&gt;update();
+}</pre>
+<p class="illustration">La nuova versione del metodo <span class="code">GildedRose::updateQuality</span>.</p>
+<p>A questo stadio di riscrittura passano solamente i test case del prodotto generico, ovvero i primi tre (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/249094cf4d0c32d186d97c2e633767018e25bf4d">249094cf</a>).</p>
+<h3>Passo 3 - “Sulfuras”</h3>
+<p>Mi preme risolvere subito la questione della qualità fissa e costante del prodotto “Sulfuras”; scommento perciò il test case relativo e definisco il nuovo prodotto:</p>
+<pre class="code">
+class Sulfuras : public RegularItem
+{
+public:
+    Sulfuras(int sellIn)
+        : RegularItem("Sulfuras, Hand of Ragnaros", sellIn, 80)
+    {}
+    void update() override
+    {}
+};
+</pre>
+<p class="illustration">La definizione dell'oggetto <span class="code">Sulfuras</span>.</p>
+<p>Ho approfittato per spostare le definizioni degli oggetti <span class="code">Item</span> e <span class="code">RegularItem</span> negli omonimi file (cfr. commmit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/e243093d273faac58375aa142a328e610f733c42">e243093d</a>).</p>
+<p><strong>Nota:</strong> un <span class="code">RegularItem</span> denominato “Sulfuras, Hand of Ragnaros” segue le logiche di aggiornamento della qualità tipiche di un prodotto convenzionale; per ottenerne uno con le peculiarità richieste dalle specifiche è necessario istanziare un oggetto di tipo <span class="code">Sulfuras</span>.</p>
+<h3>Passo 4 - “Aged Brie”</h3>
+<p>L'obiettivo ora è soddisfare i test case rimanenti. Comincio da quelli di “Aged Brie”:</p>
+<pre class="code">
+class AgedBrie : public RegularItem
+{
+public:
+    AgedBrie(int sellIn, int quality)
+        : RegularItem("Aged Brie", sellIn, quality)
+    {}
+    void update() override
+    {
+        quality += (sellIn &gt; 0) ? 1 : 2;
+        quality = std::min(std::max(quality, 0), 50);
+        sellIn -= 1;
+    }
+};
+</pre>
+<p class="illustration">La definizione dell'oggetto <span class="code">AgedBrie</span>.</p>
+<p>Esistono a questo punto tre implementazioni diverse del metodo <span class="code">RegularItem::update</span>, attendo tuttavia di completare la copertura dei test prima di decidere se procedere al refactoring (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/362922dfba5525a4f7cc399b5b17b9544de7b63a">362922df</a>).</p>
+<h3>Passo 5 - “Backstage Pass”</h3>
+<p>Restano da sistemare gli ultimi test case, quelli relativi al prodotto “Backstage Pass”:</p>
+<pre class="code">
+class BackstagePass : public RegularItem
+{
+public:
+    BackstagePass(int sellIn, int quality)
+        : RegularItem("Backstage passes to a TAFKAL80ETC concert", sellIn, quality)
+    {}
+    void update() override
+    {
+        if (sellIn &gt; 10)
+            quality += 1;
+        else if (sellIn &gt; 5)
+            quality += 2;
+        else if (sellIn &gt; 0)
+            quality += 3;
+        else
+            quality = 0;
+        quality = std::min(std::max(quality, 0), 50);
+        sellIn -= 1;
+    }
+};
+</pre>
+<p class="illustration">La definizione dell'oggetto <span class="code">BackstagePass</span>.</p>
+<p>Viene così finalmente ristabilita la funzionalità originale del codice (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/c8502bdb812423a8bdd76208cac992b45e0a01f2">c8502bdb</a>).</p>
+<h3>Passo 6 - Rifattorizzazione di <span class="code">RegularItem::update</span></h3>
+<p>È conveniente rifattorizzare il metodo <span class="code">update</span> della gerarchia <span class="code">RegularItem</span>, posto che esiste in quattro versioni differenti?</p>
+<pre class="code">
+    // RegularItem::update
+    quality -= (sellIn &gt; 0) ? 1 : 2;
+    quality = std::min(std::max(quality, 0), 50);
+    sellIn -= 1;
+
+    // Sulfuras::update
+    // empty!
+
+    // AgedBrie::update
+    quality += (sellIn &gt; 0) ? 1 : 2;
+    quality = std::min(std::max(quality, 0), 50);
+    sellIn -= 1;
+
+    // BackstagePass::update
+    if (sellIn &gt; 10)
+        quality += 1;
+    else if (sellIn &gt; 5)
+        quality += 2;
+    else if (sellIn &gt; 0)
+        quality += 3;
+    else
+        quality = 0;
+    quality = std::min(std::max(quality, 0), 50);
+    sellIn -= 1;
+</pre>
+<p>Individuo tre fasi nell'aggiornamento delle proprietà di un prodotto:</p>
+<ul>
+<li>aggiornamento del livello di qualità;</li>
+<li>aggiustamento del livello di qualità nell'intervallo 0÷50;</li>
+<li>decremento del numero di giorni disponibili per la vendita.</li>
+</ul>
+<p>Ogni tipologia di prodotto presenta delle peculiarità:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th></th><th>RegularItem</th><th>Sulfuras</th><th>Aged Brie</th><th>Backstage Pass</th></tr>
+<tr><td class="heading">quality(t)</td><td>decresce</td><td>costante</td><td>aumenta</td><td>complicato(!)</td></tr>
+<tr><td class="heading">0&leq;quality&leq;50</td><td>sì</td><td>no</td><td>sì</td><td>sì</td></tr>
+<tr><td class="heading">sellIn</td><td>decresce</td><td>costante</td><td>descresce</td><td>descresce</td></tr>
+</table>
+<p class="illustration">Le diverse implementazioni del metodo <span class="code">RegularItem::update</span>.</p>
+<p>Ho pensato quindi di modificare l'interfaccia di <span class="code">RegularItem</span> trasformando il metodo <span class="code">update</span> in un metodo convenzionale che richiama tre metodi virtuali che costituiscono una nuova interfaccia virtuale protetta:</p>
+<pre class="code">
+class RegularItem : public Item
+{
+public:
+    RegularItem(std::string name, int sellIn, int quality)
+        : Item(name, sellIn, quality)
+    {}
+    void update()
+    {
+        update_quality();
+        clamp_quality();
+        update_sellIn();
+    }
+protected:
+    virtual void update_quality()
+    {
+        quality -= (sellIn &gt; 0) ? 1 : 2;
+    }
+    virtual void clamp_quality()
+    {
+        quality = std::min(std::max(quality, 0), 50);
+    }
+    virtual void update_sellIn()
+    {
+        sellIn -= 1;
+    }
+};
+</pre>
+<p class="illustration">La nuova implementazione di <span class="code">RegularItem</span>.</p>
+<p>La nuova versione del codice soddisfa ancora tutti i requisiti richiesti (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/668b40db3610a21a4281d72ec591b3faf88b17bc">668b40db</a>); ma è davvero migliore rispetto alla precedente? A livello di complessità ciclomatica non c'è nessun miglioramento, il livello rimane a 13:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Step</th><th>GildedRose</th><th>Item</th><th>RegularItem</th><th>Sulfuras</th><th>AgedBrie</th><th>BackstagePass</th><th>Sum</th></tr>
+<tr><td>1</td><td>23</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>23</td></tr>
+<tr><td>5</td><td>2</td><td>1</td><td>2</td><td>1</td><td>2</td><td>5</td><td>13</td></tr>
+<tr><td>6</td><td>2</td><td>1</td><td>2</td><td>1</td><td>2</td><td>5</td><td>13</td></tr>
+</table>
+<p class="illustration">Complessità ciclomatica globale delle soluzioni proposte, determinata con <a href="https://www.campwoodsw.com/sourcemonitor.html">SourceMonitor</a>.</p>
+<img src="img/gilded-rose/complexity.png">
+<p class="illustration">Complessità globale delle soluzioni proposte.</p>
+<p>A livello di righe di codice (LOC) si passa dalle 93 della versione originale del codice alle 101 della prima soluzione, alle 114 della seconda. Della prima soluzione non mi piace la presenza in più punti della riga:</p>
+<pre class="code">
+quality = std::min(std::max(quality, 0), 50);
+</pre>
+<p>Della seconda invece non mi convince il frazionamento del metodo <span class="code">RegularItem::update</span>. Probabilmente esiste un'alternativa migliore.</p>
+<h3>Passo 7 - Rifattorizzazione dei test case</h3>
+<p>Mi rendo conto che i test case istanziano inutilmente un oggetto di tipo <span class="code">GildedRose</span> per verificare la politica di aggiornamento dei diversi prodotti. Ho perciò riscritto i test case eliminando l'istanziazione superflua ed aggiunto uno che verifica il corretto funzionamento del metodo <span class="code">GildedRose::updateQuality (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/530ee6f1e16bc5b2d0bcd5957ba1f385e411e0d0">530ee6f1</a>):</span></p>
+<pre class="code">
+TEST_CASE("At the end of each day SellIn and Quality decrease for every item")
+{
+    RegularItem item{"A Generic Item", 2, 5};
+
+    REQUIRE(item.sellIn == 2);
+    REQUIRE(item.quality == 5);
+
+    item.update();
+    REQUIRE(item.sellIn == 1);
+    REQUIRE(item.quality == 4);
+
+    item.update();
+    REQUIRE(item.sellIn == 0);
+    REQUIRE(item.quality == 3);
+}
+</pre>
+<p class="illustration">Esempio di test case che non fa uso dell'oggetto <span class="code">GiledRose</span>.</p>
+<pre class="code">
+TEST_CASE("All items are updated at once")
+{
+    std::vector&lt;ItemPtr&gt; items {
+        make_item("A generic Item", 5, 3),
+        make_aged_brie(2, 6),
+        make_sulfuras(5),
+        make_backstage_pass(0, 9)
+    };
+    GildedRose{items}.updateQuality();
+
+    REQUIRE(items[0]-&gt;sellIn == 4);
+    REQUIRE(items[0]-&gt;quality == 2);
+    REQUIRE(items[1]-&gt;sellIn == 1);
+    REQUIRE(items[1]-&gt;quality == 7);
+    REQUIRE(items[2]-&gt;sellIn == 5);
+    REQUIRE(items[2]-&gt;quality == 80);
+    REQUIRE(items[3]-&gt;sellIn == -1);
+    REQUIRE(items[3]-&gt;quality == 0);
+}
+</pre>
+<p class="illustration">Il nuovo test case dedicato specificatamente all'oggetto <span class="code">GiledRose</span>.</p>
+<h3>Passo 8 - “Conjured Items”</h3>
+<p>Manca oramai solo il supporto per i prodotti “Conjured”; come anticipato è sufficiente aggiungere la definizione del nuovo tipo di prodotto e il test case relativo:</p>
+<pre class="code">
+class ConjuredItem : public RegularItem
+{
+public:
+    ConjuredItem(std::string name, int sellIn, int quality)
+        : RegularItem(name, sellIn, quality)
+    {}
+    void update_quality() override
+    {
+        quality -= (sellIn &gt; 0) ? 2 : 4;
+    }
+};
+</pre>
+<p class="illustration">Il nuovo tipo di prodotto “Conjured”.</p>
+<pre class="code">
+TEST_CASE("'Conjured' items degrade in Quality twice as fast as normal items")
+{
+    ConjuredItem item{"A Conjured Item", 2, 9};
+
+    REQUIRE(item.sellIn == 2);
+    REQUIRE(item.quality == 9);
+
+    item.update();
+    REQUIRE(item.sellIn == 1);
+    REQUIRE(item.quality == 7);
+
+    item.update();
+    REQUIRE(item.sellIn == 0);
+    REQUIRE(item.quality == 5);
+
+    item.update();
+    REQUIRE(item.sellIn == -1);
+    REQUIRE(item.quality == 1);
+
+    item.update();
+    REQUIRE(item.sellIn == -2);
+    REQUIRE(item.quality == 0);
+}
+</pre>
+<p class="illustration">Il test case per i prodotti “Conjured”.</p>
+<p>A questo punto il kata si può considerare completato (cfr. commit <a href="https://github.com/gzuliani/gilded-rose-cpp/tree/67a4d62d185e30e5c5622c7797c08d7506f5d225">67a4d62d</a>).</p>
+<h2>Conclusioni</h2>
+<p>Col senno di poi:</p>
+<ul>
+<li><em>sarebbe stato interessante dedicare più tempo alla ricerca di una trasformazione incrementale del codice invece di puntare subito al <strong>big rewrite</strong>;</em></li>
+<li><em>nella stessa ottica avrei forse potuto introdurre più tardi la soluzione a oggetti puntando prima allo &ldquo;spolpamento&rdquo; del metodo <span class="code">GildedRose::updateQuality</span> &mdash; in ottica didattica sarebbe di certo più apprezzabile, cfr. video di Sandi Metz;</em></li>
+<li><em>Kevlin Henney esprime più di qualche dubbio nei riguardi della soluzione a oggetti, cosa che non mi è del tutto chiara: lui propone di definire una mappa nome-prodotto/metodo-di-aggiornamento, che mi pare meno resiliente rispetto al polimorfismo quando si tratta di aggiungere un nuovo tipo di prodotto &mdash; nel primo caso va aggiornata la mappa, nel secondo caso definita una nuova classe.</em></li>
+</ul>
+<p class="modification-notice">Pagina modificata il 13/07/2022</p>
+</body>
+</html>
