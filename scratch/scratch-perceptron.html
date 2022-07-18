@@ -19,8 +19,8 @@
 <p class="formula">input = x<sub>1</sub>·w<sub>1</sub> + x<sub>2</sub>·w<sub>2</sub></p>
 <p>Se il segnale in ingresso supera la soglia <span class="variable">θ</span> (theta) il neurone si attiva portando l'uscita a 1; se invece gli stimoli ricevuti non sono tali da eccitarlo il neurone risponde con uno 0:</p>
 <table class="formula" cellpadding="0" cellspacing="0">
-<tr><td rowspan="2"><p >output =</p></td><td>1 se input &gt; θ</td></tr>   
-<tr><td>0 se input &le; θ</td></tr>   
+<tr><td rowspan="2"><p >output =</p></td><td>1 se input &gt; θ</td></tr>
+<tr><td>0 se input &le; θ</td></tr>
 </table>
 <img src="img/scratch-perceptron/screenshot.png" width="600">
 <p class="illustration">Il percettrone completo.</p>
@@ -238,7 +238,7 @@
 <p>Il percettrone è in grado di discriminare gli stimoli che riceve se questi sono linearmente separabili. Per semplicità sono stati presentati due esempi bi-dimensionali, ma la stessa considerazione vale anche nel caso generale in cui il percettrone è dotato di più di due ingressi.</p>
 <p>La rapidità con cui il percettrone determina il criterio discriminante, il cosiddetto &ldquo;taglio&rdquo;, dipende dal numero e dalla tipologia di esempi usati nell'addestramento e dal valore assegnato al tasso di apprendimento η. Non esistono indicazioni di validità generale, le scelte ottimali sono spesso dettate dall'esperienza.</p>
 <p>Un possibile problema che è stato del tutto trascurato riguarda la stabilità numerica dell'algoritmo di apprendimento, ovvero l'assicurarsi che i pesi e la soglia non assumano valori estremamente piccoli o estremamante grandi.</p>
-<p>Le classificazioni che il percettrone non è stato in grado di individuare, lo <strong>xor</strong> e la distinzione versicolor/virginica, viene correttamente trattato da una struttura di neuroni stratificati nota come <a href="https://it.wikipedia.org/wiki/Percettrone_multistrato">percettore multi-strato</a>. La presenza di più neuroni permette di tracciare dei tagli curvilinei, ma richiede la definizione di algoritmi di apprendimento più complicati.</p>
+<p>Le classificazioni che il percettrone non è stato in grado di individuare, lo <strong>xor</strong> e la distinzione versicolor/virginica, viene correttamente trattato da una struttura di neuroni stratificati nota come <a href="https://it.wikipedia.org/wiki/Percettrone_multistrato">percettrone multi-strato</a>. La presenza di più neuroni permette di tracciare dei tagli curvilinei, ma richiede la definizione di algoritmi di apprendimento più complicati.</p>
 <p>Il percettrone multi-strato infine è solo una delle possibili forme di rete neurale artificiale, negli anni ne sono state definite di svariate:</p>
 <a href="img/scratch-perceptron/deep_learning_timeline.png"><img src="img/scratch-perceptron/deep_learning_timeline.png" width="800"></a>
 <p class="illustration">Click sull'immagine per ingrandirla.</p>
