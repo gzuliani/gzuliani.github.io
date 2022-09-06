@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Huawei SUN2000 su EmonCMS</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#huawei_sun2000">risorse</a> | huawei sun2000 su emoncms</p>
+<h1>Huawei SUN2000 su EmonCMS</h1>
+<h2>Introduzione</h2>
+<p>Sono stato coinvolto in un progetto che mira a far confluire in un'istanza EmonCMS che monitora un vecchio impianto fotovoltaico i dati provenienti da un nuovo sistema di pannelli Huawei basato su un inverter SUN2000 al quale è connessa una Smart Dongle modello SDongleA-05. Entrambi i dispositivi supportano il protocollo <a href="https://www.modbus.org/">Modbus</a>, l'inverter nelle forme Modbus/TCP via Wifi e su linea RS-485, la dongle come Modbus/TCP via Wifi e connessione Ehternet (LAN).</p>
+<p>EmonCMS dispone di un componente dedicato alla raccolta di dati da sensori di terze parti denominato <a href="https://guide.openenergymonitor.org/integrations/emonhub-interfacers/">EmonHub</a>. Tra i protocolli disponibili figura anche Modbus. Non essendo riuscito a configurare con successo il servizio e spinto dalla curiosità di capire come funziona questo protocollo ho deciso di sviluppare un servizio dedicato in Python (cfr. repository GitHub <a href="https://github.com/gzuliani/solarmon">solarmon</a>) con la prospettiva di inviare i dati a EmonCMS attraverso l'<a href="https://emoncms.org/site/api">API</a> che tale piattaforma espone.</p>
+<p>Durante lo sviluppo sono emerse diverse criticità, che raccolgo qui a futura memoria.</p>
+<h2>Punti di attenzione</h2>
+<ul>
+<li>non sono riuscito a trovare l'archivio ufficiale della documentazione tecnica Huawei, ammesso che questo esista; alcuni riferimenti parziali sono riportati nei forum ufficiali; tra i più interessanti, che per comodità di consultazione ho salvato in locale, le specifiche del protocollo Modbus dell'<a href="https://github.com/gzuliani/solarmon/blob/main/docs/specs/huawei/Solar%20Inverter%20Modbus%20Interface%20Definitions.pdf">inverter</a> e della <a href="https://github.com/gzuliani/solarmon/blob/main/docs/specs/huawei/SDongleA%20V100R001C00%20MODBUS%20Interface%20Definitions.pdf">dongle</a> (<strong>attenzione: queste ultime si riferiscono al modello SDongleA-03!</strong>);</li>
+<li>inverter e dongle espongono due reti Wifi distinte: sulla rete dell'inverter è presente solo un dispositivo, l'inverter stesso, che risponde sulla porta 6607 e vi si presenta con identificativo 0; sulla rete della dongle sono presenti due dispositivi, la dongle stessa con identificativo 1 e l'inverter con identificativo 100; entrambi rispondono sulla porta predefinita del protocollo Modbus/TCP (502);</li>
+<li>i dati di potenza dell'inverter ottenuti attraverso la dongle risultano diversi da quelli ricavati direttamente dall'inverter; l'effetto è analogo a quello di un filtro passa basso: applicando ai dati dell'inverter una media mobile su una finestra di 5 minuti si ottengono risultati molto vicini a quelli pervenuti attraverso la dongle;</li>
+<li>il sistema Huawei è corredato di due misuratori di potenza — uno sulla linea AC dell'inverter del vecchio impianto e uno all'ingresso dalla rete esterna — ed una batteria che, stando allo schema elettrico, risultano connessi al bus RS-485; non sono tuttavia riuscito a stabilire una connessione con nessuno di questi dispositivi su nessuna delle due reti Wifi disponibili; entrambi i contatori poi mostrano sui relativi display l'identificativo 11, in aperto contrasto con il funzionamento del Modbus che richiede che gli identificativi dei dispositivi siano univoci;</li>
+<li>la rete dell'inverter è notevolmente più veloce rispetto a quella della dongle, come riscontrato da più utenti (cfr. ad esempio l'articolo <a href="https://forum.huawei.com/enterprise/en/is-it-possible-to-make-usb-dongle-tcp-modbus-as-fast-reliable-as-rs-485/thread/822261-100027">Is it possible to make USB Dongle TCP Modbus as fast reliable as RS-485?</a> nei forum ufficiali); le verifiche effettuate sul sul campo confermano in pieno l'osservazione, i tempi medi di lettura (sequenziale) di 11 parametri risultano infatti essere:
+<ul>
+<li>via dongle: 10.7s ± 2.0s</li>
+<li>via inverter: 3.2s ± 0.7s</li>
+</ul>
+</li>
+<li>in entrambi i casi è molto più efficiente leggere un insieme di registri contigui in blocco piuttosto che uno ad uno; la tabella seguente raccoglie i tempi di lettura di un gruppo di 8 registri:
+<table cellpadding="0" cellspacing="0">
+<tr><th></th><th>sequenziale</th><th>in blocco</th></tr>
+<tr><td>dongle</td><td>5.51s</td><td>0.36s</td></tr>
+<tr><td>inverter</td><td>0.64s</td><td>0.07s</td></tr>
+</table>
+</li>
+<li>il campionamento effettuato attraverso la dongle risulta essere piuttosto soggetto a errori, in particolare se l'interrogazione avviene allo scadere del minuto, quando cioé il numero di secondi dell'ora di sistema passa da 59 a 00:
+<table cellpadding="0" cellspacing="0">
+<tr><th>acquisizione</th><th>campioni</th><th>errori dongle</th><th>errori inverter</th></tr>
+<tr><td>allo scadere del minuto</td><td>1226</td><td>186 (15.17%)</td><td>224 (18.27%)</td></tr>
+<tr><td>ogni 30s</td><td>2284</td><td>21 (0.92%)</td><td>32 (1.40%)</td></tr>
+<tr><td>ogni 67s</td><td>967</td><td>6 (0.62%)</td><td>16 (1.65%)</td></tr>
+<tr><td>ogni 15s</td><td>4852</td><td>56 (1.15%)</td><td>87 (1.79%)</td></tr>
+</table>
+L'interrogazione diretta dell'inverter è praticamente immune da errori.
+</li>
+<li>stando a quanto riportato nei forum ufficiali la connessione diretta al server verrà presto chiusa, anche se non è chiaro quando:
+<blockquote>
+The SUN2000L1 supports data read and write only when the FusionSolar app is directly connected to the inverter at the local end. Modbus TCP connections to devices except FusionSolar will not be supported in the future.
+<br>
+Also, if a customer needs to use a third-party device, use Modbus TCP to connect to the device. Currently, only Dongle supports this function and must comply with the Modbus TCP protocol provided by Dongle.</blockquote>
+Fonte: <a href="https://forum.huawei.com/enterprise/en/forum.php?mod=redirect&goto=findpost&ptid=789585&pid=4632813">MODBUS TCP Guide</a> Huawei.
+</li>
+</ul>
+<h2>Altre osservazioni</h2>
+<ul>
+<li>il parametro "Active power" dell'inverter rappresenta il flusso di potenza che transita dal dominio DC al dominio AC e viceversa; questo indicatore non tiene dunque conto della potenza che dai pannelli passa direttamente nelle batterie;</li>
+<li>la libreria Python <a href="https://pypi.org/project/huawei-solar/">huawei-solar</a> permette l'interrogazione via Modbus/TCP di un inverter Huawei SUN2000 (non della dongle); ad oggi la versione stabile consente di effettuare solo letture di singoli registri, risultando perciò a volte inefficiente; la versione di sviluppo è in grado di leggere più registri contemporaneamente ma richiede una versione di Python 3.9 o superiore (l'immagine EmonCMS per Raspberry Pi correntemente in uso include Python in versione 3.7).</li>
+</ul>
+<p class="modification-notice">Pagina modificata il 06/09/2022</p>
+</body>
+</html>
