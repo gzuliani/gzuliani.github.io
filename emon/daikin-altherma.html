@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Daikin Altherma su EmonCMS</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/daikin-altherma.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#daikin_altherma">risorse</a> | daikin altherma su emoncms</p>
+<h1>Daikin Altherma su EmonCMS</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall’uso di questi contenuti.</p>
+<h2>Introduzione</h2>
+<p>Il sistema di monitoraggio dell'impianto fotovoltaico basato su EmonCMS di cui ho già scritto <a href="huawei_sun2000.html">qui</a> fa uso di una pompa di calore Daikin Altherma 3 H HT. Poiché in rete esistono diversi progetti in grado di recuperarne i parametri di funzionamento – alcuni anche di modificarli –, sarebbe interessante integrare anche questa fonte di dati nel sistema attuale (cfr. repository GitHub <a href="https://github.com/gzuliani/solarmon">solarmon</a>).</p>
+<h2>Riferimenti</h2>
+<p>Il lavoro è iniziato con l'analisi di alcune implementazioni esistenti:</p>
+<ul>
+<li><a href="https://github.com/zanac/pyHPSU">pyHPSU</a>, versione originale (Zanac)</li>
+<li><a href="https://github.com/Spanni26/pyHPSU">pyHPSU</a>, fork del precedente (Spanni26)</li>
+<li><a href="https://github.com/raomin/ESPAltherma">ESPAltherma (Raomin)</a></li>
+<li><a href="https://github.com/Arnold-n/P1P2Serial">P1P2Serial</a> (Arnold-n)</li>
+<li><a href="https://github.com/budulinek/Daikin-P1P2---UDP-Gateway">Daikin-P1P2---UDP-Gateway</a> (Budulinek)</li>
+</ul>
+<p>I primi due progetti sfruttano il CAN bus utilizzato dalle unità interne della pompa di calore per comunicare tra loro. Il protocollo impiegato è proprietario e le specifiche non sono di dominio pubblico; in rete non si trova nulla di ufficiale a riguardo. Zanac è stato il principale attore coinvolto nella decodifica del protocollo (lui stesso ha raccolto il testimone di un utente Daikin tedesco). Il suo repository risulta però inattivo da qualche anno; anche quello di Spanni26 è fermo da un paio d'anni, ma risulta comunque più aggiornato. Entrambi supportano la connessione al CAN bus che la pompa di calore rende accessibile al connettore J13 della scheda principale secondo due modalità: Ethernet/CAN con la scheda PiCAN2 o USB/OBD attraverso un adattatore basato sull'integrato ELM327.</p>
+<p>Il terzo progetto sfrutta una connessione seriale interna. Il protocollo utilizzato su questo canale, anch'esso proprietario e decodificato dallo sviluppatore stesso, sembra essere in uso esclusivamente sulle pompe di calore modello Altherma. Secondo il giudizio di Spanni26 questa implementazione, essendo basata su una linea seriale a 9600 Baud, risulta meno efficiente del bus CAN che invece lavora a 20Kbps.</p>
+<p>Gli ultimi due progetti sfruttano un terzo canale di comunicazione, denominato P1/P2. Si tratta di una linea seriale non standard che fa uso di un protocollo che varia da modello a modello di pompa. L'interfacciamento con la scheda Raspberry Pi richiede lo sviluppo di un adattatore hardware piuttosto complicato.</p>
+<p>La scelta per la prima prova di fattibilità cade sul CAN bus, considerando che è già a disposizione un adattatore USB/OBD “Ford modified ELM327”:</p>
+<img src="img/daikin-altherma/ford-modified-elm327.jpg">
+<p class="illustration">L'adattatore UDB/OBD che sarà oggetto dei primi esperimenti.</p>
+<h2>CAN bus</h2>
+<p>L'utente EmilianoM del forum <a href="https://cercaenergia.forumcommunity.net/">cercaenergia</a>, un collaboratore di Zanac, spiega nel dettaglio come hanno proceduto al reverse-engineering del protocollo nei tre articoli:</p>
+<ul>
+<li><a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-prima-parte/">Hack Daikin Altherma 3 ECH2O e HPSU Compact: CAN-Bus, Raspberry Pi e Python</a></li>
+<li><a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-seconda-parte/">Hack Daikin HPSU Compact con Raspberry Pi, Python e PiCAN2 – II</a></li>
+<li><a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-terza-parte/">Daikin HPSU Compact hack con Raspberry Pi e PiCAN2: terza parte</a></li>
+</ul>
+<p>I tre articoli rappresentano un estratto del lungo thread dal titolo “<a href="https://cercaenergia.forumcommunity.net/?t=58409485">Interfacciamento HPSU compact via can-bus</a>” pubblicato sul forum cercaenergia che traccia i progressi di Zanac nel tempo, passo dopo passo, vicoli ciechi inclusi.</p>
+<p>Queste fonti forniscono i parametri di funzionamento del CAN bus Daikin:</p>
+<ul>
+<li>velocità: <strong>20Kbps</strong>;</li>
+<li>dimensione degli identificativi: <strong>11 bit</strong>;</li>
+<li>lunghezza del pacchetto: <strong>7 byte</strong>.</li>
+</ul>
+<h2>Collegamento alla Raspberry Pi</h2>
+<p>Quando l'adattatore USB/OBD viene collegato alla scheda Raspberry Pi, il sistema operativo crea un nuovo dispositivo USB nella gerarchia /dev, tipicamente <strong>/dev/ttyUSB0</strong> se non ci sono altre apparecchiature connesse. I comandi <span class="code">lsusb</span>, <span class="code">dmesg</span> <span class="code">udevadm</span> possono essere d'aiuto nell'identificare l'esatto dispositivo associato all'adattatore in caso di dubbi. L'<a href="#appendix-a">appendice A</a> descrive un metodo per assegnare un nome predefinito a scelta al dispositivo per facilitarne l'utilizzo.</p>
+<p>Una volta connesso, è possibile interrogare l'adattatore attraverso i tanti comandi <span class="code">AT</span> supportati dall'integrato ELM327 contenuto al suo interno (<a href="https://github.com/gzuliani/solarmon/blob/main/docs/specs/elm327/ELM327DSL.pdf">qui</a> una copia locale delle specifiche del chip). La comunicazione può avvenire attraverso un qualunque terminale, una volta nota la velocità della seriale. L'ELM327 implementa una normale seriale <strong>8N1</strong> a velocità variabile; quelle supportate sono:</p>
+<ul>
+<li>19200</li>
+<li>38400 (default)</li>
+<li>57600</li>
+<li>115200</li>
+<li>230400</li>
+<li>500000</li>
+</ul>
+<p>L'adattatore a disposizione era configurato sulla velocità massima:</p>
+<pre class="code">
+pi@emonpi:/ $ screen /dev/ttyUSB0 500000
+</pre>
+<p>L'invio del comando di azzeramento <span class="code">ATZ</span> ha avuto il seguente effetto:</p>
+<pre class="code">
+>LM327 1.4
+</pre>
+<p>La versione non è quella ottimale, stando a quanto riportato nel forum:</p>
+<blockquote>Se la scatola che contiene l'elm327 ha la scritta “v1.5a” evitatela... cercate di comprare una con “v 2.1”. I cloni con versione 2.1 a quanto sembra implementano tutte le specifiche elm327!</blockquote>
+<p class="illustration">Fonte: <a href="Fonte: https://cercaenergia.forumcommunity.net/?t=58409485&st=75#entry421644594">Zanac</a>.</p>
+<p>In realtà si dimostrerà sufficientemente avanzata per questa applicazione.</p>
+<p>Se la velocità della porta seriale dell'adattatore non è nota a priori occorre procedere per tentativi fino ad ottenere una risposta sensata al comando <span class="code">ATZ</span>.</p>
+<h2>Cablaggio verso la pompa di calore</h2>
+<p>Il collegamento elettrico tra l'adattatore USB/OBD e il connettore J13 della scheda madre della pompa di calore si realizza con tre conduttori:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Pin J13</th><th>Pin OBD</th></tr>
+<tr><td>CAN-H</td><td>6</td></tr>
+<tr><td>CAN-L</td><td>14</td></tr>
+<tr><td>CAN-GND</td><td>5</td></tr>
+<tr><td>CAN-VCC</td><td>N.C.</td></tr>
+</table>
+<p class="note"><strong>Nota</strong>: l'adattatore non necessita della tensione della batteria veicolo per funzionare. Inoltre, secondo quanto riportato nel forum cercaenergia, la tensione sul pin CAN VCC del connettore J13 risulta essere, a vuoto, di circa 23V quindi potenzialmente dannosa per i circuiti dell'adattatore che sono verosimilmente tarati per un voltaggio di 12V essendo pensato per un uso prettamente automobilistico.</p>
+<p>Verificare che l'interruttore <strong>HS-CAN/MS-CAN</strong> dell'adattatore sia in posizione <strong>HS-CAN</strong>.</p>
+<p class="note"><strong>Nota</strong>: HS-CAN è la linea CAN ad alta velocità (detta anche “high-speed CAN” o “CAN C”) che insiste sui pin 6/14 della presa OBD; la linea MS-CAN (“mid-speed CAN” o “CAN B”) è invece presente sui pin 3/11. Non è chiaro se collegare i cavi provenienti dalla pompa di calore ai pin 3/11 del connettore OBD spostando l'interruttore in posizione <strong>MS-CAN</strong> sia altrettanto efficace quanto la configurazione qui proposta.</p>
+<h2>Monitoraggio del traffico CAN</h2>
+<p>Per poter monitorare con successo il traffico è necessario configurare opportunamente l'integrato ELM327. Conviene innanzitutto attivare l'echo locale e l'emissione di un carattere <span class="code">LF</span> dopo ogni <span class="code">CR</span> per rendere le risposte più leggibili sul terminale. La sequenza di comandi da inviare è:</p>
+<ul>
+<li><span class="code">AT Z</span> (reset all)</li>
+<li><span class="code">AT E1</span> (echo on)</li>
+<li><span class="code">AT L1</span> (linefeeds on)</li>
+</ul>
+<pre class="code">
+AT Z
+OKL17 v1.4
+
+>
+</pre>
+<p class="illustration">Stato del terminale dopo l'invio dei comandi <span class="code">AT Z</span>, <span class="code">AT E1</span> e <span class="code">AT L1</span>.</p>
+<p>A questo punto è necessario impostare l'ELM327 per l'interfacciamento a un CAN bus a 20Kbps con identificativi a 11 bit e pacchetti da 7 bit. Per farlo si può sfruttare uno dei due protocolli definiti dall'utente supportati dall'integrato:</p>
+<ul>
+<li>protocollo <span class="code">B</span> – “USER1 CAN” (default 11 bit ID, 125Kbaud)</li>
+<li>protocollo <span class="code">C</span> – “USER2 CAN” (default 11 bit ID, 50Kbaud)</li>
+</ul>
+<p>Entrambi i protocolli necessitano dell'impostazione della corretta velocità. Mentre per il protocollo <span class="code">C</span> il cambio di velocità necessita di una modifica del <em>Programmable Parameter</em> (nel seguito: registro) <span class="code">2F</span>, le proprietà del protocollo <span class="code">B</span> possono anche essere cambiate al volo con un opportuno comando.</p>
+<p>La velocità del CAN bus è determinata dal denominatore della frazione:</p>
+<p class="formula">500kbaud/DIVISOR</p>
+<p>Per ottenere una velocità di 20Kbps il divisore deve essere posto a 25 (19 in esadecimale). Questo è quindi il valore che va scritto nel registro <span class="code">2D</span> per il protocollo <span class="code">B</span>, nel registro <span class="code">2F</span> per il protocollo <span class="code">C</span>. La sequenza di comandi per rendere effettiva questa impostazione è:</p>
+<ul>
+<li><span class="code">AT PP xx SV 19</span></li>
+<li><span class="code">AT PP xx ON</span></li>
+<li><span class="code">AT Z</span></li>
+</ul>
+<p>Il primo comando aggiorna il contenuto del registro <span class="code">xx</span> sovrascrivendo il vecchio valore con il nuovo divisore (19 esadecimale, 25 decimale); il secondo attiva il registro il cui contenuto verrebbe altrimenti ignorato dal firmware dell'adattatore; il terzo rende subito effettiva la nuova impostazione che in caso contrario lo diventerebbe alla successiva riaccensione.</li>
+<p>Le altre caratteristiche del protocollo sono definite dalle maschere di bit contenute nei registri <span class="code">2C</span> per il protocollo <span class="code">B</span> e <span class="code">2E</span> per il protocollo <span class="code">2C</span>:</p>
+<blockquote>
+<p>Each bit of this byte controls an option, as follows:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><td>b7</td><td>Transmit ID Length</td><td>0: 29 bit ID, 1: 11 bit ID</td></tr>
+<tr><td>b6</td><td>Data Length</td><td>0: fixed 8 byte, 1: variable DLC</td></tr>
+<tr><td>b5</td><td>Receive ID Length</td><td>0: as set by b7, 1: both 11 and 29 bit</td></tr>
+<tr><td>b4</td><td>baud rate multiplier</td><td>0: ×1, 1: ×8/7</td></tr>
+<tr><td>b3</td><td>reserved for future</td><td>leave set at 0</td></tr>
+</table>
+<p>b2, b1, and b0 determine the data formatting options:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>b2</th><th>b1</th><th>b0</th><th>Data Format</th></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>none</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>ISO 15765-4</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>SAE J1939</td></tr>
+</table>
+</blockquote>
+<p class="illustration">Fonte: specifiche ELM327.</p>
+<p>Per selezionare gli identificativi a 11 bit e consentire la ricezione e l'invio di pacchetti da 7 byte il registro deve assumere la configurazione <span class="code">11000000</span>, ovvero <span class="code">C0</span> in esadecimale. La sequenza completa di configurazione del protocollo <span class="code">B</span> diventa quindi:</p>
+<ul>
+<li><span class="code">AT PP 2C SV C0</span></li>
+<li><span class="code">AT PP 2C ON</span></li>
+<li><span class="code">AT PP 2D SV 19</span></li>
+<li><span class="code">AT PP 2D ON</span></li>
+<li><span class="code">AT Z</span></li>
+</ul>
+<p>La stessa sequenza configura il protocollo <span class="code">C</span> dopo aver applicato le sostituzioni <span class="code">2C</span>/<span class="code">2E</span>, <span class="code">2D</span>/<span class="code">2F</span>.</p>
+<p>Come già anticipato l'ELM327 consente di configurare il solo protocollo <span class="code">B</span> in modo più immediato per mezzo del comando <span class="code">AT PB</span>. È sufficiente far seguire al comando i valori destinati ai registri <span class="code">2C</span> e <span class="code">2D</span>. Il comando ha effetto immediato per cui non è nemmeno necessario comandare un reset dopo la sua esecuzione:</p>
+<ul>
+<li><span class="code">AT PB C0 19</span></li>
+</ul>
+<p class="note"><strong>Nota</strong>: il comando <span class="code">AT V1</span> (variable data lengths on) ha lo stesso effetto del portare a 1 il bit n. 6 dei registri <span class="code">2C</span>/<span class="code">2E</span> ed anzi è prioritario rispetto allo stato di quei bit. Per compattezza qui si è preferito mostrare come agire direttamente sui registri.</p>
+<p>La configurazione completa dell'ELM327 per il monitoraggio passivo del traffico che transita sul CAN bus via terminale è quindi composta dalla sequenza:</p>
+<ul>
+<li><span class="code">AT Z</span></li>
+<li><span class="code">AT E1</span></li>
+<li><span class="code">AT L1</span></li>
+<li><span class="code">AT PB C0 19</span></li>
+<li><span class="code">AT SP B</span></li>
+</ul>
+<p>L'ultimo comando ha l'effetto di selezionare il protocollo <span class="code">B</span>.</p>
+<p>Per avere una visione d'insieme dei pacchetti che si scambiano i nodi della rete conviene attivare la visualizzazione degli identificativi (comando <span class="code">AT H1</span>) e della dimensione dell'area dati dei singoli pacchetti (<span class="code">AT D1</span>); fatto ciò si può avviare il monitoraggio passivo con il comando <span class="code">AT MA</span>, che si può interrompere inviando un carattere qualunque all'integrato:</p>
+<pre class="code">
+>AT H1
+OK
+
+>AT D1
+OK
+
+>AT MA
+10A 7 31 00 FA 06 95 00 00
+180 7 22 0A FA 06 95 00 00
+10A 7 61 00 FA 01 1A 00 00
+300 7 22 0A FA 01 1A 00 00
+10A 7 61 00 FA 13 58 00 00
+300 7 22 0A FA 13 58 00 00
+10A 7 31 00 0C 00 00 00 00
+180 7 22 0A 0C 00 60 00 00
+...
+10A 7 31 00 FA C2 FA 00 00
+180 7 22 0A FA C2 FA 0B BC
+STOPPED.
+</pre>
+<p class="illustration">Stato del terminale trascorso qualche secondo di monitoraggio.</p>
+<p>La comparsa di alcune sequenze esadecimali ben formattate conferma che l'ELM327 è stato configurato correttamente (vedere l'<a href="#appendix-b">appendice B</a> per la decodifica di questi messaggi). Resta ora da verificare che i nodi della rete CAN rispondono alle richieste inviate dal terminale.</p>
+<h2>Interrogazione dei nodi del CAN bus</h2>
+<p>Le pompe di calore Daikin presentano svariate decine di parametri operativi. Zanac ne ha decodificati all'incirca un centinaio e, per ognuno di loro, ha determinato la corretta sequenza di byte da trasmettere sul CAN bus per ottenerne il valore corrente. Questa conoscenza è codificata in un file CSV nel repository di Zanac (cfr. file <a href="https://github.com/zanac/pyHPSU/blob/master/etc/pyHPSU/commands_hpsu.csv">etc/pyHPSU/commands_hpsu.csv</a>), mentre Spanni26 ha optato per il formato JSON (cfr. file <a href="https://github.com/Spanni26/pyHPSU/blob/master/etc/pyHPSU/commands_hpsu.json">etc/pyHPSU/commands_hpsu.json</a>).</p>
+<p class="note">È bene non prendere per oro colato quanto riportato in questi cataloghi: alcuni utenti segnalano diverse imprecisioni e discrepanze che non sempre sono state recepite con tempestività, vedere ad esempio il ticket #41 del repository di Spanni26 “<a href="https://github.com/Spanni26/pyHPSU/issues/41">command list cleanup</a>”.</p>
+<p>Per richiedere il valore di un certo parametro è dapprima necessario individuarlo in uno dei due cataloghi; per esempio, per ottenere il valore corrente della pressione dell'acqua, nel JSON predisposto da Spanni26 si trova:</p>
+<pre class="code">
+    "water_pressure" : {
+        "name" : "water_pressure",
+        "command" : "31 00 1C 00 00 00 00",
+        "id" : "190",
+        "divisor" : "1000",
+        "writable" : "false",
+        "unit" : "bar",
+        "type" : "float"
+    },
+</pre>
+<p class="illustration">Estratto del file commands_hpsu.json di Spanni26.</p>
+<p>A fronte della definizione sopra riportata, i comandi da inviare sul CAN bus sono due:</p>
+<ul>
+<li><span class="code">AT SH «id»</span></li>
+<li><span class="code">«command»</span></li>
+</ul>
+<p>Nel caso del parametro <strong>water_pressure</strong>:</p>
+<pre class="code">
+>AT SH 190
+OK
+
+>31 00 1C 00 00 00 00
+32 10 1C 04 DA 00 00
+>
+</pre>
+<p>Questa è la conferma che pure le interrogazioni vengono recepite e correttamente servite.</p>
+<p class="note"><strong>Nota</strong>: può darsi che di tanto in tanto si ottenga un <span class="code">NO DATA</span> come risposta: è il segnale che il timeout di ricezione dell'ELM327 è scaduto. Il valore predefinito di questo parametro è 205ms, ma può essere modificato con il comando <span class="code">AT ST xx</span>. Occorre fare attenzione perché il comando interferisce con la gestione adattiva dei timeout dell'integrato (cfr. comandi <span class="code">AT ATx</span>), fare riferimento alla documentazione ufficiale per ulteriori dettagli.</p>
+<h2>Prove di durata</h2>
+<h3>Monitoraggio passivo del CAN bus</h3>
+<p>Ho approntato uno script Python per catturare e decodificare i messaggi che transitano sul CAN bus (cfr. file <strong>daikin_altherma_sniffer.py</strong> nel repository Solarmon). Dopo un paio d'ore di funzionamento, il risultato è stato:</p>
+<ul>
+<li>eventi registrati: 1163</li>
+<li>errori riscontrati: 210 (quasi sicuramente imputabili al codice)</li>
+<li>parametro <strong>t_ext</strong>: 717 passaggi</li>
+<li>parametro <strong>sw_vers_01</strong>: 34 passaggi</li>
+<li>parametro <strong>mode_01</strong>: 34 passaggi</li>
+<li>parametro <strong>water_pressure</strong>: 34 passaggi</li>
+<li>parametro <strong>t_hc_set</strong>: 34 passaggi</li>
+<li>parametro <strong>t_hs</strong>: 33 passaggi</li>
+<li>parametro <strong>t_dhw</strong>: 33 passaggi</li>
+</ul>
+<p>Il parametro <strong>t_ext</strong>, che misura la temperatura esterna, transita regolarmente ogni 10s; gli altri parametri si presentano con un pattern temporale tanto stabile quanto inaspettato: due passaggi a distanza di poco più di un minuto intervallati da un periodo di silenzio di circa sei minuti. Questi sono i primi rilievi registrati:</p>
+<ul>
+<li>15:12:01</li>
+<li>15:13:10</li>
+<li>15:19:02</li>
+<li>15:20:10</li>
+<li>15:26:02</li>
+<li>15:27:10</li>
+<li>15:33:01</li>
+<li>15:34:10</li>
+<li>15:40:02</li>
+<li>15:41:14</li>
+<li>…</li>
+</ul>
+<p class="note"><strong>Nota</strong>: per minimizzare il numero di caratteri trasferiti dal CAN bus alla seriale, l'ELM327 è stato configurato senza echo (<span class="code">AT E0</span>) e con l'emissione dei <span class="code">LF</span> e degli spazi inibita (comandi <span class="code">AT L0</span> e <span class="code">AT S0</span>).</p>
+<h3>Monitoraggio attivo del CAN bus</h3>
+<p>Ho successivamente rifattorizzato e irrobustito il codice dello <em>sniffer</em> al punto precedente e trasformato in un <em>monitor</em> che interroga con frequenza regolare il CAN bus su una quarantina di parametri (cfr. file <strong>daikin_altherma_monitor.py</strong> sempre nel repository Solarmon). Una sessione di acquisizione con periodo di 30 secondi, della durata di otto ore circa, ha raccolto 951 campioni, di cui 23 incompleti (2.4%). L'assenza dei valori è riconducibile a sporadici casi di risposte <span class="code">NO DATA</span>.</p>
+<p>Non si evidenzia alcun schema specifico nella distribuzione o nella forma dei campioni parziali. Per il momento il tasso di mancate letture è ritenuto accettabile.</p>
+<p>Relativamente alla frequenza di campionamento, Zanac dice:</p>
+<blockquote>[…] ho già fatto esperimenti di bombing, le richieste prioritarie non intasano il bus, e l'hpsu continuava a lavorare e mandare dati sul display! Con 37 richieste ogni 2 minuti siamo centinaia di volte sotto il bombing che ho testato.</blockquote>
+<p class="illustration">Fonte: <a href="https://cercaenergia.forumcommunity.net/?t=58409485&st=165#entry421712957">Zanac</a>.</p>
+<p>E ancora:</p>
+<blockquote>20000 baud / 108 bit per messaggio di richiesta = 185 richieste AL SECONDO... Dimezziamole per includere anche le risposte, più di 90 richieste / risposte AL SECONDO!!!!</blockquote>
+<p class="illustration">Fonte: <a href="https://cercaenergia.forumcommunity.net/?t=58409485&st=165#entry421713021">Zanac</a>.</p>
+<h2>Appendici</h2>
+<a name="appendix-a"></a>
+<h3>A – Assegnazione di un nome arbitrario a un dispositivo USB</h3>
+<p>Per assegnare un nome specifico ad un dispositivo USB è sufficiente ricavare <strong>idVendor</strong> e <strong>idProduct</strong> dell'apparecchiatura e usare queste informazioni per identificarla all'atto della connessione. I due attributi sono ricavabili attraverso il comando <span class="code">lsusb</span>, <span class="code">dmesg</span> o <span class="code">udevadm</span>, da lanciare dopo aver collegato il dispositivo:</p>
+<pre class="code">
+pi@emonpi:/ $ lsusb
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 004: ID 10c4:ea60 Cygnal Integrated Products, Inc. CP2102/CP2109 UART Bridge Controller [CP210x family]
+Bus 001 Device 003: ID 148f:7601 Ralink Technology, Corp. MT7601U Wireless Adapter
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+</pre>
+<p>Il dispositivo di interesse in questo caso è il secondo in lista:</p>
+<ul>
+<li>vendorId → 10c4</li>
+<li>productId → ea60</li>
+</ul>
+<p>Si procede quindi alla creazione del file di sistema <strong>/etc/udev/rules.d/10-usb-serial.rules</strong>:</p>
+<pre class="code">
+pi@emonpi:/ $ sudo nano /etc/udev/rules.d/10-usb-serial.rules
+</pre>
+<p>Il file contiene le regole d'associazione dispositivo/nome simbolico (una per riga):</p>
+<pre class="code">
+# USB/OBD Adapter
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="ttyUSB_CAN"
+</pre>
+<p>Per rendere immediatamente effettiva la nuova configurazione dare il comando:</p>
+<pre class="code">
+pi@emonpi:/ $ sudo udevadm trigger
+</pre>
+<p>L'effetto è quello desiderato:</p>
+<pre class="code">
+pi@emonpi:/ $ ls -al /dev/ttyUSB*
+crw-rw---- 1 root dialout 188, 0 Dec 20 21:54 /dev/ttyUSB0
+lrwxrwxrwx 1 root root         7 Dec 20 21:53 /dev/ttyUSB_CAN -> ttyUSB0
+</pre><a name="appendix-b"></a>
+<h3>B – Protocollo CAN bus Daikin</h3>
+<p class="note"><strong>Nota</strong>: le informazioni riportate di seguito sono il risultato di un'integrazione di quanto trovato in rete, in particolare (ma non solo) nell'articolo già citato <a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-seconda-parte/">Hack Daikin HPSU Compact con Raspberry Pi, Python e PiCAN2 – II</a> e in <a href="https://github.com/crycode-de/ioBroker.canbus/blob/master/well-known-messages/configs/rotex-hpsu.md">Rotex HPSU configuration</a> di Crycode-de, oltre ad alcune considerazioni personali.</p>
+<p>Riprendiamo in esame alcuni dei pacchetti catturati durante il monitoraggio passivo:</p>
+<pre class="code">
+10A 7 31 00 FA 06 95 00 00
+180 7 22 0A FA 06 95 00 00
+</pre>
+<pre class="code">
+10A 7 61 00 FA 01 1A 00 00
+300 7 22 0A FA 01 1A 00 00
+</pre>
+<pre class="code">
+10A 7 31 00 0C 00 00 00 00
+180 7 22 0A 0C 00 60 00 00
+</pre>
+<p>Le prime tre cifre esadecimali rappresentano l'identificativo del messaggio CAN; in questo caso corrispondono all'indirizzo del nodo della rete che ha originato il messaggio secondo la tabella:</p>
+<table cellpadding="0", cellspacing="0">
+<tr><th>Message</th><th>Source</th></tr>
+<tr><td>0x10A</td><td>Display</td></tr>
+<tr><td>0x180</td><td>Caldaia</td></tr>
+<tr><td>0x300</td><td>Modulo di controllo</td></tr>
+<tr><td>0x500</td><td>Modulo di riscaldamento</td></tr>
+<tr><td>0x680</td><td>Software remoto</td></tr>
+</table>
+<p class="illustration">Una possibile interpretazione degli identificativi dei messaggi.</p>
+<p>Il <span class="code">7</span> che sistematicamente segue l'identificativo del messaggio, pubblicato in virtù del comando <span class="code">AT D1</span>, rappresenta il numero di byte che costituiscono il corpo del messaggio e conferma quanto letto sui forum: su questo CAN bus transitano pacchetti da 7 byte.</p>
+<p>I due byte successivi contengono l'identificativo del nodo destinatario del messaggio ed il tipo di messaggio stesso; l'indirizzo del destinatario si ottiene con la formula:</p>
+<p class="formula">target address = (B0 & 0xF0) &lt;&lt; 3 | (B1 & 0x0F)</p>
+<p>Il tipo di messaggio è invece codificato nei 4 bit meno significativi del primo byte:</p>
+<table cellpadding="0", cellspacing="0">
+<tr><th>B0 & 0x0F</th><th>Message Type</th></tr>
+<tr><td>0x00</td><td>Set</td></tr>
+<tr><td>0x01</td><td>Request</td></tr>
+<tr><td>0x02</td><td>Response</td></tr>
+</table>
+<p>Il terzo byte contiene l'identificativo del parametro oggetto dell'interrogazione; se valorizzato a <span class="code">FA</span> allora l'identificativo è un intero a 16 bit ed è memorizzato nei due byte successivi, con il byte più significativo per primo. Segue infine il valore assunto dal parametro, che è memorizzato nel byte o nei due byte successivi a seconda che il parametro sia definito su 8 o 16 bit.</p>
+<p>Alla luce di queste osservazioni, i 6 messaggi d'esempio sono così interpretabili:</p>
+<table cellpadding="0" cellspacing="0">
+<tr><th>Message</th><th>Source</th><th>Target</th><th>Type</th><th>Parameter</th><th>Value</th></tr>
+<tr><td>10A 3100FA06950000</td><td>0x10A</td><td>0x180</td><td>Request</td><td>0x0695</td><td>N/A</td></tr>
+<tr><td>180 220AFA06950000</td><td>0x180</td><td>0x10A</td><td>Response</td><td>0x0695</td><td>0x0000</td></tr>
+<tr><td>10A 6100FA011A0000</td><td>0x10A</td><td>0x300</td><td>Request</td><td>0x011A</td><td>N/A</td></tr>
+<tr><td>300 220AFA011A0000</td><td>0x300</td><td>0x10A</td><td>Response</td><td>0x011A</td><td>0x0000</td></tr>
+<tr><td>10A 31000C00000000</td><td>0x10A</td><td>0x180</td><td>Request</td><td>0x0C</td><td>N/A</td></tr>
+<tr><td>180 220A0C00600000</td><td>0x180</td><td>0x10A</td><td>Response</td><td>0x0C</td><td>0x0060</td></tr>
+</table>
+<p>Resta la questione di determinare l'indirizzo con il quale deve presentarsi il software di monitoraggio; quasi tutte le implementazioni tendono a usare l'indirizzo del nodo destinatario aumentato di 16 (0x10 esadecimale): per interrogare il nodo <span class="code">180</span> si invia un messaggio con ID <span class="code">190</span>, per interrogare il nodo <span class="code">300</span> si invia un messaggio con ID <span class="code">310</span> e così via. Il comando per impostare l'ID del messaggio è <span class="code">AT SH xxx</span>; tale identificativo verrà adottato per tutti i messaggi che verranno inviati da qui in avanti.</p>
+<h2>Riferimenti</h2>
+<p>Il file <a href="https://github.com/gzuliani/solarmon/blob/main/docs/note-daikin.md">note-daikin.md</a> del repository Solarmon contiene la cronistoria completa del processo che ha prodotto questa analisi.</p>
+<p class="modification-notice">Pagina modificata il 06/01/2023</p>
+</body>
+</html>
