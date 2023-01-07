@@ -279,7 +279,7 @@ crw-rw---- 1 root dialout 188, 0 Dec 20 21:54 /dev/ttyUSB0
 lrwxrwxrwx 1 root root         7 Dec 20 21:53 /dev/ttyUSB_CAN -> ttyUSB0
 </pre><a name="appendix-b"></a>
 <h3>B – Protocollo CAN bus Daikin</h3>
-<p class="note"><strong>Nota</strong>: le informazioni riportate di seguito sono il risultato di un'integrazione di quanto trovato in rete, in particolare (ma non solo) nell'articolo già citato <a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-seconda-parte/">Hack Daikin HPSU Compact con Raspberry Pi, Python e PiCAN2 – II</a> e in <a href="https://github.com/crycode-de/ioBroker.canbus/blob/master/well-known-messages/configs/rotex-hpsu.md">Rotex HPSU configuration</a> di Crycode-de.</p>
+<p class="note"><strong>Nota</strong>: le informazioni riportate di seguito sono il risultato di un'integrazione di quanto trovato in rete, in particolare (ma non solo) nell'articolo già citato <a href="https://lamiacasaelettrica.com/daikin-hpsu-compact-hack-seconda-parte/">Hack Daikin HPSU Compact con Raspberry Pi, Python e PiCAN2 – II</a>, in <a href="https://github.com/crycode-de/ioBroker.canbus/blob/master/well-known-messages/configs/rotex-hpsu.md">Rotex HPSU configuration</a> di Crycode-de e nella pagina <a href="https://www.juerg5524.ch/list_data.php">https://www.juerg5524.ch</a>.</p>
 <p>Riprendiamo in esame alcuni dei pacchetti catturati durante il monitoraggio passivo:</p>
 <pre class="code">
 10A 7 31 00 FA 06 95 00 00
@@ -298,8 +298,10 @@ lrwxrwxrwx 1 root root         7 Dec 20 21:53 /dev/ttyUSB_CAN -> ttyUSB0
 <tr><th>Message</th><th>Source</th></tr>
 <tr><td>0x10A</td><td>Display</td></tr>
 <tr><td>0x180</td><td>Caldaia</td></tr>
-<tr><td>0x300</td><td>Modulo di controllo</td></tr>
+<tr><td>0x30x</td><td>Modulo di controllo</td></tr>
+<tr><td>0x400</td><td>Termostato remoto</td></tr>
 <tr><td>0x500</td><td>Modulo di riscaldamento</td></tr>
+<tr><td>0x60x</td><td>Modulo di miscelazione</td></tr>
 <tr><td>0x680</td><td>Software remoto</td></tr>
 </table>
 <p class="illustration">Una possibile interpretazione degli identificativi dei messaggi.</p>
@@ -325,7 +327,7 @@ lrwxrwxrwx 1 root root         7 Dec 20 21:53 /dev/ttyUSB_CAN -> ttyUSB0
 <tr><td>180 220A0C00600000</td><td>0x180</td><td>0x10A</td><td>Response</td><td>0x0C</td><td>0x0060</td></tr>
 </table>
 <p>Resta la questione di determinare l'indirizzo con il quale deve presentarsi il software di monitoraggio; quasi tutte le implementazioni tendono a usare l'indirizzo del nodo destinatario aumentato di 16 (0x10 esadecimale): per interrogare il nodo <span class="code">180</span> si invia un messaggio con ID <span class="code">190</span>, per interrogare il nodo <span class="code">300</span> si invia un messaggio con ID <span class="code">310</span> e così via. Il comando per impostare l'ID del messaggio è <span class="code">AT SH xxx</span>; tale identificativo verrà adottato per tutti i messaggi che verranno inviati da qui in avanti.</p>
-<p>Personalmente nutro qualche dubbio sulla necessità di allineare l'ID del messaggio all'identificativo del nodo destinatario: perché gli altri nodi non lo fanno? Il display ad esempio emette sempre messaggi con ID <span class="code">0x10A</span> sia che debba interrogare la caldaia, sia che debba interrogare il modulo di controllo. Mi riservo di studiare la cosa in breve.</p>
+<p>Sebbene inizialmente nutrissi qualche dubbio sulla necessità di allineare l'ID del messaggio all'identificativo del nodo destinatario — del resto il display emette sempre messaggi con ID <span class="code">0x10A</span> sia quando interroga la caldaia, sia quando interroga il modulo di controllo — si verifica facilmente che è proprio così.</p>
 <h2>Riferimenti</h2>
 <p>Il file <a href="https://github.com/gzuliani/solarmon/blob/main/docs/note-daikin.md">note-daikin.md</a> del repository Solarmon contiene la cronistoria completa del processo che ha prodotto questa analisi.</p>
 <p class="modification-notice">Pagina modificata il 06/01/2023</p>
