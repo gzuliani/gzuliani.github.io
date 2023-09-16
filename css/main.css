@@ -239,6 +239,13 @@ ul {
  margin-right: 1.5em;
 }
 
+audio {
+ display: block;
+ margin-left: 3em;
+ margin-top: 2em;
+ margin-bottom: 0em;
+}
+   
 video {
  border: 1px solid #073642;
  display: block;

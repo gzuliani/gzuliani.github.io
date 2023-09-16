@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Riparazione modulo tp-link AV600</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#tp-link-av600-fix">risorse</a> | riparazione tp-link AV600</p>
+<h1>Riparazione modulo tp-link AV600</h1>
+<h2>L'antefatto</h2>
+<p>Nel 2020, ai tempi del Covid e della DAD, ho acquistato un “WiFi Range Extender”, in particolare il kit TL-WPA4220 della TP-Link, per allargare il campo d'azione della rete WiFi casalinga:</p>
+<img src="img/tp-link-av600-fix/box.jpg">
+<p class="illustration">La scatola del kit TL-WPA4220.</p>
+<p>Il kit consiste di due moduli: il primo, l'adattatore Powerline, va inserito in una presa di corrente accanto al router e a questo collegato per mezzo di un cavo Ethernet; il secondo, l'extender Powerline, va innestato in una presa elettrica nella zona non coperta dal segnale del router; qui, comunicando con il primo adattatore tramite il circuito elettrico domestico, apre una nuova rete WiFi per un accesso a Internet più stabile e robusto.</p>
+<img src="img/tp-link-av600-fix/modules.jpg">
+<p class="illustration">A sinistra l'adattatore Powerline, a destra il modulo extender.</p>
+<p>Dopo un paio d'anni di buon funzionamento, qualche mese fa la connessione è diventata dapprima instabile, per diventare di fatto inutilizzabile dopo qualche settimana. Avendo iniziato ad emettere un preoccupante ronzio, ho deciso di dismettere la rete WiFi aggiuntiva.</p>
+<audio controls>
+<source src="files/tp-link-av600-fix/buzz.mp3" type="audio/mpeg">
+<strong>[Questo browser non supporta i file audio]</strong>
+</audio>
+<p class="illustration">Il ronzio emesso dal modulo ha una fondamentale a 2KHz.</p>
+<h2>Il problema</h2>
+<p>Avevo deciso di disfarmi dei due apparecchi non più in garanzia, tuttavia la curiosità mi ha spinto a verificare se altri clienti hanno sofferto dello stesso problema. Con mia sorpresa ho scoperto che si tratta di un difetto noto, tant'è che si trova citato in molteplici richieste d'aiuto nel forum di supporto di TP-Link, per esempio:</p>
+<ul>
+<li><a href="https://community.tp-link.com/us/home/forum/topic/217076">Wifi unit (AV600) started to make noise</a></li>
+<li><a href="https://community.tp-link.com/us/home/forum/topic/227032">2 AV600 Both on a boot loop</a></li>
+<li><a href="https://community.tp-link.com/en/home/forum/topic/271660">TP-Link AV600 - Wifi unit makes noise and stopped working</a></li>
+<li>…</li>
+</ul>
+<p>Il problema è riconducibile ad una partita di condensatori difettosi. Il componente in questione è l'unico condensatore elettrolitico da 470µF 16V presente nel modulo extender.</p>
+<h2>La riparazione</h2>
+<p>Ho deciso di tentare la riparazione, avendo a disposizione un condensatore 470µF 25V di recupero (grazie Ferruccio!). È leggermente più grande di quello originale, spero ci sia spazio a sufficienza all'interno del modulo per ospitarlo.</p>
+<p>Per raggiungere i circuiti interni occorre rimuovere le due viti ai lati della spina, quindi separare le due parti che costituiscono l'involucro con pazienza e un po' di decisione. Io mi sono aiutato facendo leva lungo le fessure laterali con un plettro da chitarra:</p>
+<img src="img/tp-link-av600-fix/step-01.jpg">
+<p class="illustration">Il modulo extender aperto.</p>
+<p>Il condensatore da sostituire occupa una posizione di non agevole accesso:</p>
+<img src="img/tp-link-av600-fix/step-02.jpg">
+<p class="illustration">Il condensatore da sostituire.</p>
+<p>A occhio sembra ci sia spazio verticale sufficiente per ospitare il sostituto. Individuo i terminali da dissaldare e annoto mentalmente la posizione del catodo, che sta a destra — i condensatori elettrolitici sono polarizzati e per tale motivo vanno rimpiazzati rispettandone la polarità —:</p>
+<img src="img/tp-link-av600-fix/step-03.jpg">
+<p class="illustration">La posizione occupata dal condensatore.</p>
+<p>L'estrazione del condensatore fallato riesce abbastanza agevolmente; con pazienza riesco a sistemare al meglio il sostituto che si rivela però più alto di quanto preventivato, tant'è che a malincuore lo lascio un po' di sgembo:</p>
+<img src="img/tp-link-av600-fix/step-05.jpg">
+<p class="illustration">Il condensatore di recupero si rivela più alto del previsto.</p>
+<p>La posizione non ottimale non pregiudica il funzionamento del circuito che alla prova dei fatti risulta perfettamente ripristinato: la WiFi aggiuntiva è riapparsa, con le stesse caratteristiche di efficienza e stabilità di un tempo. Il fastidioso ronzio è sparito.</p>
+<img src="img/tp-link-av600-fix/step-04.jpg">
+<p class="illustration">Il condensatore originale subito dopo la rimozione.</p>
+<p>Do' un'ultima occhiata al condensatore fallato prima di buttarlo: si nota il caratteristico rigonfiamento della testa, segno che è giunto a fine vita. Fortunatamente non ci sono tracce di sversamenti nel punto in cui era fissato.</p>
+<p class="modification-notice">Pagina modificata il 16/09/2023</p>
+</body>
+</html>
