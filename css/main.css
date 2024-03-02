@@ -99,6 +99,11 @@ img {
  margin-top: 2em;
 }
 
+img.inline {
+    display: inline;
+    margin-top: 0em;
+}
+
 ins {
  font-weight: bold;
  text-decoration: none;
