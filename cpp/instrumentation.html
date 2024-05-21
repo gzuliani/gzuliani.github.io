@@ -11,7 +11,7 @@
 <p class="page-path"><a href="../index.html#instrumentation">risorse</a> | instrumentation</p>
 <h1>instrumentation</h1>
 <h2>Introduzione</h2>
-<p><span class="library">instrumentation</span> &egrave; una libreria che realizza l'MCI. MCI sta per <em>Method Call Interception</em> ed &agrave; una tecnica che consente di intercettare le chiamate a funzione effettuate durante l'esecuzione di un programma. Le ragioni che giustificano il ricorso a tale tecnica sono riconducibili a due tipi di analisi:</p>
+<p><span class="library">instrumentation</span> &egrave; una libreria che realizza l'MCI. MCI sta per <em>Method Call Interception</em>, una tecnica che consente di intercettare le chiamate a funzione effettuate durante l'esecuzione di un programma. Le ragioni che giustificano il ricorso a tale tecnica sono riconducibili a due tipi di analisi:</p>
 <ul>
  <li><em>tracing</em>: quando l'interesse &egrave; rivolto ai percorsi di esecuzione del codice;</li>
  <li><em>profiling</em>: quando l'interesse &egrave; rivolto alla valutazione dei tempi di esecuzione del codice.</li>
@@ -20,7 +20,7 @@
 <p>Le recenti versioni del Microsoft Visual Studio offrono un'estensione proprietaria che, se attivata, inducono il compilatore ad inserire una chiamata a funzione all'inizio e al termine di ogni metodo o funzione del programma. Le due funzioni si chiamano rispettivamente <span class="function">_penter</span> e <span class="function">_pexit</span>, e sono attivate dalle opzioni di compilazione <span class="compiler-option">/Gh</span> e <span class="compiler-option">/GH</span>. Le firme delle due funzioni sono rispettivamente:</p>
 <ul>
  <li><span class="code">void __declspec(<span class="compiler-directive">naked</span>) _cdecl <span class="function">_penter</span>( void );</span></li>
- <li>void __declspec(<span class="compiler-directive">naked</span>) _cdecl <span class="function">_pexit</span>( void );</li>
+ <li><span class="code">void __declspec(<span class="compiler-directive">naked</span>) _cdecl <span class="function">_pexit</span>( void );</span></li>
 </ul>
 <p>Secondo quanto riportato dalla documentazione ufficiale, entrambe le funzioni devono salvare sullo stack i contenuti di tutti i registri in ingresso e li devono ripristinare all'uscita.</p>
 <p>La direttiva <span class="compiler-directive">naked</span> richiede al compilatore di non generare prologo/epilogo per le due funzioni.</p>
@@ -78,8 +78,8 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
 }
 </pre>
 <h2>Identificazione della funzione chiamata</h2>
-<p>Una volta definite le funzioni di controllo, nasce l'esigenza di stabilire l'identit&agrave; della funzione aggangiata (si noti infatti che le funzioni <span class="function">_penter</span> e <span class="function">_pexit</span> non ricevono alcun parametro che consenta di stabilire qual'&egrave; la funzione oggetto della chiamata). Tra le tecniche disponibili, le pi&ugrave; frequentemente adottate sono due: la prima ricorre alle informazioni di debug, mentre la seconda fa uso dell'indirizzo di ritorno disponibile nello stack. Il primo metodo (che richiede la presenza delle informazioni di debug nei file oggetto) recupera automaticamente i nomi simbolici delle funzioni (al costo di un maggiore sforzo computazionale), mentre il secondo lo fa a posteriori, purch&eacute; si disponga del file *.map generato dal linker.</p>
-<p>Nel seguito viene descritta una possibile implementazione della seconda delle due. La soluzione proposta consiste nel definire le funzioni di controllo in modo tale che richiamino due funzioni ausiliarie (dette funzioni di notifica) passando loro l'indirizzo della funzione originale.</p>
+<p>Una volta definite le funzioni di controllo, nasce l'esigenza di stabilire l'identit&agrave; della funzione agganciata, dato che le funzioni <span class="function">_penter</span> e <span class="function">_pexit</span> non ricevono alcun parametro che consenta di stabilire qual'&egrave; la funzione oggetto della chiamata. Tra le tecniche disponibili, le pi&ugrave; frequentemente adottate sono due: la prima ricorre alle informazioni di debug, mentre la seconda fa uso dell'indirizzo di ritorno disponibile nello stack. Il primo metodo, che richiede la presenza delle informazioni di debug nei file oggetto, recupera automaticamente i nomi simbolici delle funzioni (al costo di un maggiore sforzo computazionale), mentre il secondo lo fa a posteriori, purch&eacute; si disponga del file *.map generato dal linker.</p>
+<p>Nel seguito viene descritta una possibile implementazione della seconda delle due. La soluzione proposta consiste nel definire le funzioni di controllo in modo tale che richiamino due funzioni ausiliarie, dette funzioni di notifica, passando loro l'indirizzo della funzione originale.</p>
 <p>Si consideri il frammento di codice (le etichette racchiuse tra parentesi quadre rappresentano indirizzi in memoria):</p>
 <pre class="code">
 
@@ -177,11 +177,11 @@ extern &quot;C&quot; void __declspec(naked) _cdecl _pexit( void ) {
             call NotifyEnter
 
 </pre>
-<p>La funzione di notifica riceve come parametro l'indirizzo [fun-body] che pu&ograve; essere utilizzato come identificativo univoco per distinguere tutte le funzioni chiamate durante l'esecuzione del programma.</p>
+<p>La funzione di notifica riceve come parametro l'indirizzo <span class="code">[fun-body]</span> che pu&ograve; essere utilizzato come identificativo univoco per distinguere tutte le funzioni chiamate durante l'esecuzione del programma.</p>
 <p>Un ragionamento analogo si compie per la chiamata <span class="function">_pexit</span> all'uscita della funzione <span class="function">fun</span>.</p>
 <h2>La libreria <span class="library">instrumentation</span></h2>
-<p>La libreria <span class="library">instrumentation</span> costituisce un esempio d'uso della tecnica appena descritta, per scopi di profiling. Definendo delle opportune funzioni di notifica, la libreria registra, per ogni funzione, gli istanti di inizio e termine dell'esecuzione. Al termine dell'esecuzione, i risultati sono salvati su file di testo per una immediata consultazione.</p>
-<p>L'oggetto principale della libreria &egrave; <span class="object">Hook</span>, che espone due funzioni statiche che rappresentano le funzioni di notifica richiamate dalle funzioni di controllo <span class="function">_penter</span> e <span class="function">_pexit</span>. Sua responsabilit&agrave; principale &egrave; quella di inoltrare le notifiche ad un generico oggetto di tipo <span class="object">Hook::Observer</span>.</p>
+<p>La libreria <span class="library">instrumentation</span> costituisce un esempio d'uso della tecnica appena descritta, per scopi di profiling. Definendo delle opportune funzioni di notifica la libreria registra, per ogni funzione, gli istanti di inizio e termine dell'esecuzione. Al termine dell'esecuzione, i risultati sono salvati su file di testo per una immediata consultazione.</p>
+<p>L'oggetto principale della libreria &egrave; <span class="object">Hook</span>, che espone due funzioni statiche che rappresentano le funzioni di notifica richiamate dalle funzioni di controllo <span class="function">_penter</span> e <span class="function">_pexit</span>. La sua responsabilit&agrave; principale &egrave; quella di inoltrare le notifiche ad un generico oggetto di tipo <span class="object">Hook::Observer</span>.</p>
 <p>La raccolta dei dati &egrave; curata dall'oggetto <span class="object">Tracer</span>, che utilizza la struttura <span class="object">FnCall</span> per memorizzare i dati caratteristici di ogni chiamata effettuata.</p>
 <p>L'oggetto <span class="object">Logger</span> si occupa infine del salvataggio dei dati raccolti; viene chiamato in causa all'uscita del programma dall'oggetto <span class="object">Tracer</span>.</p>
 <p>La liberia consiste di due file:</p>
