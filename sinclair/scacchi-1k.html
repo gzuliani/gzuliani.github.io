@@ -263,8 +263,9 @@ Addr  Data        Label     OpCode          Comment
 4082  06 05       DRIVER    ld b,05         ; prepara l'area di input scrivendo
 4084  3E 08                 ld a,08         ; 5 caratteri grigetti a partire
 4086  21 9F 43              ld hl,439F      ; dall'indirizzo 43A0 del D_FILE
-408A  77                    ld (hl),a       ; corrisponde all'inizio della
-408B  10 FC                 djnz DRIVER1    ; 15esima riga
+4089  23          DRIVER1   inc hl          ; corrisponde all'inizio della
+408A  77                    ld (hl),a       ; 15esima riga
+408B  10 FC                 djnz DRIVER1
 
 408D  CD E4 40              call <a href="#KYBD">KYBD</a>       ; attendi le coordinate del pezzo
                                             ; nero (dell'utente) da muovere; al
