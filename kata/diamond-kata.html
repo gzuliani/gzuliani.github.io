@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>Diamond Kata</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#diamond-kata">risorse</a> | diamond kata</p>
+<h1>Diamond Kata</h1>
+<p>Il kata, opera di Seb Rose, è descritto <a href="https://claysnow.co.uk/recycling-tests-in-tdd/">qui</a>. La sua definizione è semplice:</p>
+<blockquote>
+Given a letter, print a diamond starting with ‘A’ with the supplied letter at the widest point.
+For example: print-diamond ‘C’ prints
+<pre>
+    A
+   B B
+  C   C
+   B B
+    A
+</pre>
+</blockquote>
+<p>La difficoltà nello svolgere il kata sta nell'applicazione del TDD.</p>
+<h2>Soluzione “code-first”</h2>
+<p>La definizione è talmente compatta e precisa che la tentazione di formalizzare il problema e risolverlo direttamente è fortissima. Vien anzi da chiedersi se ha senso affrontarlo con il TDD.</p>
+<p>Nell'ottica di stampare le righe in sequenza una dopo l'altra conviene sfruttare l'evidente simmetria orizzontale: la prima riga è infatti identica all'ultima, la seconda alla penultima e così via. Indicata con <span class="code">d</span> la dimensione del diamante, lo schema finale avrà dimensione (2d-1)×(2d-1). Anziché indicizzare le righe nell'intervallo [0, 2d-1) vale la pena applicare una traslazione e portarsi su [-(d-1), d); in questo modo righe uguali hanno indice di valore assoluto identico: d-1 è l'indice della prima e dell'ultima riga, d-2 quello della seconda e della penultima, … 0 quello della riga centrale.</p>
+<p>Posto quindi che il diamante viene costruito effettuando un'unica scansione sull'intervallo [-(d-1), d) e la configurazione della riga è determinata dal valore assoluto dell'indice k, una riga può assumere una delle due forme:</p>
+<ul>
+  <li><p>prima/ultima riga (k=d-1):</p>
+    <pre>spazio{d-1} `A` spazio{d-1}</pre>
+  </li>
+  <li><p>riga intermedia (0≤k&lt;d-1):</p>
+    <pre>spazio{k} K {2d-3-2k} K spazio{k}</pre>
+    <p>dove</p>
+    <pre>K = `A` + d - 1 - k</pre>
+  </li>
+</ul>
+<p>Il kata può dunque essere risolto dal seguente codice:</p>
+<pre class="code">
+def letter(k):
+    return chr(ord('A') + d - 1 - k)
+
+def row(k):
+    l = letter(k)
+    print(' ' * k, end='')
+    print(l, end='')
+    mid = 2*d - 2*k - 3
+    if mid > 0:
+        print(' ' * mid, end='')
+        print(l, end='')
+    print(' ' * k)
+
+
+d = 3
+
+for i in range(2*d - 1):
+    row(abs(i - d + 1))
+</pre>
+<p>La condizione <span class="code">if mid > 0</span> nella funzione <span class="code">row</span> discrimina il caso di stampa della prima/ultima riga rispetto ad una intermedia (k=d-1 ⇒ 2d-2k-3&lt;0).</p>
+<p>Un approccio alternativo, applicabile in un contesto in cui le stringhe non sono immutabili, consiste nel partire da una riga composta da 2d-1 spazi, quindi determinare la posizione in cui vanno inserite le lettere: ogni riga è oggetto di due sostituzioni, generalmente in due posizioni diverse (simmetriche rispetto al centro), tranne per la prima e ultima riga in cui le due sostituzioni avvengono entrambe in posizione centrale.</p>
+<p>Si ottiene così l'unificazione dei due casi: per la k-esima riga le lettere vanno inserite rispettivamente in k e 2d-2-k, con 0≤k≤d-1. In Python il codice diventa:</p>
+<pre class="code">
+def replace_char(s, pos, ch):
+    return s[:pos] + ch + s[pos+1:]
+
+def letter(k):
+    return chr(ord('A') + d - 1 - k)
+
+def row(k):
+    l = letter(k)
+    r = ' ' * (2 * d - 1)
+    print(replace_char(replace_char(r, k, l), 2 * d - 2 - k, l))
+
+
+d = 3
+
+for i in range(2 * d - 1):
+    row(abs(i - d + 1))
+</pre>
+<p>In un linguaggio C-like il frammento:</p>
+<pre class="code">
+    replace_char(replace_char(r, k, l), 2 * d - 2 - k, l)
+</pre>
+<p>assumerebbe la forma</p>
+<pre class="code">
+  r[k] = l
+  r[2 * d - 2 - k] = l
+</pre>
+<h2>Soluzione TDD</h2>
+<p>Il senso del kata non è tuttavia quello di risolvere il problema, quanto di risolverlo attraverso il TDD. Sebbene non ci abbia dedicato troppo tempo, non sono riuscito ad individuare una strategia che mi permettesse di affrontare il kata in TDD. Ho dovuto sbirciare nel post di Matteo Vaccari <a href="https://matteo.vaccari.name/posts/the-diamond-kata-revisited/">The Diamond Kata Revisited</a> e successivamente <a href="https://infinitary.org/stray_words/diamond_kata.html">Diamond Kata</a> di Géza Mihala per trovare uno spunto.</p>
+<p>L'idea è quella di costruire il diamante per passi, cominciando col costruire un lato obliquo e procedendo per riflessioni successive fino ad ottenere la figura completa.</p>
+<h3>Passo 1 - Il lato</h3>
+<p>L'obiettivo è definire la funzione <span class="code">draw_line</span> che ritorna un vettore di stringhe che rappresenta una linea diagonale in uno spazio bidimensionale che inizia in alto a destra con la lettera A e si sviluppa verso l'angolo in basso a destra con le lettere successive:</p>
+<pre>
+    draw_line(1)    draw_line(2)    draw_line(3)    draw_line(4)
+
+        A              ·A             ··A            ···A
+                       B·             ·B·            ··B·
+                                      C··            ·C··
+                                                     D···
+</pre>
+<p>Il codice di test di partenza è il seguente:</p>
+<pre class="code">
+<ins>import unittest
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+
+
+if __name__ == '__main__':
+    unittest.main()</ins>
+</pre>
+<p>Si aggiunge la definizione della funzione:</p>
+<pre class="code">
+import unittest
+
+<ins>def draw_line(length):
+    return ['A']</ins>
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<p>Si estende il test a coprire casi di linee di lunghezza superiore a 1:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['A']
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        <ins>self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])</ins>
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<p>Si adegua la definizione della funzione:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    <del>return ['A']</del>
+    <ins>return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]</ins>
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<h3>Passo 2 - Riflessione orizzontale</h3>
+<p>Ottenuto un lato del diamante, il secondo si ottiene dal primo per simmetria:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    <ins>def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])</ins>
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<p>Segue il codice che soddisfa il nuovo test:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+<ins>def mirror_horizontally(canvas):
+    return [r + r[::-1][1:] for r in canvas]</ins>
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<h3>Passo 3 - Riflessione verticale</h3>
+<p>La figura si completa con una riflessione sull'asse orizzontale:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+def mirror_horizontally(canvas):
+    return [r + r[::-1][1:] for r in canvas]
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])
+
+    <ins>def test_mirror_vertically(self):
+        self.assertEqual(mirror_vertically(['.A.']), ['.A.'])
+        self.assertEqual(mirror_vertically(
+            ['.A.', 'B.B']), ['.A.', 'B.B', '.A.'])</ins>
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<p>Il frammento di codice risolutivo è:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+def mirror_horizontally(canvas):
+    return [r + r[::-1][1:] for r in canvas]
+
+
+<ins>def mirror_vertically(canvas):
+    return canvas + canvas[::-1][1:]</ins>
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])
+
+    def test_mirror_vertically(self):
+        self.assertEqual(mirror_vertically(['.A.']), ['.A.'])
+        self.assertEqual(mirror_vertically(
+            ['.A.', 'B.B']), ['.A.', 'B.B', '.A.'])
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<h3>Passo 4 - Funzione <span class="code">draw_diamond</span></h3>
+<p>Segue il test per la funzione richiesta:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+def mirror_horizontally(canvas):
+    return [r + r[::-1][1:] for r in canvas]
+
+
+def mirror_vertically(canvas):
+    return canvas + canvas[::-1][1:]
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])
+
+    def test_mirror_vertically(self):
+        self.assertEqual(mirror_vertically(['.A.']), ['.A.'])
+        self.assertEqual(mirror_vertically(
+            ['.A.', 'B.B']), ['.A.', 'B.B', '.A.'])
+
+    <ins>def test_draw_diamond(self):
+        self.assertEqual(draw_diamond(1), ['A'])
+        self.assertEqual(draw_diamond(2), ['.A.', 'B.B', '.A.'])
+        self.assertEqual(draw_diamond(3), [
+            '..A..', '.B.B.', 'C...C', '.B.B.', '..A..'])</ins>
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<p>Segue il codice definitivo del kata:</p>
+<pre class="code">
+import unittest
+
+def draw_line(length):
+    return ['{}{}{}'.format(
+        ' ' * (length - 1 - i),
+        chr(ord('A') + i),
+        ' ' * i) for i in range(length)]
+
+
+def mirror_horizontally(canvas):
+    return [r + r[::-1][1:] for r in canvas]
+
+
+def mirror_vertically(canvas):
+    return canvas + canvas[::-1][1:]
+
+
+<ins>def draw_diamond(size):
+    return mirror_vertically(mirror_horizontally(draw_line(size)))</ins>
+
+
+class Test(unittest.TestCase):
+    def test_draw_line(self):
+        self.assertEqual(draw_line(1), ['A'])
+        self.assertEqual(draw_line(2), [' A', 'B '])
+        self.assertEqual(draw_line(3), ['  A', ' B ', 'C  '])
+
+    def test_mirror_horizontally(self):
+        self.assertEqual(mirror_horizontally(['A']), ['A'])
+        self.assertEqual(mirror_horizontally(['..A']), ['..A..'])
+        self.assertEqual(mirror_horizontally(
+            ['..A', '.B.', 'C..']), ['..A..', '.B.B.', 'C...C'])
+
+    def test_mirror_vertically(self):
+        self.assertEqual(mirror_vertically(['.A.']), ['.A.'])
+        self.assertEqual(mirror_vertically(
+            ['.A.', 'B.B']), ['.A.', 'B.B', '.A.'])
+
+    def test_draw_diamond(self):
+        self.assertEqual(draw_diamond(1), ['A'])
+        self.assertEqual(draw_diamond(2), ['.A.', 'B.B', '.A.'])
+        self.assertEqual(draw_diamond(3), [
+            '..A..', '.B.B.', 'C...C', '.B.B.', '..A..'])
+
+
+if __name__ == '__main__':
+    unittest.main()
+</pre>
+<h2>Test recycling</h2>
+<p>Nell'articolo iniziale, e più approfonditamente in <a href="https://coding-is-like-cooking.info/2015/04/iterative-incremental-tdd-diamond-kata/">Iterative and Incremental TDD with the Diamond Kata</a> di Emily Bache, si fa cenno ad aspetto poco discusso del TDD, ovvero l'opportunità di utilizzare dei test a perdere che permettano di avvicinarsi alla soluzione finale per successive approssimazioni. Questi test non catturano quindi un requisito del problema e sono destinati alla rimozione o ad una sostanziale trasformazione. Durante un'iterazione del TDD non viene quindi modificato solo il codice di produzione, ma anche quello di test. Segue un esempio estratto dall'articolo originale:</p>
+<blockquote>
+The approach that I’ve been playing with is to start as usual, with the simplest case:
+
+<pre>
+> PrintDiamond('A')
+
+A
+</pre>
+
+For the second test, however, we start by decomposing the diamond problem into smaller constituent parts. This time I chose to write the following test:
+
+<pre>
+[Test]
+public void B_should_give_character_sequence()
+{
+    Assert.AreEqual("AB", Diamond.Create('B'));
+}
+</pre>
+
+Getting this to pass solves the problem of looping over the character sequence that makes the top half of the diamond. Once that’s at green, we can then bite off character repetition, so we rewrite the test as:
+
+<pre>
+[Test]
+public void B_should_repeat_characters()
+{
+    Assert.AreEqual("ABB", Diamond.Create('B'));
+}
+</pre>
+
+Next we go for separate lines, rewriting the test as:
+
+<pre>
+[Test]
+public void B_should_have_separate_lines()
+{
+   Assert.AreEqual("A\nBB\n", Diamond.Create('B'));
+}
+</pre>
+
+And now, in subsequent rewrites of the same test, we can address indentation, then inter-character spaces and finally the symmetry of the bottom half of the diamond. You can follow along in the Cyber-Dojo dashboard.
+</blockquote>
+<p>Seb Rose propone di chiamare questa tecnica <em>test recycling</em>, anche se nell'articolo <a href="https://claysnow.co.uk/diamond-recycling-and-painting-yourself-into-a-corner/">Diamond recycling (and painting yourself into a corner)</a> ritorna almeno in parte sui suoi passi, riconoscendo che:</p>
+<blockquote>
+The TDD cycle as popularly taught includes the instruction to “write a failing test”. The point of my article was to observe that there are two ways to do that:
+<ol>
+<li>write a new test that fails</li>
+<li>change an existing, passing test to make it fail</li>
+</ol>
+It’s this second approach that I’m calling “recycling”. Alistair Cockburn says that “it’s a mystery this should need a name” and it probably doesn’t.
+</blockquote>
+<h2>Test ritualism</h2>
+<p>Nella <a href="https://www.linkedin.com/posts/matteovaccari_the-diamond-kata-revisited-activity-7211360181404725250-7Bz_/">sezione riservata ai commenti</a> all'articolo di Matteo Vaccari su LinkedIn citato in precedenza c'è un interessante scambio di opinioni tra lo stesso Matteo Vaccari e Carlo Pescio riguardo all'effettiva necessità di ricorrere al TDD quando la soluzione al problema è già stata individuata:</p>
+<blockquote>
+<p>I like your solution but I must say I don't see how it "emerged" from tests. It can be tested easily in its parts, but the overall idea didn't emerge by writing simple tests and evolving an algorithm from "A" to a diamond.</p>
+<p>To be honest I can easily make a working solution emerge "naturally" from tests, but not an elegant one that exploits symmetries like yours. To come up with that kind of ideas I need to engage in a conversation with *the problem* (e.g. looking at symmetries etc.), not with *a solution* (as we do through tests). Of course I can still use tests to assist development, but not to "drive" it.</p>
+</blockquote>
+<blockquote>
+<p>Thank you Carlo! I think your observation is that I'm not really doing TDD here; do I get you right?</p>
+<p>I responded to what I think is a similar objection from Uberto (Barbini). I see what I'm doing in the article as doing TDD effectively. There is no expectation in TDD that you will not do any thinking upfront, and there is certainly an expectation that you will do some thinking when the tests you have do not help you find a solution.</p>
+<p>I see TDD as "problem solving for those of us who are not exceptionally gifted algorithmists", and when I encourage my colleagues to do TDD, what I mean is that I hope they will apply their wits to finding elegant, simple solutions by whatever means available, and spending time at the whiteboard is perfectly OK! Then when you have a new idea to try, you write the test for it first ;-)</p>
+</blockquote>
+<blockquote>
+<p>Just for the sake of conversation: people often say that TDD is a design technique. But if you do all the thinking on a whiteboard, and then keep only the ritualistic side of TDD while writing code, I really have a hard time justifying the "driven" part. I accept that I might be too strict in my interpretation of X-Driven (or X-Oriented, for that matter).</p>
+<p>I recently discovered the goose game kata that you created (it's quite nice). I can point to a few places in my code and say: this emerged because of tests (that I would strictly call "driven"). I can point to other places and say: this took that shape by refactoring, assisted by tests; that I would probably call "weakly driven" or "assisted." And I can point to many other places and say: they have that shape because I spent time thinking about the problem, and they would be exactly the same whether I wrote tests or not. As most of my code falls in the latter category, I personally would not say I got there by TDD.</p>
+<p>But that's just me, and I am not a bearer of truth :-).</p>
+</blockquote>
+<blockquote>
+<p>Hi Carlo you are certainly a bearer of insight :)</p>
+<p>Now, are we discussing if the "driven" in TDD is an appropriate word? It can be an interesting discussion, but what I'm mostly interested in is in learning, practicing and sharing better ways of working. I'm also interested in making sure that when I encourage my colleagues to use TDD in their work, my suggestion makes sense in their work.</p>
+<p>Now if my colleagues work on a programming problem, I'm very OK if they sketch a solution at the whiteboard, as long as they then implement it with TDD; you call that part "ritualistic", implying that it's less valuable, but I think that the red-green-refactor cycle *is* valuable even after you decided on a strategy at the whiteboard, or in a hammock. Code written with TDD still has much fewer bugs than otherwise, and it still must be testable, so the solution is likely to be composed of testable bits, which is better than monolithic and untestable.</p>
+</blockquote>
+<blockquote>
+<p>I don't want to drag this out too much / steal your thunder, but the "must be testable" part holds true even if you write your tests after the code and use them as a safety net during refactoring. It must still be possible to write the tests.</p>
+<p>The TDD cycle is supposed to somewhat shape the code itself / give you insights; if I know exactly what I want to do but go through the cycle anyway, then yes, I consider it ritualistic. Note: I'm not saying it's always ritualistic; I'm saying that if it doesn't shape the code or give you insights, it's ritualistic. People still find comfort in rituals, so that might be ok.</p>
+<p>There is, of course, an ongoing debate about using AI to write tests (and/or code) and how that relates to TDD. Technical issues aside, that discussion cannot be properly framed if we don't consider the different roles tests may have in different settings. If I'm writing tests to understand the best shape of a boundary, I lose all the benefits if an AI is writing the tests. If I just want a safety net for something I have already shaped in my head, I would consider that option instead (assuming the AI could do a good job).</p>
+</blockquote>
+<h2>Automa cellulare</h2>
+<p>Nel post <a href="https://www.linkedin.com/pulse/diamonds-its-life-jim-we-know-carlo-pescio-vng2f">Diamonds: It's Life Jim, but not as we know it</a> Carlo Pescio suggerisce una soluzione basata su un automa cellulare. Ho provato quindi a risolvere il kata nello stesso modo.</p>
+<p>La differenza tra la prima e la seconda generazione suggerisce la regola riproduttiva:</p>
+<pre>
+    ┌─────┬─────┬─────┬─────┬─────┐        ┌─────┬─────┬─────┬─────┬─────┐
+    │     │     │     │     │     │        │     │     │     │     │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │  A  │     │     │        │     │  B  │     │  B  │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │     │     │     │        │     │     │     │     │     │
+    └─────┴─────┴─────┴─────┴─────┘        └─────┴─────┴─────┴─────┴─────┘
+                 Gen 1                                  Gen 2
+</pre>
+<p><strong>Regola di divisione</strong>: all'atto della riproduzione una cellula produce un'esatta replica di sè nelle celle superiore e inferiore e una cellula di specie più avanzata nelle due celle laterali; al termine del processo la cellula muore.</p>
+<p>In alcuni casi si assiste all'apparizione di più cellule all'interno di una cella:</p>
+<pre>
+    ┌─────┬─────┬─────┬─────┬─────┐        ┌─────┬─────┬─────┬─────┬─────┐
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │  A  │     │     │        │     │ BB  │     │  BB │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │  B  │     │  B  │     │        │  C  │     │CAAC │     │  C  │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │  A  │     │     │        │     │ BB  │     │  BB │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    └─────┴─────┴─────┴─────┴─────┘        └─────┴─────┴─────┴─────┴─────┘
+                 Gen 2                                  Gen 3
+</pre>
+<p>L'applicazione di una seconda regola riporta la situazione nei canoni:</p>
+<p><strong>Regola di unificazione</strong>: quando più cellule condividono lo stesso spazio si fondono se uguali, muoiono se diverse.</p>
+<pre>
+    ┌─────┬─────┬─────┬─────┬─────┐        ┌─────┬─────┬─────┬─────┬─────┐
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │  A  │     │     │        │     │  B  │     │  B  │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │  B  │     │  B  │     │        │  C  │     │     │     │  C  │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │  A  │     │     │        │     │  B  │     │  B  │     │
+    ├─────┼─────┼─────┼─────┼─────┤        ├─────┼─────┼─────┼─────┼─────┤
+    │     │     │     │     │     │        │     │     │  A  │     │     │
+    └─────┴─────┴─────┴─────┴─────┘        └─────┴─────┴─────┴─────┴─────┘
+                 Gen 2                                  Gen 3
+</pre>
+<p>Una possibile implementazione dell'automa cellulare è riportata qui sotto.</p>
+<pre class="code">
+d = 3
+
+def new_grid(d):
+    n = 2 * d - 1
+    return [[set() for _ in range(n)] for _ in range(n)]
+
+
+def next_grid(g):
+    next = new_grid(d)
+    for i, r in enumerate(g):
+        for j, c in enumerate(r):
+            if len(c) == 1:
+                x = c.pop()
+                next[i-1][j].add(x)
+                next[i+1][j].add(x)
+                next[i][j-1].add(chr(ord(x)+1))
+                next[i][j+1].add(chr(ord(x)+1))
+    for r in next:
+        for c in r:
+            if len(c) > 1: c.clear()
+    return next
+
+
+def print_grid(g):
+    for r in g:
+        for c in r:
+            print(list(c)[0] if c else ' ', end='')
+        print()
+
+
+g = new_grid(d)
+g[d-1][d-1].add('A')
+
+print_grid(g)
+print()
+
+for _ in range(d-1):
+    g = next_grid(g)
+    print_grid(g)
+    print()
+</pre>
+<p class="modification-notice">Pagina modificata il 29/12/2024</p>
+</body>
+</html>
