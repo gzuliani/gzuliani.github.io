@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<title>VBR-Solar Logger</title>
+<link href="../css/main.css" rel="stylesheet" type="text/css"/>
+<link href="css/vbr-solar.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<p class="page-path"><a href="../index.html#vbr-solar-logger">risorse</a> | vbr-solar logger</p>
+<h1>VBR-Solar Logger</h1>
+<p class="disclaimer"><strong>Attenzione:</strong> ho posto la massima cura ed attenzione nel redigere questi appunti; declino tuttavia ogni responsabilità per eventuali imprecisioni, errori od omissioni, così come declino ogni responsabilità per eventuali danni a cose, proprietà o persone derivanti dall'uso di questi contenuti.</p>
+<p>Un conoscente ha acquistato il sensore Vabira VBR-Solar che misura l'irraggiamento solare allo scopo di ottimizzare il rendimento di un piccolo impianto fotovoltaico. L'app per smartphone Android distribuita a corredo non permette però di salvare i dati visualizzati in serie temporali per le analisi del caso.</p>
+<img src="img/vbr-solar/sensor.png"/>
+<p class="illustration">Il sensore VBR-Solar.</p>
+<p>La realizzazione del programma di registrazione dei dati raccolti si è rivelata più ardua del previsto ed è avvenuta per passi successivi.</p>
+<h2>Internet</h2>
+<p>La ricerca di informazioni in rete circa il protocollo di comunicazione del sensore non ha dato frutti. Sapendo che Android consente lo sniffing del traffico Bluetooth ho deciso di procedere con una cattura di basso livello della trasmissione, sperando per il meglio.</p>
+<h2>Sniffing Bluetooth</h2>
+<p>Dopo aver predisposto il sensore in una zona a luminosità controllata, sul terminale Android &— uno smartphone Redmi Note 8 — ho effettuato le seguenti operazioni:</p>
+<ul>
+<li>installato l'app ufficiale <a href="https://play.google.com/store/apps/details?id=com.lumeter_rn&hl=en-US">Vsensor</a>;</li>
+<li>abilitato le “Developer options”;</li>
+<li>attivato l'opzione “Enable Bluetooth HCI snoop log”;</li>
+<li>riavviato lo smartphone;</li>
+<li>avviato la registrazione video;</li>
+<li>avviata l'app di misura Vsensor.</li>
+</ul>
+<p>A questo punto ho fatto variare artificialmente l'intensità luminosa sul sensore in modo da provocare una minima variazione dei valori mostrati dall'app. Ho quindi:</p>
+<ul>
+<li>terminato la sessione di misura chiudendo l'app;</li>
+<li>arrestato la registrazione video;</li>
+<li>disabilitato l'opzione “Enable Bluetooth HCI snoop log”;</li>
+<li>riavviato lo smartphone.</li>
+</ul>
+<p>Il video della sessione di misura è stato utile per ricostruire la sequenza di valori visualizzati dall'app con le relative tempistiche. Per lo scaricamento della cattura del traffico Bluetooth ho proceduto così:</p>
+<ul>
+<li>
+<p>installato e avviato l'Android Debug Brigde;</p>
+<pre class="prompt">
+$ sudo apt install android-tools-adb
+$ sudo adb start-server
+</pre>
+</li>
+<li>
+<p>scaricato i log;</p>
+<pre class="prompt">
+$ adb bugreport btsniff
+</pre>
+</li>
+<li>scompattato l'archivio <strong>btsniff.zip</strong> generato dal comando precedente alla ricerca del file contenente la cattura del traffico Bluetooth, che si è rivelato essere <strong>FS/data/misc/bluetooth/logs/BT_HCI_2025_1002_201941.cfa.curf</strong>.</li>
+</ul>
+<p class="note">Molte risorse in rete indicano che sia <strong>btsnoop_hci.log</strong> il file contenente la sniffata, anche se non tutte concordano sul percorso della cartella che lo contiene. La mia esperienza è chiaramente stata diversa.</p>
+<p>Ho quindi caricato il file in <a href="https://www.wireshark.org/">WireShark</a>. Dopo aver opportunamente filtrato i pacchetti, sono risultate subito evidenti due aspetti:</p>
+<ul>
+<li>il protocollo utilizzato è BLE (Bluetooth Low Energy);</li>
+<li>inizialmente c'è un fitto scambio di pacchetti tra smartphone e sensore;</li>
+<li>il sensore invia autonomamente le letture all'app con cadenza regolare.</li>
+</ul>
+<img src="img/vbr-solar/wireshark_bootstrap.png"/>
+<p class="illustration">Parte della negoziazione iniziale tra app e sensore.</p>
+<img src="img/vbr-solar/wireshark_readings.png"/>
+<p class="illustration">L'inizio della sequenza di notifiche emesse dal sensore.</p>
+<h2>Attributi</h2>
+<p>Attraverso un semplice client Python come ad esempio <a href="https://techoverflow.net/2025/08/04/minimal-python-script-to-list-read-ble-device-characteristics-using-python-bleak/">connect_ble_device.py</a> è facile interrogare il sensore per scoprire i servizi che offre:</p>
+<pre class="output">
+BLE Device Connection and Service Explorer
+Started at: 2025-10-03 20:29:31
+
+Using MAC address: A4:C1:38:95:A0:8F
+Descriptor display enabled.
+
+
+Attempting to connect to A4:C1:38:95:A0:8F ...
+Successfully connected to A4:C1:38:95:A0:8F
+Connected at: 2025-10-03 20:29:33
+
+Found 5 service(s):
+================================================================================
+
+Service: 0000180a-0000-1000-8000-00805f9b34fb
+Description: Device Information
+Handle: 12
+  Characteristics (1):
+  ----------------------------------------------------------------------------
+    UUID: 00002a50-0000-1000-8000-00805f9b34fb
+    Description: PnP ID
+    Handle: 13
+    Properties: read
+    Value (hex): 02 8a 24 66 82 01 00
+    Value (raw bytes): bytearray(b'\x02\x8a$f\x82\x01\x00')
+--------------------------------------------------------------------------------
+
+Service: 00001801-0000-1000-8000-00805f9b34fb
+Description: Generic Attribute Profile
+Handle: 8
+  Characteristics (1):
+  ----------------------------------------------------------------------------
+    UUID: 00002a05-0000-1000-8000-00805f9b34fb
+    Description: Service Changed
+    Handle: 9
+    Properties: indicate
+    Descriptors (1):
+      UUID: 00002902-0000-1000-8000-00805f9b34fb
+      Description: Client Characteristic Configuration
+      Handle: 11
+      Value (string):
+
+--------------------------------------------------------------------------------
+
+Service: 00010203-0405-0607-0809-0a0b0c0d1912
+Description: Unknown
+Handle: 23
+  Characteristics (1):
+  ----------------------------------------------------------------------------
+    UUID: 00010203-0405-0607-0809-0a0b0c0d2b12
+    Description: Unknown
+    Handle: 24
+    Properties: read, write-without-response, notify
+    Value (string):
+    Descriptors (2):
+      UUID: 00002902-0000-1000-8000-00805f9b34fb
+      Description: Client Characteristic Configuration
+      Handle: 26
+      Value (string):
+      UUID: 00002901-0000-1000-8000-00805f9b34fb
+      Description: Characteristic User Description
+      Handle: 27
+      Value (string): OTA
+
+--------------------------------------------------------------------------------
+
+Service: 0000180f-0000-1000-8000-00805f9b34fb
+Description: Battery Service
+Handle: 19
+  Characteristics (1):
+  ----------------------------------------------------------------------------
+    UUID: 00002a19-0000-1000-8000-00805f9b34fb
+    Description: Battery Level
+    Handle: 20
+    Properties: read, notify
+    Value (string): c
+    Descriptors (1):
+      UUID: 00002902-0000-1000-8000-00805f9b34fb
+      Description: Client Characteristic Configuration
+      Handle: 22
+      Value (string):
+
+--------------------------------------------------------------------------------
+
+Service: 00010203-0405-0607-0809-0a0b0c0dbc10
+Description: Unknown
+Handle: 15
+  Characteristics (1):
+  ----------------------------------------------------------------------------
+    UUID: 00010203-0405-0607-0809-0a0b0c0d2c12
+    Description: Unknown
+    Handle: 16
+    Properties: read, write-without-response, notify
+    Value (string):
+    Descriptors (1):
+      UUID: 00002902-0000-1000-8000-00805f9b34fb
+      Description: Client Characteristic Configuration
+      Handle: 18
+      Value (string):
+
+--------------------------------------------------------------------------------
+
+Disconnected from A4:C1:38:95:A0:8F
+
+Device exploration completed successfully.
+</pre>
+<p class="illustration">L'esito dell'analisi dell'interfaccia del sensore.</p>
+<p>Una prima prova di lettura del livello della batteria ha dato subito esito positivo, seppure la risposta ottenuta sia stata sempre <span class="code">99</span> nonostante il trascorrere delle ore d'uso del sensore.</p>
+<pre class="code">
+import asyncio
+from bleak import BleakClient
+
+ADDRESS = "A4:C1:38:95:A0:8F"
+BATTERY_LEVEL = "00002a19-0000-1000-8000-00805f9b34fb"
+
+async def main(address):
+    async with BleakClient(address) as client:
+        value = await client.read_gatt_char(BATTERY_LEVEL)
+        hex_value = ' '.join(f'{b:02x}' for b in value)
+        print(f"hex: {hex_value} dec: {int(hex_value, 16)} raw: {value}")
+
+asyncio.run(main(ADDRESS))
+</pre>
+<p class="illustration">Codice Python per la lettura del livello della batteria.</p>
+<p>Procedendo per tentativi ho scoperto che la caratteristica che notifica le letture del sensore è quella con UUID <span class="code">00010203-0405-0607-0809-0a0b0c0d2c12</span>:</p>
+<pre class="code">
+import asyncio
+from bleak import BleakClient, BleakGATTCharacteristic
+
+ADDRESS = "A4:C1:38:95:A0:8F"
+UNKNOWN_2 = "00010203-0405-0607-0809-0a0b0c0d2c12"
+
+def callback(sender: BleakGATTCharacteristic, data: bytearray):
+    print(f"{sender}: {data}")
+
+async def main(address):
+    async with BleakClient(address) as client:
+        await client.start_notify(UNKNOWN_2, callback)
+        await asyncio.sleep(10)
+        await client.stop_notify(UNKNOWN_2)
+
+asyncio.run(main(ADDRESS))
+</pre>
+<p class="illustration">Codice Python per la ricezione delle notifiche del sensore.</p>
+<p>A parità di condizioni di luminosità, la sequenza di byte ricevuta dal sensore corrisponde esattamente a quella catturata a basso livello, al netto del preambolo previsto dal protocollo BLE:</p>
+<pre class="output">
+0200221b00170004001b11000000010100000000000000000000000000000101 (32 byte)
+</pre>
+<p class="illustration">Contenuto di un pacchetto di basso livello decodificato in WireShark.</p>
+<pre class="output">
+                        0000010100000000000000000000000000000101 (20 byte)
+</pre>
+<p class="illustration">Contenuto di una notifica inviata direttamente dal sensore.</p>
+<p>I 12 byte iniziali, che si presentano sempre nella medesima configurazione in tutte le notifiche inviate dal sensore, contengono delle informazioni specifiche dei livelli più bassi dello stack Bluetooth:</p>
+<pre class="output">
+0200221b00170004001b1100
+
+02 --------------------------- HCI Packet Type (ACL Data)
+  0022 ----------------------- 0010 0010 0000 0000
+                               00.. .... .... .... BC Flag
+                               ..10 .... .... .... PB Flag
+                               .... 0010 0000 0000 Connection
+      1b00 ------------------- Data Total Length (001b = 27)
+          1700 --------------- Length (0017 = 23)
+              0400 ----------- CID: Attribute Protocol
+                  1b --------- Handle Value Notification
+                     1100 ---- Handle (0011 = 17)
+</pre>
+<p>Ecco dunque la corrispondenza tra i valori di irraggiamento riportati dall'app ufficiale e il contenuto binario delle notifiche inviate dal sensore, ottenuta incrociando la registrazione video con la traccia di WireShark:</p>
+<table cellspacing="0">
+<tr><th>W/m²</th><th>Notifica</th></tr>
+<tr><td class="number">0.000</td><td class="buffer">0000010100000000000000000000000000000101</td></tr>
+<tr><td class="number">0.029</td><td class="buffer">0000010100000000000100000004000000000105</td></tr>
+<tr><td class="number">0.114</td><td class="buffer">0000010100000000000400000013000000000118</td></tr>
+<tr><td class="number">0.172</td><td class="buffer">000001010000000000060000001c000000000123</td></tr>
+<tr><td class="number">0.372</td><td class="buffer">0000010100000000000d0000002e00000000013c</td></tr>
+<tr><td class="number">2.433</td><td class="buffer">000001010000000000550000014400000000029a</td></tr>
+<tr><td class="number">1.889</td><td class="buffer">0000010100000000004200000105000000000248</td></tr>
+<tr><td class="number">1.717</td><td class="buffer">0000010100000000003c000000f3000000000130</td></tr>
+<tr><td class="number">2.977</td><td class="buffer">000001010000000000680000017c0000000002e5</td></tr>
+<tr><td class="number">3.921</td><td class="buffer">000001010000000000890000021400000000039e</td></tr>
+<tr><td class="number">3.807</td><td class="buffer">000001010000000000850000020700000000038d</td></tr>
+<tr><td class="number">3.778</td><td class="buffer">0000010100000000008400000202000000000387</td></tr>
+<tr><td class="number">3.750</td><td class="buffer">0000010100000000008300000200000000000384</td></tr>
+<tr><td class="number">3.778</td><td class="buffer">0000010100000000008400000202000000000387</td></tr>
+<tr><td class="number">3.692</td><td class="buffer">00000101000000000081000001fe000000000280</td></tr>
+<tr><td class="number">0.343</td><td class="buffer">0000010100000000000c0000003e00000000014b</td></tr>
+<tr><td class="number">0.200</td><td class="buffer">000001010000000000070000001f000000000127</td></tr>
+<tr><td class="number">&nbsp;</td><td class="buffer"></td></tr>
+<tr><td class="number">   ≈6</td><td class="buffer">000001010000000000ec000003d00000000004bd</td></tr>
+<tr><td class="number">  ≈20</td><td class="buffer">000001010000000002ee00000e84000000001173</td></tr>
+</table>
+<p>Le ultime due misure sono state effettuate estemporaneamente esponendo il sensore ad una luce sufficientemente intensa da raggiungere un livello sostanzialmente superiore a quelli misurati durante la cattura. Siamo comunque ben lontani dal fondo scala dichiarato del sensore, pari a 3499W/m².</p>
+<p>Nei vari esperimenti condotti 0.029W/m² è stata la misura più prossima allo zero mai mostrata dall'app: tale valore potrebbe quindi rappresentare la sensibilità del sensore.</p>
+<h2>Decodifica della notifica</h2>
+<p>È evidente che ci sono tre valori distinti all'interno della notifica, spaziati in modo non uniforme, che seguono più o meno fedelmente l'andamento delle misure:</p>
+<table cellspacing="0">
+<tr><th>W/m²</th><th>Notifica</th></tr>
+<tr><td class="number">0.000</td><td class="buffer">0000010100000000<span class="word_1">0000</span>0000<span class="word_2">0000</span>00000000<span class="word_3">0101</span></td></tr>
+<tr><td class="number">0.029</td><td class="buffer">0000010100000000<span class="word_1">0001</span>0000<span class="word_2">0004</span>00000000<span class="word_3">0105</span></td></tr>
+<tr><td class="number">0.114</td><td class="buffer">0000010100000000<span class="word_1">0004</span>0000<span class="word_2">0013</span>00000000<span class="word_3">0118</span></td></tr>
+<tr><td class="number">0.172</td><td class="buffer">0000010100000000<span class="word_1">0006</span>0000<span class="word_2">001c</span>00000000<span class="word_3">0123</span></td></tr>
+<tr><td class="number">0.372</td><td class="buffer">0000010100000000<span class="word_1">000d</span>0000<span class="word_2">002e</span>00000000<span class="word_3">013c</span></td></tr>
+<tr><td class="number">2.433</td><td class="buffer">0000010100000000<span class="word_1">0055</span>0000<span class="word_2">0144</span>00000000<span class="word_3">029a</span></td></tr>
+<tr><td class="number">1.889</td><td class="buffer">0000010100000000<span class="word_1">0042</span>0000<span class="word_2">0105</span>00000000<span class="word_3">0248</span></td></tr>
+<tr><td class="number">1.717</td><td class="buffer">0000010100000000<span class="word_1">003c</span>0000<span class="word_2">00f3</span>00000000<span class="word_3">0130</span></td></tr>
+<tr><td class="number">2.977</td><td class="buffer">0000010100000000<span class="word_1">0068</span>0000<span class="word_2">017c</span>00000000<span class="word_3">02e5</span></td></tr>
+<tr><td class="number">3.921</td><td class="buffer">0000010100000000<span class="word_1">0089</span>0000<span class="word_2">0214</span>00000000<span class="word_3">039e</span></td></tr>
+<tr><td class="number">3.807</td><td class="buffer">0000010100000000<span class="word_1">0085</span>0000<span class="word_2">0207</span>00000000<span class="word_3">038d</span></td></tr>
+<tr><td class="number">3.778</td><td class="buffer">0000010100000000<span class="word_1">0084</span>0000<span class="word_2">0202</span>00000000<span class="word_3">0387</span></td></tr>
+<tr><td class="number">3.750</td><td class="buffer">0000010100000000<span class="word_1">0083</span>0000<span class="word_2">0200</span>00000000<span class="word_3">0384</span></td></tr>
+<tr><td class="number">3.778</td><td class="buffer">0000010100000000<span class="word_1">0084</span>0000<span class="word_2">0202</span>00000000<span class="word_3">0387</span></td></tr>
+<tr><td class="number">3.692</td><td class="buffer">0000010100000000<span class="word_1">0081</span>0000<span class="word_2">01fe</span>00000000<span class="word_3">0280</span></td></tr>
+<tr><td class="number">0.343</td><td class="buffer">0000010100000000<span class="word_1">000c</span>0000<span class="word_2">003e</span>00000000<span class="word_3">014b</span></td></tr>
+<tr><td class="number">0.200</td><td class="buffer">0000010100000000<span class="word_1">0007</span>0000<span class="word_2">001f</span>00000000<span class="word_3">0127</span></td></tr>
+</table>
+<img src="./img/vbr-solar/word_1.png"/>
+<p class="illustration">I valori della prima colonna seguono molto fedelmente le misure di irraggiamento (linea tratteggiata).</p>
+<img src="./img/vbr-solar/word_2.png"/>
+<p class="illustration">I valori della seconda colonna seguono abbastanza fedelmente le misure di irraggiamento.</p>
+<img src="./img/vbr-solar/word_3.png"/>
+<p class="illustration">I valori della terza colonna si discostano sensibilmente dalle misure di irraggiamento.</p>
+<p>Ho ipotizzato che la colonna di destra possa rappresentare una sorta di checksum (spoiler: lo è!), ma il valore non corriponde alla somma dei byte che lo precedono, né ad una delle molte varianti del CRC16.</p>
+<p>Forse si tratta di valori provenienti da tre sensori con sensibilità diverse — RGB? o forse IR, visibile e UV?? —. Mascherando opportunamente il sensore non ho individuato zone più sensibili di altre. Le risposte ottenute a fronte dell'uso di filtri colorati non mi ha fornito indicazioni tali da avvalorare l'ipotesi della presenza di un sensore RGB.</p>
+<p>Ho dunque pensato che la misura di irraggiamento potesse essere frutto di una combinazione lineare dei tre valori evidenziati. Fosse vero, indicati con <em>i</em> il valore di irraggiamento mostrato dall'app e <em>w<sub>1</sub></em>, <em>w<sub>2</sub></em> e <em>w<sub>3</sub></em> i valori presenti nella notifica, si tratterebbe di determinare i valori dei parametri <strong>a</strong>, <strong>b</strong> e <strong>c</strong> tali che:</p>
+<p class="formula"><em>i</em> = <strong>a</strong> × <em>w<sub>1</sub></em> + <strong>b</strong> × <em>w<sub>2</sub></em> + <strong>c</strong> × <em>w<sub>3</sub></em></p>
+<p>Effettuando una banale ricerca del punto che realizza lo scarto quadratico minimo tra il valore stimato di <em>i</em> ricavato dalla formula e quello effettivo mostrato dall'app si nota che:</p>
+<ul>
+  <li><strong>a</strong> → 0.02862</li>
+  <li><strong>b</strong> → 0</li>
+  <li><strong>c</strong> → 0</li>
+</ul>
+<p>La stima per il parametro <strong>a</strong> è sufficientemente vicina all'apparente risoluzione dell'app da suggerire l'ipotesi che è il solo <em>w<sub>1</sub></em> a determinare il valore di irraggiamento.</p>
+<p>Un'ulteriore conferma la si ha sottoponendo i dati grezzi ad uno dei tanti solutori online; per esempio il “<a href="https://www.statskingdom.com/410multi_linear_regression.html">Multiple Linear Regression Calculator</a>” di Statistics Kingdom propone:</p>
+<p class="formula"><em>i</em> = -0.000114938 + 0.0286232 × <em>w<sub>1</sub></em></p>
+<p>È a questo punto che ho deciso di realizzare una prima versione del programma di storicizzazione delle letture, utilizzando la formula semplificata:</p>
+<p class="formula"><em>i</em> = 0.02862 × <em>w<sub>1</sub></em></p>
+<p>ed accettando di conseguenza la presenza di un piccolo errore nelle misure prodotte:</p>
+<table cellspacing="0">
+<tr><th>W/m²</th><th>calcolato</th><th>|errore|</th></tr>
+<tr><td class="number">0.000</td><td class="number">0.000</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.029</td><td class="number">0.029</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.114</td><td class="number">0.114</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.172</td><td class="number">0.172</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.372</td><td class="number">0.372</td><td class="number">0.000</td></tr>
+<tr><td class="number">2.433</td><td class="number">2.433</td><td class="number">0.000</td></tr>
+<tr><td class="number">1.889</td><td class="number">1.889</td><td class="number">0.000</td></tr>
+<tr><td class="number">1.717</td><td class="number">1.717</td><td class="number">0.000</td></tr>
+<tr><td class="number">2.977</td><td class="number">2.976</td><td class="number">0.001</td></tr>
+<tr><td class="number">3.921</td><td class="number">3.921</td><td class="number">0.000</td></tr>
+<tr><td class="number">3.807</td><td class="number">3.806</td><td class="number">0.001</td></tr>
+<tr><td class="number">3.778</td><td class="number">3.778</td><td class="number">0.000</td></tr>
+<tr><td class="number">3.750</td><td class="number">3.749</td><td class="number">0.001</td></tr>
+<tr><td class="number">3.778</td><td class="number">3.778</td><td class="number">0.000</td></tr>
+<tr><td class="number">3.692</td><td class="number">3.692</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.343</td><td class="number">0.343</td><td class="number">0.000</td></tr>
+<tr><td class="number">0.200</td><td class="number">0.200</td><td class="number">0.000</td></tr>
+</table>
+<pre class="code">
+def decode(data: bytearray):
+    if len(data) != 20:
+        raise ValueError("Unexpected buffer length")
+    return (data[8] * 256 + data[9]) * 0.02862
+</pre>
+<p class="illustration">Il frammento di codice Python che decodifica il valore di irraggiamento.</p>
+<p class="note">Non è da escludersi che l'errore aumenti all'aumentare del valore di irraggiamento.</p>
+<h2>Decompilazione dell'app Vsensor</h2>
+<p>Parallelamente all'analisi che ha portato alla prima versione del programma ho tentato di decompilare l'app Vsensor, pur conscio delle limitate conoscenze che ho del mondo Android, nella speranza di scoprire l'algoritmo originale o — meno probabile — trovare conferma di quanto fin qui dedotto.</p>
+<p>Il primo passo è consistito nel recupero del file apk dell'app. Il nome del pacchetto è ricavabile dal suo indirizzo nel Play Store:</p>
+<p class="centered">https://play.google.com/store/apps/details?id=<strong>com.lumeter_rn</strong></p>
+<p>Dal nome del pacchetto si può risalire al percorso del file apk:</p>
+<pre class="prompt">
+$ adb shell pm list packages
+
+...
+package:com.lumeter_rn
+...
+</pre>
+<p>Nota la posizione del file si può procedere con lo scaricamento:</p>
+<pre class="prompt">
+$ adb shell pm path com.lumeter_rn
+package:/data/app/~~RV8wHE8POxkKKZsTlCASuQ==/com.lumeter_rn-oSUGthziYUCzcW-lFw2dHg==/base.apk
+package:/data/app/~~RV8wHE8POxkKKZsTlCASuQ==/com.lumeter_rn-oSUGthziYUCzcW-lFw2dHg==/split_config.arm64_v8a.apk
+package:/data/app/~~RV8wHE8POxkKKZsTlCASuQ==/com.lumeter_rn-oSUGthziYUCzcW-lFw2dHg==/split_config.it.apk
+package:/data/app/~~RV8wHE8POxkKKZsTlCASuQ==/com.lumeter_rn-oSUGthziYUCzcW-lFw2dHg==/split_config.xxhdpi.apk
+
+$ adb pull /data/app/~~RV8wHE8POxkKKZsTlCASuQ==/com.lumeter_rn-oSUGthziYUCzcW-lFw2dHg==/base.apk
+</pre>
+<p>Il file apk può quindi essere decompilato da uno dei tanti servizi disponibili in rete.</p>
+<p>Pur avendo a disposizione il codice Java non sono riuscito a trovare alcun riferimento alla comunicazione con il sensore. L'alto numero di dipendenze non ha certo agevolato la ricerca. Mi ci è voluto un po' per capire che l'app è stata sviluppata in JavaScript usando React Native, fatto deducibile dalla presenza del file <strong>index.android.bundle</strong>. Per ottenere il codice sorgente JavaScript ho dovuto estrarre il bytecode Hermes dal bundle, disassemblarlo e infine decompilarlo.</p>
+<pre class="prompt">
+$ file index.android.bundle
+index.android.bundle: Hermes JavaScript bytecode, version 96
+</pre>
+<p>Non sono molti gli strumenti open source in grado di decompilare bytecode così recente. Un di questi è il fork di <a href="https://github.com/P1sec/hermes-dec">
+P1sec/hermes-dec</a> (con il quale sono riuscito ad ottenere il bytecode ma non il codice JavaScript) fatto dall'utente <a href="https://github.com/nextco/hermes-dec">nextco</a>.</p>
+<p>Seguendo le istruzioni sono finalmente giunto al sorgente JavaScript, che ammonta ad oltre 36MB di testo. Non è stato semplice per me orientarmi in tale quantità di codice. L'app tra l'altro gestisce diverse tipologie di sensori, ognuno con le sue peculiarità, ma alla fine sono riuscito ad isolare l'algoritmo che determina il valore di irraggiamento per il sensore VBR-Solar a partire dal contenuto binario della notifica:</p>
+<pre class="code">
+r7 = r8.slice;
+r6 = 6;
+r2 = 10;
+r2 = r7.bind(r8)(r6, r2);
+r6 = r2[r4];
+r4 = 24;
+r4 = r6 &lt;&lt; r4;
+r6 = r2[r1];
+r1 = 16;
+r1 = r6 &lt;&lt; r1;
+r3 = r2[r3];
+r3 = r3 &lt;&lt; r5;
+r5 = 3;
+r2 = r2[r5];
+r1 = r4 + r1;
+r1 = r1 + r3;
+r4 = r1 + r2;
+</pre>
+<p class="illustration">L'inizio della decodifica del valore di irraggiamento.</p>
+<p>Considerati i valori assunti dalle variabili in gioco, desumibili dall'analisi delle istruzioni che precedono quelle qui riportate, si conclude che il frammento di codice calcola il valore della doppia parola costituita dai byte 6÷9 della notifica, presi secondo l'ordine <em>big-endian</em>:</p>
+<pre class="code">
+// r1 = 1
+// r3 = 2
+// r4 = 0
+// r5 = 8
+// r8 = contenuto binario della notifica
+
+r7 = r8.slice;
+r6 = 6;
+r2 = 10;
+r2 = r7.bind(r8)(r6, r2);   // r2 = buffer[6, 10)
+r6 = r2[r4];
+r4 = 24;
+r4 = r6 &lt;&lt; r4;              // r4 = buffer[0] &lt;&lt; 24
+r6 = r2[r1];
+r1 = 16;
+r1 = r6 &lt;&lt; r1;              // r1 = buffer[1] &lt;&lt; 16
+r3 = r2[r3];
+r3 = r3 &lt;&lt; r5;              // r3 = buffer[2] &lt;&lt; 8
+r5 = 3;
+r2 = r2[r5];                // r2 = buffer[3]
+r1 = r4 + r1;
+r1 = r1 + r3;
+r4 = r1 + r2;               // r4 = r1 + r2 + r3 + r4
+</pre>
+<p>Risulta chiaro che il mio codice trascura la parola più significativa, limitandosi a considerare solo i byte in posizione 8 e 9 nel computo del valore di irraggiamento.</p>
+<p>Le istruzioni successive sono l'obiettivo della mia ricerca:</p>
+<pre class="code">
+r3 = 1000;
+r4 = r4 / r3;
+r3 = 27.6;
+r4 = r4 / r3;
+r3 = 790;
+r4 = r4 * r3;               // r4 = r4 / 1000 / 27.6 * 790
+r3 = r4.toFixed;
+r3 = r3.bind(r4)(r5);       // r3 = r4.toFixed(3)
+</pre>
+<p>Ecco dunque trovato il fattore di conversione:</p>
+<p class="formula"><em>i</em> = 1 / 1000 / 27.6 × 790 × <em>dw<sub>1</sub></em></p>
+<p>ove <em>dw<sub>1</sub></em> rappresenta la doppia parola formata dai byte in posizione 6÷9 (il contenuto della variabile <span class="code">r4</span> del frammento di codice precedente). Il fattore di conversione effettivo vale <strong>0.028623188…</strong>, a conferma di quanto prima ricavato sperimentalmente.</p>
+<p>In linea teorica non sarebbe necessario considerare l'intera doppia parola dalla notifica: dividendo il fondo scala dello strumento, pari a 3.499W/m², per il fattore di conversione si scopre che sono sufficienti 17 bit per rappresentare il valore massimo ammissibile:</p>
+<p class="formula">log<sub>2</sub>(3499 × 1000 × 27.6 / 790) = 16.899…</p>
+<p>Un'ultima osservazione: la parte di codice che precede quella qui analizzata si occupa di effettuare alcuni controlli di consistenza, in particolare che i primi due byte ricevuti siano nulli e che la somma delle parole seguenti valutate in ordine <em>little-endian</em> corrisponda, una volta mascherata col valore <span class="code">0xFFFF</span>, all'ultima parola della notifica. Ecco dunque confermato che ciò che prima indicavo con <em>w<sub>3</sub></em>, dopo aver scartato l'ipotesi che si trattasse di un checksum, si rivela essere proprio un codice di controllo.</p>
+<p>Il repository <a href="https://github.com/gzuliani/vbr_solar_logger">vbr_solar_logger</a> contiene un esempio di data logger a riga di comando basato su quanto fin qui scoperto.</p>
+<p class="modification-notice">Pagina modificata il 19/10/2025</p>
+</body>
+</html>

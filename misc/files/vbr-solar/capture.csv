@@ -1,0 +1,153 @@
+No.,Time,Source,Target,Length,Info,Payload
+1161,73.671903,Android,Sensor,16,"Sent Read By Type Request, Server Supported Features, Handles: 0x0001..0xffff",0200020b0007000400080100ffff3a2b
+1167,73.768948,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0001 (Unknown)",020022090005000400010801000a
+1168,73.769861,Android,Sensor,16,"Sent Read By Group Type Request, Primary Service, Handles: 0x0001..0xffff",0200020b0007000400100100ffff0028
+1170,73.860578,Sensor,Android,29,"Rcvd Read By Group Type Response, Attribute List Length: 3, GAP, GATT, Device Information",020022180014000400110601000700001808000b0001180c000e000a18
+1171,73.861323,Android,Sensor,16,"Sent Read By Group Type Request, Primary Service, Handles: 0x000f..0xffff",0200020b0007000400100f00ffff0028
+1173,73.957601,Sensor,Android,31,"Rcvd Read By Group Type Response, Attribute List Length: 1, Unknown",0200221a001600040011140f00120010bc0d0c0b0a09080706050403020100
+1174,73.958093,Android,Sensor,16,"Sent Read By Group Type Request, Primary Service, Handles: 0x0013..0xffff",0200020b0007000400101300ffff0028
+1176,74.055301,Sensor,Android,17,"Rcvd Read By Group Type Response, Attribute List Length: 1, Battery",0200220c00080004001106130016000f18
+1177,74.055947,Android,Sensor,16,"Sent Read By Group Type Request, Primary Service, Handles: 0x0017..0xffff",0200020b0007000400101700ffff0028
+1180,74.118522,Sensor,Android,31,"Rcvd Read By Group Type Response, Attribute List Length: 1, Unknown",0200221a0016000400111417001b0012190d0c0b0a09080706050403020100
+1181,74.119256,Android,Sensor,16,"Sent Read By Group Type Request, Primary Service, Handles: 0x001c..0xffff",0200020b0007000400101c00ffff0028
+1183,74.133442,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x001c (Unknown: Unknown)",02002209000500040001101c000a
+1184,74.134221,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x0001..0x0007",0200020b000700040008010007000228
+1186,74.148494,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0001 (GAP)",020022090005000400010801000a
+1187,74.149202,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0001..0x0007",0200020b000700040008010007000328
+1189,74.163605,Sensor,Android,32,"Rcvd Read By Type Response, Attribute List Length: 3, Device Name, Appearance, Peripheral Preferred Connection Parameters",0200221b001700040009070200120300002a0400020500012a0600020700042a
+1190,74.164010,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0007..0x0007",0200020b000700040008070007000328
+1192,74.178552,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0007 (GAP: Peripheral Preferred Connection Parameters)",020022090005000400010807000a
+1193,74.179093,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x0008..0x000b",0200020b00070004000808000b000228
+1195,74.193486,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0008 (GATT)",020022090005000400010808000a
+1196,74.194035,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0008..0x000b",0200020b00070004000808000b000328
+1198,74.208484,Sensor,Android,18,"Rcvd Read By Type Response, Attribute List Length: 1, Service Changed",0200220d000900040009070900200a00052a
+1199,74.209151,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x000a..0x000b",0200020b0007000400080a000b000328
+1201,74.223465,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x000a (GATT: Service Changed)",02002209000500040001080a000a
+1202,74.224023,Android,Sensor,14,"Sent Find Information Request, Handles: 0x000b..0x000b",020002090005000400040b000b00
+1204,74.238497,Sensor,Android,15,"Rcvd Find Information Response, Handle: 0x000b (GATT: Service Changed: Client Characteristic Configuration)",0200220a000600040005010b000229
+1205,74.239335,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x000c..0x000e",0200020b0007000400080c000e000228
+1207,74.253322,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x000c (Device Information)",02002209000500040001080c000a
+1208,74.253933,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x000c..0x000e",0200020b0007000400080c000e000328
+1210,74.268372,Sensor,Android,18,"Rcvd Read By Type Response, Attribute List Length: 1, PnP ID",0200220d000900040009070d00020e00502a
+1211,74.268799,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x000e..0x000e",0200020b0007000400080e000e000328
+1213,74.283300,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x000e (Device Information: PnP ID)",02002209000500040001080e000a
+1214,74.284096,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x000f..0x0012",0200020b0007000400080f0012000228
+1216,74.298320,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x000f (Unknown)",02002209000500040001080f000a
+1217,74.298947,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x000f..0x0012",0200020b0007000400080f0012000328
+1219,74.313684,Sensor,Android,32,"Rcvd Read By Type Response, Attribute List Length: 1, Unknown",0200221b001700040009151000161100122c0d0c0b0a09080706050403020100
+1220,74.314782,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0011..0x0012",0200020b000700040008110012000328
+1222,74.328296,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0011 (Unknown: Unknown)",020022090005000400010811000a
+1223,74.328980,Android,Sensor,14,"Sent Find Information Request, Handles: 0x0012..0x0012",0200020900050004000412001200
+1225,74.343362,Sensor,Android,15,"Rcvd Find Information Response, Handle: 0x0012 (Unknown: Unknown: Client Characteristic Configuration)",0200220a0006000400050112000229
+1226,74.344134,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x0013..0x0016",0200020b000700040008130016000228
+1228,74.358337,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0013 (Battery)",020022090005000400010813000a
+1229,74.359100,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0013..0x0016",0200020b000700040008130016000328
+1231,74.373318,Sensor,Android,18,"Rcvd Read By Type Response, Attribute List Length: 1, Battery Level",0200220d000900040009071400121500192a
+1232,74.373968,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0015..0x0016",0200020b000700040008150016000328
+1234,74.388312,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0015 (Battery: Battery Level)",020022090005000400010815000a
+1235,74.389129,Android,Sensor,14,"Sent Find Information Request, Handles: 0x0016..0x0016",0200020900050004000416001600
+1237,74.403417,Sensor,Android,15,"Rcvd Find Information Response, Handle: 0x0016 (Battery: Battery Level: Client Characteristic Configuration)",0200220a0006000400050116000229
+1238,74.404423,Android,Sensor,16,"Sent Read By Type Request, Include, Handles: 0x0017..0x001b",0200020b00070004000817001b000228
+1240,74.418336,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0017 (Unknown)",020022090005000400010817000a
+1241,74.419138,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0017..0x001b",0200020b00070004000817001b000328
+1243,74.433486,Sensor,Android,32,"Rcvd Read By Type Response, Attribute List Length: 1, Unknown",0200221b001700040009151800161900122b0d0c0b0a09080706050403020100
+1244,74.434095,Android,Sensor,16,"Sent Read By Type Request, Characteristic, Handles: 0x0019..0x001b",0200020b00070004000819001b000328
+1246,74.448332,Sensor,Android,14,"Rcvd Error Response - Attribute Not Found, Handle: 0x0019 (Unknown: Unknown)",020022090005000400010819000a
+1247,74.449071,Android,Sensor,14,"Sent Find Information Request, Handles: 0x001a..0x001b",020002090005000400041a001b00
+1249,74.463280,Sensor,Android,19,"Rcvd Find Information Response, Handle: 0x001a (Unknown: Unknown: Client Characteristic Configuration), Handle: 0x001b (Unknown: Unknown: Characteristic User Description)",0200220e000a00040005011a0002291b000129
+1250,74.463867,Sensor,Android,21,Rcvd Connection Parameter Update Request,02002210000c000500120108000800080063009001
+1252,74.464380,Android,Sensor,15,Sent Connection Parameter Update Response (Accepted),0200020a0006000500130102000000
+1262,74.717580,Android,Sensor,14,"Sent Write Request, Handle: 0x0012 (Unknown: Unknown: Client Characteristic Configuration)",0200020900050004001212000100
+1264,74.775054,Sensor,Android,10,"Rcvd Write Response, Handle: 0x0012 (Unknown: Unknown: Client Characteristic Configuration)",02002205000100040013
+1265,74.872721,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1267,75.705151,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1268,76.605572,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1269,77.506314,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1270,78.405845,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1271,79.305590,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1272,80.205603,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1273,81.105967,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1322,82.005643,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1323,82.905879,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1324,83.805882,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1375,84.705921,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1378,85.605589,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1379,86.506042,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1382,87.406238,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1383,88.306847,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1384,89.206574,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1399,90.107207,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1400,91.006398,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1405,91.906734,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1406,92.810388,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1409,93.706092,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1412,94.606015,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1425,95.506341,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1426,96.406274,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1427,97.306312,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1428,98.206592,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1429,99.107769,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1430,100.006866,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1431,100.906409,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1432,101.806446,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1435,102.706478,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1436,103.608245,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1437,104.506539,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1438,105.407068,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1443,106.306287,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1444,107.207001,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1445,108.106672,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1446,109.007087,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1447,109.907296,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1450,110.809408,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1451,111.707201,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1452,112.608328,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1453,113.508396,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1454,114.407831,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1457,115.307655,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1462,116.207908,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1463,117.107850,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000100000004000000000106
+1466,118.008077,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000100000004000000000106
+1469,118.907616,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000100000004000000000106
+1472,119.808236,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000004000000000105
+1473,120.707942,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000400000013000000000118
+1476,121.619227,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000060000001b000000000122
+1477,122.508065,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000060000001c000000000123
+1480,123.408090,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000060000001c000000000123
+1519,124.308417,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000d0000002e00000000013c
+1520,125.208278,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000550000014400000000029a
+1523,126.108142,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000004200000105000000000248
+1524,127.007927,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000003c000000f3000000000130
+1525,127.908696,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000680000017c0000000002e5
+1526,128.808319,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000890000021400000000039e
+1527,129.708500,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000850000020700000000038d
+1530,130.608430,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000008400000202000000000387
+1531,131.508481,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000008300000200000000000384
+1534,132.409051,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000008400000202000000000387
+1537,133.310685,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b110000000101000000000081000001fe000000000280
+1538,134.208782,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000c0000003e00000000014b
+1541,135.108704,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1544,136.008617,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1545,136.909057,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1552,137.808882,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1553,138.709917,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1556,139.614566,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1557,140.508858,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1560,141.409405,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000700000020000000000128
+1561,142.309128,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000700000020000000000128
+1562,143.208927,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1563,144.109277,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1564,145.008787,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000700000020000000000128
+1565,145.909209,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1566,146.809243,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1567,147.708966,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1568,148.608966,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1569,149.509043,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1570,150.408986,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1571,151.309213,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b1100000001010000000000070000001f000000000127
+1572,152.209387,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1575,153.108866,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1576,154.009749,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1577,154.909741,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1578,155.809475,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101
+1583,156.709316,Sensor,Android,32,"Rcvd Handle Value Notification, Handle: 0x0011 (Unknown: Unknown)",0200221b00170004001b11000000010100000000000000000000000000000101

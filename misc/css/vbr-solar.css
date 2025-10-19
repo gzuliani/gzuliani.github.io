@@ -1,0 +1,48 @@
+p.centered {
+ margin-bottom: 1em;
+ margin-top: 1em;
+ text-align: center;
+}
+
+p.formula {
+ text-align: center;
+}
+
+pre.output {
+ background: #eee8d5;
+ border: 1px solid #073642;
+ color: #657b83;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+ font-size: .8em;
+ line-height: 1.2em;
+ padding: 1em;
+ white-space: pre-wrap; /* line wrap */
+ width: 50em;
+}
+
+pre.prompt {
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+}
+
+td.number {
+ text-align: right;
+}
+
+td.buffer {
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+}
+
+span.word_1 {
+ color: #d33682;
+ font-weight: bold;
+}
+
+span.word_2 {
+ color: #268bd2;
+ font-weight: bold;
+}
+
+span.word_3 {
+ color: #859900;
+ font-weight: bold;
+}
