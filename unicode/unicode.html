@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="utf-8"/>
+<html lang="it"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
 <title>Da ASCII a Unicode</title>
-<link href="../css/main.css" rel="stylesheet" type="text/css"/>
-<link href="css/unicode.css" rel="stylesheet" type="text/css"/>
+<link href="../css/main.css" rel="stylesheet" type="text/css">
+<link href="css/unicode.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-<p class="page-path"><a href="../index.html#unicode">risorse</a> | unicode</p>
+<p class="page-path"><a href="https://gzuliani.github.io/index.html#unicode">risorse</a> | unicode</p>
 <h1>Da ASCII a Unicode</h1>
 <p>Il problema di rappresentare la scrittura nei calcolatori risale alle origini dell’informatica. La soluzione più frequentemente adottata è la definizione di una <em>codifica di carattere</em> che consiste nell’associare ad ogni simbolo dell’alfabeto in uso una particolare sequenza di bit. Questa associazione viene a volte erroneamente indicata col termine di <em>set di caratteri</em>, <em>mappa dei caratteri</em>, o <em>code page</em>.</p>
-<p>Un tipico esempio di <em>codifica</em>, risalente al 1967 e ancora in uso in ambiente informatico, è lo standard <em>ASCII</em> – <em>American Standard Code for Information Interchange</em>.</p>
+<p>Un tipico esempio di <em>codifica</em>, risalente al 1963 e ancora in uso in ambiente informatico, è lo standard <em>ASCII</em> – <em>American Standard Code for Information Interchange</em>.</p>
 <h2 id="ascii">ASCII</h2>
 <p>La componente base di una codifica è il <em>set di caratteri</em>, ovvero l’insieme dei simboli che si intende considerare. Il set di caratteri della codifica ASCII comprende tutte le lettere dell’alfabeto inglese, maiuscole e minuscole, le dieci cifre decimali, i simboli di interpunzione più altri simboli grafici, oltre ad alcuni caratteri di controllo, come ad esempio l’a-capo. L’altro aspetto che caratterizza una codifica è l’<em>unità di codifica</em>, ovvero l’unità atomica utilizzata per costruire le rappresentazioni dei caratteri; nel caso dell’ASCII consiste di un pacchetto di 7 bit. Poiché l’ASCII attribuisce ad ogni carattere un’unica unità di codifica, e che ad ogni unità atomica è associato un carattere distinto, l’alfabeto ASCII è composto esattamente da 128 caratteri, con codici che vanno da <span class="code">0000000</span> (0) fino a <span class="code">1111111</span> (127).</p>
 <table cellpadding="0" cellspacing="0" class="ascii">
-<tr><td class="ascii-bit-heading" colspan="4" rowspan="3">Bit Mask</td><td class="ascii-bit-heading">6</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td></tr>
+<tbody><tr><td class="ascii-bit-heading" colspan="4" rowspan="3">Bit Mask</td><td class="ascii-bit-heading">6</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">0</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td><td class="ascii-bit-6">1</td></tr>
 <tr><td class="ascii-bit-heading">5</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">0</td><td class="ascii-bit-5">1</td><td class="ascii-bit-5">1</td></tr>
 <tr><td class="ascii-bit-heading">4</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td><td class="ascii-bit-4">0</td><td class="ascii-bit-4">1</td></tr>
 <tr><td class="ascii-bit-heading" colspan="4">&nbsp;</td><td class="ascii-col-heading">Col→</td><td class="ascii-col">0</td><td class="ascii-col">1</td><td class="ascii-col">2</td><td class="ascii-col">3</td><td class="ascii-col">4</td><td class="ascii-col">5</td><td class="ascii-col">6</td><td class="ascii-col">7</td></tr>
@@ -35,10 +35,9 @@
 <tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">0</td><td class="ascii-bit-0">1</td><td class="ascii-row">D</td><td class="ascii-char">CR</td><td class="ascii-char">GS</td><td class="ascii-char">-</td><td class="ascii-char">=</td><td class="ascii-char">M</td><td class="ascii-char">]</td><td class="ascii-char">m</td><td class="ascii-char">}</td></tr>
 <tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">0</td><td class="ascii-row">E</td><td class="ascii-char">SO</td><td class="ascii-char">RS</td><td class="ascii-char">.</td><td class="ascii-char">&gt;</td><td class="ascii-char">N</td><td class="ascii-char">^</td><td class="ascii-char">n</td><td class="ascii-char">~</td></tr>
 <tr><td class="ascii-bit-3">1</td><td class="ascii-bit-2">1</td><td class="ascii-bit-1">1</td><td class="ascii-bit-0">1</td><td class="ascii-row">F</td><td class="ascii-char">SI</td><td class="ascii-char">US</td><td class="ascii-char">/</td><td class="ascii-char">?</td><td class="ascii-char">O</td><td class="ascii-char">_</td><td class="ascii-char">o</td><td class="ascii-char">DEL</td></tr>
-</table>
+</tbody></table>
 <p>è immediato ricavare dalla tabella la configurazione di bit per la a maiuscola (carattere <span class="code">A</span>):</p>
-<pre class="code">
-A → col=4, row=1
+<pre class="code">A → col=4, row=1
         ↓      ↓
        <span class="bit-6">1</span><span class="bit-5">0</span><span class="bit-4">0</span>     ↓
         ↓    <span class="bit-3">0</span><span class="bit-2">0</span><span class="bit-1">0</span><span class="bit-0">1</span>
@@ -46,25 +45,79 @@ A → col=4, row=1
        100   0001 = 41
   <span class="bit-pos">bit: 654   3210</span>
 </pre>
+<h3>Cenni storici</h3>
+<p>La codifica ASCII nasce in IBM nel 1961 ad opera di Bob Bemer durante lo sviluppo della telescrivente Teletype Model 33. Non soddisfatto della codifica EBCDIC – <em>Extended Binary Coded Decimal Interchange Code</em> – in uso nei mainframe e minicomputer prodotti in azienda, in particolare dalla non sequenzialità dei caratteri alfabetici, presenta all'American Standards Association (ASA, ora ANSI) una proposta per una nuova codifica con le caratteristiche dai lui desiderate, in particolare la netta separazione tra i caratteri di controllo e quelli alfanumerici e lettere e cifre contigue e ordinate. Il comitato avvia un lavoro di sintesi che prende in considerazione le codifiche più diffuse dell'epoca come CCITT, ITA2, FIELDATA, oltre alla già citata EBCDIC che culmina, nei primi mesi del 1963, nella pubblicazione della prima versione dello standard ASCII. Negli anni la codifica subirà diverse revisioni, per cristalizzarsi nella sua forma attuale nel 1986.</p>
+<img src="img/unicode/ebcdic.jpg"/>
+<p class="illustration">Codifica EBCDIC (fonte <a href="https://www.newton.com.tw/wiki/EBCDIC">newton.com.tw</a>).</p>
+<p><strong>Nota:</strong> la prima versione della codifica non contemplava le lettere minuscole, che tuttavia vennero aggiunte pochi mesi dopo assieme ad alcuni caratteri di controllo aggiuntivi.</p>
+<p><strong>Nota:</strong> sebbene all'epoca codifiche con unità di codifica a 8 bit fossero già comuni, per l'ASCII la scelta ricadde su 7 bit per ragioni di efficienza ed economicità nelle trasmissioni dati.</p>
 <h2 id="dallascii-alle-code-page-oem">Dall’ASCII alle <em>code page</em> (OEM)</h2>
-<p>Poiché i computer dell’epoca erano basati su architetture a 8 bit, la memorizzazione di un carattere ASCII in un byte lasciava un bit inutilizzato. Diversi costruttori e sviluppatori di software utilizzarono il bit extra nei modi più disparati, per esempio per indicare un'enfasi – corsivo, grassetto, sottolineatura… –, per indicare il carattere finale di una parola, o per estendere la codifica, introducendo simboli non presenti nella codifica ASCII, come ad esempio le lettere accentate o quelle dell’alfabeto greco o simboli grafici adatti a realizzare semplici sinottici.</p>
+<p>Poiché i computer dell’epoca erano basati su architetture a 8 bit, la memorizzazione di un carattere ASCII in un byte lasciava un bit inutilizzato. Diversi costruttori e sviluppatori di software utilizzarono il bit extra nei modi più disparati, per esempio per indicare un’enfasi – corsivo, grassetto, sottolineatura… –, per indicare il carattere finale di una parola, o per estendere la codifica, introducendo simboli non presenti nella codifica ASCII, come ad esempio le lettere accentate o quelle dell’alfabeto greco o simboli grafici adatti a realizzare semplici sinottici.</p>
 <p>La diffusione dei computer IBM-PC compatibili e la necessità di localizzare i software spinse verso la standardizzazione delle estensioni proprietarie del codice ASCII, introducendo il concetto di set di caratteri <em>OEM</em> – <em>Original Equipment Manufacturer</em>. La costante di questo tipo di codifiche è l’uso di unità di codifica di 8 bit: le prime 128 posizioni coincidono con quelle del codice ASCII, mentre le successive 128, dal codice <span class="code">1000000</span> (128) al codice <span class="code">11111111</span> (255), sono di volta in volta utilizzate per simboli diversi.</p>
 <p>Una particolare mappatura prende il nome di <em>code page</em>, e ogni pagina è indicata da un identificativo numerico. Per esempio, la pagina contenente le lettere accentate è la numero 850, mentre quella dedicata all’alfabeto greco è la numero 737.</p>
+<img src="img/unicode/cp437.gif"/>
+<p class="illustration">La code page 437 “United States”, l’originale del PC IBM (fonte: <a href="https://www.charset.org/charsets/us-ascii">charset.org</a>).</p>
+<img src="img/unicode/cp850_diff.gif"/>
+<p class="illustration">La code page 850 “Multilingual (Latin I)”, in evidenza le differenze rispetto alla 437 (fonte: <a href="https://web.archive.org/web/20160307093605/https://msdn.microsoft.com/en-us/goglobal/cc305160">archive.org</a>).</p>
+<img src="img/unicode/cp737_diff.gif"/>
+<p class="illustration">La code page 737 “Greek II”, in evidenza le differenze rispetto alla 437 (fonte: <a href="https://web.archive.org/web/20160316145425/https://msdn.microsoft.com/en-us/goglobal/cc305158">archive.org</a>).</p>
 <h2 id="code-page-oem-e-ansi">Code page OEM e ANSI</h2>
-<p>Con l’avvento di Windows, Microsoft introdusse delle nuove codifiche, sempre basate su code page. Per distinguerle da quelle OEM usate in ambiente DOS le denominò, piuttosto infelicemente, <em>ANSI</em>: di fatto, non esiste alcuno standard ANSI a riguardo. Microsoft scelse quel nome perché nel definire quelle codifiche si ispirò – piuttosto liberamente, in realtà – a una proposta di standard che però non fu mai preso in considerazione dal comitato ANSI, e che qualche anno più tardi sarebbe divenuto l’ISO-8859-1 (cfr. voce “ANSI” in<sup><a href="#ref-7">[7]</a></sup>). A titolo d'esempio, la code page ANSI Windows-1250 e lo standard ISO-8859-1 (noto anche come <em>Latin 1</em>) differiscono per ben 27 associazioni<sup><a href="#ref-9">[9]</a></sup>.</p>
+<p>Con l’avvento di Windows Microsoft introdusse delle nuove codifiche, sempre basate su code page. Per distinguerle da quelle OEM usate in ambiente DOS le denominò, piuttosto infelicemente, <em>ANSI</em>: di fatto, non esiste alcuno standard ANSI a riguardo. Microsoft scelse quel nome perché nel definire quelle codifiche si ispirò – piuttosto liberamente, in realtà – a una proposta di standard che però non fu mai presa in considerazione dal comitato ANSI, e che qualche anno più tardi sarebbe divenuto l’ISO-8859-1 (cfr. voce “ANSI” in<sup><a href="#ref-7">[7]</a></sup>). La code page ANSI Windows-1252 e lo standard ISO-8859-1 (noto anche come “Latin 1” o “Western Europe”) differiscono tra loro per ben 27 associazioni<sup><a href="#ref-9">[9]</a></sup>.</p>
+<img src="img/unicode/iso-8859-1.gif"/>
+<p class="illustration">La code page ISO-8859-1 (fonte: <a href="https://www.charset.org/charsets/iso-8859-1">charset.org</a>).</p>
+<img src="img/unicode/windows-1252_diff.gif"/>
+<p class="illustration">La code page Windows-1252, in evidenza le differenze rispetto all’ISO 8859-1 (fonte: <a href="https://www.charset.org/charsets/windows-1252">charset.org</a>).</p>
 <h2 id="ambiguita-delle-code-page">Ambiguità delle <em>code page</em></h2>
-<p>Poiché tutte le codifiche basate su code page estendono quella ASCII, un flusso di testo ASCII è perfettamente decodificabile utilizzando una qualunque codifica estesa; viceversa, un testo contenente caratteri specifici di una particolare code page OEM o Windows può essere decodificato correttamente solo tramite la medesima code page. Questo può rappresentare un problema, se il testo viene decodificato su un sistema che usa una code page diversa da quello che l’ha codificato (cfr. <a href="#mojibake">mojibake</a>).</p>
+<p>Poiché tutte le codifiche basate su code page estendono quella ASCII, un flusso di testo ASCII è perfettamente decodificabile utilizzando una qualunque codifica estesa; viceversa, un testo contenente caratteri specifici di una particolare code page OEM o Windows può essere decodificato correttamente solo tramite la medesima code page. Questo può rappresentare un problema, se il testo viene decodificato su un sistema che usa una code page diversa da quello che l’ha codificato (cfr. <a href="#mojibake">mojibake</a>):</p>
+<pre class="code">
+Microsoft Windows [Version 10.0.26100.6899]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\>chcp
+Active code page: 850
+
+C:\>mojibake.cmd
+╔══════════╗
+║ MOJIBAKE ║
+╚══════════╝
+
+C:\>chcp 1252
+Active code page: 1252
+
+C:\>mojibake.cmd
+ÉÍÍÍÍÍÍÍÍÍÍ»
+º MOJIBAKE º
+ÈÍÍÍÍÍÍÍÍÍÍ¼
+</pre>
 <h2 id="codifiche-composte">Codifiche composte</h2>
 <p>Una codifica basata su unità a 8 bit che rappresenta ogni carattere con un’unità può rappresentare al più 256 caratteri diversi. In alcuni ambiti questo limite è inaccettabile: le lingue asiatiche ne sono un esempio. Il problema viene normalmente risolto aumentando il numero di unità di codifica utilizzate per rappresentare un singolo carattere. Nel caso si scelga di utilizzare due unità di codifica per carattere (due byte), si parla di set di caratteri <em>DBCS</em> – <em>Double-byte character set</em>. In questo modo, il numero di caratteri rappresentabili sale a 65536. Alcune codifiche DBCS adottano particolari schemi di codifica mista, nelle quali alcuni caratteri vengono associati ad un’unica unità di codifica, altri a due: alla diminuzione del numero di simboli rappresentabili corrisponde però la possibilità di mantenere la compatibilità con la codifica ASCII per i caratteri che la prevedono. Queste codifiche non sono compatibili con quelle basate su code page, e ciò preclude la possibilità di scambiare informazioni testuali tra due sistemi che adottano due schemi diversi; spesso, anche questa situazione è inaccettabile.</p>
 <h2 id="unicode">Unicode</h2>
 <h3 id="premessa-storica">Premessa storica</h3>
-<p><em>Unicode</em> (originariamente <em>Unification Code</em>) nasce negli Stati Uniti nella seconda metà degli anni ‘80 dallo sforzo congiunto di Xerox e IBM di definire un set di caratteri multi-lingua facilmente trattabile dai calcolatori, in particolare astraendo dalle code page e scegliendo un’unità di codifica a lunghezza fissa di 16 bit. I limiti di questa scelta si palesarono pochi anni più tardi, quando il processo di standardizzazione delle lingue orientali produsse un catalogo di decine di migliaia ideogrammi: un alfabeto troppo ampio per poter essere interamente rappresentato con una codifica a 16 bit.</p>
+<p><em>Unicode</em> (originariamente <em>Unification Code</em>) nasce negli Stati Uniti nella seconda metà degli anni ‘80 dallo sforzo congiunto di Xerox e Apple di definire un set di caratteri multi-lingua facilmente trattabile dai calcolatori, in particolare astraendo dalle code page e scegliendo un’unità di codifica a lunghezza fissa di 16 bit. I limiti di questa scelta si palesarono pochi anni più tardi, quando il processo di standardizzazione delle lingue orientali produsse un catalogo di decine di migliaia ideogrammi: un alfabeto troppo ampio per poter essere interamente rappresentato con una codifica a 16 bit.</p>
 <p>Contemporaneamente in Europa nasceva lo standard ISO/IEC 10646, che introduceva una codifica a 32 bit nota come <em>UCS</em> – <em>Universal (Coded) Character Set</em> che, prevedendo delle sequenze di <em>escape</em> per attivare delle modalità di codifica differenti, rendeva praticamente infinito il numero di caratteri rappresentabili.</p>
 <p>Agli inizi degli anni ‘90 ebbe inizio un processo di unificazione delle due codifiche. Le attribuzioni dei codici della versione 6.1 di Unicode corrispondono perfettamente a quelle definite dallo standard ISO/IEC 10646:2012.</p>
+<h4>Eventi principali</h4>
+<ul>
+<li><strong>1987</strong>: Xerox ed Apple iniziano lo studio di un set di caratteri universale;</li>
+<li><strong>1988</strong>: viene pubblicato il documento Unicode 88 che contiene una proposta per un <em>“international/multilingual text character encoding system”</em> codificato su 16 bit;</li>
+<li><strong>1990</strong>: viene presentata la bozza finale di Unicode 1.0;</li>
+<li><strong>1991</strong>: il 3 gennaio nasce in California lo Unicode Consortium;</li>
+<li><strong>1991</strong>: a ottobre viene pubblicato Unicode 1.0; nell’introduzione si legge:
+<blockquote>With over 30,000 unallocated character positions, the Unicode character encoding provides sufficient space for foreseeable future expansion.</blockquote></li>
+<li><strong>1996</strong>: Unicode 2.0 rompe la barriera dei 16 bit.</li>
+</ul>
+<h3>Evoluzione di Unicode</h3>
+<p>Unicode è in continuo sviluppo:</p>
+<img src="img/unicode/unicode_evolution.png"/>
+<p class="illustration">Scritture e caratteri supportati da Unicode nel tempo.</p>
+<h3>Diffusione di Unicode</h3>
+<p>Unicode conobbe un immediato successo, in particolare sul Web:</p>
+<img src="img/unicode/unicode_web.png"/>
+<p class="illustration">Diffusione di Unicode in Internet nei primi anni 2000 (fonte: <a href="https://googleblog.blogspot.com/2012/02/unicode-over-60-percent-of-web.html">googleblog.blogspot.com</a>).</p>
 <h3 id="code-point">Code point e <em>piani</em></h3>
 <p>Ad ogni carattere Unicode assegna un <em>code point</em>, ovvero un valore numerico compreso tra <span class="code">0</span> e <span class="code">10FFFF</span> cui viene applicato il prefisso <span class="code">U+</span> (il code point della lettera A maiuscola è <span class="code">U+0041</span>). Non tutti i code point sono assegnati ad un carattere. La codifica è strutturata in <em>piani</em>, ognuno dei quali contiene 65536 caratteri. I piani definiti sono 16, e sono identificati dalle prime due cifre del codice esadecimale. I caratteri originali Unicode a 16 bit, i cui codici sono compresi tra <span class="code">0</span> e <span class="code">00FFFF</span>, costituiscono il <em>piano zero</em> o <em>BMP</em> – <em>Basic Multilingual Plan</em>. I piani successivi sono detti <em>piani estesi</em> o <em>piani surrogati</em>. Se i caratteri del piano zero sono rappresentabili con 16 bit, quelli dei piani estesi necessitano di almeno 24 bit. Codificare caratteri con sequenze di lunghezza diversa può essere problematico, come già visto. D’altra parte, anche utilizzare più bit del necessario per rappresentare i caratteri ha i suoi svantaggi.</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>Piano</th><th>Intervallo</th><th>Descrizione</th><th>Abbreviazione</th></tr>
+<tbody><tr><th>Piano</th><th>Intervallo</th><th>Descrizione</th><th>Abbreviazione</th></tr>
 <tr><td>00</td><td>000000-00FFFF</td><td>Basic Multilingual Plane</td><td>BMP</td></tr>
 <tr><td>01</td><td>010000-01FFFF</td><td>Supplementary Multilingual Plane</td><td>SMP</td></tr>
 <tr><td>02</td><td>020000-02FFFF</td><td>Supplementary Ideographic Plane</td><td>SIP</td></tr>
@@ -73,53 +126,50 @@ A → col=4, row=1
 <tr><td>14</td><td>0E0000-0EFFFF  </td><td>Supplementary Special-purpose Plane</td><td>SSP</td></tr>
 <tr><td>15</td><td>0F0000-0FFFFF</td><td>Supplementary Private Use Area-A</td><td>-</td></tr>
 <tr><td>16</td><td>100000-10FFFF</td><td>Supplementary Private Use Area-B</td><td>-</td></tr>
-</table>
+</tbody></table>
 <h3 id="caratteri">Caratteri</h3>
 <p>Il carattere in Unicode è un’entità astratta, indipendente dalla sua forma grafica (<em>glifo</em>); in questo senso, Unicode associa un code point alla <em>descrizione</em> di un carattere, senza entrare nel merito dell’aspetto (corsivo, grassetto, con o senza le grazie, …). Ad esempio, il code point <span class="code">U+0041</span> è associato al carattere <em>LATIN CAPITAL LETTER A</em>, ed è solo per motivi di praticità che nelle tabelle di codifica viene anche riportato un esempio di rappresentazione grafica del carattere.</p>
 <h4>Equivalenza</h4>
 <p>Per ragioni di compatibilità, la codifica Unicode non è biunivoca: uno simbolo può essere identificato da differenti sequenze di caratteri; si parla in questo caso di caratteri <em>equivalenti</em>. Esistono due tipi di equivalenze:</p>
 <dl>
 <dt>equivalenza canonica</dt><dd>caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto e che sono graficamente indistinguibili; un esempio sono i caratteri ottenibili per composizione:
-<pre class="code">
-U+00E8 - LATIN SMALL LETTER E WITH GRAVE..........&#x00e8;
+<pre class="code">U+00E8 - LATIN SMALL LETTER E WITH GRAVE..........è
 
-U+0065 - LATIN SMALL LETTER E.....................&#x0065;
-U+0300 - COMBINING GRAVE ACCENT...................&#x0300;&nbsp;
+U+0065 - LATIN SMALL LETTER E.....................e
+U+0300 - COMBINING GRAVE ACCENT...................̀&nbsp;
 
-U+00E8 (&#x00e8;) ≡  U+0065 U+0300 (&#x0065;&#x0300;)
+U+00E8 (è) ≡  U+0065 U+0300 (è)
 </pre>
 <p>Un caso di equivalenza canonica ternaria:</p>
-<pre class="code">
-U+00C5 - LATIN CAPITAL LETTER A WITH RING ABOVE...&#x00c5;
+<pre class="code">U+00C5 - LATIN CAPITAL LETTER A WITH RING ABOVE...Å
 
-U+0041 - LATIN CAPITAL LETTER A...................&#x0041;
-U+030A - COMBINING RING ABOVE.....................&#x030a;&nbsp;
+U+0041 - LATIN CAPITAL LETTER A...................A
+U+030A - COMBINING RING ABOVE.....................̊&nbsp;
 
-U+212B - ANGSTROM SIGN............................&#x212b;
+U+212B - ANGSTROM SIGN............................Å
 
-U+00C5 (&#x00c5;) ≡ U+0041 U+030A (&#x0041;&#x030a;) ≡ U+212B (&#x212b;)
+U+00C5 (Å) ≡ U+0041 U+030A (Å) ≡ U+212B (Å)
 </pre>
 </dd>
 <dt>equivalenza di compatibilità</dt><dd>caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto ma che si distinguono per forma o altre caratteristiche; sono comprese le varianti grafiche, gli apici, i pedici, le legature, …:
-<pre class="code">
-U+2460 CIRCLED DIGIT ONE..........................&#x2460;
-U+0031 DIGIT ONE..................................&#x0031;
+<pre class="code">U+2460 CIRCLED DIGIT ONE..........................①
+U+0031 DIGIT ONE..................................1
 
-U+2460 (&#x2460;) ∼ U+0031 (&#x0031;)
-
-
-U+2083 - SUBSCRIPT THREE..........................&#x2083;
-U+0033 - DIGIT THREE..............................&#x0033;
-
-U+2083 (&#x2083;) ∼ U+0033 (&#x0033;)
+U+2460 (①) ∼ U+0031 (1)
 
 
-U+FB01 - LATIN SMALL LIGATURE FI..................&#xfb01;
+U+2083 - SUBSCRIPT THREE..........................₃
+U+0033 - DIGIT THREE..............................3
 
-U+0066 - LATIN SMALL LETTER F.....................&#x0066;
-U+0069 - LATIN SMALL LETTER I.....................&#x0069;
+U+2083 (₃) ∼ U+0033 (3)
 
-U+FB01 (&#xfb01;) ∼ U+0066 U+0069 (&#x0066;&#x0069;)
+
+U+FB01 - LATIN SMALL LIGATURE FI..................ﬁ
+
+U+0066 - LATIN SMALL LETTER F.....................f
+U+0069 - LATIN SMALL LETTER I.....................i
+
+U+FB01 (ﬁ) ∼ U+0066 U+0069 (fi)
 </pre></dd>
 </dl>
 <p>Poiché uno stesso carattere può assumere codifiche differenti, nasce il problema di stabilire, dati due testi Unicode, se questi sono uguali. A tal scopo sono state definite delle regole di normalizzazione delle rappresentazioni dei testi Unicode – <em>Unicode Normalization Forms<sup><a href="#ref-10">[10]</a></sup></em> – che si occupano di trasformare i testi originali in una forma primitiva comune, a partire dalla quale risulta più semplice effettuare il confronto.</p>
@@ -132,35 +182,34 @@ U+FB01 (&#xfb01;) ∼ U+0066 U+0069 (&#x0066;&#x0069;)
 </ul>
 <p>La tabella sottostante riporta il numero di byte necessario per rappresentare un code point nei vari formati:</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>Intervallo</th><th>Caratteri contenuti</th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr>
+<tbody><tr><th>Intervallo</th><th>Caratteri contenuti</th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr>
 <tr><td>000000-00007F</td><td>Basic Latin</td><td class="byte-count">1</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
 <tr><td>000080-0007FF</td><td>Latin Extensions, Greek, Cyrillic, …</td><td class="byte-count">2</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
 <tr><td>000800-00FFFF</td><td>Thai, Hiragana, Katakana, …</td><td class="byte-count">3</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
 <tr><td>010000-10FFFF</td><td>Cuneiform, Hieroglyphs, Private, …</td><td class="byte-count">4</td><td class="byte-count">4</td><td class="byte-count">4</td></tr>
-</table>
+</tbody></table>
 <h4>Endianness</h4>
-<p>Quando una sequenza di caratteri Unicode in formato UTF-16 o UTF-32 viene serializzata in un flusso di byte, per esempio un file, è necessario definire l'ordine di scrittura dei byte che costituiscono le singole unità di codifica. La rappresentazione UTF-16 della lettera A maiuscola, <span class="code">0041</span>, può ad esempio essere serializzata in due modi distinti: <span class="code">00</span>–<span class="code">41</span> oppure <span class="code">41</span>–<span class="code">00</span>. La prima forma, presentando prima il byte più significativo seguito da quello meno significativo, viene detta <em>big endian</em>; la seconda forma, nella quale il byte meno significativo precede quello più significativo, viene denominata <em>little endian</em>. L'<em>endianness</em> indica quindi il “peso” del primo byte che si incontra.</p>
+<p>Quando una sequenza di caratteri Unicode in formato UTF-16 o UTF-32 viene serializzata in un flusso di byte, per esempio un file, è necessario definire l’ordine di scrittura dei byte che costituiscono le singole unità di codifica. La rappresentazione UTF-16 della lettera A maiuscola, <span class="code">0041</span>, può ad esempio essere serializzata in due modi distinti: <span class="code">00</span>–<span class="code">41</span> oppure <span class="code">41</span>–<span class="code">00</span>. La prima forma, presentando prima il byte più significativo seguito da quello meno significativo, viene detta <em>big endian</em>; la seconda forma, nella quale il byte meno significativo precede quello più significativo, viene denominata <em>little endian</em>. L’<em>endianness</em> indica quindi il “peso” del primo byte che si incontra.</p>
 <h4>Peculiarità della codifica UTF-8</h4>
 <p>La codifica UTF-8 distribuisce i bit di un code point in una sequenza di byte secondo lo schema seguente:</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>Intervallo</th><th>Bits</th><th>Maschera</th></tr>
+<tbody><tr><th>Intervallo</th><th>Bits</th><th>Maschera</th></tr>
 <tr><td>000000-00007F</td><td>7</td><td class="bit-mask">0xxxxxxx</td></tr>
 <tr><td>000080-0007FF</td><td>11</td><td>110xxxxx 10xxxxxx</td></tr>
 <tr><td>000800-00FFFF</td><td>16</td><td>1110xxxx 10xxxxxx 10xxxxxx</td></tr>
 <tr><td>010000-10FFFF</td><td>21</td><td>11110xxx 10xxxxxx 10xxxxxx 10xxxxxx</td></tr>
-</table>
+</tbody></table>
 <p>La configurazione dei bit più significativi dei byte costituenti di una codifica UTF-8 assumono dunque un significato ben preciso:</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>Bits</th><th>Significato</th></tr>
+<tbody><tr><th>Bits</th><th>Significato</th></tr>
 <tr><td>0xxxxxxx</td><td>Byte iniziale di una sequenza di lunghezza 1 (ASCII)</td></tr>
 <tr><td>10xxxxxx</td><td>Byte successivo al primo</td></tr>
 <tr><td>110xxxxx</td><td>Byte iniziale di una sequenza di lunghezza 2</td></tr>
 <tr><td>1110xxxx</td><td>Byte iniziale di una sequenza di lunghezza 3</td></tr>
 <tr><td>11110xxx</td><td>Byte iniziale di una sequenza di lunghezza 4</td></tr>
-</table>
+</tbody></table>
 <p>Segue un esempio di codifica UTF-8:</p>
-<pre class="code">
-U+2135 - ALEF SYMBOL..............................&#x2135;
+<pre class="code">U+2135 - ALEF SYMBOL..............................ℵ
 
 2135 → 0010 0001 0011 0101
 
@@ -175,10 +224,9 @@ U+2135 - ALEF SYMBOL..............................&#x2135;
 U+2135 → E2 84 B5
 </pre>
 <h4>Peculiarità della codifica UTF-16</h4>
-<p>La codifica UTF-16 fa uso di alcuni speciali code point del Basic Multilingual Plan, denominati <em>surrogati</em>, per indirizzare i caratteri al di fuori del BMP stesso. I surrogati sono 2048 code point che non corrispondono a nessun carattere, e si suddividono in <em>surrogati alti</em>, i cui codici vanno da <span class="code">U+D800</span> fino a <span class="code">U+DBFF</span>, e <em>surrogati bassi</em>, da <span class="code">U+DC00</span> a <span class="code">U+DFFF</span>. I surrogati appaiono sempre in coppia, nell'ordine alto/basso.</p>
-<p>La coppia di surrogati viene determinata sottraendo <span class="code">10000</span> dal code point del carattere così da normalizzarlo nell'intervallo [<span class="code">0</span>, <span class="code">FFFFF</span>]; i venti bit rimanenti vengono equamente distribuiti nei dieci bit meno significativi del surrogato alto (<span class="code">D800</span>÷<span class="code">DBFF</span> ↔ <span class="code">110110xxxxxxxxxx</span>) e quello basso (<span class="code">DC00</span>÷<span class="code">DFFF</span> ↔ <span class="code">110111xxxxxxxxxx</span>):</p>
-<pre class="code">
-U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....&#x1D54A;
+<p>La codifica UTF-16 fa uso di alcuni speciali code point del Basic Multilingual Plan, denominati <em>surrogati</em>, per indirizzare i caratteri al di fuori del BMP stesso. I surrogati sono 2048 code point che non corrispondono a nessun carattere, e si suddividono in <em>surrogati alti</em>, i cui codici vanno da <span class="code">U+D800</span> fino a <span class="code">U+DBFF</span>, e <em>surrogati bassi</em>, da <span class="code">U+DC00</span> a <span class="code">U+DFFF</span>. I surrogati appaiono sempre in coppia, nell’ordine alto/basso.</p>
+<p>La coppia di surrogati viene determinata sottraendo <span class="code">10000</span> dal code point del carattere così da normalizzarlo nell’intervallo [<span class="code">0</span>, <span class="code">FFFFF</span>]; i venti bit rimanenti vengono equamente distribuiti nei dieci bit meno significativi del surrogato alto (<span class="code">D800</span>÷<span class="code">DBFF</span> ↔ <span class="code">110110xxxxxxxxxx</span>) e quello basso (<span class="code">DC00</span>÷<span class="code">DFFF</span> ↔ <span class="code">110111xxxxxxxxxx</span>):</p>
+<pre class="code">U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....𝕊
 
 1D54A → 0001 1101 0101 0100 1010 -
         0001 0000 0000 0000 0000
@@ -210,7 +258,7 @@ U+1D54A → D835 DD4A
 <p>Il <em>BOM</em> – <em>Byte order mark</em> è il carattere Unicode <span class="code">U+FEFF</span> quando utilizzato per specificare l’<em>endianness</em> di una sequenza di caratteri Unicode. Tale carattere, denominato <em>“zero width no-break space”</em>, può occupare solo la prima posizione di una sequenza di caratteri Unicode e non ha altro effetto che quello di fornire un’indicazione indiretta del tipo di ordinamento in uso — perdendo quindi il significato originale di “zero width no-break space”.</p>
 <p><em>Nota</em>: il vincolo di poter apparire solo in prima posizione è stato introdotto nella versione 3.2 di Unicode. Non è quindi escluso che si possa trovare anche in posizioni intermedie, dove di nuovo assume il significato di “zero width no-break space”. In questo contesto andrebbe sostituito dal carattere <span class="code">U+2060</span> <em>“word joiner”</em>.</p>
 <table cellpadding="0" cellspacing="0">
-<tr><th>Codifica</th><th>Endianness</th><th>BOM ammesso?</th></tr>
+<tbody><tr><th>Codifica</th><th>Endianness</th><th>BOM ammesso?</th></tr>
 <tr><td>UTF-8</td><td class="endianness">n/a</td><td class="bom">sì</td></tr>
 <tr><td>UTF-16</td><td class="endianness">?</td><td class="bom">sì</td></tr>
 <tr><td>UTF-16BE</td><td class="endianness">big</td><td class="bom">no</td></tr>
@@ -218,55 +266,108 @@ U+1D54A → D835 DD4A
 <tr><td>UTF-32</td><td class="endianness">?</td><td class="bom">sì</td></tr>
 <tr><td>UTF-32BE</td><td class="endianness">big</td><td class="bom">no</td></tr>
 <tr><td>UTF-32LE</td><td class="endianness">little</td><td class="bom">no</td></tr>
-</table>
+</tbody></table>
 <h4 id="il-bom-nellutf-8">Il BOM nell’UTF-8</h4>
 <p>Utilizzando unità di codifica a 8 byte, in linea di principio la presenza del BOM è superflua; alcuni software tuttavia la potrebbero richiedere. Il BOM in UTF-8 è rappresentato dalla sequenza <span class="code">EF BB BF</span>.</p>
 <h4 id="il-bom-nellutf-16">Il BOM nell’UTF-16</h4>
 <p>Se durante la decodifica di un flusso Unicode la prima coppia di byte incontrata è <span class="code">FE FF</span>, si può presupporre che si tratti del BOM di una sequenza big endian. Se invece si trova <span class="code">FF FE</span>, essendo il code point <span class="code">U+FFFE</span> non valido, si può presupporre che si tratti del BOM di una sequenza little endian. In genere, se un flusso binario inizia con la sequenza <span class="code">FF FE</span> o <span class="code">FE FF</span> si può ragionevolmente presupporre che si tratti di testo Unicode UTF-16.</p>
 <h4 id="il-bom-nellutf-32">Il BOM nell’UTF-32</h4>
 <p>Valgono le stesse considerazioni fatte per l’UTF-16.</p>
-<a name="mojibake"></a>
-<h3>Mojibake</h3>
-<p>Il <em>mojibake</em> si verifica quando, a causa dell'adozione di una codifica errata, il testo non viene visualizzato correttamente. Ad esempio, la parola <em>caffè</em>, che corrisponde alla sequenza di code point Unicode:</p>
+<h3>Trasformazione maiuscolo/minuscolo</h3>
+<p>Per la stragrande maggioranza dei caratteri Unicode la trasformazione da maiuscolo a minuscolo (e viceversa) comporta la sosituzione di un code point con un altro. Questi casi sono definiti “simple case mappings” e le corrispondenze sono elencate nello standard. Esistono tuttavia dei casi in cui la trasformazione richiede particolari attenzioni: questi vanno sotto il nome di “special case mappings” e sono definiti in un documento apposito. Segue qualche esempio.</p>
+<h4>Numero di code point difformi</h4>
+<ul>
+<li><p>la “s tedesca”:</p>
 <pre class="code">
-caffè → U+0063 U+0061 U+0066 U+0066 U+00E8
+U+00DF ↔ U+0053 U+0053
+
+U+00DF - LATIN SMALL LETTER SHARP S..............ß
+U+0053 - LATIN CAPITAL LETTER S..................S
+
+ß ↔ SS
+</li>
+<li><p>le legature:</p>
+<pre class="code">
+U+00DF ↔ U+0046 U+0049
+
+U+FB01 - LATIN SMALL LIGATURE FI.................ﬁ
+U+0046 - LATIN CAPITAL LETTER F..................F
+U+0049 - LATIN CAPITAL LETTER I..................I
+
+ﬁ ↔ FI
+</li>
+<li><p>caratteri privi del corrispettivo maiuscol/minuscolo:</p>
+<pre class="code">
+U+1E97 ↔ U+0054 U+0308
+
+U+1E97 - latin small letter t with diaeresis.....ẗ
+U+0054 - LATIN CAPITAL LETTER T..................T
+U+0308 - COMBINING DIAERESIS.....................◌̈
+
+ẗ ↔ T◌̈
+</li>
+</ul>
+</pre>
+<h4>Casi dipendenti dal contesto</h4>
+<ul>
+<li><p>Sigma in coda:</p>
+<pre class="code">
+U+03C2 ↔ U+03A3
+U+03C3 ↔ U+03A3
+
+U+03C2 - GREEK SMALL LETTER FINAL SIGMA..........ς
+U+03C3 - GREEK SMALL LETTER SIGMA................σ
+U+03A3 - GREEK CAPITAL LETTER SIGMA..............Σ
+
+ς ↔ Σ (for final sigma)
+σ ↔ Σ (for non-final sigma)
+</li>
+<li><p>Lettera i minuscola in turco:</p>
+<pre class="code">
+U+0069 ↔ U+0049
+U+0069 ↔ U+0130 [tr]
+
+U+0069 - LATIN SMALL LETTER I....................i
+U+0049 - LATIN CAPITAL LETTER I..................I
+U+0130 - LATIN CAPITAL LETTER I WITH DOT ABOVE...İ
+
+i ↔ I
+i ↔ İ (in Turkish)
+</li>
+</ul>
+<a name="mojibake"></a>
+<h3>Mojibake Unicode/ANSI</h3>
+<p>Il <em>mojibake</em> si verifica quando, a causa dell’adozione di una codifica errata, il testo non viene visualizzato correttamente. Ad esempio, la parola <em>caffè</em>, che corrisponde alla sequenza di code point Unicode:</p>
+<pre class="code">caffè → U+0063 U+0061 U+0066 U+0066 U+00E8
 </pre>
 <p>se codificata in UTF-8 origina la sequenza di byte:</p>
-<pre class="code">
-caffè → 63 61 66 66 C3 A8
+<pre class="code">caffè → 63 61 66 66 C3 A8
 </pre>
 <p>Questa stessa sequenza, se decodificata in ISO-8859-1, dà luogo alla “parola”:</p>
-<pre class="code">
-63 61 66 66 C3 A8 → caff&#xc3;&#xa8;
+<pre class="code">63 61 66 66 C3 A8 → caffÃ¨
 </pre>
 <p>Viceversa, la codifica ISO-8859-1 della parola originale corrisponde a:</p>
-<pre class="code">
-caffè → 63 61 66 E8
+<pre class="code">caffè → 63 61 66 E8
 </pre>
 <p>che decodificata in UTF-8 produce:</p>
-<pre class="code">
-63 61 66 E8 → caff&#xfffd;
+<pre class="code">63 61 66 E8 → caff�
 </pre>
-<p>Il carattere &#xfffd; (<em>“replacement character”</em>, code point <span class="code">U+FFFD</span>) è il simbolo convenzionalmente utilizzato da Unicode per segnalare la presenza di un code point sconosciuto o non rappresentabile.</p>
+<p>Il carattere � (<em>“replacement character”</em>, code point <span class="code">U+FFFD</span>) è il simbolo convenzionalmente utilizzato da Unicode per segnalare la presenza di un code point sconosciuto o non rappresentabile.</p>
 <h3>Curiosità</h3>
 <p>In Python 3.x, la cui conformità a Unicode è rimarchevole, accade questo (font permettendo):</p>
-<pre class="code">
-&gt;&gt;&gt; int("&#x09ea;&#x0b68;")
+<pre class="code">&gt;&gt;&gt; int("৪୨")
 <strong>42</strong>
 </pre>
-<p>La risposta risulta meno sorprendente se si considera l'espressione seguente, equivalente alla prima:</p>
-<pre class="code">
-&gt;&gt;&gt; int("\u09ea\u0b68")
+<p>La risposta risulta meno sorprendente se si considera l’espressione seguente, equivalente alla prima:</p>
+<pre class="code">&gt;&gt;&gt; int("\u09ea\u0b68")
 <strong>42</strong>
 </pre>
 <p>La consultazione delle tabelle Unicode risolve il mistero:</p>
-<pre class="code">
-U+09EA - BENGALI DIGIT FOUR.......................&#x09ea;
-U+0B68 - ORIYA DIGIT TWO..........................&#x0b68;
+<pre class="code">U+09EA - BENGALI DIGIT FOUR.......................৪
+U+0B68 - ORIYA DIGIT TWO..........................୨
 </pre>
 <p class="update"><strong>Aggiornamento [28/05/2014]</strong></p>
-<p>Al <a href="http://cppnow.org">C++Now 2014</a> c'è stato un intervento di James McNellis intitolato “Unicode in C++”; le <a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/unic
-ode-cpp.pdf?raw=true">slide</a> che ha preparato sono splendide, tanto che ne ho fatto una <a href="files/unicode/unicode-cpp.pdf">copia locale</a> per non rischiare di perderle!</p>
+<p>Al <a href="http://cppnow.org/">C++Now 2014</a> c’è stato un intervento di James McNellis intitolato “Unicode in C++”; le <a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/unicode-cpp.pdf?raw=true">slide</a> che ha preparato sono splendide, tanto che ne ho fatto una <a href="https://gzuliani.github.io/unicode/files/unicode/unicode-cpp.pdf">copia locale</a> per non rischiare di perderle!</p>
 <h2 id="riferimenti">Riferimenti</h2>
 <ol>
 <li class="ref"><a name="ref-1"></a>Cimarosti, M. <em>“Dodici anni di Unicode”</em> — <a href="http://web.tiscali.it/marco.cimarosti/pro_graf.html">http://web.tiscali.it/marco.cimarosti/pro_graf.html</a>, visitato il 07/06/2013</li>
@@ -282,6 +383,5 @@ ode-cpp.pdf?raw=true">slide</a> che ha preparato sono splendide, tanto che ne ho
 <li class="ref"><a name="ref-11"></a><em>“UTF-8 encoding table and Unicode characters”</em>, utf8-chartable.de — <a href="http://www.utf8-chartable.de/unicode-utf8-table.pl">http://www.utf8-chartable.de/unicode-utf8-table.pl</a></li>
 <li class="ref"><a name="ref-12"></a><em>“UTF-8 Sampler”</em>, columbia.edu — <a href="http://www.columbia.edu/~fdc/utf8/">http://www.columbia.edu/~fdc/utf8/</a></li>
 </ol>
-<p class="modification-notice">Pagina modificata il 03/07/2013</p>
-</body>
-</html>
+<p class="modification-notice">Pagina modificata il 05/11/2025</p>
+</body></html>
