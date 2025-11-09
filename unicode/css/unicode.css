@@ -65,6 +65,11 @@ td.ascii-col-heading {
  text-align: right;
 }
 
+td.byte {
+ text-align: center;
+ font-family: Consolas, Monaco, "DejaVu Sans Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+}
+
 td.byte-count {
  text-align: center;
 }
@@ -75,6 +80,24 @@ td.bom {
 
 td.endianness {
  text-align: center;
+}
+
+td.character {
+ color: #268bd2;
+ font-weight: bold;
+ text-align: center;
+}
+
+td.wrong-character {
+ color: #cb4b16;
+ font-weight: bold;
+ text-align: center;
+}
+
+td.encoding {
+ text-align: center;
+ padding-bottom: 1em;
+ padding-top: 1em;
 }
 
 span.bit-0 {
