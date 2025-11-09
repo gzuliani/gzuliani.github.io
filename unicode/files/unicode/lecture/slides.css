@@ -1,0 +1,195 @@
+/*
+@import url('https://fonts.googleapis.com/css?family=Oswald');
+@import url('https://fonts.googleapis.com/css?family=PT+Serif');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono');
+*/
+@font-face {
+  font-family: 'Oswald';
+  src: url('fonts/Oswald-Regular.ttf');
+}
+@font-face {
+  font-family: 'PT Serif';
+  src: url('fonts/PT_Serif-Web-Regular.ttf');
+}
+@font-face {
+  font-family: 'Courier Prime';
+  src: url('fonts/CourierPrime-Regular.ttf');
+}
+
+/*
+ * Chrome's "Print to PDF" support
+ */
+@page {
+  size: 1210px 681px;
+  margin: 0;
+}
+
+@media print {
+  .remark-slide-scaler {
+    width: 100% !important;
+    height: 100% !important;
+    transform: scale(1) !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+}
+
+/*
+ * Solarized palette
+ *
+ * base03=#002b36
+ * base02=#073642
+ * base01=#586e75
+ * base00=#657b83
+ * base0=#839496
+ * base1=#93a1a1
+ * base2=#eee8d5
+ * base3=#fdf6e3
+ * yellow=#b58900
+ * orange=#cb4b16
+ * red=#dc322f
+ * magenta=#d33682
+ * violet=#6c71c4
+ * blue=#268bd2
+ * cyan=#2aa198
+ * green=#859900
+*/
+
+.remark-notes-area {
+  font-size: 24px;
+}
+
+.remark-slide-content {
+  background-color: #eee8d5;
+  background-size: contain;
+  color: #002b36;
+  font-size: 32px;
+}
+
+.remark-slide-content h1 {
+  font-size: 1.5em;
+}
+
+.remark-slide-number {
+  font-size: 16px;
+}
+
+.remark-code {
+  font-family: 'Courier Prime', monospace;
+  font-size: 1.8em;
+  line-height: 1.2em;
+}
+
+.remark-inline-code {
+  color: #268bd2;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+body {
+  font-family: 'PT Serif', serif;
+  font-size: 64px;
+}
+
+h1, h2, h3 {
+  font-family: 'Oswald';
+  font-size: 1.5em;
+  font-weight: normal;
+}
+
+h1 {
+  text-transform: uppercase;
+  padding-bottom: 1em;
+}
+
+.title {
+  font-family: 'Oswald';
+  font-size: 4.8em;
+  text-transform: uppercase;
+}
+
+.sub-title {
+  font-size: 2.4em;
+}
+
+blockquote {
+  font-style: italic;
+  padding-top: 1em;
+  text-align: center;
+}
+
+img {
+  max-height: 80%;
+  max-width: 90%;
+}
+
+li {
+  padding: .3em;
+}
+
+table {
+  font-size: .7em;
+}
+
+td {
+  padding: .4em;
+}
+
+
+.illustration {
+  font-size: .6em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.author {
+  font-size: .8em;
+  font-style: italic;
+  padding-top: 1em;
+  text-align: right;
+}
+
+.character {
+  color: #d33682;
+  font-size: 1.4em;
+  font-weight: bold;
+  padding: .5em;
+}
+
+.character-description {
+  font-size: 1em;
+  font-variant: small-caps;
+}
+
+.codepoint {
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+.binary {
+  font-family: 'Courier Prime', monospace;
+}
+
+.binary-1 {
+  color:#268bd2;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+.binary-2 {
+  color:#859900;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+.binary-3 {
+  color:#cb4b16;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+.binary-4 {
+  color:#6c71c4;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}

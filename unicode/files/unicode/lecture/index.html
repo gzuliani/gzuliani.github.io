@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Unicode</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="slides.css"></link>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle
+.title[Unicode]
+---
+class: center, middle
+.title[1960]
+---
+class: center, middle
+.title[IBM]
+---
+class: center, middle
+<img src="img/teletype-model-33.jpg" height="480px">
+.illustration[
+Teletype Model 33]
+---
+class: center, middle
+<img src="img/bob-bemer.jpg" height="480px">
+.illustration[
+Robert William Bemer (1920–2004)]
+---
+class: center, middle
+<img src="img/ebcdic.jpg" height="480px">
+.illustration[
+Codifica EBCDIC (Extended Binary Coded Decimal Interchange Code)]
+---
+class: center, middle
+.title[1961]
+---
+class: center, middle
+.title[ANA]
+
+American Standards Association
+---
+class: center, middle
+.title[ANSI]
+
+American National Standards Institute
+---
+class: center, middle
+.title[1963]
+---
+class: center, middle
+<img src="img/ascii_63.gif">
+.illustration[
+ASCII 1963]
+---
+class: center, middle
+.title[1967]
+---
+class: center, middle
+<img src="img/ascii_67.gif">
+.illustration[
+ASCII 1967]
+---
+class: center, middle
+<img src="img/ascii_67_vs_63.gif">
+.illustration[
+ASCII 1967]
+---
+class: center, middle
+<img src="img/ascii_67_del.gif">
+.illustration[
+ASCII 1967]
+---
+.center[<img src="img/altair_basic.jpg">]
+
+> If a character was punched erroneously, punching out all seven bits caused this position to be ignored or deleted.
+.author[wikipedia.org
+]
+---
+class: center, middle
+.title[1981]
+---
+class: center, middle
+.title[PC IBM]
+---
+class: center, middle
+<img src="img/cp437_ascii.gif" height="480px">
+.illustration[
+Extended ASCII]
+---
+class: center, middle
+<img src="img/cp437.gif" height="480px">
+.illustration[
+Extended ASCII]
+---
+class: center, middle
+.title[Code page]
+---
+class: center, middle
+<img src="img/cp437.gif" height="480px">
+.illustration[
+Code page OEM 437 “United States”]
+---
+class: center, middle
+<img src="img/cp850.gif" height="480px">
+.illustration[
+Code page OEM 850 “Multilingual (Latin I)”]
+---
+class: center, middle
+<img src="img/cp850_vs_cp437.gif" height="480px">
+.illustration[
+Code page OEM 850 “Multilingual (Latin I)”]
+---
+class: center, middle
+<img src="img/cp737.gif" height="480px">
+.illustration[
+Code page OEM 737 “Greek II”]
+---
+class: center, middle
+<img src="img/cp737_vs_cp437.gif" height="480px">
+.illustration[
+Code page OEM 737 “Greek II”]
+---
+class: center, middle
+.title[1985]
+---
+class: center, middle
+.title[Windows]
+---
+class: center, middle
+<img src="img/windows-1252.gif" height="480px">
+.illustration[
+Code page ANSI Windows (1252)]
+---
+class: center, middle
+<img src="img/iso-8859-1.gif" height="480px">
+.illustration[
+Code page ISO-8859-1 “Latin 1”]
+---
+class: center, middle
+<img src="img/windows-1252_vs_iso-8859-1.gif" height="480px">
+.illustration[
+Code page ANSI Windows (1252)]
+---
+class: center, middle
+.title[Mojibake]
+---
+class: center
+```
+
+
+c  a  f  f  è
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+[code page 850]
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+↓  ↓  ↓  ↓  ↓
+
+63 61 66 66 8A
+```
+---
+class: center
+```
+
+
+63 61 66 66 8A
+```
+---
+class: center
+```
+
+
+63 61 66 66 8A
+
+[code page 737]
+```
+---
+class: center
+```
+
+
+63 61 66 66 8A
+
+↓  ↓  ↓  ↓  ↓
+
+c  a  f  f  Λ
+```
+---
+class: center, middle
+.sub-title[
+caffè ↔ caffΛ]
+---
+class: center, middle
+.title[DBCS]
+.sub-title[
+Double-Byte Character Set]
+---
+class: center, middle
+.title[1987]
+---
+class: center, middle
+.title[Unicode]
+---
+# Unicode
+
+- stabilisce il set di caratteri
+- assegna un codice numerico univoco ad ogni carattere
+- definisce:
+  - le regole di segmentazione e normalizzazione dei testi
+  - i criteri di ordinamento di sequenze di caratteri
+  - gli algoritmi per il trattamento dei testi bidirezionali
+  - ...
+
+---
+class: center, middle
+> Unicode is intended to address the need for a workable, reliable world text encoding. Unicode could be roughly described as "wide-body ASCII" that has been stretched to 16 bits to encompass the characters of all the world's living languages. In a properly engineered design, 16 bits per character are more than sufficient for this purpose.
+.author[
+Unicode 88]
+---
+class: center, middle
+.title[1991]
+---
+class: center, middle
+.title[Unicode 1.0]
+---
+class: center, middle
+> With over 30,000 unallocated character positions, the Unicode character encoding provides sufficient space for foreseeable future expansion.
+.author[
+Unicode 1.0 – Introduction]
+---
+class: center, middle
+.title[UCS]
+.sub-title[
+Universal Character Set]
+---
+# ISO/IEC 10646
+
+- indipendente da Unicode
+- pubblicato nel 1990
+- unità di codifica di 31 bit (679.477.248 caratteri)
+- UCS-4, UCS-2, UTF-1
+---
+class: center, middle
+.title[1993]
+---
+# Unicode 2.0
+
+- convergenza con ISO/IEC 10646
+- set di caratteri comune
+- unità di codifica a Unicode 21 bit (1.112.064 caratteri)
+- UTF-32, UTF-16, UTF-8
+---
+class: center, middle
+<img src="img/unicode_evolution.png" height="480px">
+.illustration[
+fonte: Wikipedia]
+---
+class: center, middle
+<img src="img/unicode_web.png" height="480px">
+.illustration[
+fonte: Google]
+---
+# Definizioni
+
+- **character**: unità di testo (grafeme)
+- **glyph**: forma grafica (glifo)
+- **codespace**: insieme di code point
+- **code point**: codice numerico (intero) univoco
+- **encoding**: rappresentazione binaria di un code point
+---
+class: center, middle
+**character** ↔ **code point**
+---
+# Codespace e code point
+
+- intervallo: 000000-10FFFF
+- notazione: **U+«4÷6 cifre esadecimali»**
+
+--
+
+&nbsp;
+.center[
+.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+---
+# Codespace e code point
+
+- intervallo: 000000-10FFFF
+- notazione: **U+«4÷6 cifre esadecimali»**
+
+&nbsp;
+.center[
+.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+---
+# Codespace e code point
+
+- intervallo: 000000-10FFFF
+- notazione: **U+«4÷6 cifre esadecimali»**
+
+&nbsp;
+.center[
+.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+---
+# Piani
+
+|Piano|Intervallo            |Descrizione                        |Abbreviazione|
+|:----|:--------------------:|:----------------------------------|:-----------:|
+|00   |.binary[000000÷00FFFF]|Basic Multilingual Plane           |BMP          |
+|01   |.binary[010000÷01FFFF]|Supplementary Multilingual Plane   |SMP          |
+|02   |.binary[020000÷02FFFF]|Supplementary Ideographic Plane    |SIP          |
+|03   |.binary[030000÷03FFFF]|Tertiary Ideographic Plane         |TIP          |
+|04-13|.binary[040000÷0DFFFF]|non assegnati                      |-            |
+|14   |.binary[0E0000÷0EFFFF]|Supplementary Special-purpose Plane|SSP          |
+|15   |.binary[0F0000÷0FFFFF]|Supplementary Private Use Area-A   |-            |
+|16   |.binary[100000÷10FFFF]|Supplementary Private Use Area-B   |-            |
+---
+class: center, middle
+**code point** ↔ **byte**
+---
+class: center, middle
+.title[UTF]
+.sub-title[
+Unicode/UCS Transformation Format]
+---
+# UTF-32
+
+- multi-byte
+- unità di codifica di 32 bit
+- lunghezza fissa (4 byte)
+- big e little-endianness
+---
+# UTF-32
+
+.center[
+.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+
+.center[
+.codepoint[U+0041] → .binary[0x00000041]]
+---
+# UTF-32
+
+.center[
+.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+
+.center[
+.codepoint[U+03B5] → .binary[0x000003B5]]
+---
+# UTF-32
+
+.center[
+.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+
+.center[
+.codepoint[U+10080] → .binary[0x00010080]]
+---
+# UTF-16
+
+- multi-byte
+- unità di codifica di 16 bit
+- lunghezza variabile (2/4 byte)
+- big e little-endianness
+---
+# UTF-16
+
+.center[
+.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+
+.center[
+.codepoint[U+0041] → .binary[0x0041]]
+---
+# UTF-16
+
+.center[
+.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+
+.center[
+.codepoint[U+03B5] → .binary[0x03B5]]
+---
+# UTF-16
+
+.center[
+.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+
+.center[
+.codepoint[U+10080] → .binary[0x????]]
+---
+# Surrogati
+
+- code point non associati a un carattere
+- usati per codificare i caratteri dei piani 10÷16
+- surrogati alti: .codepoint[U+D800]÷.codepoint[U+DBFF]
+- surrogati bassi: .codepoint[U+DC00]÷.codepoint[U+DFFF]
+---
+# Algoritmo
+
+.center[
+.codepoint[U+10080] - .binary[0x10000]]
+---
+# Algoritmo
+
+.center[
+.binary[0x10080] - .binary[0x10000] = .binary-1[0x00080]]
+---
+# Algoritmo
+
+.center[
+.binary-1[0x00080] .binary[&] .binary[0xFFFFF] = .binary-2[0x00080]]
+---
+# Algoritmo
+
+.center[
+.binary-2[0x00080]
+
+↓
+
+.binary[0000 0000 0000 1000 0000]]
+---
+# Algoritmo
+
+.center[
+.binary-2[0x00080]
+
+↓
+
+.binary-3[0000 0000 00].binary-4[00 1000 0000]]
+---
+# Algoritmo
+
+.center[
+.binary-2[0x00080]
+
+↓
+
+.binary-3[0000 0000 00]  .binary-4[00 1000 0000]]
+---
+# Algoritmo
+
+
+.center[
+.binary[code point #1] = .binary[0xD800] .binary[|] .binary-3[0000000000] = .binary[D800]
+
+.binary[code point #2] = .binary[0xDC00] .binary[|] .binary-4[0010000000] = .binary[DC80]]
+
+&nbsp;
+.center[
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]]
+---
+# UTF-8
+
+- multi-byte
+- unità di codifica di 8 bit
+- lunghezza variabile (1÷4 byte)
+- non ha endianness
+---
+# UTF-8
+
+|Intervallo            |Bits|Maschera                                    |
+|:--------------------:|:--:|:-------------------------------------------|
+|.binary[000000÷00007F]|   7|.binary[0xxxxxxx                           ]|
+|.binary[000080÷0007FF]|  11|.binary[110xxxxx 10xxxxxx                  ]|
+|.binary[000800÷00FFFF]|  16|.binary[1110xxxx 10xxxxxx 10xxxxxx         ]|
+|.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
+---
+# UTF-8
+
+|Intervallo            |Bits|Maschera                                    |
+|:--------------------:|:--:|:-------------------------------------------|
+|.binary[000000÷00007F]|   7|.binary[0xxxxxxx                           ]|
+|.binary[000080÷0007FF]|  11|.binary[110xxxxx 10xxxxxx                  ]|
+|.binary[000800÷00FFFF]|  16|.binary[1110xxxx 10xxxxxx 10xxxxxx         ]|
+|.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
+
+.center[
+.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+
+.center[
+.codepoint[U+0041] → .binary[0x41]]
+---
+# UTF-8
+
+|Intervallo            |Bits|Maschera                                    |
+|:--------------------:|:--:|:-------------------------------------------|
+|.binary[000000÷00007F]|   7|.binary[0xxxxxxx                           ]|
+|.binary[000080÷0007FF]|  11|.binary[110xxxxx 10xxxxxx                  ]|
+|.binary[000800÷00FFFF]|  16|.binary[1110xxxx 10xxxxxx 10xxxxxx         ]|
+|.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
+
+.center[
+.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+
+.center[
+.codepoint[U+03B5] → .binary[0xCE] .binary[0xB5]]
+---
+# UTF-8
+
+|Intervallo            |Bits|Maschera                                    |
+|:--------------------:|:--:|:-------------------------------------------|
+|.binary[000000÷00007F]|   7|.binary[0xxxxxxx                           ]|
+|.binary[000080÷0007FF]|  11|.binary[110xxxxx 10xxxxxx                  ]|
+|.binary[000800÷00FFFF]|  16|.binary[1110xxxx 10xxxxxx 10xxxxxx         ]|
+|.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
+
+.center[
+.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+
+.center[
+.codepoint[U+03B5] → .binary[0xF0] .binary[0x90] .binary[0x82] .binary[0x80]]
+---
+class: center, middle
+.title[BOM]
+.sub-title[
+Byte Order Mark]
+---
+# BOM
+
+- .codepoint[U+FEFF] (.character-description[ZERO WIDTH NO-BREAK SPACE])
+- di fatto invisibile
+- valido solo in testa ad una sequenza Unicode
+- usato come <em>word joiner</em> pre-Unicode 3.2, ora c'è .codepoint[U+2060]
+---
+# BOM
+
+|Codifica|Sequenza binaria                               |
+|:-------|:----------------------------------------------|
+|UTF-32BE|.binary[00] .binary[00] .binary[FE] .binary[FF]|
+|UTF-32LE|.binary[FF] .binary[FE] .binary[00] .binary[00]|
+|UTF-16BE|.binary[FE] .binary[FF]                        |
+|UTF-16LE|.binary[FF] .binary[FE]                        |
+|UTF-8   |.binary[EF] .binary[BB] .binary[BF]            |
+---
+class: center, middle
+.title[Equivalenza]
+---
+# Grafemi e glifi
+
+Relazione non biunivoca
+--
+
+- legature:
+
+.center[
+  ﬁ ≡ f + i
+  
+  ﬆ ≡ s + t]
+---
+# Grafemi e glifi
+
+Relazione non biunivoca
+
+- legature (un glifo, più grafemi)
+- combinazioni di caratteri:
+
+.center[
+  -- ≡ —
+  
+  e' ≡ è]
+---
+# Grafemi e glifi
+
+Relazione non biunivoca
+- legature (un glifo, più grafemi)
+- combinazioni di caratteri (più glifi per un grafema)
+
+--
+
+Come determinare l'equivalenza di due sequenze Unicode?
+---
+# Equivalenza canonica
+
+>Caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto e graficamente indistinguibili.
+---
+# Equivalenza canonica
+
+.center[
+.codepoint[U+00E8] .character[è] ≡  .codepoint[U+0065] .codepoint[U+0300] .character[è]]
+
+- .codepoint[U+00E8] .character[è] .character-description[LATIN SMALL LETTER E WITH GRAVE]
+- .codepoint[U+0065] .character[e] .character-description[LATIN SMALL LETTER E]
+- .codepoint[U+0300] .character[◌̀] .character-description[COMBINING GRAVE ACCENT]
+---
+# Equivalenza canonica
+
+.center[
+.codepoint[U+00C5] .character[Å] ≡ .codepoint[U+0041] .codepoint[U+030A] .character[Å] ≡ .codepoint[U+212B] .character[Å]]
+
+- .codepoint[U+00C5] .character[Å] .character-description[LATIN CAPITAL LETTER A WITH RING ABOVE]
+- .codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]
+- .codepoint[U+030A] .character[◌̊] .character-description[COMBINING RING ABOVE]
+- .codepoint[U+212B] .character[Å] .character-description[ANGSTROM SIGN]
+---
+# Compatibilità
+
+>Caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto ma che si distinguono per forma o altre caratteristiche.
+---
+# Compatibilità
+
+.center[
+.codepoint[U+FB01] .character[ﬁ] ∼ .codepoint[U+0066] .character[f] .codepoint[U+0069] .character[i]]
+
+- .codepoint[U+FB01] .character[ﬁ] .character-description[LATIN SMALL LIGATURE FI]
+- .codepoint[U+0066] .character[f] .character-description[LATIN SMALL LETTER F]
+- .codepoint[U+0069] .character[i] .character-description[LATIN SMALL LETTER I]
+---
+# Compatibilità
+
+.center[
+.codepoint[U+2460] .character[①] ∼ .codepoint[U+0031] .character[1]]
+
+- .codepoint[U+2460] .character[①] .character-description[CIRCLED DIGIT ONE]
+- .codepoint[U+0031] .character[1] .character-description[DIGIT ONE]
+---
+# Compatibilità
+
+.center[
+.codepoint[U+2083] .character[₃] ∼ .codepoint[U+0033] .character[3]]
+
+- .codepoint[U+2083] .character[₃] .character-description[SUBSCRIPT THREE]
+- .codepoint[U+0033] .character[3] .character-description[DIGIT THREE]
+---
+# Normalizzazione
+
+- Normalization Form Canonical Decomposition (**NFD**)
+- Normalization Form Canonical Composition (**NFC**)
+- Normalization Form Compatibility Decomposition (**NFKD**)
+- Normalization Form Compatibility Composition (**NFKC**)
+---
+# Capitalizzazione
+
+.center[
+.codepoint[U+FB01] .character[ﬁ] ↔ .codepoint[U+0046] .character[F] .codepoint[U+0049] .character[I]]
+
+- .codepoint[U+FB01] .character[ﬁ] .character-description[LATIN SMALL LIGATURE FI]
+- .codepoint[U+0046] .character[F] .character-description[LATIN CAPITAL LETTER F]
+- .codepoint[U+0049] .character[I] .character-description[LATIN CAPITAL LETTER I]
+---
+# Capitalizzazione
+
+.center[
+.codepoint[U+00DF] .character[ß] ↔ .codepoint[U+0053] .character[S] .codepoint[U+0053] .character[S]]
+
+- .codepoint[U+00DF] .character[ß] .character-description[LATIN SMALL LETTER SHARP S]
+- .codepoint[U+0053] .character[S] .character-description[LATIN CAPITAL LETTER S]
+---
+# Capitalizzazione
+
+.center[
+.codepoint[U+1E97] .character[ẗ] ↔ .codepoint[U+0054] .character[T] .codepoint[U+0308] .character[◌̈]]
+
+- .codepoint[U+1E97] .character[ẗ] .character-description[LATIN SMALL LETTER T WITH DIAERESIS]
+- .codepoint[U+0054] .character[T] .character-description[LATIN CAPITAL LETTER T]
+- .codepoint[U+0308] .character[◌̈] .character-description[COMBINING DIAERESIS]
+---
+# Capitalizzazione
+
+.center[
+.codepoint[U+03C2] .character[ς] ↔ .codepoint[U+03A3] .character[Σ]]
+
+.center[
+.codepoint[U+03C3] .character[σ] ↔ .codepoint[U+03A3] .character[Σ]]
+
+- .codepoint[U+03C2] .character[ς] .character-description[GREEK SMALL LETTER FINAL SIGMA]
+- .codepoint[U+03C3] .character[σ] .character-description[GREEK SMALL LETTER SIGMA]
+- .codepoint[U+03A3] .character[Σ] .character-description[GREEK CAPITAL LETTER SIGMA]
+---
+# Capitalizzazione
+
+.center[
+.codepoint[U+0069] .character[i] ↔ .codepoint[U+0049] .character[I]]
+
+.center[
+.codepoint[U+0069] .character[i] ↔ .codepoint[U+0130] .character[İ]]
+
+- .codepoint[U+0069] .character[i] .character-description[LATIN SMALL LETTER I]
+- .codepoint[U+0049] .character[I] .character-description[LATIN CAPITAL LETTER I]
+- .codepoint[U+0130] .character[İ] .character-description[LATIN CAPITAL LETTER I WITH DOT ABOVE]
+---
+class: center, middle
+.title[Mojibake]
+---
+class: center
+```
+
+
+c  a  f  f  è
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+[UTF-8]
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+↓  ↓  ↓  ↓  ↓
+
+63 61 66 66 C3 A8
+```
+---
+class: center
+```
+
+
+63 61 66 66 C3 A8
+```
+---
+class: center
+```
+
+
+63 61 66 66 C3 A8
+
+[code page Windows 1252]
+```
+---
+class: center
+```
+
+
+63 61 66 66 C3 A8
+
+↓  ↓  ↓  ↓  ↓  ↓
+
+c  a  f  f  Ã  ¨
+```
+---
+class: center, middle
+.sub-title[
+caffè ↔ caffÃ¨]
+---
+class: center
+```
+
+
+c  a  f  f  è
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+[code page Windows-1252]
+```
+---
+class: center
+```
+
+
+c  a  f  f  è
+
+↓  ↓  ↓  ↓  ↓
+
+63 61 66 66 E8
+```
+---
+class: center
+```
+
+
+63 61 66 66 E8
+```
+---
+class: center
+```
+
+
+63 61 66 66 E8
+
+[UTF-8]
+```
+---
+class: center
+```
+
+
+63 61 66 66 E8
+
+↓  ↓  ↓  ↓  ↓
+
+c  a  f  f  �
+```
+---
+class: center, middle
+.sub-title[
+caffè ↔ caff�]
+---
+# Replacement character
+
+- .codepoint[U+FFFD] (.character-description[replacement character])
+- sostituisce code point invalidi
+- sostituisce code point sconosciuti
+---
+# Quesito finale
+
+```python
+>>> int("৪୨")
+??
+```
+---
+# Quesito finale
+
+```python
+>>> int("৪୨")
+42
+```
+--
+- .codepoint[U+09EA] .character[৪] .character-description[BENGALI DIGIT FOUR]
+- .codepoint[U+0B68] .character[୨] .character-description[ORIYA DIGIT TWO]
+---
+</textarea>
+    <script src="remark-latest.min.js"></script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: "",
+            highlightStyle: "monokai-sublime",
+        });
+    </script>
+  </body>
+</html>
