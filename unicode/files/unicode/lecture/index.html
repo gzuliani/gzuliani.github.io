@@ -330,7 +330,7 @@ class: center, middle
 ---
 class: center, middle
 .title[UTF]
-.sub-title[
+.sub-sub-title[
 Unicode/UCS Transformation Format]
 ---
 # UTF-32
@@ -524,10 +524,11 @@ Byte Order Mark]
 ---
 # BOM
 
-- .codepoint[U+FEFF] (.character-description[ZERO WIDTH NO-BREAK SPACE])
+- .codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]
 - di fatto invisibile
 - valido solo in testa ad una sequenza Unicode
 - usato come <em>word joiner</em> pre-Unicode 3.2, ora c'è .codepoint[U+2060]
+- opzionale (default: **big-endian**)
 ---
 # BOM
 
@@ -583,7 +584,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Equivalenza canonica
 
 .center[
-.codepoint[U+00E8] .character[è] ≡  .codepoint[U+0065] .codepoint[U+0300] .character[è]]
+.codepoint[U+00E8] .character[è] ≡  .codepoint[U+0065] .character[è] .codepoint[U+0300] .character[◌̀]]
 
 - .codepoint[U+00E8] .character[è] .character-description[LATIN SMALL LETTER E WITH GRAVE]
 - .codepoint[U+0065] .character[e] .character-description[LATIN SMALL LETTER E]
@@ -592,7 +593,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Equivalenza canonica
 
 .center[
-.codepoint[U+00C5] .character[Å] ≡ .codepoint[U+0041] .codepoint[U+030A] .character[Å] ≡ .codepoint[U+212B] .character[Å]]
+.codepoint[U+00C5] .character[Å] ≡ .codepoint[U+0041] .character[A] .codepoint[U+030A] .character[◌̊] ≡ .codepoint[U+212B] .character[Å]]
 
 - .codepoint[U+00C5] .character[Å] .character-description[LATIN CAPITAL LETTER A WITH RING ABOVE]
 - .codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]
@@ -826,6 +827,50 @@ caffè ↔ caff�]
 --
 - .codepoint[U+09EA] .character[৪] .character-description[BENGALI DIGIT FOUR]
 - .codepoint[U+0B68] .character[୨] .character-description[ORIYA DIGIT TWO]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+--
+
+.center[
+.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+--
+
+
+.codepoint[U+03B5] → .binary[0x000003B5] (UTF-32)
+
+.codepoint[U+03B5] → .binary[0x03B5] (UTF-16)
+
+.codepoint[U+03B5] → .binary[0xCE] .binary[0xB5] (UTF-8)
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- BOM (opzionale) nelle sequenze binarie
+- Mojibake
+--
+
+.center[
+caffè ↔ caffÃ¨ ↔ caff�]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- BOM (opzionale) nelle sequenze binarie
+- Mojibake
+- sorprese nella manipolazione di sequenze unicode
+--
+
+.center[
+`length`, `sort`, `to_upper`, `to_lower`, `is_whitespace`, …]
+---
+# Consigli
+
+- non farsi ingannare dalle apparenze
+- non dare nulla per scontato
+- [unicode.org](https://home.unicode.org/)
+- [codepoints.net](https://codepoints.net/)
 ---
 </textarea>
     <script src="remark-latest.min.js"></script>
