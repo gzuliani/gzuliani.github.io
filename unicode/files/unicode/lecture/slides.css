@@ -135,11 +135,19 @@ li {
 }
 
 table {
-  font-size: .7em;
+  border-spacing: 0px;
+  font-size: .8em;
+}
+
+th {
+  color: #fdf6e3;
+  background-color: #073642;
+  padding: .4em;
 }
 
 td {
-  padding: .4em;
+  padding-left: .4em;
+  padding-right: .4em;
 }
 
 
@@ -160,12 +168,14 @@ td {
   color: #d33682;
   font-size: 1.4em;
   font-weight: bold;
-  padding: .5em;
+  padding-left: .3em;
+  padding-right: .3em;
 }
 
 .character-description {
   font-size: 1em;
   font-variant: small-caps;
+  padding-left: .3em;
 }
 
 .codepoint {

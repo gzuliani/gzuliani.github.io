@@ -285,8 +285,96 @@ fonte: Google]
 - **code point**: codice numerico (intero) univoco
 - **encoding**: rappresentazione binaria di un code point
 ---
-class: center, middle
-**character** ↔ **code point**
+# Caratteri
+
+- **nome**
+--
+
+- **categoria**
+
+
+.center[lettera, numero, simbolo, punteggiatura, separatore, …]
+---
+# Caratteri
+
+- **nome**
+- **categoria**
+- **altre caratteristiche**
+
+.center[alfabetico, spaziatura, ideogramma, carattere riservato, …]
+---
+# Caratteri
+
+- **nome**
+- **categoria**
+- **altre caratteristiche**
+- **aspetto**
+
+.center[larghezza, forma, bidirezionalità, specchiatura, …]
+---
+# Caratteri
+
+- **nome**
+- **categoria**
+- **altre caratteristiche**
+- **aspetto**
+- **caso**
+
+.center[maiuscolo, minuscolo, maiuscoletto, …]
+---
+# Caratteri
+
+- **categoria**
+- **altre caratteristiche**
+- **aspetto**
+- **caso**
+- **valore numerico**
+
+.center[decimale, esadecimale, frazione, numerale romano, …]
+---
+# Caratteri
+
+- **altre caratteristiche**
+- **aspetto**
+- **caso**
+- **valore numerico**
+- **sistema di scrittura**
+
+.center[generico, arabo, giapponese, braille, etrusco, cuneiforme, …]
+---
+# Caratteri
+
+- **aspetto**
+- **caso**
+- **valore numerico**
+- **sistema di scrittura**
+- **blocco**
+
+.center[“Basic Latin”, “Hiragana”, “Arrows”, “Box Drawing”, …]
+---
+# Caratteri
+
+- **caso**
+- **valore numerico**
+- **sistema di scrittura**
+- **blocco**
+- **proprietà di normalizzazione**
+---
+# Caratteri
+
+- **valore numerico**
+- **sistema di scrittura**
+- **blocco**
+- **proprietà di normalizzazione**
+- **età**
+---
+# Caratteri
+
+- **sistema di scrittura**
+- **blocco**
+- **proprietà di normalizzazione**
+- **età**
+- …
 ---
 # Codespace e code point
 
@@ -297,7 +385,7 @@ class: center, middle
 
 &nbsp;
 .center[
-.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+.character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 ---
 # Codespace e code point
 
@@ -306,7 +394,7 @@ class: center, middle
 
 &nbsp;
 .center[
-.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 ---
 # Codespace e code point
 
@@ -315,7 +403,7 @@ class: center, middle
 
 &nbsp;
 .center[
-.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 ---
 # Piani
 
@@ -329,9 +417,6 @@ class: center, middle
 |14   |.binary[0E0000÷0EFFFF]|Supplementary Special-purpose Plane|SSP          |
 |15   |.binary[0F0000÷0FFFFF]|Supplementary Private Use Area-A   |-            |
 |16   |.binary[100000÷10FFFF]|Supplementary Private Use Area-B   |-            |
----
-class: center, middle
-**code point** ↔ **byte**
 ---
 class: center, middle
 .title[UTF]
@@ -348,7 +433,7 @@ Unicode/UCS Transformation Format]
 # UTF-32
 
 .center[
-.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+.character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
 .codepoint[U+0041] → .binary[0x00000041]]
@@ -356,7 +441,7 @@ Unicode/UCS Transformation Format]
 # UTF-32
 
 .center[
-.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
 .codepoint[U+03B5] → .binary[0x000003B5]]
@@ -364,7 +449,7 @@ Unicode/UCS Transformation Format]
 # UTF-32
 
 .center[
-.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
 .codepoint[U+10080] → .binary[0x00010080]]
@@ -379,7 +464,7 @@ Unicode/UCS Transformation Format]
 # UTF-16
 
 .center[
-.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+.character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
 .codepoint[U+0041] → .binary[0x0041]]
@@ -387,7 +472,7 @@ Unicode/UCS Transformation Format]
 # UTF-16
 
 .center[
-.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
 .codepoint[U+03B5] → .binary[0x03B5]]
@@ -395,7 +480,7 @@ Unicode/UCS Transformation Format]
 # UTF-16
 
 .center[
-.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
 .codepoint[U+10080] → .binary[0x????]]
@@ -487,7 +572,7 @@ Unicode/UCS Transformation Format]
 |.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
 
 .center[
-.codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]]
+.character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
 .codepoint[U+0041] → .binary[0x41]]
@@ -502,7 +587,7 @@ Unicode/UCS Transformation Format]
 |.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
 
 .center[
-.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
 .codepoint[U+03B5] → .binary[0xCE] .binary[0xB5]]
@@ -517,7 +602,7 @@ Unicode/UCS Transformation Format]
 |.binary[010000÷10FFFF]|  21|.binary[11110xxx 10xxxxxx 10xxxxxx 10xxxxxx]|
 
 .center[
-.codepoint[U+10080] .character[𐂀] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
 .codepoint[U+03B5] → .binary[0xF0] .binary[0x90] .binary[0x82] .binary[0x80]]
@@ -533,9 +618,9 @@ Byte Order Mark]
 - di fatto invisibile
 - valido solo in testa ad una sequenza Unicode
 - usato come <em>word joiner</em> pre-Unicode 3.2, ora c'è .codepoint[U+2060]
-- opzionale (default: **big-endian**)
+- opzionale (default: **BE**, **big-endian**)
 ---
-# BOM
+# .codepoint[U+FEFF]
 
 |Codifica|Sequenza binaria                               |
 |:-------|:----------------------------------------------|
@@ -589,21 +674,21 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Equivalenza canonica
 
 .center[
-.codepoint[U+00E8] .character[è] ≡  .codepoint[U+0065] .character[è] .codepoint[U+0300] .character[◌̀]]
+.character[è] .codepoint[U+00E8] ≡ .character[è] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
 
-- .codepoint[U+00E8] .character[è] .character-description[LATIN SMALL LETTER E WITH GRAVE]
-- .codepoint[U+0065] .character[e] .character-description[LATIN SMALL LETTER E]
-- .codepoint[U+0300] .character[◌̀] .character-description[COMBINING GRAVE ACCENT]
+- .character[è] .codepoint[U+00E8] .character-description[LATIN SMALL LETTER E WITH GRAVE]
+- .character[e] .codepoint[U+0065] .character-description[LATIN SMALL LETTER E]
+- .character[◌̀] .codepoint[U+0300] .character-description[COMBINING GRAVE ACCENT]
 ---
 # Equivalenza canonica
 
 .center[
-.codepoint[U+00C5] .character[Å] ≡ .codepoint[U+0041] .character[A] .codepoint[U+030A] .character[◌̊] ≡ .codepoint[U+212B] .character[Å]]
+.character[Å] .codepoint[U+00C5] ≡ .character[A] .codepoint[U+0041] .character[◌̊] .codepoint[U+030A] ≡ .character[Å] .codepoint[U+212B]]
 
-- .codepoint[U+00C5] .character[Å] .character-description[LATIN CAPITAL LETTER A WITH RING ABOVE]
-- .codepoint[U+0041] .character[A] .character-description[LATIN CAPITAL LETTER A]
-- .codepoint[U+030A] .character[◌̊] .character-description[COMBINING RING ABOVE]
-- .codepoint[U+212B] .character[Å] .character-description[ANGSTROM SIGN]
+- .character[Å] .codepoint[U+00C5] .character-description[LATIN CAPITAL LETTER A WITH RING ABOVE]
+- .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]
+- .character[◌̊] .codepoint[U+030A] .character-description[COMBINING RING ABOVE]
+- .character[Å] .codepoint[U+212B] .character-description[ANGSTROM SIGN]
 ---
 # Compatibilità
 
@@ -612,27 +697,27 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Compatibilità
 
 .center[
-.codepoint[U+FB01] .character[ﬁ] ∼ .codepoint[U+0066] .character[f] .codepoint[U+0069] .character[i]]
+.character[ﬁ] .codepoint[U+FB01] ∼ .character[f] .codepoint[U+0066] .character[i] .codepoint[U+0069]]
 
-- .codepoint[U+FB01] .character[ﬁ] .character-description[LATIN SMALL LIGATURE FI]
-- .codepoint[U+0066] .character[f] .character-description[LATIN SMALL LETTER F]
-- .codepoint[U+0069] .character[i] .character-description[LATIN SMALL LETTER I]
+- .character[ﬁ] .codepoint[U+FB01] .character-description[LATIN SMALL LIGATURE FI]
+- .character[f] .codepoint[U+0066] .character-description[LATIN SMALL LETTER F]
+- .character[i] .codepoint[U+0069] .character-description[LATIN SMALL LETTER I]
 ---
 # Compatibilità
 
 .center[
-.codepoint[U+2460] .character[①] ∼ .codepoint[U+0031] .character[1]]
+.character[①] .codepoint[U+2460] ∼ .character[1] .codepoint[U+0031]]
 
-- .codepoint[U+2460] .character[①] .character-description[CIRCLED DIGIT ONE]
-- .codepoint[U+0031] .character[1] .character-description[DIGIT ONE]
+- .character[①] .codepoint[U+2460] .character-description[CIRCLED DIGIT ONE]
+- .character[1] .codepoint[U+0031] .character-description[DIGIT ONE]
 ---
 # Compatibilità
 
 .center[
-.codepoint[U+2083] .character[₃] ∼ .codepoint[U+0033] .character[3]]
+.character[₃] .codepoint[U+2083] ∼ .character[3] .codepoint[U+0033]]
 
-- .codepoint[U+2083] .character[₃] .character-description[SUBSCRIPT THREE]
-- .codepoint[U+0033] .character[3] .character-description[DIGIT THREE]
+- .character[₃] .codepoint[U+2083] .character-description[SUBSCRIPT THREE]
+- .character[3] .codepoint[U+0033] .character-description[DIGIT THREE]
 ---
 # Normalizzazione
 
@@ -644,52 +729,52 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.codepoint[U+FB01] .character[ﬁ] ↔ .codepoint[U+0046] .character[F] .codepoint[U+0049] .character[I]]
+.character[ﬁ] .codepoint[U+FB01] ↔ .character[F] .codepoint[U+0046] .character[I] .codepoint[U+0049]]
 
-- .codepoint[U+FB01] .character[ﬁ] .character-description[LATIN SMALL LIGATURE FI]
-- .codepoint[U+0046] .character[F] .character-description[LATIN CAPITAL LETTER F]
-- .codepoint[U+0049] .character[I] .character-description[LATIN CAPITAL LETTER I]
+- .character[ﬁ] .codepoint[U+FB01] .character-description[LATIN SMALL LIGATURE FI]
+- .character[F] .codepoint[U+0046] .character-description[LATIN CAPITAL LETTER F]
+- .character[I] .codepoint[U+0049] .character-description[LATIN CAPITAL LETTER I]
 ---
 # Capitalizzazione
 
 .center[
-.codepoint[U+00DF] .character[ß] ↔ .codepoint[U+0053] .character[S] .codepoint[U+0053] .character[S]]
+.character[ß] .codepoint[U+00DF] ↔ .character[S] .codepoint[U+0053] .character[S] .codepoint[U+0053]]
 
-- .codepoint[U+00DF] .character[ß] .character-description[LATIN SMALL LETTER SHARP S]
-- .codepoint[U+0053] .character[S] .character-description[LATIN CAPITAL LETTER S]
+- .character[ß] .codepoint[U+00DF] .character-description[LATIN SMALL LETTER SHARP S]
+- .character[S] .codepoint[U+0053] .character-description[LATIN CAPITAL LETTER S]
 ---
 # Capitalizzazione
 
 .center[
-.codepoint[U+1E97] .character[ẗ] ↔ .codepoint[U+0054] .character[T] .codepoint[U+0308] .character[◌̈]]
+.character[ẗ] .codepoint[U+1E97] ↔ .character[T] .codepoint[U+0054] .character[◌̈] .codepoint[U+0308]]
 
-- .codepoint[U+1E97] .character[ẗ] .character-description[LATIN SMALL LETTER T WITH DIAERESIS]
-- .codepoint[U+0054] .character[T] .character-description[LATIN CAPITAL LETTER T]
-- .codepoint[U+0308] .character[◌̈] .character-description[COMBINING DIAERESIS]
+- .character[ẗ] .codepoint[U+1E97] .character-description[LATIN SMALL LETTER T WITH DIAERESIS]
+- .character[T] .codepoint[U+0054] .character-description[LATIN CAPITAL LETTER T]
+- .character[◌̈] .codepoint[U+0308] .character-description[COMBINING DIAERESIS]
 ---
 # Capitalizzazione
 
 .center[
-.codepoint[U+03C2] .character[ς] ↔ .codepoint[U+03A3] .character[Σ]]
+.character[ς] .codepoint[U+03C2] ↔ .character[Σ] .codepoint[U+03A3]]
 
 .center[
-.codepoint[U+03C3] .character[σ] ↔ .codepoint[U+03A3] .character[Σ]]
+.character[σ] .codepoint[U+03C3] ↔ .character[Σ] .codepoint[U+03A3]]
 
-- .codepoint[U+03C2] .character[ς] .character-description[GREEK SMALL LETTER FINAL SIGMA]
-- .codepoint[U+03C3] .character[σ] .character-description[GREEK SMALL LETTER SIGMA]
-- .codepoint[U+03A3] .character[Σ] .character-description[GREEK CAPITAL LETTER SIGMA]
+- .character[ς] .codepoint[U+03C2] .character-description[GREEK SMALL LETTER FINAL SIGMA]
+- .character[σ] .codepoint[U+03C3] .character-description[GREEK SMALL LETTER SIGMA]
+- .character[Σ] .codepoint[U+03A3] .character-description[GREEK CAPITAL LETTER SIGMA]
 ---
 # Capitalizzazione
 
 .center[
-.codepoint[U+0069] .character[i] ↔ .codepoint[U+0049] .character[I]]
+.character[i] .codepoint[U+0069] ↔ .character[I] .codepoint[U+0049]]
 
 .center[
-.codepoint[U+0069] .character[i] ↔ .codepoint[U+0130] .character[İ]]
+.character[i] .codepoint[U+0069] ↔ .character[İ] .codepoint[U+0130]]
 
-- .codepoint[U+0069] .character[i] .character-description[LATIN SMALL LETTER I]
-- .codepoint[U+0049] .character[I] .character-description[LATIN CAPITAL LETTER I]
-- .codepoint[U+0130] .character[İ] .character-description[LATIN CAPITAL LETTER I WITH DOT ABOVE]
+- .character[i] .codepoint[U+0069] .character-description[LATIN SMALL LETTER I]
+- .character[I] .codepoint[U+0049] .character-description[LATIN CAPITAL LETTER I]
+- .character[İ] .codepoint[U+0130] .character-description[LATIN CAPITAL LETTER I WITH DOT ABOVE]
 ---
 class: center, middle
 .title[Mojibake]
@@ -825,7 +910,7 @@ class: center, middle
 --
 
 .center[
-.codepoint[U+03B5] .character[ε] .character-description[GREEK SMALL LETTER EPSILON]]
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 --
 
 
@@ -879,8 +964,8 @@ caffè ↔ caffÃ¨ ↔ caff�]
 42
 ```
 --
-- .codepoint[U+09EA] .character[৪] .character-description[BENGALI DIGIT FOUR]
-- .codepoint[U+0B68] .character[୨] .character-description[ORIYA DIGIT TWO]
+- .character[৪] .codepoint[U+09EA] .character-description[BENGALI DIGIT FOUR]
+- .character[୨] .codepoint[U+0B68] .character-description[ORIYA DIGIT TWO]
 ---
 </textarea>
     <script src="remark-latest.min.js"></script>
