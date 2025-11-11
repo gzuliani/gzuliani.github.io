@@ -811,22 +811,8 @@ caffè ↔ caff�]
 - sostituisce code point invalidi
 - sostituisce code point sconosciuti
 ---
-# Quesito finale
-
-```python
->>> int("৪୨")
-??
-```
----
-# Quesito finale
-
-```python
->>> int("৪୨")
-42
-```
---
-- .codepoint[U+09EA] .character[৪] .character-description[BENGALI DIGIT FOUR]
-- .codepoint[U+0B68] .character[୨] .character-description[ORIYA DIGIT TWO]
+class: center, middle
+.title[Conclusioni]
 ---
 # Punti principali
 
@@ -848,6 +834,8 @@ caffè ↔ caff�]
 
 - carattere ↔ code point ↔ configurazione binaria
 - BOM (opzionale) nelle sequenze binarie
+--
+
 - Mojibake
 --
 
@@ -871,6 +859,23 @@ caffè ↔ caffÃ¨ ↔ caff�]
 - non dare nulla per scontato
 - [unicode.org](https://home.unicode.org/)
 - [codepoints.net](https://codepoints.net/)
+---
+# Quesito finale
+
+```python
+>>> int("৪୨")
+??
+```
+---
+# Quesito finale
+
+```python
+>>> int("৪୨")
+42
+```
+--
+- .codepoint[U+09EA] .character[৪] .character-description[BENGALI DIGIT FOUR]
+- .codepoint[U+0B68] .character[୨] .character-description[ORIYA DIGIT TWO]
 ---
 </textarea>
     <script src="remark-latest.min.js"></script>
