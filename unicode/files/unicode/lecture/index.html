@@ -35,7 +35,7 @@ class: center, middle
 .title[1961]
 ---
 class: center, middle
-.title[ANA]
+.title[ASA]
 
 American Standards Association
 ---
@@ -279,7 +279,7 @@ fonte: Google]
 ---
 # Definizioni
 
-- **character**: unità di testo (grafeme)
+- **character**: unità di testo (grafema)
 - **glyph**: forma grafica (glifo)
 - **codespace**: insieme di code point
 - **code point**: codice numerico (intero) univoco
@@ -546,6 +546,28 @@ Unicode/UCS Transformation Format]
 .center[
 .codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]]
 ---
+# Algoritmo
+
+
+&nbsp;
+.important[
+**un singolo code point espresso con due code point surrogati**]
+
+&nbsp;
+.center[
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]]
+---
+# Algoritmo
+
+
+&nbsp;
+.important[
+**due code point per rappresentare un singolo carattere**]
+
+&nbsp;
+.center[
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]]
+---
 # UTF-8
 
 - multi-byte
@@ -612,13 +634,33 @@ class: center, middle
 .sub-title[
 Byte Order Mark]
 ---
+class: center, middle
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]
+---
+class: center, middle
+.codepoint[U+10080] → .binary-1[D800] .binary-2[DC80]
+
+--
+
+&nbsp;
+.binary-1[D8] .binary-1[00] .binary-2[DC] .binary-2[80]
+
+.binary-1[00] .binary-1[D8] .binary-2[80] .binary-2[DC]
+---
+class: center, middle
+.codepoint[U+10080] → .binary-1[D800] .binary-2[DC80]
+
+.binary-1[D8] .binary-1[00] .binary-2[DC] .binary-2[80] ⇠ big endian (**BE**)
+
+.binary-1[00] .binary-1[D8] .binary-2[80] .binary-2[DC] ⇠ little endian (**LE**)
+---
 # BOM
 
 - .codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]
 - di fatto invisibile
 - valido solo in testa ad una sequenza Unicode
 - usato come <em>word joiner</em> pre-Unicode 3.2, ora c'è .codepoint[U+2060]
-- opzionale (default: **BE**, **big-endian**)
+- opzionale, default: **BE**
 ---
 # .codepoint[U+FEFF]
 
@@ -631,6 +673,16 @@ Byte Order Mark]
 |UTF-8   |.binary[EF] .binary[BB] .binary[BF]            |
 ---
 class: center, middle
+<img src="img/text_utf16le.png">
+.illustration[
+Testo UTF-16LE (con BOM)]
+---
+class: center, middle
+<img src="img/text_utf8.png">
+.illustration[
+Testo UTF-8 (senza BOM)]
+---
+class: center, middle
 .title[Equivalenza]
 ---
 # Grafemi e glifi
@@ -641,27 +693,29 @@ Relazione non biunivoca
 - legature:
 
 .center[
-  ﬁ ≡ f + i
+  ﬁ → f + i
   
-  ﬆ ≡ s + t]
+  ﬆ → s + t]
 ---
 # Grafemi e glifi
 
 Relazione non biunivoca
 
 - legature (un glifo, più grafemi)
+--
+
 - combinazioni di caratteri:
 
 .center[
-  -- ≡ —
+  -- → —
   
-  e' ≡ è]
+  e' → è]
 ---
 # Grafemi e glifi
 
 Relazione non biunivoca
 - legature (un glifo, più grafemi)
-- combinazioni di caratteri (più glifi per un grafema)
+- combinazioni di caratteri (un grafema, più glifi)
 
 --
 
@@ -674,16 +728,16 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Equivalenza canonica
 
 .center[
-.character[è] .codepoint[U+00E8] ≡ .character[è] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
+.character[è] .codepoint[U+00E8] .relation[≡] .character[è] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
 
 - .character[è] .codepoint[U+00E8] .character-description[LATIN SMALL LETTER E WITH GRAVE]
 - .character[e] .codepoint[U+0065] .character-description[LATIN SMALL LETTER E]
 - .character[◌̀] .codepoint[U+0300] .character-description[COMBINING GRAVE ACCENT]
 ---
-# Equivalenza canonica
+# Equivalenza canonica ternaria
 
 .center[
-.character[Å] .codepoint[U+00C5] ≡ .character[A] .codepoint[U+0041] .character[◌̊] .codepoint[U+030A] ≡ .character[Å] .codepoint[U+212B]]
+.character[Å] .codepoint[U+00C5] .relation[≡] .character[A] .codepoint[U+0041] .character[◌̊] .codepoint[U+030A] .relation[≡] .character[Å] .codepoint[U+212B]]
 
 - .character[Å] .codepoint[U+00C5] .character-description[LATIN CAPITAL LETTER A WITH RING ABOVE]
 - .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]
@@ -692,12 +746,12 @@ Come determinare l'equivalenza di due sequenze Unicode?
 ---
 # Compatibilità
 
->Caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto ma che si distinguono per forma o altre caratteristiche.
+>Caratteri o sequenze di caratteri che rappresentano lo stesso simbolo astratto ma distinti per forma o altre caratteristiche.
 ---
 # Compatibilità
 
 .center[
-.character[ﬁ] .codepoint[U+FB01] ∼ .character[f] .codepoint[U+0066] .character[i] .codepoint[U+0069]]
+.character[ﬁ] .codepoint[U+FB01] .relation[∼] .character[f] .codepoint[U+0066] .character[i] .codepoint[U+0069]]
 
 - .character[ﬁ] .codepoint[U+FB01] .character-description[LATIN SMALL LIGATURE FI]
 - .character[f] .codepoint[U+0066] .character-description[LATIN SMALL LETTER F]
@@ -706,7 +760,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Compatibilità
 
 .center[
-.character[①] .codepoint[U+2460] ∼ .character[1] .codepoint[U+0031]]
+.character[①] .codepoint[U+2460] .relation[∼] .character[1] .codepoint[U+0031]]
 
 - .character[①] .codepoint[U+2460] .character-description[CIRCLED DIGIT ONE]
 - .character[1] .codepoint[U+0031] .character-description[DIGIT ONE]
@@ -714,7 +768,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Compatibilità
 
 .center[
-.character[₃] .codepoint[U+2083] ∼ .character[3] .codepoint[U+0033]]
+.character[₃] .codepoint[U+2083] .relation[∼] .character[3] .codepoint[U+0033]]
 
 - .character[₃] .codepoint[U+2083] .character-description[SUBSCRIPT THREE]
 - .character[3] .codepoint[U+0033] .character-description[DIGIT THREE]
@@ -729,7 +783,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.character[ﬁ] .codepoint[U+FB01] ↔ .character[F] .codepoint[U+0046] .character[I] .codepoint[U+0049]]
+.character[ﬁ] .codepoint[U+FB01] .relation[⤢] .character[F] .codepoint[U+0046] .character[I] .codepoint[U+0049]]
 
 - .character[ﬁ] .codepoint[U+FB01] .character-description[LATIN SMALL LIGATURE FI]
 - .character[F] .codepoint[U+0046] .character-description[LATIN CAPITAL LETTER F]
@@ -738,7 +792,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.character[ß] .codepoint[U+00DF] ↔ .character[S] .codepoint[U+0053] .character[S] .codepoint[U+0053]]
+.character[ß] .codepoint[U+00DF] .relation[⤢] .character[S] .codepoint[U+0053] .character[S] .codepoint[U+0053]]
 
 - .character[ß] .codepoint[U+00DF] .character-description[LATIN SMALL LETTER SHARP S]
 - .character[S] .codepoint[U+0053] .character-description[LATIN CAPITAL LETTER S]
@@ -746,7 +800,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.character[ẗ] .codepoint[U+1E97] ↔ .character[T] .codepoint[U+0054] .character[◌̈] .codepoint[U+0308]]
+.character[ẗ] .codepoint[U+1E97] .relation[⤢] .character[T] .codepoint[U+0054] .character[◌̈] .codepoint[U+0308]]
 
 - .character[ẗ] .codepoint[U+1E97] .character-description[LATIN SMALL LETTER T WITH DIAERESIS]
 - .character[T] .codepoint[U+0054] .character-description[LATIN CAPITAL LETTER T]
@@ -755,10 +809,10 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.character[ς] .codepoint[U+03C2] ↔ .character[Σ] .codepoint[U+03A3]]
+.character[ς] .codepoint[U+03C2] .relation[⤢] .character[Σ] .codepoint[U+03A3]]
 
 .center[
-.character[σ] .codepoint[U+03C3] ↔ .character[Σ] .codepoint[U+03A3]]
+.character[σ] .codepoint[U+03C3] .relation[⤢] .character[Σ] .codepoint[U+03A3]]
 
 - .character[ς] .codepoint[U+03C2] .character-description[GREEK SMALL LETTER FINAL SIGMA]
 - .character[σ] .codepoint[U+03C3] .character-description[GREEK SMALL LETTER SIGMA]
@@ -767,10 +821,10 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Capitalizzazione
 
 .center[
-.character[i] .codepoint[U+0069] ↔ .character[I] .codepoint[U+0049]]
+.character[i] .codepoint[U+0069] .relation[⤢] .character[I] .codepoint[U+0049]]
 
 .center[
-.character[i] .codepoint[U+0069] ↔ .character[İ] .codepoint[U+0130]]
+.character[i] .codepoint[U+0069] .relation[⤢] .character[İ] .codepoint[U+0130]]
 
 - .character[i] .codepoint[U+0069] .character-description[LATIN SMALL LETTER I]
 - .character[I] .codepoint[U+0049] .character-description[LATIN CAPITAL LETTER I]

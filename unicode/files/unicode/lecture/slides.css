@@ -94,6 +94,12 @@ body {
   font-size: 64px;
 }
 
+blockquote {
+  font-style: italic;
+  padding-top: 1em;
+  text-align: center;
+}
+
 h1, h2, h3 {
   font-family: 'Oswald';
   font-size: 1.5em;
@@ -105,27 +111,9 @@ h1 {
   padding-bottom: 1em;
 }
 
-.title {
-  font-family: 'Oswald';
-  font-size: 4.8em;
-  text-transform: uppercase;
-}
-
-.sub-title {
-  font-size: 2.4em;
-}
-
-.sub-sub-title {
-  font-size: 1.2em;
-}
-
-blockquote {
-  font-style: italic;
-  padding-top: 1em;
-  text-align: center;
-}
-
 img {
+  background: #ffffff;
+  border: 1px solid #073642;
   max-height: 80%;
   max-width: 90%;
 }
@@ -151,36 +139,11 @@ td {
 }
 
 
-.illustration {
-  font-size: .6em;
-  font-weight: bold;
-  text-align: center;
-}
-
 .author {
   font-size: .8em;
   font-style: italic;
   padding-top: 1em;
   text-align: right;
-}
-
-.character {
-  color: #d33682;
-  font-size: 1.4em;
-  font-weight: bold;
-  padding-left: .3em;
-  padding-right: .3em;
-}
-
-.character-description {
-  font-size: 1em;
-  font-variant: small-caps;
-  padding-left: .3em;
-}
-
-.codepoint {
-  font-family: 'Courier Prime', monospace;
-  font-weight: bold;
 }
 
 .binary {
@@ -209,4 +172,55 @@ td {
   color:#6c71c4;
   font-family: 'Courier Prime', monospace;
   font-weight: bold;
+}
+
+.character {
+  color: #d33682;
+  font-size: 1.4em;
+  font-weight: bold;
+  padding-left: .3em;
+  padding-right: .3em;
+}
+
+.character-description {
+  font-size: 1em;
+  font-variant: small-caps;
+  padding-left: .3em;
+}
+
+.codepoint {
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+.illustration {
+  font-size: .6em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.important {
+  color:#d33682;
+  text-align: center;
+}
+
+.relation {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding-left: .2em;
+  padding-right: .2em;
+}
+
+.sub-title {
+  font-size: 2.4em;
+}
+
+.sub-sub-title {
+  font-size: 1.2em;
+}
+
+.title {
+  font-family: 'Oswald';
+  font-size: 4.8em;
+  text-transform: uppercase;
 }
