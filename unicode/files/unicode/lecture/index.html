@@ -204,7 +204,7 @@ c  a  f  f  Λ
 ```
 ---
 class: center, middle
-.sub-title[
+.example[
 caffè ↔ caffΛ]
 ---
 class: center, middle
@@ -264,7 +264,7 @@ class: center, middle
 
 - convergenza con ISO/IEC 10646
 - set di caratteri comune
-- unità di codifica a Unicode 21 bit (1.112.064 caratteri)
+- unità di codifica a 21 bit (1.112.064 caratteri)
 - UTF-32, UTF-16, UTF-8
 ---
 class: center, middle
@@ -285,7 +285,11 @@ fonte: Google]
 - **code point**: codice numerico (intero) univoco
 - **encoding**: rappresentazione binaria di un code point
 ---
-# Caratteri
+class: center, middle
+.example[
+carattere ↔ code point ↔ configurazione binaria]
+---
+# Carattere
 
 - **nome**
 --
@@ -295,7 +299,7 @@ fonte: Google]
 
 .center[lettera, numero, simbolo, punteggiatura, separatore, …]
 ---
-# Caratteri
+# Carattere
 
 - **nome**
 - **categoria**
@@ -303,7 +307,7 @@ fonte: Google]
 
 .center[alfabetico, spaziatura, ideogramma, carattere riservato, …]
 ---
-# Caratteri
+# Carattere
 
 - **nome**
 - **categoria**
@@ -312,7 +316,7 @@ fonte: Google]
 
 .center[larghezza, forma, bidirezionalità, specchiatura, …]
 ---
-# Caratteri
+# Carattere
 
 - **nome**
 - **categoria**
@@ -322,7 +326,7 @@ fonte: Google]
 
 .center[maiuscolo, minuscolo, maiuscoletto, …]
 ---
-# Caratteri
+# Carattere
 
 - **categoria**
 - **altre caratteristiche**
@@ -332,7 +336,7 @@ fonte: Google]
 
 .center[decimale, esadecimale, frazione, numerale romano, …]
 ---
-# Caratteri
+# Carattere
 
 - **altre caratteristiche**
 - **aspetto**
@@ -342,7 +346,7 @@ fonte: Google]
 
 .center[generico, arabo, giapponese, braille, etrusco, cuneiforme, …]
 ---
-# Caratteri
+# Carattere
 
 - **aspetto**
 - **caso**
@@ -352,7 +356,7 @@ fonte: Google]
 
 .center[“Basic Latin”, “Hiragana”, “Arrows”, “Box Drawing”, …]
 ---
-# Caratteri
+# Carattere
 
 - **caso**
 - **valore numerico**
@@ -360,7 +364,7 @@ fonte: Google]
 - **blocco**
 - **proprietà di normalizzazione**
 ---
-# Caratteri
+# Carattere
 
 - **valore numerico**
 - **sistema di scrittura**
@@ -368,7 +372,7 @@ fonte: Google]
 - **proprietà di normalizzazione**
 - **età**
 ---
-# Caratteri
+# Carattere
 
 - **sistema di scrittura**
 - **blocco**
@@ -376,9 +380,9 @@ fonte: Google]
 - **età**
 - …
 ---
-# Codespace e code point
+# Code point
 
-- intervallo: 000000-10FFFF
+- intervallo: .binary[000000÷10FFFF]
 - notazione: **U+«4÷6 cifre esadecimali»**
 
 --
@@ -387,18 +391,18 @@ fonte: Google]
 .center[
 .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 ---
-# Codespace e code point
+# Code point
 
-- intervallo: 000000-10FFFF
+- intervallo: .binary[000000÷10FFFF]
 - notazione: **U+«4÷6 cifre esadecimali»**
 
 &nbsp;
 .center[
 .character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 ---
-# Codespace e code point
+# Code point
 
-- intervallo: 000000-10FFFF
+- intervallo: .binary[000000÷10FFFF]
 - notazione: **U+«4÷6 cifre esadecimali»**
 
 &nbsp;
@@ -662,7 +666,7 @@ class: center, middle
 - usato come <em>word joiner</em> pre-Unicode 3.2, ora c'è .codepoint[U+2060]
 - opzionale, default: **BE**
 ---
-# .codepoint[U+FEFF]
+# BOM
 
 |Codifica|Sequenza binaria                               |
 |:-------|:----------------------------------------------|
@@ -694,7 +698,7 @@ Relazione non biunivoca
 
 .center[
   ﬁ → f + i
-  
+
   ﬆ → s + t]
 ---
 # Grafemi e glifi
@@ -704,20 +708,52 @@ Relazione non biunivoca
 - legature (un glifo, più grafemi)
 --
 
-- combinazioni di caratteri:
+- combinazioni di caratteri
+---
+# Combinazioni
+
+- carattere precomposto (comprende tutti i glifi):
 
 .center[
-  -- → —
-  
-  e' → è]
+.character[è] .codepoint[U+00E8]]
+
+--
+
+- carattere combinato (a partire dai singoli glifi):
+
+.center[
+.character[e] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
+---
+# Zalgo text
+
+&nbsp;
+.example[
+caffè]
+---
+# Zalgo text
+
+&nbsp;
+.example[
+c̵a̸f̵f̶è̶]
+---
+# Zalgo text
+
+&nbsp;
+.example[
+c̶̙̩͗̏̉̌ͅa̵͍̠̟̓͂f̸̟̲͎̀̈́͐́͜f̴͓̭͎͖̿̔͘̚è̸̢͚̫́͝]
+---
+# Zalgo text
+
+&nbsp;
+.example[
+c̵̻̩̟̝̰͕̬͈͕̠͙͎̩̿̋̾̀͒̎̀̆̽̕͘̕͜͝͠͝á̶̧̢͙̥̳̙̟̲͉̰͖̲͈̭̮̰͉̝̌̍̈́͋͆̃̚f̶̢̨͓̲̟̲͚̼͚̟̮͙̼́͊̀̂̐̀͒̑͛̏͐͊̍͝ͅf̴̙͍̮̒͆͒̿͑̅̄̕̚͝ͅͅè̴̢̡̡̛̗̳͎̮̥͉̃͆̑]
 ---
 # Grafemi e glifi
 
 Relazione non biunivoca
+
 - legature (un glifo, più grafemi)
 - combinazioni di caratteri (un grafema, più glifi)
-
---
 
 Come determinare l'equivalenza di due sequenze Unicode?
 ---
@@ -728,7 +764,7 @@ Come determinare l'equivalenza di due sequenze Unicode?
 # Equivalenza canonica
 
 .center[
-.character[è] .codepoint[U+00E8] .relation[≡] .character[è] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
+.character[è] .codepoint[U+00E8] .relation[≡] .character[e] .codepoint[U+0065] .character[◌̀] .codepoint[U+0300]]
 
 - .character[è] .codepoint[U+00E8] .character-description[LATIN SMALL LETTER E WITH GRAVE]
 - .character[e] .codepoint[U+0065] .character-description[LATIN SMALL LETTER E]
@@ -888,7 +924,7 @@ c  a  f  f  Ã  ¨
 ```
 ---
 class: center, middle
-.sub-title[
+.example[
 caffè ↔ caffÃ¨]
 ---
 class: center
@@ -946,7 +982,7 @@ c  a  f  f  �
 ```
 ---
 class: center, middle
-.sub-title[
+.example[
 caffè ↔ caff�]
 ---
 # Replacement character
@@ -977,25 +1013,110 @@ class: center, middle
 # Punti principali
 
 - carattere ↔ code point ↔ configurazione binaria
-- BOM (opzionale) nelle sequenze binarie
---
-
-- Mojibake
---
-
-.center[
-caffè ↔ caffÃ¨ ↔ caff�]
 ---
 # Punti principali
 
 - carattere ↔ code point ↔ configurazione binaria
-- BOM (opzionale) nelle sequenze binarie
-- Mojibake
-- sorprese nella manipolazione di sequenze unicode
+- attenzione nella manipolazione di sequenze unicode
+
 --
 
+.warning[
+UTF-16 in particolare]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
 .center[
-`length`, `sort`, `to_upper`, `to_lower`, `is_whitespace`, …]
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.center[
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80] → .binary[D8] .binary[00] .binary[DC] .binary[80]]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.center[
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80] → .binary[D8] .binary[00] .binary[DC] .binary[80]]
+
+.center[
+`strlen`?]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.warning[
+endianness]
+
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.center[
+.character[𐂀] → .binary[D8] .binary[00] .binary[DC] .binary[80]
+
+.character[𐂀] → .binary[00] .binary[D8] .binary[80] .binary[DC]]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+
+.warning[
+trasformazioni dipendenti dal contesto]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.center[
+`strcmp`, `sort`, `to_upper`/`to_lower`, …]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+- copertura parziale (diversa) nei vari font
+
+--
+
+.example[
+caffè → caff□]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+- copertura parziale (diversa) nei vari font
+- mojibake
+
+--
+
+.example[
+caffè ↔ caffÃ¨ ↔ caff�]
 ---
 # Consigli
 

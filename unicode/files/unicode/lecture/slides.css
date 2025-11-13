@@ -193,6 +193,12 @@ td {
   font-weight: bold;
 }
 
+.example {
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+}
+
 .illustration {
   font-size: .6em;
   font-weight: bold;
@@ -201,13 +207,14 @@ td {
 
 .important {
   color:#d33682;
+  font-weight: bold;
   text-align: center;
 }
 
 .relation {
   font-size: 1.2em;
   font-weight: bold;
-  padding-left: .2em;
+  padding-left: .4em;
   padding-right: .2em;
 }
 
@@ -224,3 +231,10 @@ td {
   font-size: 4.8em;
   text-transform: uppercase;
 }
+
+.warning {
+  color:#6c71c4;
+  font-weight: bold;
+  text-align: center;
+}
+
