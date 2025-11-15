@@ -440,7 +440,7 @@ Unicode/UCS Transformation Format]
 .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
-.codepoint[U+0041] → .binary[0x00000041]]
+.codepoint[U+0041] → .binary[00000041]]
 ---
 # UTF-32
 
@@ -448,7 +448,7 @@ Unicode/UCS Transformation Format]
 .character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
-.codepoint[U+03B5] → .binary[0x000003B5]]
+.codepoint[U+03B5] → .binary[000003B5]]
 ---
 # UTF-32
 
@@ -456,7 +456,7 @@ Unicode/UCS Transformation Format]
 .character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
-.codepoint[U+10080] → .binary[0x00010080]]
+.codepoint[U+10080] → .binary[00010080]]
 ---
 # UTF-16
 
@@ -471,7 +471,7 @@ Unicode/UCS Transformation Format]
 .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
-.codepoint[U+0041] → .binary[0x0041]]
+.codepoint[U+0041] → .binary[0041]]
 ---
 # UTF-16
 
@@ -479,7 +479,7 @@ Unicode/UCS Transformation Format]
 .character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
-.codepoint[U+03B5] → .binary[0x03B5]]
+.codepoint[U+03B5] → .binary[03B5]]
 ---
 # UTF-16
 
@@ -487,7 +487,7 @@ Unicode/UCS Transformation Format]
 .character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
-.codepoint[U+10080] → .binary[0x????]]
+.codepoint[U+10080] → .binary[????]]
 ---
 # Surrogati
 
@@ -499,22 +499,22 @@ Unicode/UCS Transformation Format]
 # Algoritmo
 
 .center[
-.codepoint[U+10080] - .binary[0x10000]]
+.codepoint[U+10080] - .binary[10000]]
 ---
 # Algoritmo
 
 .center[
-.binary[0x10080] - .binary[0x10000] = .binary-1[0x00080]]
+.binary[10080] - .binary[10000] = .binary-1[00080]]
 ---
 # Algoritmo
 
 .center[
-.binary-1[0x00080] .binary[&] .binary[0xFFFFF] = .binary-2[0x00080]]
+.binary-1[00080] .binary[&] .binary[FFFFF] = .binary-2[00080]]
 ---
 # Algoritmo
 
 .center[
-.binary-2[0x00080]
+.binary-2[00080]
 
 ↓
 
@@ -523,7 +523,7 @@ Unicode/UCS Transformation Format]
 # Algoritmo
 
 .center[
-.binary-2[0x00080]
+.binary-2[00080]
 
 ↓
 
@@ -532,7 +532,7 @@ Unicode/UCS Transformation Format]
 # Algoritmo
 
 .center[
-.binary-2[0x00080]
+.binary-2[00080]
 
 ↓
 
@@ -542,9 +542,9 @@ Unicode/UCS Transformation Format]
 
 
 .center[
-.binary[code point #1] = .binary[0xD800] .binary[|] .binary-3[0000000000] = .binary[D800]
+.binary[code point #1] = .binary[D800] .binary[|] .binary-3[0000000000] = .binary[D800]
 
-.binary[code point #2] = .binary[0xDC00] .binary[|] .binary-4[0010000000] = .binary[DC80]]
+.binary[code point #2] = .binary[DC00] .binary[|] .binary-4[0010000000] = .binary[DC80]]
 
 &nbsp;
 .center[
@@ -601,7 +601,7 @@ Unicode/UCS Transformation Format]
 .character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
 
 .center[
-.codepoint[U+0041] → .binary[0x41]]
+.codepoint[U+0041] → .binary[41]]
 ---
 # UTF-8
 
@@ -616,7 +616,7 @@ Unicode/UCS Transformation Format]
 .character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
 
 .center[
-.codepoint[U+03B5] → .binary[0xCE] .binary[0xB5]]
+.codepoint[U+03B5] → .binary[CE] .binary[B5]]
 ---
 # UTF-8
 
@@ -631,7 +631,7 @@ Unicode/UCS Transformation Format]
 .character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
 
 .center[
-.codepoint[U+03B5] → .binary[0xF0] .binary[0x90] .binary[0x82] .binary[0x80]]
+.codepoint[U+03B5] → .binary[F0] .binary[90] .binary[82] .binary[80]]
 ---
 class: center, middle
 .title[BOM]
@@ -747,6 +747,28 @@ c̶̙̩͗̏̉̌ͅa̵͍̠̟̓͂f̸̟̲͎̀̈́͐́͜f̴͓̭͎͖̿̔͘̚è̸͚̫́͝
 &nbsp;
 .example[
 c̵̻̩̟̝̰͕̬͈͕̠͙͎̩̿̋̾̀͒̎̀̆̽̕͘̕͜͝͠͝á̶̧̢͙̥̳̙̟̲͉̰͖̲͈̭̮̰͉̝̌̍̈́͋͆̃̚f̶̢̨͓̲̟̲͚̼͚̟̮͙̼́͊̀̂̐̀͒̑͛̏͐͊̍͝ͅf̴̙͍̮̒͆͒̿͑̅̄̕̚͝ͅͅè̴̢̡̡̛̗̳͎̮̥͉̃͆̑]
+
+--
+
+&nbsp;
+
+&nbsp;
+
+.important[
+121 code point]
+---
+# Zalgo text
+
+&nbsp;
+.example[
+c̵̻̩̟̝̰͕̬͈͕̠͙͎̩̿̋̾̀͒̎̀̆̽̕͘̕͜͝͠͝á̶̧̢͙̥̳̙̟̲͉̰͖̲͈̭̮̰͉̝̌̍̈́͋͆̃̚f̶̢̨͓̲̟̲͚̼͚̟̮͙̼́͊̀̂̐̀͒̑͛̏͐͊̍͝ͅf̴̙͍̮̒͆͒̿͑̅̄̕̚͝ͅͅè̴̢̡̡̛̗̳͎̮̥͉̃͆̑]
+
+&nbsp;
+
+&nbsp;
+
+.important[
+dove termina un carattere e inizia il successivo?]
 ---
 # Grafemi e glifi
 
@@ -987,7 +1009,11 @@ caffè ↔ caff�]
 ---
 # Replacement character
 
-- .codepoint[U+FFFD] (.character-description[replacement character])
+&nbsp;
+.center[
+.character[�] .codepoint[U+FFFD] .character-description[replacement character]]
+
+&nbsp;
 - sostituisce code point invalidi
 - sostituisce code point sconosciuti
 ---
@@ -997,22 +1023,45 @@ class: center, middle
 # Punti principali
 
 - carattere ↔ code point ↔ configurazione binaria
---
-
-.center[
-.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
---
-
-
-.codepoint[U+03B5] → .binary[0x000003B5] (UTF-32)
-
-.codepoint[U+03B5] → .binary[0x03B5] (UTF-16)
-
-.codepoint[U+03B5] → .binary[0xCE] .binary[0xB5] (UTF-8)
 ---
 # Punti principali
 
 - carattere ↔ code point ↔ configurazione binaria
+
+.center[
+.character[A] .codepoint[U+0041] .character-description[LATIN CAPITAL LETTER A]]
+
+.codepoint[U+0041] → .binary[00000041] (UTF-32)
+
+.codepoint[U+0041] → .binary[0041] (UTF-16)
+
+.codepoint[U+0041] → .binary[41] (UTF-8)
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+
+.center[
+.character[ε] .codepoint[U+03B5] .character-description[GREEK SMALL LETTER EPSILON]]
+
+.codepoint[U+03B5] → .binary[000003B5] (UTF-32)
+
+.codepoint[U+03B5] → .binary[03B5] (UTF-16)
+
+.codepoint[U+03B5] → .binary[CE] .binary[B5] (UTF-8)
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+
+.center[
+.character[𐂀] .codepoint[U+10080] .character-description[LINEAR B IDEOGRAM B100 MAN]]
+
+.codepoint[U+10080] → .binary[00010080] (UTF-32)
+
+.codepoint[U+10080] → .binary[D800] .binary[DC80] (UTF-16)
+
+.codepoint[U+10080] → .binary[F0] .binary[90] .binary[82] .binary[80] (UTF-8)
 ---
 # Punti principali
 
@@ -1066,9 +1115,13 @@ endianness]
 - attenzione nella manipolazione di sequenze unicode
 
 .center[
-.character[𐂀] → .binary[D8] .binary[00] .binary[DC] .binary[80]
+.codepoint[U+10080] → .codepoint[U+D800] .codepoint[U+DC80]]
 
-.character[𐂀] → .binary[00] .binary[D8] .binary[80] .binary[DC]]
+.center[
+Big endian (**BE**) → .binary[D8] .binary[00] .binary[DC] .binary[80]]
+
+.center[
+Little endian (**LE**) → .binary[00] .binary[D8] .binary[80] .binary[DC]]
 ---
 # Punti principali
 
@@ -1091,7 +1144,70 @@ trasformazioni dipendenti dal contesto]
 
 - carattere ↔ code point ↔ configurazione binaria
 - attenzione nella manipolazione di sequenze unicode
+
+
+.warning[
+segmentazione del testo]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+
+.center[
+`character_count`, `word_wrap`, `next_sentence`, …]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
 - BOM (opzionale) nei flussi binari
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+
+.center[
+.codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+
+.center[
+.codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]
+
+.binary[00] .binary[00] .binary[FE] .binary[FF] ⇢ **UTF-32BE**
+
+.binary[FF] .binary[FE] .binary[00] .binary[00] ⇢ **UTF-32LE**]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+
+.center[
+.codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]
+
+.binary[FE] .binary[FF] ⇢ **UTF-16BE**
+
+.binary[FF] .binary[FE] ⇢ **UTF-16LE**]
+---
+# Punti principali
+
+- carattere ↔ code point ↔ configurazione binaria
+- attenzione nella manipolazione di sequenze unicode
+- BOM (opzionale) nei flussi binari
+
+.center[
+.codepoint[U+FEFF] .character-description[ZERO WIDTH NO-BREAK SPACE]
+
+.binary[EF] .binary[BB] .binary[BF] ⇢ **UTF-8**]
 ---
 # Punti principali
 
@@ -1122,6 +1238,7 @@ caffè ↔ caffÃ¨ ↔ caff�]
 
 - non farsi ingannare dalle apparenze
 - non dare nulla per scontato
+- affidarsi a librerie di terze parti di qualità (**ICU**)
 - [unicode.org](https://home.unicode.org/)
 - [codepoints.net](https://codepoints.net/)
 ---
