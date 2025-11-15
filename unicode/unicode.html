@@ -190,14 +190,39 @@ U+FB01 (ﬁ) ∼ U+0066 U+0069 (fi)
 </ul>
 <p>La tabella sottostante riporta il numero di byte necessario per rappresentare un code point nei vari formati:</p>
 <table cellpadding="0" cellspacing="0">
-<tbody><tr><th>Intervallo</th><th>Caratteri contenuti</th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr>
-<tr><td>000000-00007F</td><td>Basic Latin</td><td class="byte-count">1</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
-<tr><td>000080-0007FF</td><td>Latin Extensions, Greek, Cyrillic, …</td><td class="byte-count">2</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
-<tr><td>000800-00FFFF</td><td>Thai, Hiragana, Katakana, …</td><td class="byte-count">3</td><td class="byte-count">2</td><td class="byte-count">4</td></tr>
+<tbody><tr><th>Intervallo</th><th>Caratteri contenuti</th><th>UTF-32</th><th>UTF-16</th><th>UTF-8</th></tr>
+<tr><td>000000-00007F</td><td>Basic Latin</td><td class="byte-count">4</td><td class="byte-count">2</td><td class="byte-count">1</td></tr>
+<tr><td>000080-0007FF</td><td>Latin Extensions, Greek, Cyrillic, …</td><td class="byte-count">4</td><td class="byte-count">2</td><td class="byte-count">2</td></tr>
+<tr><td>000800-00FFFF</td><td>Thai, Hiragana, Katakana, …</td><td class="byte-count">4</td><td class="byte-count">2</td><td class="byte-count">3</td></tr>
 <tr><td>010000-10FFFF</td><td>Cuneiform, Hieroglyphs, Private, …</td><td class="byte-count">4</td><td class="byte-count">4</td><td class="byte-count">4</td></tr>
 </tbody></table>
 <h4>Endianness</h4>
 <p>Quando una sequenza di caratteri Unicode in formato UTF-16 o UTF-32 viene serializzata in un flusso di byte, per esempio un file, è necessario definire l’ordine di scrittura dei byte che costituiscono le singole unità di codifica. La rappresentazione UTF-16 della lettera A maiuscola, <span class="code">0041</span>, può ad esempio essere serializzata in due modi distinti: <span class="code">00</span>–<span class="code">41</span> oppure <span class="code">41</span>–<span class="code">00</span>. La prima forma, presentando prima il byte più significativo seguito da quello meno significativo, viene detta <em>big endian</em>; la seconda forma, nella quale il byte meno significativo precede quello più significativo, viene denominata <em>little endian</em>. L’<em>endianness</em> indica quindi il “peso” del primo byte che si incontra.</p>
+<h4>Peculiarità della codifica UTF-16</h4>
+<p>La codifica UTF-16 fa uso di alcuni speciali code point del Basic Multilingual Plan, denominati <em>surrogati</em>, per indirizzare i caratteri al di fuori del BMP stesso. I surrogati sono 2048 code point che non corrispondono a nessun carattere, e si suddividono in <em>surrogati alti</em>, i cui codici vanno da <span class="code">U+D800</span> fino a <span class="code">U+DBFF</span>, e <em>surrogati bassi</em>, da <span class="code">U+DC00</span> a <span class="code">U+DFFF</span>. I surrogati appaiono sempre in coppia, nell’ordine alto/basso.</p>
+<p>La coppia di surrogati viene determinata sottraendo <span class="code">10000</span> dal code point del carattere così da normalizzarlo nell’intervallo [<span class="code">0</span>, <span class="code">FFFFF</span>]; i venti bit rimanenti vengono equamente distribuiti nei dieci bit meno significativi del surrogato alto (<span class="code">D800</span>÷<span class="code">DBFF</span> ↔ <span class="code">110110xxxxxxxxxx</span>) e quello basso (<span class="code">DC00</span>÷<span class="code">DFFF</span> ↔ <span class="code">110111xxxxxxxxxx</span>):</p>
+<pre class="code">U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....𝕊
+
+1D54A → 0001 1101 0101 0100 1010 -
+        0001 0000 0000 0000 0000
+        ========================
+        0000 1101 0101 0100 1010
+             ↓           ↓
+         0000110101  0101001010
+             ↓           ↓
+   110110xxxxxxxxxx      ↓
+          ↓              ↓
+   1101100000110101      ↓
+          ↓              ↓
+         D835            ↓
+               110111xxxxxxxxxx
+                      ↓
+               1101110101001010
+                      ↓
+                     DD4A
+
+U+1D54A → D835 DD4A
+</pre>
 <h4>Peculiarità della codifica UTF-8</h4>
 <p>La codifica UTF-8 distribuisce i bit di un code point in una sequenza di byte secondo lo schema seguente:</p>
 <table cellpadding="0" cellspacing="0">
@@ -231,36 +256,11 @@ U+FB01 (ﬁ) ∼ U+0066 U+0069 (fi)
 
 U+2135 → E2 84 B5
 </pre>
-<h4>Peculiarità della codifica UTF-16</h4>
-<p>La codifica UTF-16 fa uso di alcuni speciali code point del Basic Multilingual Plan, denominati <em>surrogati</em>, per indirizzare i caratteri al di fuori del BMP stesso. I surrogati sono 2048 code point che non corrispondono a nessun carattere, e si suddividono in <em>surrogati alti</em>, i cui codici vanno da <span class="code">U+D800</span> fino a <span class="code">U+DBFF</span>, e <em>surrogati bassi</em>, da <span class="code">U+DC00</span> a <span class="code">U+DFFF</span>. I surrogati appaiono sempre in coppia, nell’ordine alto/basso.</p>
-<p>La coppia di surrogati viene determinata sottraendo <span class="code">10000</span> dal code point del carattere così da normalizzarlo nell’intervallo [<span class="code">0</span>, <span class="code">FFFFF</span>]; i venti bit rimanenti vengono equamente distribuiti nei dieci bit meno significativi del surrogato alto (<span class="code">D800</span>÷<span class="code">DBFF</span> ↔ <span class="code">110110xxxxxxxxxx</span>) e quello basso (<span class="code">DC00</span>÷<span class="code">DFFF</span> ↔ <span class="code">110111xxxxxxxxxx</span>):</p>
-<pre class="code">U+1D54A - MATHEMATICAL DOUBLE-STRUCK CAPITAL S....𝕊
-
-1D54A → 0001 1101 0101 0100 1010 -
-        0001 0000 0000 0000 0000
-        ========================
-        0000 1101 0101 0100 1010
-             ↓           ↓
-         0000110101  0101001010
-             ↓           ↓
-   110110xxxxxxxxxx      ↓
-          ↓              ↓
-   1101100000110101      ↓
-          ↓              ↓
-         D835            ↓
-               110111xxxxxxxxxx
-                      ↓
-               1101110101001010
-                      ↓
-                     DD4A
-
-U+1D54A → D835 DD4A
-</pre>
 <h3>Formato UTF e UCS</h3>
 <p>Anche l’ISO/IEC 10646 specifica delle forme di codifica:</p>
 <ul>
-<li><p><em>UCS-2</em>: <em>“Universal Character Set coded in 2 octets”</em>, noto anche come <em>“the two-octet BMP form”</em>, rappresenta i soli caratteri del piano zero, ovvero quei caratteri rappresentabili con un’unica unità di 32 bit. In questo contesto, è compatibile con UTF-16. E’ stato dichiarato obsoleto nel 2011;</p></li>
-<li><p><em>UCS-4</em>: <em>“Universal Character Set coded in 4 octets”</em>, equivale a UTF-32, ed è la forma canonica di rappresentazione dei caratteri.</p></li>
+<li><p><em>UCS-4</em>: <em>“Universal Character Set coded in 4 octets”</em>, equivale a UTF-32, ed è la forma canonica di rappresentazione dei caratteri;</p></li>
+<li><p><em>UCS-2</em>: <em>“Universal Character Set coded in 2 octets”</em>, noto anche come <em>“the two-octet BMP form”</em>, rappresenta i soli caratteri del piano zero, ovvero quei caratteri rappresentabili con un’unica unità di 32 bit. In questo contesto, è compatibile con UTF-16. E’ stato dichiarato obsoleto nel 2011.</p></li>
 </ul>
 <h3>Il BOM</h3>
 <p>Il <em>BOM</em> – <em>Byte order mark</em> è il carattere Unicode <span class="code">U+FEFF</span> quando utilizzato per specificare l’<em>endianness</em> di una sequenza di caratteri Unicode. Tale carattere, denominato <em>“zero width no-break space”</em>, può occupare solo la prima posizione di una sequenza di caratteri Unicode e non ha altro effetto che quello di fornire un’indicazione indiretta del tipo di ordinamento in uso — perdendo quindi il significato originale di “zero width no-break space”.</p>
